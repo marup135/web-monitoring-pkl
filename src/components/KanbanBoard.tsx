@@ -978,9 +978,9 @@ export const KanbanBoard: React.FC<KanbanBoardProps> = ({ onOpenCard }) => {
                 />
               </div>
 
-              {/* Due Date (2. Tanggal) */}
+              {/* Due Date (Tanggal Selesai) */}
               <div className="flex flex-col gap-1.5">
-                <label className="text-[11px] text-[#64748B] dark:text-gray-300 font-semibold uppercase tracking-wider">{t('dueDate')}</label>
+                <label className="text-[11px] text-[#64748B] dark:text-gray-300 font-semibold uppercase tracking-wider">{t('dueDate')} (Selesai)</label>
                 <input
                   type="date"
                   value={newDueDate}

@@ -527,7 +527,7 @@ export function AttendancePage() {
         res = await checkInAction(currentUser.id, location.lat, location.lng, photoCaptured);
       } else {
         if (!activityNotes.trim()) {
-           setErrorMsg('Catatan kegiatan wajib diisi untuk absen keluar.');
+           setModalError('Catatan kegiatan wajib diisi untuk absen keluar.');
            setActionLoading(false);
            return;
         }
@@ -735,18 +735,6 @@ export function AttendancePage() {
             </div>
             
             <div className="p-5 flex flex-col gap-4 overflow-y-auto flex-1 min-h-0">
-              {/* Modal Specific Error */}
-              {modalError && (
-                <div className="p-3 bg-red-50 text-red-700 dark:bg-red-900/30 dark:text-red-300 rounded-xl text-xs flex items-center justify-between gap-2 font-medium border border-red-200 dark:border-red-800 animate-in fade-in duration-200">
-                  <div className="flex items-center gap-2">
-                    <AlertCircle size={18} className="shrink-0 text-red-500" />
-                    <span>{modalError}</span>
-                  </div>
-                  <button onClick={() => setModalError(null)} className="p-1 text-red-400 hover:text-red-600">
-                    <X size={14} />
-                  </button>
-                </div>
-              )}
 
               {/* Location Status */}
               <div className={`p-3 rounded-xl flex items-start gap-3 text-sm ${location ? 'bg-green-50 text-green-700 dark:bg-green-900/30 dark:text-green-400' : 'bg-amber-50 text-amber-700 dark:bg-amber-900/30 dark:text-amber-400'}`}>
@@ -894,6 +882,18 @@ export function AttendancePage() {
             </div>
 
             <div className="p-5 border-t border-gray-100 dark:border-gray-800 bg-gray-50 dark:bg-[#1E293B] shrink-0">
+              {/* Modal Specific Error - Moved to bottom so it's always visible */}
+              {modalError && (
+                <div className="mb-4 p-3 bg-red-50 text-red-700 dark:bg-red-900/30 dark:text-red-300 rounded-xl text-xs flex items-center justify-between gap-2 font-medium border border-red-200 dark:border-red-800 animate-in slide-in-from-bottom-2 fade-in duration-200">
+                  <div className="flex items-center gap-2">
+                    <AlertCircle size={18} className="shrink-0 text-red-500" />
+                    <span>{modalError}</span>
+                  </div>
+                  <button onClick={() => setModalError(null)} className="p-1 text-red-400 hover:text-red-600">
+                    <X size={14} />
+                  </button>
+                </div>
+              )}
               <button
                 onClick={handleConfirmAttendance}
                 disabled={!location || !photoCaptured || actionLoading || verifyingFace || (cameraMode === 'in' && !savedFaceDescriptor)}

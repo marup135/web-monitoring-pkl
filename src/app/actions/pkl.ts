@@ -373,7 +373,6 @@ export async function createCardAction(
       connectCollaborators = users.map(u => ({ id: u.id }));
     }
 
-    // @ts-ignore
     const card = await prisma.card.create({
       data: {
         title,
@@ -409,9 +408,9 @@ export async function createCardAction(
     }
 
     return { success: true, cardId: card.id };
-  } catch (error) {
+  } catch (error: any) {
     console.error('Failed to create card', error);
-    return { success: false, error: 'Gagal membuat kegiatan.' };
+    return { success: false, error: error?.message || 'Gagal membuat kegiatan.' };
   }
 }
 
@@ -616,10 +615,17 @@ export async function updateCardDetailsAction(
     const text = `Detail kartu diperbarui oleh ${currentUser.name} (${displayRole})`;
 
     await prisma.$transaction(async (tx) => {
-      await tx.card.update({
-        where: { id: cardId },
-        data: updateData,
-      });
+      try {
+        await tx.card.update({
+          where: { id: cardId },
+          data: updateData,
+        });
+      } catch (updErr) {
+        await tx.card.update({
+          where: { id: cardId },
+          data: updateData,
+        });
+      }
 
       await tx.historyItem.create({
         data: {
@@ -630,9 +636,9 @@ export async function updateCardDetailsAction(
     });
 
     return { success: true };
-  } catch (error) {
+  } catch (error: any) {
     console.error('Failed to update card details', error);
-    return { success: false, error: 'Gagal memperbarui rincian kegiatan.' };
+    return { success: false, error: error?.message || 'Gagal memperbarui rincian kegiatan.' };
   }
 }
 

@@ -623,7 +623,7 @@ export const CardModal: React.FC<CardModalProps> = ({ card, onClose, initialEdit
                           )}
                         </div>
                         <div>
-                          <label className="text-[10px] text-[#64748B] dark:text-gray-300 font-semibold uppercase">{t('dueDate')}</label>
+                          <label className="text-[10px] text-[#64748B] dark:text-gray-300 font-semibold uppercase">{t('dueDate')} (Selesai)</label>
                           <input
                             type="date"
                             value={editDueDate}
