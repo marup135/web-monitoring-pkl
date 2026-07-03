@@ -4,6 +4,7 @@ import { PARTICIPANT_ROLES } from '@/lib/constants';
 
 
 import prisma from '@/lib/prisma';
+import { rateLimit } from '@/lib/rateLimit';
 import { PKLCard, AdvisorNote, TaskCategory, PKLRole, PKLState, PriorityLevel } from '@/types/pkl';
 import { cookies } from 'next/headers';
 import { verifySession, hashPassword } from '@/lib/auth';
@@ -291,6 +292,7 @@ export async function getPKLState(selectedStudentId?: string): Promise<PKLState>
     const mappedNotes: AdvisorNote[] = advisorNotes.map((n: any) => ({
       id: n.id,
       advisorName: n.advisorName,
+      advisorId: n.advisorId,
       text: n.text,
       createdAt: n.createdAt.toISOString(),
     }));
@@ -378,12 +380,12 @@ export async function createCardAction(
 ) {
   try {
     const currentUser = await getAuthenticatedUser();
-    if (!currentUser) {
-      return { success: false, error: 'Sesi tidak sah.' };
+    if (!currentUser || (!PARTICIPANT_ROLES.includes(currentUser.role))) {
+      return { success: false, error: 'Sesi tidak sah atau Anda bukan partisipan.' };
     }
 
-    if (!PARTICIPANT_ROLES.includes(currentUser.role)) {
-      return { success: false, error: 'Hanya siswa yang dapat membuat rencana kegiatan' };
+    if (!rateLimit(`addCard_${currentUser.id}`, 2000)) {
+      return { success: false, error: 'Terlalu banyak permintaan. Mohon tunggu sebentar.' };
     }
 
     let connectCollaborators: { id: string }[] = [];
@@ -438,9 +440,10 @@ export async function createCardAction(
   }
 }
 
+
 export async function updateCardColumnAction(
   cardId: string,
-  targetColumn: PKLCard['columnId'],
+  targetColumn: string,
   _actorName: string,
   _actorRole: PKLRole
 ) {
@@ -448,6 +451,10 @@ export async function updateCardColumnAction(
     const currentUser = await getAuthenticatedUser();
     if (!currentUser) {
       return { success: false, error: 'Sesi tidak sah atau telah berakhir.' };
+    }
+
+    if (!rateLimit(`updateCardCol_${currentUser.id}`, 1000)) {
+      return { success: false, error: 'Aksi terlalu cepat. Tunggu sesaat.' };
     }
 
     if (targetColumn === 'selesai' && PARTICIPANT_ROLES.includes(currentUser.role)) {
@@ -734,6 +741,10 @@ export async function addCommentAction(
     const currentUser = await getAuthenticatedUser();
     if (!currentUser) {
       return { success: false, error: 'Sesi tidak sah.' };
+    }
+
+    if (!rateLimit(`addComment_${currentUser.id}`, 1000)) {
+      return { success: false, error: 'Terlalu banyak komentar. Tunggu sesaat.' };
     }
 
     const card = await prisma.card.findUnique({
@@ -1084,6 +1095,10 @@ export async function addAdvisorNoteAction(text: string, advisorName: string, st
       return { success: false, error: 'Akses ditolak: Hanya Guru Pembimbing yang dapat membuat catatan.' };
     }
 
+    if (!rateLimit(`addAdvisorNote_${currentUser.id}`, 2000)) {
+      return { success: false, error: 'Terlalu banyak permintaan. Mohon tunggu beberapa detik.' };
+    }
+
     const student = await prisma.user.findUnique({ where: { id: studentId } });
     if (!student || (!PARTICIPANT_ROLES.includes(student.role)) || !canAdvisorAccessStudent(currentUser, student)) {
       return { success: false, error: 'Akses ditolak: Siswa dari kelas lain.' };
@@ -1101,6 +1116,28 @@ export async function addAdvisorNoteAction(text: string, advisorName: string, st
   } catch (error) {
     console.error('Failed to add advisor note', error);
     return { success: false, error: 'Gagal menyimpan catatan bimbingan.' };
+  }
+}
+
+export async function deleteAdvisorNoteAction(noteId: string) {
+  try {
+    const currentUser = await getAuthenticatedUser();
+    if (!currentUser || currentUser.role !== 'INTERNAL_MENTOR') {
+      return { success: false, error: 'Akses ditolak: Hanya Guru Pembimbing yang dapat menghapus catatan.' };
+    }
+
+    const note = await prisma.advisorNote.findUnique({ where: { id: noteId } });
+    if (!note) return { success: false, error: 'Catatan tidak ditemukan.' };
+    
+    if (note.advisorId !== currentUser.id && currentUser.role !== 'SUPER_ADMIN') {
+      return { success: false, error: 'Akses ditolak: Anda hanya dapat menghapus catatan Anda sendiri.' };
+    }
+
+    await prisma.advisorNote.delete({ where: { id: noteId } });
+    return { success: true };
+  } catch (error) {
+    console.error('Failed to delete advisor note', error);
+    return { success: false, error: 'Gagal menghapus catatan bimbingan.' };
   }
 }
 

@@ -14,6 +14,7 @@ import {
   gradeCardByMentorAction,
   gradeCardByAdvisorAction,
   addAdvisorNoteAction,
+  deleteAdvisorNoteAction,
   deleteCardAction,
   resetDatabaseAction,
   getStudentsAction,
@@ -187,6 +188,7 @@ interface PKLContextProps {
   addAttachment: (cardId: string, name: string, url: string, type: string) => Promise<void>;
   deleteAttachment: (cardId: string, index: number) => Promise<void>;
   addAdvisorNote: (text: string) => Promise<void>;
+  deleteAdvisorNote: (noteId: string) => Promise<void>;
   deleteCard: (cardId: string) => Promise<void>;
   resetState: () => Promise<void>;
   login: (username: string, password: string, captchaToken?: string) => Promise<{ success: boolean; error?: string }>;
@@ -888,6 +890,19 @@ export const PKLProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     }
   };
 
+  const deleteAdvisorNote = async (noteId: string) => {
+    try {
+      const res = await deleteAdvisorNoteAction(noteId);
+      if (!res.success) {
+        throw new Error(res.error);
+      }
+      refreshState();
+    } catch (err: any) {
+      console.error(err);
+      throw err;
+    }
+  };
+
   const deleteCard = async (cardId: string) => {
     setLoading(true);
     try {
@@ -975,6 +990,7 @@ export const PKLProvider: React.FC<{ children: React.ReactNode }> = ({ children 
         addAttachment,
         deleteAttachment,
         addAdvisorNote,
+        deleteAdvisorNote,
         deleteCard,
         resetState,
         login,

@@ -4,7 +4,7 @@ import React, { useState, useMemo } from 'react';
 import { usePKL } from '../context/PKLContext';
 import { 
   Clock, CheckSquare, Award, MessageSquare, Plus, FileText, Calendar, Activity, 
-  Target, TrendingUp, Code, Palette, FileSpreadsheet, Globe, Settings, ChevronRight, CheckCircle2, AlertCircle, Hourglass, Sparkles
+  Target, TrendingUp, Code, Palette, FileSpreadsheet, Globe, Settings, ChevronRight, CheckCircle2, AlertCircle, Hourglass, Sparkles, Trash2
 } from 'lucide-react';
 import { calculateDuration } from '@/utils/time';
 import { useLanguage } from '../context/LanguageContext';
@@ -13,7 +13,7 @@ import { PARTICIPANT_ROLES } from '@/lib/constants';
 import { PieChart, Pie, Cell, Tooltip as RechartsTooltip, ResponsiveContainer, AreaChart, Area, XAxis, YAxis, CartesianGrid } from 'recharts';
 
 export const DashboardStats: React.FC = () => {
-  const { state, addAdvisorNote, currentUser, selectedStudentId } = usePKL();
+  const { state, addAdvisorNote, deleteAdvisorNote, currentUser, selectedStudentId } = usePKL();
   const { t } = useLanguage();
   const [newNoteText, setNewNoteText] = useState('');
 
@@ -449,10 +449,26 @@ export const DashboardStats: React.FC = () => {
                     </p>
                     <div className="flex justify-between items-center text-[10px] text-slate-400">
                       <span className="font-bold text-primary">{note.advisorName}</span>
-                      <span className="flex items-center gap-1 bg-slate-50 dark:bg-gray-800 px-1.5 py-0.5 rounded">
-                        <Calendar size={10} />
-                        {new Date(note.createdAt).toLocaleDateString('id-ID')}
-                      </span>
+                      <div className="flex items-center gap-2">
+                        <span className="flex items-center gap-1 bg-slate-50 dark:bg-gray-800 px-1.5 py-0.5 rounded">
+                          <Calendar size={10} />
+                          {new Date(note.createdAt).toLocaleDateString('id-ID')}
+                        </span>
+                        {currentUser && (currentUser.id === note.advisorId || currentUser.role === 'SUPER_ADMIN') && (
+                          <button
+                            type="button"
+                            onClick={() => {
+                              if (window.confirm('Yakin ingin menghapus catatan ini?')) {
+                                deleteAdvisorNote(note.id);
+                              }
+                            }}
+                            className="p-1 hover:bg-red-50 dark:hover:bg-red-900/30 text-red-400 hover:text-red-600 rounded transition"
+                            title="Hapus Catatan"
+                          >
+                            <Trash2 size={12} />
+                          </button>
+                        )}
+                      </div>
                     </div>
                   </div>
                 ))

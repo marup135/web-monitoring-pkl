@@ -78,6 +78,7 @@ export interface PKLCard {
 export interface AdvisorNote {
   id: string;
   advisorName: string;
+  advisorId?: string;
   text: string;
   createdAt: string;
 }
