@@ -1,4 +1,4 @@
-# 📋 Web Monitoring PKL (minitor-pkl)
+# 📋 Web Monitoring PKL (100% Pakai AI)
 
 Aplikasi berbasis web modern untuk memantau, melaporkan, dan mengevaluasi kegiatan siswa selama melaksanakan **Praktek Kerja Lapangan (PKL)**. Proyek ini memfasilitasi komunikasi dan kolaborasi yang efisien antara **Siswa**, **Pembimbing Internal (Sekolah)**, dan **Pembimbing Eksternal (Perusahaan)**.
 
