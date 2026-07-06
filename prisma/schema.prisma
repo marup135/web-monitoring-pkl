@@ -1,0 +1,82 @@
+datasource db {
+  provider = "mysql"
+}
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+model User {
+  id        String   @id @default(uuid())
+  username  String   @unique @db.VarChar(255)
+  password  String   @db.VarChar(255)
+  name      String   @db.VarChar(255)
+  role      String   @db.VarChar(50) // "siswa" | "pembimbing_internal" | "pembimbing_eksternal"
+  company   String?  @db.VarChar(255) // Optional: Nama Perusahaan
+  school    String   @default("SMKN 1 BOJONG") @db.VarChar(255)
+  createdAt DateTime @default(now())
+
+  // Relations
+  cards         Card[]        @relation("StudentCards")
+  advisorNotes  AdvisorNote[] @relation("StudentNotes")
+  writtenNotes  AdvisorNote[] @relation("AdvisorNotes")
+}
+
+model Card {
+  id           String        @id @default(uuid())
+  title        String        @db.VarChar(255)
+  description  String        @db.Text
+  columnId     String        @default("rencana")
+  category     String        @default("Coding")
+  hoursLogged  Int           @default(0)
+  dueDate      String
+  createdAt    DateTime      @default(now())
+  score        Int?
+  feedback     String?       @db.Text
+  comments     Comment[]
+  history      HistoryItem[]
+
+  // Link card to student
+  studentId    String
+  student      User          @relation("StudentCards", fields: [studentId], references: [id], onDelete: Cascade)
+
+  @@index([studentId])
+}
+
+model Comment {
+  id        String   @id @default(uuid())
+  userName  String
+  role      String
+  text      String   @db.Text
+  createdAt DateTime @default(now())
+  cardId    String
+  card      Card     @relation(fields: [cardId], references: [id], onDelete: Cascade)
+
+  @@index([cardId])
+}
+
+model HistoryItem {
+  id        String   @id @default(uuid())
+  text      String   @db.Text
+  createdAt DateTime @default(now())
+  cardId    String
+  card      Card     @relation(fields: [cardId], references: [id], onDelete: Cascade)
+
+  @@index([cardId])
+}
+
+model AdvisorNote {
+  id          String   @id @default(uuid())
+  advisorName String
+  text        String   @db.Text
+  createdAt   DateTime @default(now())
+
+  // Link advisor note to student and the advisor who wrote it
+  studentId   String
+  student     User     @relation("StudentNotes", fields: [studentId], references: [id], onDelete: Cascade)
+  advisorId   String
+  advisor     User     @relation("AdvisorNotes", fields: [advisorId], references: [id], onDelete: Cascade)
+
+  @@index([studentId])
+  @@index([advisorId])
+}
