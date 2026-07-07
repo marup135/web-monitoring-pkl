@@ -34,7 +34,9 @@ function canMentorAccessStudent(
   student: { companyId: string | null }
 ) {
   if (currentUser.role !== 'pembimbing_eksternal') return false;
-  const mentorCompanyIds = currentUser.companies.map((company) => company.id);
+  const mentorCompanyIds = currentUser.companies.map(
+    (company: { id: string }) => company.id
+  );
   return Boolean(student.companyId && mentorCompanyIds.includes(student.companyId));
 }
 
@@ -43,7 +45,9 @@ function canAdvisorAccessStudent(
   student: { classId: string | null }
 ) {
   if (currentUser.role !== 'pembimbing_internal') return false;
-  const advisorClassIds = currentUser.classes.map((kelas) => kelas.id);
+  const advisorClassIds = currentUser.classes.map(
+    (kelas: { id: string }) => kelas.id
+  );
   return Boolean(student.classId && advisorClassIds.includes(student.classId));
 }
 
@@ -62,6 +66,7 @@ export async function getPKLState(selectedStudentId?: string): Promise<PKLState>
       throw new Error('Unauthorized');
     }
 
+
     // Determine target student
     let targetStudentId = currentUser.id;
     if (currentUser.role !== 'siswa') {
@@ -75,12 +80,12 @@ export async function getPKLState(selectedStudentId?: string): Promise<PKLState>
 
         // Data isolation checks
         if (currentUser.role === 'pembimbing_eksternal') {
-          const mentorCompanyIds = currentUser.companies.map((c) => c.id);
+          const mentorCompanyIds = currentUser.companies.map((c: { id: string }) => c.id);
           if (!targetStudent.companyId || !mentorCompanyIds.includes(targetStudent.companyId)) {
             throw new Error('Akses ditolak: Siswa dari perusahaan lain');
           }
         } else if (currentUser.role === 'pembimbing_internal') {
-          const advisorClassIds = currentUser.classes.map((c) => c.id);
+          const advisorClassIds = currentUser.classes.map((c: { id: string }) => c.id);
           if (!targetStudent.classId || !advisorClassIds.includes(targetStudent.classId)) {
             throw new Error('Akses ditolak: Siswa dari kelas lain');
           }
@@ -91,12 +96,12 @@ export async function getPKLState(selectedStudentId?: string): Promise<PKLState>
         // Fallback to first available guided student
         let firstStudent = null;
         if (currentUser.role === 'pembimbing_eksternal') {
-          const mentorCompanyIds = currentUser.companies.map((c) => c.id);
+          const mentorCompanyIds = currentUser.companies.map((c: { id: string }) => c.id);
           firstStudent = await prisma.user.findFirst({
             where: { role: 'siswa', companyId: { in: mentorCompanyIds } }
           });
         } else if (currentUser.role === 'pembimbing_internal') {
-          const advisorClassIds = currentUser.classes.map((c) => c.id);
+          const advisorClassIds = currentUser.classes.map((c: { id: string }) => c.id);
           firstStudent = await prisma.user.findFirst({
             where: { role: 'siswa', classId: { in: advisorClassIds } }
           });
@@ -176,7 +181,7 @@ export async function getPKLState(selectedStudentId?: string): Promise<PKLState>
       endTime: c.endTime,
       dueDate: c.dueDate,
       createdAt: c.createdAt.toISOString(),
-      
+
       scoreMentor: c.scoreMentor ?? undefined,
       scoreMentorDiscipline: c.scoreMentorDiscipline ?? undefined,
       scoreMentorSkill: c.scoreMentorSkill ?? undefined,
@@ -190,7 +195,7 @@ export async function getPKLState(selectedStudentId?: string): Promise<PKLState>
       feedbackAdvisor: c.feedbackAdvisor ?? undefined,
 
       attachments: JSON.parse(c.attachmentsJson || '[]'),
-      
+
       // Legacy compatibility mapping
       score: c.scoreMentor ?? undefined,
       feedback: c.feedbackMentor ?? undefined,
@@ -422,7 +427,7 @@ export async function updateCardDetailsAction(
   endTime: string,
   _actorName: string,
   _actorRole: PKLRole,
-  
+
   scoreMentor?: number | null,
   scoreMentorDiscipline?: number | null,
   scoreMentorSkill?: number | null,
@@ -768,9 +773,9 @@ export async function uploadFileAction(formData: FormData) {
       .substring(0, 100);
     const filename = `${baseName}_${Date.now()}${ext}`;
     const uploadDir = path.join(process.cwd(), 'public', 'uploads');
-    
+
     await mkdir(uploadDir, { recursive: true });
-    
+
     const bytes = await file.arrayBuffer();
     const buffer = Buffer.from(bytes);
     const filePath = path.join(uploadDir, filename);
@@ -778,7 +783,7 @@ export async function uploadFileAction(formData: FormData) {
     await writeFile(filePath, buffer);
 
     const fileUrl = `/uploads/${filename}`;
-    
+
     // Determine type
     let type = 'other';
     const mime = file.type.toLowerCase();
@@ -809,12 +814,12 @@ export async function addAttachmentAction(cardId: string, name: string, url: str
 
     const attachments = JSON.parse(card.attachmentsJson || '[]');
     attachments.push({ name, url, type });
-    
+
     await prisma.card.update({
       where: { id: cardId },
       data: { attachmentsJson: JSON.stringify(attachments) }
     });
-    
+
     return { success: true };
   } catch (error) {
     console.error('Failed to add attachment', error);
@@ -917,7 +922,7 @@ export async function getStudentsAction(classId?: string, companyId?: string) {
 
     // Apply role-based constraints and client-selected filters
     if (currentUser.role === 'pembimbing_eksternal') {
-      const mentorCompanyIds = currentUser.companies.map((c) => c.id);
+      const mentorCompanyIds = currentUser.companies.map((c: { id: string }) => c.id);
       if (mentorCompanyIds.length === 0) {
         return [];
       }
@@ -927,7 +932,7 @@ export async function getStudentsAction(classId?: string, companyId?: string) {
         whereClause.companyId = { in: mentorCompanyIds };
       }
     } else if (currentUser.role === 'pembimbing_internal') {
-      const advisorClassIds = currentUser.classes.map((c) => c.id);
+      const advisorClassIds = currentUser.classes.map((c: { id: string }) => c.id);
       if (advisorClassIds.length === 0) {
         return [];
       }
@@ -1093,7 +1098,7 @@ export async function resetDatabaseAction() {
     const dateOffset = (days: number) => new Date(Date.now() + days * 24 * 60 * 60 * 1000);
 
     // Create cards for the student
-    
+
     // Card 1
     await prisma.card.create({
       data: {
@@ -1580,7 +1585,7 @@ export async function getDashboardMetricsAction(classId?: string, companyId?: st
     } = { role: 'siswa' };
 
     if (currentUser.role === 'pembimbing_eksternal') {
-      const mentorCompanyIds = currentUser.companies.map((c) => c.id);
+      const mentorCompanyIds = currentUser.companies.map((c: { id: string }) => c.id);
       if (mentorCompanyIds.length === 0) {
         return {
           totalStudents: 0,
@@ -1597,7 +1602,7 @@ export async function getDashboardMetricsAction(classId?: string, companyId?: st
         whereClause.companyId = { in: mentorCompanyIds };
       }
     } else if (currentUser.role === 'pembimbing_internal') {
-      const advisorClassIds = currentUser.classes.map((c) => c.id);
+      const advisorClassIds = currentUser.classes.map((c: { id: string }) => c.id);
       if (advisorClassIds.length === 0) {
         return {
           totalStudents: 0,
