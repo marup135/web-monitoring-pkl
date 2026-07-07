@@ -1,7 +1,7 @@
 'use client';
 
 import React, { createContext, useContext, useState, useEffect } from 'react';
-import { PKLState, PKLCard, PKLRole, TaskCategory } from '../types/pkl';
+import { PKLState, PKLCard, PKLRole } from '../types/pkl';
 import {
   getPKLState,
   createCardAction,
@@ -17,6 +17,18 @@ import {
   getStudentsAction,
   addAttachmentAction,
   deleteAttachmentAction,
+  getClassesAction,
+  createClassAction,
+  updateClassAction,
+  deleteClassAction,
+  getCompaniesAction,
+  createCompanyAction,
+  updateCompanyAction,
+  deleteCompanyAction,
+  getAllUsersAction,
+  assignGuruToClassAction,
+  assignMentorToCompanyAction,
+  assignSiswaAction,
 } from '@/app/actions/pkl';
 import {
   registerAction,
@@ -25,16 +37,61 @@ import {
   getCurrentUserAction,
 } from '@/app/actions/auth';
 
+export interface UserProfile {
+  id: string;
+  username: string;
+  name: string;
+  role: string;
+  company?: string | null;
+  school?: string | null;
+  classId?: string | null;
+  companyId?: string | null;
+  classes?: { id: string; name: string }[];
+  companies?: { id: string; name: string }[];
+  nisn?: string | null;
+}
+
+export interface StudentMetric {
+  id: string;
+  name: string;
+  company: string;
+  classId: string;
+  className: string;
+  companyId: string;
+  nisn: string;
+  totalTasks: number;
+  completedTasks: number;
+  hoursLogged: number;
+  completionPercent: number;
+}
+
 interface PKLContextProps {
   state: PKLState;
   activeRole: PKLRole;
   activeTab: 'board' | 'logbook' | 'stats';
   loading: boolean;
-  currentUser: any | null;
-  studentsList: any[];
+  currentUser: UserProfile | null;
+  studentsList: StudentMetric[];
   selectedStudentId: string | null;
+  selectedClassId: string | null;
+  selectedCompanyId: string | null;
+  classesList: any[];
+  companiesList: any[];
+  allUsersList: any[];
   setActiveTab: (tab: 'board' | 'logbook' | 'stats') => void;
   setSelectedStudentId: (studentId: string | null) => Promise<void>;
+  setSelectedClassId: (classId: string | null) => Promise<void>;
+  setSelectedCompanyId: (companyId: string | null) => Promise<void>;
+  fetchAdminData: () => Promise<void>;
+  createClass: (name: string) => Promise<{ success: boolean; error?: string }>;
+  updateClass: (id: string, name: string) => Promise<{ success: boolean; error?: string }>;
+  deleteClass: (id: string) => Promise<{ success: boolean; error?: string }>;
+  createCompany: (name: string) => Promise<{ success: boolean; error?: string }>;
+  updateCompany: (id: string, name: string) => Promise<{ success: boolean; error?: string }>;
+  deleteCompany: (id: string) => Promise<{ success: boolean; error?: string }>;
+  assignGuruToClass: (userId: string, classIds: string[]) => Promise<{ success: boolean; error?: string }>;
+  assignMentorToCompany: (userId: string, companyIds: string[]) => Promise<{ success: boolean; error?: string }>;
+  assignSiswa: (userId: string, classId: string | null, companyId: string | null, name?: string, nisn?: string) => Promise<{ success: boolean; error?: string }>;
   addCard: (title: string, description: string, category: string, dueDate: string, columnId?: PKLCard['columnId']) => Promise<void>;
   updateCardColumn: (cardId: string, targetColumn: PKLCard['columnId']) => Promise<void>;
   updateCardDetails: (
@@ -66,7 +123,7 @@ interface PKLContextProps {
   deleteCard: (cardId: string) => Promise<void>;
   resetState: () => Promise<void>;
   login: (username: string, password: string) => Promise<{ success: boolean; error?: string }>;
-  register: (username: string, password: string, name: string, role: string, company?: string) => Promise<{ success: boolean; error?: string }>;
+  register: (username: string, password: string, name: string, role: string, companyName?: string, className?: string, nisn?: string) => Promise<{ success: boolean; error?: string }>;
   logout: () => Promise<void>;
 }
 
@@ -83,9 +140,14 @@ export const PKLProvider: React.FC<{ children: React.ReactNode }> = ({ children 
   });
   const [activeTab, setActiveTab] = useState<'board' | 'logbook' | 'stats'>('board');
   const [loading, setLoading] = useState<boolean>(true);
-  const [currentUser, setCurrentUser] = useState<any | null>(null);
-  const [studentsList, setStudentsList] = useState<any[]>([]);
+  const [currentUser, setCurrentUser] = useState<UserProfile | null>(null);
+  const [studentsList, setStudentsList] = useState<StudentMetric[]>([]);
   const [selectedStudentId, setSelectedStudentIdState] = useState<string | null>(null);
+  const [selectedClassId, setSelectedClassIdState] = useState<string | null>(null);
+  const [selectedCompanyId, setSelectedCompanyIdState] = useState<string | null>(null);
+  const [classesList, setClassesList] = useState<any[]>([]);
+  const [companiesList, setCompaniesList] = useState<any[]>([]);
+  const [allUsersList, setAllUsersList] = useState<any[]>([]);
 
   const activeRole: PKLRole = currentUser
     ? currentUser.role === 'siswa'
@@ -95,8 +157,23 @@ export const PKLProvider: React.FC<{ children: React.ReactNode }> = ({ children 
       : 'Dosen Pembimbing'
     : 'Mahasiswa';
 
-  // Fetch complete PKL state based on user role and selection
-  const fetchState = async (user = currentUser, studentId = selectedStudentId) => {
+  const fetchAdminData = async () => {
+    const cl = await getClassesAction();
+    setClassesList(cl);
+    const co = await getCompaniesAction();
+    setCompaniesList(co);
+    if (currentUser?.role === 'admin') {
+      const u = await getAllUsersAction();
+      setAllUsersList(u);
+    }
+  };
+
+  const fetchState = async (
+    user = currentUser,
+    studentId = selectedStudentId,
+    classId = selectedClassId,
+    companyId = selectedCompanyId
+  ) => {
     if (!user) return;
     setLoading(true);
     try {
@@ -104,22 +181,29 @@ export const PKLProvider: React.FC<{ children: React.ReactNode }> = ({ children 
         const dbState = await getPKLState();
         setState(dbState);
       } else {
-        const list = await getStudentsAction();
+        const activeClassFilter = user.role === 'pembimbing_internal' ? (classId || undefined) : undefined;
+        const activeCompanyFilter = user.role === 'pembimbing_eksternal' ? (companyId || undefined) : undefined;
+        const list = await getStudentsAction(activeClassFilter, activeCompanyFilter);
         setStudentsList(list);
 
         let targetId = studentId;
-        if (!targetId && list.length > 0) {
-          targetId = list[0].id;
-          setSelectedStudentIdState(targetId);
+        if (targetId) {
+          const exists = list.some(s => s.id === targetId);
+          if (!exists) {
+            targetId = list.length > 0 ? list[0].id : null;
+          }
+        } else {
+          targetId = list.length > 0 ? list[0].id : null;
         }
 
         if (targetId) {
+          setSelectedStudentIdState(targetId);
           const dbState = await getPKLState(targetId);
           setState(dbState);
         } else {
-          // Empty state if no students
+          setSelectedStudentIdState(null);
           setState({
-            studentName: 'Belum ada siswa',
+            studentName: 'Belum ada Siswa',
             companyName: '-',
             mentorName: '-',
             advisorName: '-',
@@ -135,15 +219,38 @@ export const PKLProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     }
   };
 
-  // Initial load to restore session
+  // Initial load to restore session & fetch public tables
   useEffect(() => {
     const initAuth = async () => {
       setLoading(true);
       try {
+        const cl = await getClassesAction();
+        setClassesList(cl);
+        const co = await getCompaniesAction();
+        setCompaniesList(co);
+
         const user = await getCurrentUserAction();
         if (user) {
           setCurrentUser(user);
-          await fetchState(user, null);
+          
+          let initialClassId = null;
+          let initialCompanyId = null;
+          
+          if (user.role === 'pembimbing_internal' && user.classes && user.classes.length > 0) {
+            initialClassId = user.classes[0].id;
+            setSelectedClassIdState(initialClassId);
+          }
+          if (user.role === 'pembimbing_eksternal' && user.companies && user.companies.length > 0) {
+            initialCompanyId = user.companies[0].id;
+            setSelectedCompanyIdState(initialCompanyId);
+          }
+          
+          await fetchState(user, null, initialClassId, initialCompanyId);
+          
+          if (user.role === 'admin') {
+            const u = await getAllUsersAction();
+            setAllUsersList(u);
+          }
         }
       } catch (err) {
         console.error('Failed to restore auth session', err);
@@ -152,38 +259,90 @@ export const PKLProvider: React.FC<{ children: React.ReactNode }> = ({ children 
       }
     };
     initAuth();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   const login = async (username: string, password: string) => {
     setLoading(true);
     try {
       const res = await loginAction(username, password);
-      if (res.success) {
-        setCurrentUser(res.user);
+      if (res.success && res.user) {
+        setCurrentUser(res.user as UserProfile);
         setSelectedStudentIdState(null);
-        await fetchState(res.user, null);
+        
+        let initialClassId = null;
+        let initialCompanyId = null;
+        if (res.user.role === 'pembimbing_internal' && res.user.classes && res.user.classes.length > 0) {
+          initialClassId = res.user.classes[0].id;
+          setSelectedClassIdState(initialClassId);
+        }
+        if (res.user.role === 'pembimbing_eksternal' && res.user.companies && res.user.companies.length > 0) {
+          initialCompanyId = res.user.companies[0].id;
+          setSelectedCompanyIdState(initialCompanyId);
+        }
+
+        await fetchState(res.user, null, initialClassId, initialCompanyId);
+        
+        if (res.user.role === 'admin') {
+          const cl = await getClassesAction();
+          setClassesList(cl);
+          const co = await getCompaniesAction();
+          setCompaniesList(co);
+          const u = await getAllUsersAction();
+          setAllUsersList(u);
+        }
         return { success: true };
       }
       return { success: false, error: res.error };
-    } catch (err) {
+    } catch {
       return { success: false, error: 'Terjadi kesalahan sistem' };
     } finally {
       setLoading(false);
     }
   };
 
-  const register = async (username: string, password: string, name: string, role: string, company?: string) => {
+  const register = async (
+    username: string,
+    password: string,
+    name: string,
+    role: string,
+    companyName?: string,
+    className?: string,
+    nisn?: string
+  ) => {
     setLoading(true);
     try {
-      const res = await registerAction(username, password, name, role, company);
-      if (res.success) {
-        setCurrentUser(res.user);
+      const res = await registerAction(username, password, name, role, companyName, className, nisn);
+      if (res.success && res.user) {
+        setCurrentUser(res.user as UserProfile);
         setSelectedStudentIdState(null);
-        await fetchState(res.user, null);
+        
+        let initialClassId = null;
+        let initialCompanyId = null;
+        const regUser = res.user as any;
+        if (regUser.role === 'pembimbing_internal' && regUser.classes && regUser.classes.length > 0) {
+          initialClassId = regUser.classes[0].id;
+          setSelectedClassIdState(initialClassId);
+        }
+        if (regUser.role === 'pembimbing_eksternal' && regUser.companies && regUser.companies.length > 0) {
+          initialCompanyId = regUser.companies[0].id;
+          setSelectedCompanyIdState(initialCompanyId);
+        }
+
+        await fetchState(res.user, null, initialClassId, initialCompanyId);
+        
+        if (res.user.role === 'admin') {
+          const cl = await getClassesAction();
+          setClassesList(cl);
+          const co = await getCompaniesAction();
+          setCompaniesList(co);
+          const u = await getAllUsersAction();
+          setAllUsersList(u);
+        }
         return { success: true };
       }
       return { success: false, error: res.error };
-    } catch (err) {
+    } catch {
       return { success: false, error: 'Terjadi kesalahan sistem' };
     } finally {
       setLoading(false);
@@ -215,19 +374,186 @@ export const PKLProvider: React.FC<{ children: React.ReactNode }> = ({ children 
   const setSelectedStudentId = async (studentId: string | null) => {
     setSelectedStudentIdState(studentId);
     if (studentId && currentUser) {
-      await fetchState(currentUser, studentId);
+      await fetchState(currentUser, studentId, selectedClassId, selectedCompanyId);
+    }
+  };
+
+  const setSelectedClassId = async (classId: string | null) => {
+    setSelectedClassIdState(classId);
+    if (currentUser) {
+      const students = await getStudentsAction(classId || undefined, undefined);
+      setStudentsList(students);
+      const targetId = students.length > 0 ? students[0].id : null;
+      setSelectedStudentIdState(targetId);
+      await fetchState(currentUser, targetId, classId, selectedCompanyId);
+    }
+  };
+
+  const setSelectedCompanyId = async (companyId: string | null) => {
+    setSelectedCompanyIdState(companyId);
+    if (currentUser) {
+      const students = await getStudentsAction(undefined, companyId || undefined);
+      setStudentsList(students);
+      const targetId = students.length > 0 ? students[0].id : null;
+      setSelectedStudentIdState(targetId);
+      await fetchState(currentUser, targetId, selectedClassId, companyId);
+    }
+  };
+
+  const createClass = async (name: string) => {
+    setLoading(true);
+    try {
+      const res = await createClassAction(name);
+      if (res.success) {
+        await fetchAdminData();
+      }
+      return res;
+    } catch {
+      return { success: false, error: 'Terjadi kesalahan sistem' };
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const updateClass = async (id: string, name: string) => {
+    setLoading(true);
+    try {
+      const res = await updateClassAction(id, name);
+      if (res.success) {
+        await fetchAdminData();
+      }
+      return res;
+    } catch {
+      return { success: false, error: 'Terjadi kesalahan sistem' };
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const deleteClass = async (id: string) => {
+    setLoading(true);
+    try {
+      const res = await deleteClassAction(id);
+      if (res.success) {
+        await fetchAdminData();
+      }
+      return res;
+    } catch {
+      return { success: false, error: 'Terjadi kesalahan sistem' };
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const createCompany = async (name: string) => {
+    setLoading(true);
+    try {
+      const res = await createCompanyAction(name);
+      if (res.success) {
+        await fetchAdminData();
+      }
+      return res;
+    } catch {
+      return { success: false, error: 'Terjadi kesalahan sistem' };
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const updateCompany = async (id: string, name: string) => {
+    setLoading(true);
+    try {
+      const res = await updateCompanyAction(id, name);
+      if (res.success) {
+        await fetchAdminData();
+      }
+      return res;
+    } catch {
+      return { success: false, error: 'Terjadi kesalahan sistem' };
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const deleteCompany = async (id: string) => {
+    setLoading(true);
+    try {
+      const res = await deleteCompanyAction(id);
+      if (res.success) {
+        await fetchAdminData();
+      }
+      return res;
+    } catch {
+      return { success: false, error: 'Terjadi kesalahan sistem' };
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const assignGuruToClass = async (userId: string, classIds: string[]) => {
+    setLoading(true);
+    try {
+      const res = await assignGuruToClassAction(userId, classIds);
+      if (res.success) {
+        await fetchAdminData();
+      }
+      return res;
+    } catch {
+      return { success: false, error: 'Terjadi kesalahan sistem' };
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const assignMentorToCompany = async (userId: string, companyIds: string[]) => {
+    setLoading(true);
+    try {
+      const res = await assignMentorToCompanyAction(userId, companyIds);
+      if (res.success) {
+        await fetchAdminData();
+      }
+      return res;
+    } catch {
+      return { success: false, error: 'Terjadi kesalahan sistem' };
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const assignSiswa = async (
+    userId: string,
+    classId: string | null,
+    companyId: string | null,
+    name?: string,
+    nisn?: string
+  ) => {
+    setLoading(true);
+    try {
+      const res = await assignSiswaAction(userId, classId, companyId, name, nisn);
+      if (res.success) {
+        await fetchAdminData();
+      }
+      return res;
+    } catch {
+      return { success: false, error: 'Terjadi kesalahan sistem' };
+    } finally {
+      setLoading(false);
     }
   };
 
   const addCard = async (title: string, description: string, category: string, dueDate: string, columnId?: PKLCard['columnId']) => {
     setLoading(true);
     try {
-      await createCardAction(title, description, category, dueDate, state.studentName, activeRole, columnId);
+      const res = await createCardAction(title, description, category, dueDate, state.studentName, activeRole, columnId);
+      if (res && !res.success) {
+        throw new Error(res.error || 'Gagal membuat kegiatan.');
+      }
       await fetchState();
     } catch (e) {
       console.error(e);
-      alert('Gagal membuat kegiatan.');
+      alert((e as Error).message || 'Gagal membuat kegiatan.');
       setLoading(false);
+      throw e;
     }
   };
 
@@ -248,12 +574,15 @@ export const PKLProvider: React.FC<{ children: React.ReactNode }> = ({ children 
 
     try {
       const actorName = currentUser ? currentUser.name : state.studentName;
-      await updateCardColumnAction(cardId, targetColumn, actorName, activeRole);
+      const res = await updateCardColumnAction(cardId, targetColumn, actorName, activeRole);
+      if (res && !res.success) {
+        throw new Error(res.error);
+      }
       await fetchState();
     } catch (e) {
       console.error(e);
       setState(prev => ({ ...prev, cards: originalCards }));
-      alert('Gagal memindahkan status kegiatan.');
+      alert((e as Error).message || 'Gagal memindahkan status kegiatan.');
     }
   };
 
@@ -279,7 +608,7 @@ export const PKLProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     setLoading(true);
     try {
       const actorName = currentUser ? currentUser.name : state.studentName;
-      await updateCardDetailsAction(
+      const res = await updateCardDetailsAction(
         cardId,
         title,
         description,
@@ -300,11 +629,15 @@ export const PKLProvider: React.FC<{ children: React.ReactNode }> = ({ children 
         scoreAdvisorCommunication,
         feedbackAdvisor
       );
+      if (res && !res.success) {
+        throw new Error(res.error || 'Gagal memperbarui rincian kegiatan.');
+      }
       await fetchState();
     } catch (e) {
       console.error(e);
-      alert('Gagal memperbarui detail kegiatan.');
+      alert((e as Error).message || 'Gagal memperbarui rincian kegiatan.');
       setLoading(false);
+      throw e;
     }
   };
 
@@ -312,72 +645,96 @@ export const PKLProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     setLoading(true);
     try {
       const actorName = currentUser ? currentUser.name : state.studentName;
-      await addCommentAction(cardId, text, actorName, activeRole);
+      const res = await addCommentAction(cardId, text, actorName, activeRole);
+      if (res && !res.success) {
+        throw new Error(res.error || 'Gagal mengirim komentar.');
+      }
       await fetchState();
     } catch (e) {
       console.error(e);
-      alert('Gagal menambahkan komentar.');
+      alert((e as Error).message || 'Gagal mengirim komentar.');
       setLoading(false);
+      throw e;
     }
   };
 
   const gradeCard = async (cardId: string, score: number, feedback: string) => {
     setLoading(true);
     try {
-      await gradeCardAction(cardId, score, feedback, state.mentorName);
+      const res = await gradeCardAction(cardId, score, feedback, state.mentorName);
+      if (res && !res.success) {
+        throw new Error(res.error || 'Gagal menilai kegiatan.');
+      }
       await fetchState();
     } catch (e) {
       console.error(e);
-      alert('Gagal menilai kegiatan.');
+      alert((e as Error).message || 'Gagal menilai kegiatan.');
       setLoading(false);
+      throw e;
     }
   };
 
   const gradeCardByMentor = async (cardId: string, discipline: number, skill: number, attitude: number, feedback: string) => {
     setLoading(true);
     try {
-      await gradeCardByMentorAction(cardId, discipline, skill, attitude, feedback, state.mentorName);
+      const res = await gradeCardByMentorAction(cardId, discipline, skill, attitude, feedback, state.mentorName);
+      if (res && !res.success) {
+        throw new Error(res.error || 'Gagal menilai kegiatan.');
+      }
       await fetchState();
     } catch (e) {
       console.error(e);
-      alert('Gagal menilai kegiatan (Mentor).');
+      alert((e as Error).message || 'Gagal menilai kegiatan.');
       setLoading(false);
+      throw e;
     }
   };
 
   const gradeCardByAdvisor = async (cardId: string, discipline: number, report: number, communication: number, feedback: string) => {
     setLoading(true);
     try {
-      await gradeCardByAdvisorAction(cardId, discipline, report, communication, feedback, state.advisorName);
+      const res = await gradeCardByAdvisorAction(cardId, discipline, report, communication, feedback, state.advisorName);
+      if (res && !res.success) {
+        throw new Error(res.error || 'Gagal menilai kegiatan.');
+      }
       await fetchState();
     } catch (e) {
       console.error(e);
-      alert('Gagal menilai kegiatan (Guru).');
+      alert((e as Error).message || 'Gagal menilai kegiatan.');
       setLoading(false);
+      throw e;
     }
   };
 
   const addAttachment = async (cardId: string, name: string, url: string, type: string) => {
     setLoading(true);
     try {
-      await addAttachmentAction(cardId, name, url, type);
+      const res = await addAttachmentAction(cardId, name, url, type);
+      if (res && !res.success) {
+        throw new Error(res.error || 'Gagal menambahkan lampiran.');
+      }
       await fetchState();
     } catch (e) {
       console.error(e);
-      alert('Gagal menambahkan lampiran.');
+      alert((e as Error).message || 'Gagal menambahkan lampiran.');
       setLoading(false);
+      throw e;
     }
   };
 
   const deleteAttachment = async (cardId: string, index: number) => {
     setLoading(true);
     try {
-      await deleteAttachmentAction(cardId, index);
+      const res = await deleteAttachmentAction(cardId, index);
+      if (res && !res.success) {
+        throw new Error(res.error || 'Gagal menghapus lampiran.');
+      }
       await fetchState();
     } catch (e) {
       console.error(e);
-      alert('Gagal menghapus lampiran.');
+      alert((e as Error).message || 'Gagal menghapus lampiran.');
       setLoading(false);
+      throw e;
     }
   };
 
@@ -386,24 +743,32 @@ export const PKLProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     try {
       const targetStudentId = currentUser?.role === 'siswa' ? currentUser.id : selectedStudentId;
       if (!targetStudentId) throw new Error('No student selected');
-      await addAdvisorNoteAction(text, state.advisorName, targetStudentId);
+      const res = await addAdvisorNoteAction(text, state.advisorName, targetStudentId);
+      if (res && !res.success) {
+        throw new Error(res.error || 'Gagal menyimpan catatan bimbingan.');
+      }
       await fetchState();
     } catch (e) {
       console.error(e);
-      alert('Gagal menyimpan catatan bimbingan.');
+      alert((e as Error).message || 'Gagal menyimpan catatan bimbingan.');
       setLoading(false);
+      throw e;
     }
   };
 
   const deleteCard = async (cardId: string) => {
     setLoading(true);
     try {
-      await deleteCardAction(cardId);
+      const res = await deleteCardAction(cardId);
+      if (res && !res.success) {
+        throw new Error(res.error || 'Gagal menghapus kegiatan.');
+      }
       await fetchState();
     } catch (e) {
       console.error(e);
-      alert('Gagal menghapus kegiatan.');
+      alert((e as Error).message || 'Gagal menghapus kegiatan.');
       setLoading(false);
+      throw e;
     }
   };
 
@@ -429,8 +794,25 @@ export const PKLProvider: React.FC<{ children: React.ReactNode }> = ({ children 
         currentUser,
         studentsList,
         selectedStudentId,
+        selectedClassId,
+        selectedCompanyId,
+        classesList,
+        companiesList,
+        allUsersList,
         setActiveTab,
         setSelectedStudentId,
+        setSelectedClassId,
+        setSelectedCompanyId,
+        fetchAdminData,
+        createClass,
+        updateClass,
+        deleteClass,
+        createCompany,
+        updateCompany,
+        deleteCompany,
+        assignGuruToClass,
+        assignMentorToCompany,
+        assignSiswa,
         addCard,
         updateCardColumn,
         updateCardDetails,

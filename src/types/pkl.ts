@@ -72,4 +72,5 @@ export interface PKLState {
   companyName: string;
   mentorName: string;
   advisorName: string;
+  nisn?: string;
 }

@@ -3,7 +3,7 @@
 import React, { useState } from 'react';
 import { usePKL } from '../context/PKLContext';
 import { PKLCard, TaskCategory } from '../types/pkl';
-import { Plus, Calendar, Clock, MessageSquare, Award, Search, Filter, BookOpen, ChevronDown } from 'lucide-react';
+import { Plus, Calendar, Clock, MessageSquare, Award, Search, Filter, BookOpen, ChevronDown, X } from 'lucide-react';
 
 interface KanbanBoardProps {
   onOpenCard: (card: PKLCard) => void;
@@ -15,31 +15,45 @@ export const KanbanBoard: React.FC<KanbanBoardProps> = ({ onOpenCard }) => {
   const [selectedCategory, setSelectedCategory] = useState<string>('Semua');
   const [draggedOverColumn, setDraggedOverColumn] = useState<string | null>(null);
 
-  // Custom Dropdown State
-  const [isDropdownOpen, setIsDropdownOpen] = useState(false);
+  const todayString = new Date().toISOString().split('T')[0];
 
-  // Inline card creation form
-  const [activeAddColumn, setActiveAddColumn] = useState<PKLCard['columnId'] | null>(null);
+  // Modal / Custom Dropdown States
+  const [isAddModalOpen, setIsAddModalOpen] = useState(false);
+  const [isCategoryDropdownOpen, setIsCategoryDropdownOpen] = useState(false);
+  const [isColumnDropdownOpen, setIsColumnDropdownOpen] = useState(false);
+  
   const [newTitle, setNewTitle] = useState('');
   const [newDesc, setNewDesc] = useState('');
   const [newCategory, setNewCategory] = useState<string>('Coding');
   const [customCategory, setCustomCategory] = useState('');
+  const [newColumnId, setNewColumnId] = useState<PKLCard['columnId']>('rencana');
   const [newDueDate, setNewDueDate] = useState(() => {
     const today = new Date();
     today.setDate(today.getDate() + 7);
     return today.toISOString().split('T')[0];
   });
 
-  const handleAddCardSubmit = (e: React.FormEvent, colId: PKLCard['columnId']) => {
+  const getColumnTitle = (id: PKLCard['columnId']) => {
+    switch (id) {
+      case 'rencana': return 'Rencana Kegiatan';
+      case 'progres': return 'Sedang Dikerjakan';
+      case 'review': return 'Butuh Review';
+      case 'selesai': return 'Selesai (Disetujui)';
+      default: return '';
+    }
+  };
+
+  const handleModalSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     if (!newTitle.trim()) return;
     const categoryToSave = newCategory === 'Lainnya' ? customCategory.trim() || 'Lainnya' : newCategory;
-    addCard(newTitle, newDesc, categoryToSave, newDueDate, colId);
+    addCard(newTitle, newDesc, categoryToSave, newDueDate, newColumnId);
     setNewTitle('');
     setNewDesc('');
     setNewCategory('Coding');
     setCustomCategory('');
-    setActiveAddColumn(null);
+    setNewColumnId('rencana');
+    setIsAddModalOpen(false);
   };
 
   // Filter cards based on search and category filter
@@ -51,10 +65,10 @@ export const KanbanBoard: React.FC<KanbanBoardProps> = ({ onOpenCard }) => {
   });
 
   const columns: { id: PKLCard['columnId']; title: string; color: string; ringColor: string; bgBadge: string }[] = [
-    { id: 'rencana', title: 'Rencana Kegiatan', color: 'border-t-slate-500', ringColor: 'focus-within:ring-slate-500/20', bgBadge: 'bg-slate-500/10 text-slate-300' },
-    { id: 'progres', title: 'Sedang Dikerjakan', color: 'border-t-indigo-500', ringColor: 'focus-within:ring-indigo-500/20', bgBadge: 'bg-indigo-500/10 text-indigo-300' },
-    { id: 'review', title: 'Butuh Review', color: 'border-t-amber-500', ringColor: 'focus-within:ring-amber-500/20', bgBadge: 'bg-amber-500/10 text-amber-300' },
-    { id: 'selesai', title: 'Selesai (Disetujui)', color: 'border-t-emerald-500', ringColor: 'focus-within:ring-emerald-500/20', bgBadge: 'bg-emerald-500/10 text-emerald-300' }
+    { id: 'rencana', title: 'Rencana Kegiatan', color: 'border-t-slate-400', ringColor: 'focus-within:ring-slate-500/10', bgBadge: 'bg-slate-100 text-slate-700 border border-slate-200/50' },
+    { id: 'progres', title: 'Sedang Dikerjakan', color: 'border-t-blue-500', ringColor: 'focus-within:ring-blue-500/10', bgBadge: 'bg-blue-50 text-blue-700 border border-blue-100' },
+    { id: 'review', title: 'Butuh Review', color: 'border-t-yellow-500', ringColor: 'focus-within:ring-yellow-500/10', bgBadge: 'bg-yellow-50 text-yellow-700 border border-yellow-100' },
+    { id: 'selesai', title: 'Selesai (Disetujui)', color: 'border-t-green-500', ringColor: 'focus-within:ring-green-500/10', bgBadge: 'bg-green-50 text-green-700 border border-green-100' }
   ];
 
   // HTML5 Drag and Drop handlers
@@ -81,14 +95,8 @@ export const KanbanBoard: React.FC<KanbanBoardProps> = ({ onOpenCard }) => {
     const targetCard = state.cards.find(c => c.id === cardId);
     if (!targetCard) return;
 
-    // Student is allowed to drag cards into any column in their personal logbook
-
-    if (activeRole === 'Mentor') {
-      // Mentor can drag back or to Selesai but usually shouldn't create new student tasks
-    }
-
-    if (activeRole === 'Dosen Pembimbing') {
-      alert('Dosen Pembimbing hanya memiliki hak pantau (View-only) pada board utama.');
+    if (columnId === 'selesai' && activeRole === 'Mahasiswa') {
+      alert('Anda tidak dapat memindahkan kegiatan langsung ke kolom Selesai. Kegiatan harus dinilai/direview terlebih dahulu oleh Pembimbing.');
       return;
     }
 
@@ -97,30 +105,30 @@ export const KanbanBoard: React.FC<KanbanBoardProps> = ({ onOpenCard }) => {
 
   const getCategoryColor = (cat: TaskCategory) => {
     switch (cat) {
-      case 'Coding': return 'bg-indigo-500/10 text-indigo-300 border-indigo-500/20';
-      case 'Design': return 'bg-purple-500/10 text-purple-300 border-purple-500/20';
-      case 'Laporan': return 'bg-emerald-500/10 text-emerald-300 border-emerald-500/20';
-      case 'Networking': return 'bg-sky-500/10 text-sky-300 border-sky-500/20';
-      default: return 'bg-slate-500/10 text-slate-300 border-slate-500/20';
+      case 'Coding': return 'bg-blue-50 text-blue-700 border-blue-100';
+      case 'Design': return 'bg-purple-50 text-purple-700 border-purple-100';
+      case 'Laporan': return 'bg-green-50 text-green-700 border-green-100';
+      case 'Networking': return 'bg-sky-50 text-sky-700 border-sky-100';
+      default: return 'bg-slate-50 text-slate-700 border-slate-100';
     }
   };
 
   const getCategoryFilterStyle = (cat: string, isSelected: boolean) => {
     if (!isSelected) {
-      return 'bg-white/2 text-gray-400 border-white/5 hover:bg-white/5 hover:text-gray-300 hover:border-white/10';
+      return 'bg-white text-[#64748B] border-[#E2E8F0] hover:bg-slate-50 hover:text-[#0F172A] hover:border-slate-300';
     }
     switch (cat) {
       case 'Coding':
       case 'Semua':
-        return 'bg-indigo-500/20 text-indigo-300 border-indigo-500/30';
+        return 'bg-blue-50 text-blue-700 border-blue-200';
       case 'Design':
-        return 'bg-purple-500/20 text-purple-300 border-purple-500/30';
+        return 'bg-purple-50 text-purple-700 border-purple-200';
       case 'Laporan':
-        return 'bg-emerald-500/20 text-emerald-300 border-emerald-500/30';
+        return 'bg-green-50 text-green-700 border-green-200';
       case 'Networking':
-        return 'bg-sky-500/20 text-sky-300 border-sky-500/30';
+        return 'bg-sky-50 text-sky-700 border-sky-200';
       default:
-        return 'bg-slate-500/20 text-slate-300 border-slate-500/30';
+        return 'bg-slate-50 text-slate-700 border-slate-200';
     }
   };
 
@@ -129,32 +137,45 @@ export const KanbanBoard: React.FC<KanbanBoardProps> = ({ onOpenCard }) => {
   const filterCategories = ['Semua', ...Array.from(new Set([...standardCategories, ...existingCategories]))];
 
   return (
-    <div className="flex flex-col gap-6">
+    <div className="flex flex-col gap-6 text-[#0F172A] font-sans">
       {/* Filtering and Search Controls */}
-      <div className="flex flex-col md:flex-row gap-4 items-center justify-between bg-white/3 border border-white/5 rounded-2xl p-4 glass">
-        <div className="relative w-full md:w-80">
-          <Search size={18} className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
-          <input
-            type="text"
-            placeholder="Cari tugas atau deskripsi..."
-            value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
-            className="w-full bg-white/2 border border-white/5 rounded-xl py-2 pl-10 pr-4 text-sm text-gray-200 focus:outline-none focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500"
-          />
+      <div className="flex flex-col lg:flex-row gap-4 items-center justify-between bg-white border border-[#E2E8F0] rounded-2xl p-4 shadow-sm">
+        <div className="flex flex-col md:flex-row gap-4 items-center w-full lg:w-auto flex-1">
+          <div className="relative w-full md:w-80">
+            <Search size={18} className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
+            <input
+              type="text"
+              placeholder="Cari tugas atau deskripsi..."
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              className="w-full bg-white border border-[#E2E8F0] rounded-xl py-2 pl-10 pr-4 text-sm text-[#0F172A] focus:outline-none focus:border-[#2563EB] focus:ring-1 focus:ring-[#2563EB]"
+            />
+          </div>
+
+          <div className="flex items-center gap-2 w-full md:w-auto overflow-x-auto py-1">
+            <Filter size={16} className="text-gray-400 shrink-0" />
+            {filterCategories.map((cat) => (
+              <button
+                key={cat}
+                onClick={() => setSelectedCategory(cat)}
+                className={`text-xs px-3 py-1.5 rounded-lg border font-medium whitespace-nowrap transition cursor-pointer ${getCategoryFilterStyle(cat, selectedCategory === cat)}`}
+              >
+                {cat}
+              </button>
+            ))}
+          </div>
         </div>
 
-        <div className="flex items-center gap-2 w-full md:w-auto overflow-x-auto py-1">
-          <Filter size={16} className="text-gray-400 shrink-0" />
-          {filterCategories.map((cat) => (
-            <button
-              key={cat}
-              onClick={() => setSelectedCategory(cat)}
-              className={`text-xs px-3 py-1.5 rounded-lg border font-medium whitespace-nowrap transition ${getCategoryFilterStyle(cat, selectedCategory === cat)}`}
-            >
-              {cat}
-            </button>
-          ))}
-        </div>
+        {activeRole === 'Mahasiswa' && (
+          <button
+            type="button"
+            onClick={() => setIsAddModalOpen(true)}
+            className="w-full lg:w-auto px-4 py-2 bg-[#2563EB] hover:bg-[#1D4ED8] text-white font-semibold text-xs rounded-xl shadow-sm transition flex items-center justify-center gap-2 hover:scale-[1.02] active:scale-[0.98] shrink-0 cursor-pointer"
+          >
+            <Plus size={14} />
+            <span>Tambah Kegiatan</span>
+          </button>
+        )}
       </div>
 
       {/* Kanban Columns Grid */}
@@ -169,13 +190,13 @@ export const KanbanBoard: React.FC<KanbanBoardProps> = ({ onOpenCard }) => {
               onDragOver={(e) => handleDragOver(e, col.id)}
               onDragLeave={handleDragLeave}
               onDrop={(e) => handleDrop(e, col.id)}
-              className={`flex flex-col rounded-2xl glass transition-all border border-white/5 border-t-[5px] ${col.color} p-4 min-h-[500px] ${
-                isOver ? 'bg-white/5 ring-2 ring-indigo-500/20 scale-[1.01]' : ''
+              className={`flex flex-col rounded-2xl bg-[#F1F5F9] border border-[#E2E8F0] border-t-[4px] ${col.color} p-4 min-h-[500px] shadow-sm transition-all ${
+                isOver ? 'bg-slate-200/60 ring-2 ring-[#2563EB]/15 scale-[1.01]' : ''
               }`}
             >
               {/* Column Header */}
               <div className="flex items-center justify-between mb-4">
-                <h3 className="font-semibold text-gray-200 text-sm tracking-wide">{col.title}</h3>
+                <h3 className="font-semibold text-[#0F172A] text-sm tracking-wide">{col.title}</h3>
                 <span className={`text-xs font-semibold px-2 py-0.5 rounded-full ${col.bgBadge}`}>
                   {colCards.length}
                 </span>
@@ -183,180 +204,252 @@ export const KanbanBoard: React.FC<KanbanBoardProps> = ({ onOpenCard }) => {
 
               {/* Column Cards Container */}
               <div className="flex flex-col gap-3 flex-1 overflow-y-auto max-h-[600px] pr-1">
-                {colCards.map((card) => (
-                  <div
-                    key={card.id}
-                    draggable={activeRole !== 'Dosen Pembimbing'}
-                    onDragStart={(e) => handleDragStart(e, card.id)}
-                    onClick={() => onOpenCard(card)}
-                    className="glass-card rounded-xl p-4 cursor-pointer relative"
-                  >
-                    <div className="flex justify-between items-start gap-2 mb-2">
-                      <span className={`text-[10px] uppercase font-bold tracking-wider px-2 py-0.5 rounded border ${getCategoryColor(card.category)}`}>
-                        {card.category}
-                      </span>
-                      {card.score !== undefined && (
-                        <div className="flex items-center gap-1 text-emerald-400 bg-emerald-500/10 px-2 py-0.5 rounded border border-emerald-500/20 text-[11px] font-bold">
-                          <Award size={12} />
-                          <span>{card.score}</span>
+                {colCards.map((card) => {
+                  const isOverdue = card.columnId !== 'selesai' && card.dueDate && card.dueDate < todayString;
+
+                  return (
+                    <div
+                      key={card.id}
+                      draggable={activeRole !== 'Dosen Pembimbing'}
+                      onDragStart={(e) => handleDragStart(e, card.id)}
+                      onClick={() => onOpenCard(card)}
+                      className={`bg-white border rounded-xl p-4 cursor-pointer relative shadow-sm hover:border-slate-300 hover:shadow transition duration-200 group ${
+                        isOverdue
+                          ? 'border-red-200 hover:border-red-300 bg-red-50/10'
+                          : 'border-[#E2E8F0] hover:border-slate-300'
+                      }`}
+                    >
+                      <div className="flex justify-between items-start gap-2 mb-2">
+                        <div className="flex flex-wrap items-center gap-1.5">
+                          <span className={`text-[10px] uppercase font-bold tracking-wider px-2 py-0.5 rounded border ${getCategoryColor(card.category)}`}>
+                            {card.category}
+                          </span>
+                          {isOverdue && (
+                            <span className="text-[9px] uppercase font-bold px-1.5 py-0.2 rounded bg-red-50 text-red-600 border border-red-100">
+                              Terlambat
+                            </span>
+                          )}
                         </div>
-                      )}
-                    </div>
-
-                    <h4 className="font-medium text-gray-200 text-sm line-clamp-2 mb-2 group-hover:text-indigo-400">
-                      {card.title}
-                    </h4>
-
-                    <p className="text-xs text-gray-400 line-clamp-3 mb-4 leading-relaxed">
-                      {card.description}
-                    </p>
-
-                    <div className="flex items-center justify-between text-[11px] text-gray-400 border-t border-white/5 pt-3">
-                      <div className="flex items-center gap-1">
-                        <Calendar size={12} className="text-gray-500" />
-                        <span className={new Date(card.dueDate) < new Date() && card.columnId !== 'selesai' ? 'text-rose-400 font-medium' : ''}>
-                          {card.dueDate}
-                        </span>
-                      </div>
-
-                      <div className="flex items-center gap-3">
-                        {(card.startTime || card.endTime) && (
-                          <div className="flex items-center gap-1.5 text-gray-400">
-                            <Clock size={12} className="text-indigo-400" />
-                            <span>{card.startTime || '-'}-{card.endTime || '-'}</span>
-                          </div>
-                        )}
-                        {card.comments.length > 0 && (
-                          <div className="flex items-center gap-0.5">
-                            <MessageSquare size={12} className="text-gray-500" />
-                            <span>{card.comments.length}</span>
+                        {card.score !== undefined && (
+                          <div className="flex items-center gap-1 text-[#22C55E] bg-green-50 px-2 py-0.5 rounded border border-green-100 text-[11px] font-bold">
+                            <Award size={12} />
+                            <span>{card.score}</span>
                           </div>
                         )}
                       </div>
-                    </div>
-                  </div>
-                ))}
 
-                {colCards.length === 0 && activeAddColumn !== col.id && (
-                  <div className="flex flex-col items-center justify-center border-2 border-dashed border-white/5 rounded-xl p-8 text-center text-gray-500 h-32">
-                    <BookOpen size={20} className="mb-1 text-gray-600" />
+                      <h4 className="font-semibold text-slate-800 text-sm line-clamp-2 mb-2 group-hover:text-[#2563EB] transition-colors">
+                        {card.title}
+                      </h4>
+
+                      <p className="text-xs text-[#64748B] line-clamp-3 mb-4 leading-relaxed">
+                        {card.description}
+                      </p>
+
+                      <div className="flex items-center justify-between text-[11px] text-[#64748B] border-t border-[#E2E8F0] pt-3">
+                        <div className="flex items-center gap-1">
+                          <Calendar size={12} className="text-gray-400" />
+                          <span className={isOverdue ? 'text-[#EF4444] font-bold' : ''}>
+                            {card.dueDate}
+                          </span>
+                        </div>
+
+                        <div className="flex items-center gap-3">
+                          {(card.startTime || card.endTime) && (
+                            <div className="flex items-center gap-1 text-[#64748B]">
+                              <Clock size={12} className="text-[#2563EB]" />
+                              <span>{card.startTime || '-'}-{card.endTime || '-'}</span>
+                            </div>
+                          )}
+                          {card.comments.length > 0 && (
+                            <div className="flex items-center gap-0.5">
+                              <MessageSquare size={12} className="text-gray-400" />
+                              <span>{card.comments.length}</span>
+                            </div>
+                          )}
+                        </div>
+                      </div>
+                    </div>
+                  );
+                })}
+
+                {colCards.length === 0 && (
+                  <div className="flex flex-col items-center justify-center border-2 border-dashed border-[#E2E8F0] bg-white/40 rounded-xl p-8 text-center text-[#64748B] h-32">
+                    <BookOpen size={20} className="mb-1 text-slate-300" />
                     <span className="text-xs">Belum ada kegiatan</span>
                   </div>
                 )}
               </div>
-
-              {/* Add Card Form in any Column */}
-              {activeRole === 'Mahasiswa' && (
-                <div className="mt-3 border-t border-white/5 pt-3">
-                  {activeAddColumn === col.id ? (
-                    <form onSubmit={(e) => handleAddCardSubmit(e, col.id)} className="flex flex-col gap-3 p-3 bg-white/2 rounded-xl border border-white/5">
-                      <input
-                        type="text"
-                        placeholder="Judul rencana kegiatan..."
-                        required
-                        value={newTitle}
-                        onChange={(e) => setNewTitle(e.target.value)}
-                        className="w-full bg-black/20 border border-white/5 rounded-lg px-3 py-1.5 text-xs text-gray-200 focus:outline-none focus:border-indigo-500"
-                      />
-                      <textarea
-                        placeholder="Deskripsi singkat..."
-                        value={newDesc}
-                        onChange={(e) => setNewDesc(e.target.value)}
-                        rows={2}
-                        className="w-full bg-black/20 border border-white/5 rounded-lg px-3 py-1.5 text-xs text-gray-200 focus:outline-none focus:border-indigo-500 resize-none"
-                      />
-                      <div className="flex flex-col gap-2">
-                        <div className="grid grid-cols-2 gap-2">
-                          <div>
-                            <label className="text-[10px] text-gray-400 block mb-1">Kategori</label>
-                            <div className="relative">
-                              <button
-                                type="button"
-                                onClick={() => setIsDropdownOpen(!isDropdownOpen)}
-                                className="w-full bg-black/40 border border-white/10 rounded-lg px-2.5 py-1.5 text-left text-xs text-gray-200 focus:outline-none flex justify-between items-center hover:border-indigo-500/50 transition cursor-pointer"
-                              >
-                                <span>{newCategory}</span>
-                                <ChevronDown size={12} className={`text-gray-400 transition-transform ${isDropdownOpen ? 'rotate-180' : ''}`} />
-                              </button>
-                              
-                              {isDropdownOpen && (
-                                <div className="absolute left-0 right-0 mt-1 bg-slate-950/95 border border-white/10 rounded-lg shadow-xl z-50 overflow-hidden glass">
-                                  {['Coding', 'Design', 'Laporan', 'Networking', 'Lainnya'].map((cat) => (
-                                    <button
-                                      key={cat}
-                                      type="button"
-                                      onClick={() => {
-                                        setNewCategory(cat);
-                                        setIsDropdownOpen(false);
-                                      }}
-                                      className={`w-full text-left px-3 py-1.5 text-xs transition-colors hover:bg-indigo-500/10 hover:text-indigo-300 flex items-center justify-between cursor-pointer ${newCategory === cat ? 'bg-indigo-500/15 text-indigo-400 font-semibold' : 'text-gray-300'}`}
-                                    >
-                                      {cat}
-                                    </button>
-                                  ))}
-                                </div>
-                              )}
-                            </div>
-                          </div>
-                          <div>
-                            <label className="text-[10px] text-gray-400 block mb-1">Tenggat Waktu</label>
-                            <input
-                              type="date"
-                              value={newDueDate}
-                              onChange={(e) => setNewDueDate(e.target.value)}
-                              className="w-full bg-black/20 border border-white/5 rounded-lg px-2 py-1 text-xs text-gray-200 focus:outline-none"
-                            />
-                          </div>
-                        </div>
-                        {newCategory === 'Lainnya' && (
-                          <div>
-                            <label className="text-[10px] text-gray-400 block mb-1">Isi Kategori Lainnya</label>
-                            <input
-                              type="text"
-                              required
-                              placeholder="Kategori baru..."
-                              value={customCategory}
-                              onChange={(e) => setCustomCategory(e.target.value)}
-                              className="w-full bg-black/20 border border-white/5 rounded-lg px-3 py-1.5 text-xs text-gray-200 focus:outline-none focus:border-indigo-500"
-                            />
-                          </div>
-                        )}
-                      </div>
-                      <div className="flex gap-2 justify-end mt-1">
-                        <button
-                          type="button"
-                          onClick={() => setActiveAddColumn(null)}
-                          className="px-2.5 py-1.5 rounded-lg bg-white/5 hover:bg-white/10 text-[11px] text-gray-300 font-medium transition"
-                        >
-                          Batal
-                        </button>
-                        <button
-                          type="submit"
-                          className="px-2.5 py-1.5 rounded-lg bg-indigo-600 hover:bg-indigo-700 text-[11px] text-white font-medium shadow-md transition"
-                        >
-                          Simpan
-                        </button>
-                      </div>
-                    </form>
-                  ) : (
-                    <button
-                      onClick={() => {
-                        setActiveAddColumn(col.id);
-                        setNewTitle('');
-                        setNewDesc('');
-                      }}
-                      className="w-full py-2 border border-dashed border-white/10 hover:border-indigo-500/30 rounded-xl flex items-center justify-center gap-2 text-xs text-gray-400 hover:text-indigo-300 bg-white/2 hover:bg-indigo-500/5 transition duration-300"
-                    >
-                      <Plus size={14} />
-                      <span>Tambah Kegiatan</span>
-                    </button>
-                  )}
-                </div>
-              )}
             </div>
           );
         })}
       </div>
+
+      {/* Modal Tambah Kegiatan */}
+      {isAddModalOpen && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/40 backdrop-blur-sm">
+          <div className="bg-white rounded-2xl w-full max-w-lg max-h-[90vh] flex flex-col border border-[#E2E8F0] shadow-xl relative animate-in fade-in zoom-in-95 duration-200">
+            
+            {/* Modal Header */}
+            <div className="flex items-center justify-between p-6 border-b border-[#E2E8F0]">
+              <h3 className="text-base font-bold text-[#0F172A] flex items-center gap-2">
+                <Plus size={18} className="text-[#2563EB]" />
+                Tambah Kegiatan Baru
+              </h3>
+              <button
+                type="button"
+                onClick={() => setIsAddModalOpen(false)}
+                className="p-1.5 rounded-lg bg-slate-50 hover:bg-slate-100 text-slate-500 hover:text-slate-700 transition cursor-pointer"
+              >
+                <X size={18} />
+              </button>
+            </div>
+
+            {/* Modal Body / Form */}
+            <form onSubmit={handleModalSubmit} className="p-6 overflow-y-auto flex flex-col gap-4 text-left">
+              <div className="flex flex-col gap-1.5">
+                <label className="text-[11px] text-[#64748B] font-semibold uppercase tracking-wider">Judul Rencana Kegiatan</label>
+                <input
+                  type="text"
+                  placeholder="Masukkan judul kegiatan..."
+                  required
+                  value={newTitle}
+                  onChange={(e) => setNewTitle(e.target.value)}
+                  className="w-full bg-white border border-[#E2E8F0] rounded-lg px-3 py-2 text-sm text-[#0F172A] focus:outline-none focus:border-[#2563EB] focus:ring-1 focus:ring-[#2563EB]"
+                />
+              </div>
+
+              <div className="flex flex-col gap-1.5">
+                <label className="text-[11px] text-[#64748B] font-semibold uppercase tracking-wider">Deskripsi Singkat</label>
+                <textarea
+                  placeholder="Masukkan deskripsi detail kegiatan..."
+                  value={newDesc}
+                  onChange={(e) => setNewDesc(e.target.value)}
+                  rows={3}
+                  className="w-full bg-white border border-[#E2E8F0] rounded-lg px-3 py-2 text-sm text-[#0F172A] focus:outline-none focus:border-[#2563EB] focus:ring-1 focus:ring-[#2563EB] resize-none"
+                />
+              </div>
+
+              <div className="grid grid-cols-2 gap-4">
+                {/* Category Dropdown */}
+                <div className="relative text-left">
+                  <label className="text-[11px] text-[#64748B] font-semibold uppercase tracking-wider block mb-1.5">Kategori</label>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setIsCategoryDropdownOpen(!isCategoryDropdownOpen);
+                      setIsColumnDropdownOpen(false);
+                    }}
+                    className="w-full bg-white border border-[#E2E8F0] rounded-lg px-3 py-2 text-left text-sm text-[#0F172A] focus:outline-none flex justify-between items-center hover:bg-slate-50 transition cursor-pointer"
+                  >
+                    <span>{newCategory}</span>
+                    <ChevronDown size={14} className={`text-slate-400 transition-transform ${isCategoryDropdownOpen ? 'rotate-180' : ''}`} />
+                  </button>
+                  
+                  {isCategoryDropdownOpen && (
+                    <div className="absolute left-0 right-0 mt-1 bg-white border border-[#E2E8F0] rounded-lg shadow-lg z-50 overflow-hidden">
+                      {['Coding', 'Design', 'Laporan', 'Networking', 'Lainnya'].map((cat) => (
+                        <button
+                          key={cat}
+                          type="button"
+                          onClick={() => {
+                            setNewCategory(cat);
+                            setIsCategoryDropdownOpen(false);
+                          }}
+                          className={`w-full text-left px-3 py-2 text-xs transition-colors hover:bg-slate-50 flex items-center justify-between cursor-pointer ${newCategory === cat ? 'bg-blue-50 text-[#2563EB] font-semibold' : 'text-slate-700'}`}
+                        >
+                          {cat}
+                        </button>
+                      ))}
+                    </div>
+                  )}
+                </div>
+
+                {/* Column / Progress Status Dropdown */}
+                <div className="relative text-left">
+                  <label className="text-[11px] text-[#64748B] font-semibold uppercase tracking-wider block mb-1.5">Status Proses</label>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setIsColumnDropdownOpen(!isColumnDropdownOpen);
+                      setIsCategoryDropdownOpen(false);
+                    }}
+                    className="w-full bg-white border border-[#E2E8F0] rounded-lg px-3 py-2 text-left text-sm text-[#0F172A] focus:outline-none flex justify-between items-center hover:bg-slate-50 transition cursor-pointer"
+                  >
+                    <span>{getColumnTitle(newColumnId)}</span>
+                    <ChevronDown size={14} className={`text-slate-400 transition-transform ${isColumnDropdownOpen ? 'rotate-180' : ''}`} />
+                  </button>
+                  
+                  {isColumnDropdownOpen && (
+                    <div className="absolute left-0 right-0 mt-1 bg-white border border-[#E2E8F0] rounded-lg shadow-lg z-50 overflow-hidden">
+                      {[
+                        { id: 'rencana', title: 'Rencana Kegiatan' },
+                        { id: 'progres', title: 'Sedang Dikerjakan' },
+                        { id: 'review', title: 'Butuh Review' }
+                      ].map((col) => (
+                        <button
+                          key={col.id}
+                          type="button"
+                          onClick={() => {
+                            setNewColumnId(col.id as PKLCard['columnId']);
+                            setIsColumnDropdownOpen(false);
+                          }}
+                          className={`w-full text-left px-3 py-2 text-xs transition-colors hover:bg-slate-50 flex items-center justify-between cursor-pointer ${newColumnId === col.id ? 'bg-blue-50 text-[#2563EB] font-semibold' : 'text-slate-700'}`}
+                        >
+                          {col.title}
+                        </button>
+                      ))}
+                    </div>
+                  )}
+                </div>
+              </div>
+
+              {/* Custom Category Input if 'Lainnya' is selected */}
+              {newCategory === 'Lainnya' && (
+                <div className="flex flex-col gap-1.5">
+                  <label className="text-[11px] text-[#64748B] font-semibold uppercase tracking-wider">Isi Kategori Lainnya</label>
+                  <input
+                    type="text"
+                    required
+                    placeholder="Nama kategori baru..."
+                    value={customCategory}
+                    onChange={(e) => setCustomCategory(e.target.value)}
+                    className="w-full bg-white border border-[#E2E8F0] rounded-lg px-3 py-2 text-sm text-[#0F172A] focus:outline-none focus:border-[#2563EB] focus:ring-1 focus:ring-[#2563EB]"
+                  />
+                </div>
+              )}
+
+              {/* Due Date */}
+              <div className="flex flex-col gap-1.5">
+                <label className="text-[11px] text-[#64748B] font-semibold uppercase tracking-wider">Tenggat Waktu</label>
+                <input
+                  type="date"
+                  value={newDueDate}
+                  onChange={(e) => setNewDueDate(e.target.value)}
+                  className="w-full bg-white border border-[#E2E8F0] rounded-lg px-3 py-2 text-sm text-[#0F172A] focus:outline-none focus:border-[#2563EB] focus:ring-1 focus:ring-[#2563EB]"
+                />
+              </div>
+
+              {/* Modal Actions */}
+              <div className="flex gap-3 justify-end mt-4 border-t border-[#E2E8F0] pt-4">
+                <button
+                  type="button"
+                  onClick={() => setIsAddModalOpen(false)}
+                  className="px-4 py-2 rounded-xl bg-white border border-[#E2E8F0] text-xs font-semibold text-slate-700 hover:bg-slate-50 transition cursor-pointer"
+                >
+                  Batal
+                </button>
+                <button
+                  type="submit"
+                  className="px-4 py-2 rounded-xl bg-[#2563EB] hover:bg-[#1D4ED8] text-xs font-semibold text-white shadow-sm hover:shadow-indigo-500/10 transition cursor-pointer"
+                >
+                  Simpan Kegiatan
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
     </div>
   );
 };

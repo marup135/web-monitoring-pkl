@@ -13,8 +13,21 @@ model User {
   name      String   @db.VarChar(255)
   role      String   @db.VarChar(50) // "siswa" | "pembimbing_internal" | "pembimbing_eksternal"
   company   String?  @db.VarChar(255) // Optional: Nama Perusahaan
+  nisn      String?  @db.VarChar(50)  // Optional: NIS/NISN
   school    String   @default("SMKN 1 BOJONG") @db.VarChar(255)
   createdAt DateTime @default(now())
+
+  // Relations for Siswa
+  classId   String?      @db.VarChar(255)
+  class     Kelas?       @relation("StudentClass", fields: [classId], references: [id], onDelete: SetNull)
+  companyId String?      @db.VarChar(255)
+  perusahaan Perusahaan? @relation("StudentCompany", fields: [companyId], references: [id], onDelete: SetNull)
+
+  // Relations for Guru (Advisor)
+  classes   Kelas[]      @relation("AdvisorClasses")
+
+  // Relations for Mentor
+  companies Perusahaan[] @relation("MentorCompanies")
 
   // Relations
   cards         Card[]        @relation("StudentCards")
@@ -96,4 +109,24 @@ model AdvisorNote {
 
   @@index([studentId])
   @@index([advisorId])
+}
+
+model Kelas {
+  id        String   @id @default(uuid())
+  name      String   @unique @db.VarChar(255)
+  createdAt DateTime @default(now())
+
+  // Relations
+  students  User[]   @relation("StudentClass")
+  advisors  User[]   @relation("AdvisorClasses")
+}
+
+model Perusahaan {
+  id        String   @id @default(uuid())
+  name      String   @unique @db.VarChar(255)
+  createdAt DateTime @default(now())
+
+  // Relations
+  students  User[]   @relation("StudentCompany")
+  mentors   User[]   @relation("MentorCompanies")
 }

@@ -2,7 +2,7 @@
 
 import React, { useState } from 'react';
 import { usePKL } from '../context/PKLContext';
-import { PKLCard, TaskCategory } from '../types/pkl';
+import { PKLCard } from '../types/pkl';
 import { X, Calendar, Clock, MessageSquare, Award, Trash2, Edit2, Send, History, CheckCircle, File, FileText, Image as ImageIcon, Paperclip, Loader2, Plus, ChevronDown } from 'lucide-react';
 
 interface CardModalProps {
@@ -60,26 +60,50 @@ export const CardModal: React.FC<CardModalProps> = ({ card, onClose }) => {
 
   // File Upload states
   const [uploading, setUploading] = useState(false);
+  const [validationError, setValidationError] = useState<string | null>(null);
 
-  const handleSaveDetails = (e: React.FormEvent) => {
+  const handleSaveDetails = async (e: React.FormEvent) => {
     e.preventDefault();
+    setValidationError(null);
+
+    if (editStartTime && editEndTime) {
+      const [startH, startM] = editStartTime.split(':').map(Number);
+      const [endH, endM] = editEndTime.split(':').map(Number);
+      const startMin = startH * 60 + startM;
+      const endMin = endH * 60 + endM;
+      if (endMin < startMin) {
+        setValidationError('Waktu selesai tidak boleh lebih awal dari waktu mulai.');
+        return;
+      }
+    }
+
+    if (!editTitle.trim()) {
+      setValidationError('Judul rencana kegiatan wajib diisi.');
+      return;
+    }
+
     const finalCategory = selectCategory === 'Lainnya' ? customCategory.trim() || 'Lainnya' : selectCategory;
-    updateCardDetails(
-      card.id,
-      editTitle,
-      editDesc,
-      finalCategory,
-      editDueDate,
-      editStartTime,
-      editEndTime
-    );
-    setIsEditing(false);
+    try {
+      await updateCardDetails(
+        card.id,
+        editTitle.trim(),
+        editDesc.trim(),
+        finalCategory,
+        editDueDate,
+        editStartTime,
+        editEndTime
+      );
+      setIsEditing(false);
+    } catch (err) {
+      setValidationError((err as Error).message || 'Gagal memperbarui rincian kegiatan.');
+    }
   };
 
   const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
 
+    setValidationError(null);
     setUploading(true);
     try {
       const { uploadFileAction } = await import('@/app/actions/pkl');
@@ -89,53 +113,105 @@ export const CardModal: React.FC<CardModalProps> = ({ card, onClose }) => {
       if (res.success && res.fileUrl && res.name && res.type) {
         await addAttachment(card.id, res.name, res.fileUrl, res.type);
       } else {
-        alert('Gagal mengunggah file.');
+        setValidationError(res.error || 'Gagal mengunggah file.');
       }
     } catch (err) {
       console.error(err);
-      alert('Gagal mengunggah file.');
+      setValidationError('Gagal mengunggah file.');
     } finally {
       setUploading(false);
     }
   };
 
-  const handleMentorGradeSubmit = (e: React.FormEvent) => {
+  const handleMentorGradeSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    gradeCardByMentor(
-      card.id,
-      Number(mentorDiscipline),
-      Number(mentorSkill),
-      Number(mentorAttitude),
-      mentorFeedback
-    );
-    onClose();
-  };
+    setValidationError(null);
 
-  const handleAdvisorGradeSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-    gradeCardByAdvisor(
-      card.id,
-      Number(advisorDiscipline),
-      Number(advisorReport),
-      Number(advisorCommunication),
-      advisorFeedback
-    );
-    onClose();
-  };
+    const disc = Number(mentorDiscipline);
+    const skl = Number(mentorSkill);
+    const att = Number(mentorAttitude);
 
-  const handlePostComment = (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!commentText.trim()) return;
-    addComment(card.id, commentText);
-    setCommentText('');
-  };
+    if (isNaN(disc) || disc < 0 || disc > 100 ||
+        isNaN(skl) || skl < 0 || skl > 100 ||
+        isNaN(att) || att < 0 || att > 100) {
+      setValidationError('Nilai kedisiplinan, keahlian, dan sikap harus berupa angka antara 0 s.d 100.');
+      return;
+    }
 
+    if (!mentorFeedback.trim()) {
+      setValidationError('Umpan balik / catatan mentor wajib diisi.');
+      return;
+    }
 
-
-  const handleDelete = () => {
-    if (confirm('Apakah Anda yakin ingin menghapus kegiatan ini?')) {
-      deleteCard(card.id);
+    try {
+      await gradeCardByMentor(
+        card.id,
+        disc,
+        skl,
+        att,
+        mentorFeedback.trim()
+      );
       onClose();
+    } catch (err) {
+      setValidationError((err as Error).message || 'Gagal menyimpan penilaian mentor.');
+    }
+  };
+
+  const handleAdvisorGradeSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setValidationError(null);
+
+    const disc = Number(advisorDiscipline);
+    const rep = Number(advisorReport);
+    const comm = Number(advisorCommunication);
+
+    if (isNaN(disc) || disc < 0 || disc > 100 ||
+        isNaN(rep) || rep < 0 || rep > 100 ||
+        isNaN(comm) || comm < 0 || comm > 100) {
+      setValidationError('Nilai kedisiplinan, laporan, dan komunikasi harus berupa angka antara 0 s.d 100.');
+      return;
+    }
+
+    if (!advisorFeedback.trim()) {
+      setValidationError('Umpan balik / catatan guru wajib diisi.');
+      return;
+    }
+
+    try {
+      await gradeCardByAdvisor(
+        card.id,
+        disc,
+        rep,
+        comm,
+        advisorFeedback.trim()
+      );
+      onClose();
+    } catch (err) {
+      setValidationError((err as Error).message || 'Gagal menyimpan penilaian guru.');
+    }
+  };
+
+  const handlePostComment = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setValidationError(null);
+    if (!commentText.trim()) return;
+    try {
+      await addComment(card.id, commentText.trim());
+      setCommentText('');
+    } catch (err) {
+      setValidationError((err as Error).message || 'Gagal mengirim komentar.');
+    }
+  };
+
+  const handleDelete = async () => {
+    setValidationError(null);
+    if (confirm('Apakah Anda yakin ingin menghapus kegiatan ini?')) {
+      try {
+        await deleteCard(card.id);
+        onClose();
+      } catch (err) {
+        setValidationError((err as Error).message || 'Gagal menghapus kegiatan.');
+      }
     }
   };
 
@@ -144,40 +220,40 @@ export const CardModal: React.FC<CardModalProps> = ({ card, onClose }) => {
   const canEdit = true;
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/75 backdrop-blur-sm">
-      <div className="glass rounded-2xl w-full max-w-3xl max-h-[90vh] flex flex-col border border-white/10 shadow-2xl relative animate-in fade-in zoom-in-95 duration-200">
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/40 backdrop-blur-sm">
+      <div className="bg-white rounded-2xl w-full max-w-3xl max-h-[90vh] flex flex-col border border-[#E2E8F0] shadow-xl relative animate-in fade-in zoom-in-95 duration-200 text-[#0F172A]">
         
         {/* Modal Header */}
-        <div className="flex items-center justify-between p-6 border-b border-white/5">
+        <div className="flex items-center justify-between p-6 border-b border-[#E2E8F0]">
           <div className="flex items-center gap-3">
             <span className={`text-[10px] uppercase font-bold tracking-wider px-2 py-0.5 rounded border ${
-              card.columnId === 'selesai' ? 'bg-emerald-500/10 text-emerald-300 border-emerald-500/20' :
-              card.columnId === 'review' ? 'bg-amber-500/10 text-amber-300 border-amber-500/20' :
-              card.columnId === 'progres' ? 'bg-indigo-500/10 text-indigo-300 border-indigo-500/20' :
-              'bg-slate-500/10 text-slate-300 border-slate-500/20'
+              card.columnId === 'selesai' ? 'bg-green-50 text-green-700 border-green-100' :
+              card.columnId === 'review' ? 'bg-yellow-50 text-yellow-700 border-yellow-100' :
+              card.columnId === 'progres' ? 'bg-blue-50 text-blue-700 border-blue-100' :
+              'bg-slate-50 text-slate-700 border-slate-100'
             }`}>
               {card.columnId === 'selesai' ? 'Selesai' :
                card.columnId === 'review' ? 'Butuh Review' :
                card.columnId === 'progres' ? 'Sedang Dikerjakan' :
                'Rencana Kegiatan'}
             </span>
-            <span className="text-xs text-gray-500">•</span>
-            <span className="text-xs text-gray-400 font-medium">{card.category}</span>
+            <span className="text-xs text-gray-300">•</span>
+            <span className="text-xs text-[#64748B] font-medium">{card.category}</span>
           </div>
           <button
             onClick={onClose}
-            className="p-1.5 rounded-lg bg-white/5 hover:bg-white/10 text-gray-400 hover:text-white transition"
+            className="p-1.5 rounded-lg bg-slate-50 hover:bg-slate-100 text-slate-500 hover:text-slate-700 transition cursor-pointer"
           >
             <X size={18} />
           </button>
         </div>
 
         {/* Modal Navigation Tabs */}
-        <div className="flex border-b border-white/5 px-6">
+        <div className="flex border-b border-[#E2E8F0] px-6 bg-[#F8FAFC]">
           <button
             onClick={() => setActiveTab('details')}
-            className={`py-3 px-4 text-xs font-semibold border-b-2 transition-all flex items-center gap-2 ${
-              activeTab === 'details' ? 'border-indigo-500 text-indigo-400' : 'border-transparent text-gray-400 hover:text-gray-300'
+            className={`py-3 px-4 text-xs font-semibold border-b-2 transition-all flex items-center gap-2 cursor-pointer ${
+              activeTab === 'details' ? 'border-[#2563EB] text-[#2563EB]' : 'border-transparent text-[#64748B] hover:text-[#0F172A]'
             }`}
           >
             <MessageSquare size={14} />
@@ -185,8 +261,8 @@ export const CardModal: React.FC<CardModalProps> = ({ card, onClose }) => {
           </button>
           <button
             onClick={() => setActiveTab('history')}
-            className={`py-3 px-4 text-xs font-semibold border-b-2 transition-all flex items-center gap-2 ${
-              activeTab === 'history' ? 'border-indigo-500 text-indigo-400' : 'border-transparent text-gray-400 hover:text-gray-300'
+            className={`py-3 px-4 text-xs font-semibold border-b-2 transition-all flex items-center gap-2 cursor-pointer ${
+              activeTab === 'history' ? 'border-[#2563EB] text-[#2563EB]' : 'border-transparent text-[#64748B] hover:text-[#0F172A]'
             }`}
           >
             <History size={14} />
@@ -195,53 +271,65 @@ export const CardModal: React.FC<CardModalProps> = ({ card, onClose }) => {
         </div>
 
         {/* Modal Scrollable Body */}
-        <div className="p-6 overflow-y-auto flex-1 flex flex-col gap-6">
+        <div className="p-6 overflow-y-auto flex-1 flex flex-col gap-6 text-left">
           {activeTab === 'details' ? (
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
               
               {/* Left 2 Columns: Description & Comments */}
               <div className="lg:col-span-2 flex flex-col gap-6">
                 
+                {validationError && !isEditing && (
+                  <div className="p-3.5 bg-red-50 border border-red-200 text-[#EF4444] rounded-xl text-xs font-semibold flex items-center justify-between animate-in fade-in duration-200">
+                    <span>{validationError}</span>
+                    <button onClick={() => setValidationError(null)} className="text-red-400 hover:text-red-600 font-bold ml-2 text-sm cursor-pointer">×</button>
+                  </div>
+                )}
+
                 {/* Description Box */}
-                <div className="bg-white/2 border border-white/5 rounded-xl p-4">
+                <div className="bg-[#F1F5F9]/50 border border-[#E2E8F0] rounded-xl p-4">
                   {isEditing ? (
                     <form onSubmit={handleSaveDetails} className="flex flex-col gap-4">
+                      {validationError && (
+                        <div className="p-3 bg-red-50 border border-red-200 text-[#EF4444] rounded-lg text-xs font-semibold animate-in fade-in duration-200">
+                          {validationError}
+                        </div>
+                      )}
                       <div className="flex flex-col gap-1">
-                        <label className="text-[10px] text-gray-400 font-semibold uppercase">Judul</label>
+                        <label className="text-[10px] text-[#64748B] font-semibold uppercase">Judul</label>
                         <input
                           type="text"
                           required
                           value={editTitle}
                           onChange={(e) => setEditTitle(e.target.value)}
-                          className="bg-black/40 border border-white/5 rounded-lg px-3 py-2 text-sm text-gray-200 focus:outline-none focus:border-indigo-500"
+                          className="bg-white border border-[#E2E8F0] rounded-lg px-3 py-2 text-sm text-[#0F172A] focus:outline-none focus:border-[#2563EB]"
                         />
                       </div>
                       
                       <div className="flex flex-col gap-1">
-                        <label className="text-[10px] text-gray-400 font-semibold uppercase">Deskripsi</label>
+                        <label className="text-[10px] text-[#64748B] font-semibold uppercase">Deskripsi</label>
                         <textarea
                           required
                           rows={4}
                           value={editDesc}
                           onChange={(e) => setEditDesc(e.target.value)}
-                          className="bg-black/40 border border-white/5 rounded-lg px-3 py-2 text-sm text-gray-200 focus:outline-none focus:border-indigo-500 resize-none"
+                          className="bg-white border border-[#E2E8F0] rounded-lg px-3 py-2 text-sm text-[#0F172A] focus:outline-none focus:border-[#2563EB] resize-none"
                         />
                       </div>
 
                       <div className="grid grid-cols-2 gap-3">
                         <div className="relative">
-                          <label className="text-[10px] text-gray-400 font-semibold uppercase">Kategori</label>
+                          <label className="text-[10px] text-[#64748B] font-semibold uppercase">Kategori</label>
                           <button
                             type="button"
                             onClick={() => setIsCategoryDropdownOpen(!isCategoryDropdownOpen)}
-                            className="w-full bg-black/40 border border-white/10 rounded-lg p-2 text-left text-xs text-gray-200 focus:outline-none flex justify-between items-center hover:border-indigo-500/50 transition cursor-pointer"
+                            className="w-full bg-white border border-[#E2E8F0] rounded-lg p-2 text-left text-xs text-[#0F172A] focus:outline-none flex justify-between items-center hover:bg-slate-50 transition cursor-pointer"
                           >
                             <span>{selectCategory}</span>
-                            <ChevronDown size={12} className={`text-gray-400 transition-transform ${isCategoryDropdownOpen ? 'rotate-180' : ''}`} />
+                            <ChevronDown size={12} className={`text-slate-400 transition-transform ${isCategoryDropdownOpen ? 'rotate-180' : ''}`} />
                           </button>
                           
                           {isCategoryDropdownOpen && (
-                            <div className="absolute left-0 right-0 mt-1 bg-slate-950/95 border border-white/10 rounded-lg shadow-xl z-50 overflow-hidden glass">
+                            <div className="absolute left-0 right-0 mt-1 bg-white border border-[#E2E8F0] rounded-lg shadow-lg z-50 overflow-hidden">
                               {['Coding', 'Design', 'Laporan', 'Networking', 'Lainnya'].map((cat) => (
                                 <button
                                   key={cat}
@@ -250,7 +338,7 @@ export const CardModal: React.FC<CardModalProps> = ({ card, onClose }) => {
                                     setSelectCategory(cat);
                                     setIsCategoryDropdownOpen(false);
                                   }}
-                                  className={`w-full text-left px-3 py-2 text-xs transition-colors hover:bg-indigo-500/10 hover:text-indigo-300 flex items-center justify-between cursor-pointer ${selectCategory === cat ? 'bg-indigo-500/15 text-indigo-400 font-semibold' : 'text-gray-300'}`}
+                                  className={`w-full text-left px-3 py-2 text-xs transition-colors hover:bg-slate-50 flex items-center justify-between cursor-pointer ${selectCategory === cat ? 'bg-blue-50 text-[#2563EB] font-semibold' : 'text-slate-700'}`}
                                 >
                                   {cat}
                                 </button>
@@ -259,47 +347,47 @@ export const CardModal: React.FC<CardModalProps> = ({ card, onClose }) => {
                           )}
                         </div>
                         <div>
-                          <label className="text-[10px] text-gray-400 font-semibold uppercase">Tenggat</label>
+                          <label className="text-[10px] text-[#64748B] font-semibold uppercase">Tenggat</label>
                           <input
                             type="date"
                             value={editDueDate}
                             onChange={(e) => setEditDueDate(e.target.value)}
-                            className="w-full bg-black/40 border border-white/5 rounded-lg p-2 text-xs text-gray-200 focus:outline-none"
+                            className="w-full bg-white border border-[#E2E8F0] rounded-lg p-2 text-xs text-[#0F172A] focus:outline-none"
                           />
                         </div>
                       </div>
 
                       {selectCategory === 'Lainnya' && (
                         <div className="flex flex-col gap-1">
-                          <label className="text-[10px] text-gray-400 font-semibold uppercase">Isi Kategori Lainnya</label>
+                          <label className="text-[10px] text-[#64748B] font-semibold uppercase">Isi Kategori Lainnya</label>
                           <input
                             type="text"
                             required
                             placeholder="Kategori kustom..."
                             value={customCategory}
                             onChange={(e) => setCustomCategory(e.target.value)}
-                            className="bg-black/40 border border-white/5 rounded-lg px-3 py-2 text-sm text-gray-200 focus:outline-none focus:border-indigo-500"
+                            className="bg-white border border-[#E2E8F0] rounded-lg px-3 py-2 text-sm text-[#0F172A] focus:outline-none focus:border-[#2563EB]"
                           />
                         </div>
                       )}
 
                       <div className="grid grid-cols-2 gap-3">
                         <div>
-                          <label className="text-[10px] text-gray-400 font-semibold uppercase">Waktu Mulai</label>
+                          <label className="text-[10px] text-[#64748B] font-semibold uppercase">Waktu Mulai</label>
                           <input
                             type="time"
                             value={editStartTime}
                             onChange={(e) => setEditStartTime(e.target.value)}
-                            className="w-full bg-black/40 border border-white/5 rounded-lg p-2 text-xs text-gray-200 focus:outline-none focus:border-indigo-500"
+                            className="w-full bg-white border border-[#E2E8F0] rounded-lg p-2 text-xs text-[#0F172A] focus:outline-none focus:border-[#2563EB]"
                           />
                         </div>
                         <div>
-                          <label className="text-[10px] text-gray-400 font-semibold uppercase">Waktu Selesai</label>
+                          <label className="text-[10px] text-[#64748B] font-semibold uppercase">Waktu Selesai</label>
                           <input
                             type="time"
                             value={editEndTime}
                             onChange={(e) => setEditEndTime(e.target.value)}
-                            className="w-full bg-black/40 border border-white/5 rounded-lg p-2 text-xs text-gray-200 focus:outline-none focus:border-indigo-500"
+                            className="w-full bg-white border border-[#E2E8F0] rounded-lg p-2 text-xs text-[#0F172A] focus:outline-none focus:border-[#2563EB]"
                           />
                         </div>
                       </div>
@@ -317,13 +405,13 @@ export const CardModal: React.FC<CardModalProps> = ({ card, onClose }) => {
                             setEditEndTime(card.endTime || '');
                             setIsEditing(false);
                           }}
-                          className="px-3 py-1.5 rounded-lg bg-white/5 hover:bg-white/10 text-xs font-semibold text-gray-300 transition"
+                          className="px-3 py-1.5 rounded-lg bg-white border border-[#E2E8F0] text-xs font-semibold text-slate-700 hover:bg-slate-50 transition cursor-pointer"
                         >
                           Batal
                         </button>
                         <button
                           type="submit"
-                          className="px-3 py-1.5 rounded-lg bg-indigo-600 hover:bg-indigo-700 text-xs font-semibold text-white transition shadow-md"
+                          className="px-3 py-1.5 rounded-lg bg-[#2563EB] hover:bg-[#1D4ED8] text-xs font-semibold text-white transition shadow-sm cursor-pointer"
                         >
                           Simpan Perubahan
                         </button>
@@ -332,17 +420,17 @@ export const CardModal: React.FC<CardModalProps> = ({ card, onClose }) => {
                   ) : (
                     <div>
                       <div className="flex justify-between items-start gap-4 mb-2">
-                        <h3 className="font-bold text-gray-200 text-lg">{card.title}</h3>
+                        <h3 className="font-bold text-slate-800 text-lg">{card.title}</h3>
                         {canEdit && (
                           <button
                             onClick={() => setIsEditing(true)}
-                            className="p-1.5 rounded-lg bg-white/5 hover:bg-indigo-500/10 text-gray-400 hover:text-indigo-400 transition"
+                            className="p-1.5 rounded-lg bg-white border border-[#E2E8F0] hover:bg-slate-50 text-slate-500 hover:text-[#2563EB] transition cursor-pointer"
                           >
                             <Edit2 size={14} />
                           </button>
                         )}
                       </div>
-                      <p className="text-sm text-gray-300 leading-relaxed whitespace-pre-wrap">
+                      <p className="text-sm text-slate-600 leading-relaxed whitespace-pre-wrap">
                         {card.description}
                       </p>
                     </div>
@@ -350,10 +438,10 @@ export const CardModal: React.FC<CardModalProps> = ({ card, onClose }) => {
                 </div>
 
                 {/* Attachments Section */}
-                <div className="bg-white/2 border border-white/5 rounded-xl p-4 flex flex-col gap-4">
+                <div className="bg-[#F1F5F9]/50 border border-[#E2E8F0] rounded-xl p-4 flex flex-col gap-4">
                   <div className="flex justify-between items-center">
-                    <h4 className="text-xs font-bold text-gray-400 uppercase tracking-wider flex items-center gap-1.5">
-                      <Paperclip size={14} className="text-indigo-400" />
+                    <h4 className="text-xs font-bold text-[#64748B] uppercase tracking-wider flex items-center gap-1.5">
+                      <Paperclip size={14} className="text-[#2563EB]" />
                       Berkas Lampiran ({card.attachments ? card.attachments.length : 0})
                     </h4>
                     {isStudent && (
@@ -367,7 +455,7 @@ export const CardModal: React.FC<CardModalProps> = ({ card, onClose }) => {
                         />
                         <label
                           htmlFor="file-attachment"
-                          className={`cursor-pointer px-3 py-1.5 bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg text-xs font-semibold flex items-center gap-1.5 transition ${uploading ? 'opacity-50 pointer-events-none' : ''}`}
+                          className={`cursor-pointer px-3 py-1.5 bg-[#2563EB] hover:bg-[#1D4ED8] text-white rounded-lg text-xs font-semibold flex items-center gap-1.5 transition ${uploading ? 'opacity-50 pointer-events-none' : ''}`}
                         >
                           {uploading ? (
                             <>
@@ -386,24 +474,24 @@ export const CardModal: React.FC<CardModalProps> = ({ card, onClose }) => {
                   </div>
 
                   {(!card.attachments || card.attachments.length === 0) ? (
-                    <p className="text-xs text-gray-500 italic">Belum ada file lampiran.</p>
+                    <p className="text-xs text-gray-400 italic">Belum ada file lampiran.</p>
                   ) : (
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-2.5">
                       {card.attachments.map((att, idx) => {
                         let IconComponent = File;
-                        let colorClass = 'text-gray-400 bg-gray-500/10 border-gray-500/20';
+                        let colorClass = 'text-slate-500 bg-slate-50 border-slate-200';
                         if (att.type === 'image') {
                           IconComponent = ImageIcon;
-                          colorClass = 'text-pink-400 bg-pink-500/10 border-pink-500/20';
+                          colorClass = 'text-pink-700 bg-pink-50 border-pink-100';
                         } else if (att.type === 'pdf') {
                           IconComponent = FileText;
-                          colorClass = 'text-rose-400 bg-rose-500/10 border-rose-500/20';
+                          colorClass = 'text-red-700 bg-red-50 border-red-100';
                         } else if (att.type === 'doc') {
                           IconComponent = FileText;
-                          colorClass = 'text-blue-400 bg-blue-500/10 border-blue-500/20';
+                          colorClass = 'text-blue-700 bg-blue-50 border-blue-100';
                         }
                         return (
-                          <div key={idx} className="flex items-center justify-between p-2.5 bg-black/30 border border-white/5 rounded-xl text-xs gap-3">
+                          <div key={idx} className="flex items-center justify-between p-2.5 bg-white border border-[#E2E8F0] rounded-xl text-xs gap-3 shadow-sm">
                             <div className="flex items-center gap-2 overflow-hidden">
                               <div className={`p-1.5 rounded-lg border ${colorClass} shrink-0`}>
                                 <IconComponent size={14} />
@@ -412,7 +500,7 @@ export const CardModal: React.FC<CardModalProps> = ({ card, onClose }) => {
                                 href={att.url}
                                 target="_blank"
                                 rel="noreferrer"
-                                className="font-medium text-gray-300 hover:text-indigo-400 transition truncate underline"
+                                className="font-medium text-slate-700 hover:text-[#2563EB] transition truncate underline"
                               >
                                 {att.name}
                               </a>
@@ -420,7 +508,7 @@ export const CardModal: React.FC<CardModalProps> = ({ card, onClose }) => {
                             {isStudent && (
                               <button
                                 onClick={() => deleteAttachment(card.id, idx)}
-                                className="p-1 rounded bg-white/5 hover:bg-rose-500/10 text-gray-400 hover:text-rose-400 transition shrink-0"
+                                className="p-1 rounded bg-slate-50 hover:bg-red-50 text-slate-400 hover:text-[#EF4444] transition shrink-0 cursor-pointer"
                               >
                                 <Trash2 size={13} />
                               </button>
@@ -433,97 +521,102 @@ export const CardModal: React.FC<CardModalProps> = ({ card, onClose }) => {
                 </div>
 
                 {/* Score & Feedback Panel for Mentor */}
-                <div className="bg-white/2 border border-white/5 rounded-xl p-4 flex flex-col gap-4">
-                  <h4 className="text-xs font-bold text-gray-400 uppercase tracking-wider flex items-center gap-1.5">
-                    <Award size={14} className="text-purple-400" />
+                <div className="bg-[#F1F5F9]/50 border border-[#E2E8F0] rounded-xl p-4 flex flex-col gap-4">
+                  <h4 className="text-xs font-bold text-[#64748B] uppercase tracking-wider flex items-center gap-1.5">
+                    <Award size={14} className="text-purple-600" />
                     Penilaian Mentor (Pembimbing Eksternal)
                   </h4>
 
                   {card.scoreMentor !== undefined ? (
                     <div className="flex flex-col gap-3">
                       <div className="flex gap-4">
-                        <div className="p-3 bg-purple-500/10 border border-purple-500/20 text-purple-400 rounded-xl h-fit flex flex-col items-center justify-center min-w-[75px] shadow-sm">
-                          <span className="text-[9px] uppercase font-bold text-purple-400">Mentor</span>
+                        <div className="p-3 bg-purple-50 border border-purple-100 text-purple-700 rounded-xl h-fit flex flex-col items-center justify-center min-w-[75px] shadow-sm">
+                          <span className="text-[9px] uppercase font-bold text-purple-600">Mentor</span>
                           <span className="text-2xl font-black">{card.scoreMentor}</span>
                         </div>
                         <div className="flex-1 flex flex-col gap-1 text-xs">
-                          <div className="grid grid-cols-3 gap-2 text-[11px] text-gray-400">
-                            <div className="bg-white/2 p-1.5 rounded border border-white/5 text-center">
-                              <span className="block font-semibold text-gray-300">{card.scoreMentorDiscipline}</span>
+                          <div className="grid grid-cols-3 gap-2 text-[11px] text-slate-500">
+                            <div className="bg-white p-1.5 rounded border border-[#E2E8F0] text-center">
+                              <span className="block font-bold text-slate-800">{card.scoreMentorDiscipline}</span>
                               Kedisiplinan
                             </div>
-                            <div className="bg-white/2 p-1.5 rounded border border-white/5 text-center">
-                              <span className="block font-semibold text-gray-300">{card.scoreMentorSkill}</span>
+                            <div className="bg-white p-1.5 rounded border border-[#E2E8F0] text-center">
+                              <span className="block font-bold text-slate-800">{card.scoreMentorSkill}</span>
                               Keahlian
                             </div>
-                            <div className="bg-white/2 p-1.5 rounded border border-white/5 text-center">
-                              <span className="block font-semibold text-gray-300">{card.scoreMentorAttitude}</span>
+                            <div className="bg-white p-1.5 rounded border border-[#E2E8F0] text-center">
+                              <span className="block font-bold text-slate-800">{card.scoreMentorAttitude}</span>
                               Sikap
                             </div>
                           </div>
                         </div>
                       </div>
-                      <div className="text-xs bg-black/20 p-2.5 rounded-lg border border-white/5">
-                        <span className="text-[10px] text-purple-400 font-semibold block mb-0.5">Umpan Balik Mentor:</span>
-                        <p className="text-gray-300 italic">&ldquo;{card.feedbackMentor || 'Kegiatan disetujui tanpa catatan tambahan.'}&rdquo;</p>
+                      <div className="text-xs bg-white p-2.5 rounded-lg border border-[#E2E8F0]">
+                        <span className="text-[10px] text-purple-600 font-semibold block mb-0.5">Umpan Balik Mentor:</span>
+                        <p className="text-slate-600 italic">&ldquo;{card.feedbackMentor || 'Kegiatan disetujui tanpa catatan tambahan.'}&rdquo;</p>
                       </div>
                     </div>
                   ) : (
-                    <p className="text-xs text-gray-500 italic">Belum dinilai oleh Mentor Lapangan.</p>
+                    <p className="text-xs text-slate-400 italic">Belum dinilai oleh Mentor Lapangan.</p>
                   )}
                 </div>
 
-                {/* Score & Feedback Panel for Advisor (Guru) */}
-                <div className="bg-white/2 border border-white/5 rounded-xl p-4 flex flex-col gap-4">
-                  <h4 className="text-xs font-bold text-gray-400 uppercase tracking-wider flex items-center gap-1.5">
-                    <Award size={14} className="text-amber-400" />
+                {/* Score & Feedback Panel for Guru */}
+                <div className="bg-[#F1F5F9]/50 border border-[#E2E8F0] rounded-xl p-4 flex flex-col gap-4">
+                  <h4 className="text-xs font-bold text-[#64748B] uppercase tracking-wider flex items-center gap-1.5">
+                    <Award size={14} className="text-yellow-600" />
                     Penilaian Guru (Pembimbing Internal)
                   </h4>
 
                   {card.scoreAdvisor !== undefined ? (
                     <div className="flex flex-col gap-3">
                       <div className="flex gap-4">
-                        <div className="p-3 bg-amber-500/10 border border-amber-500/20 text-amber-400 rounded-xl h-fit flex flex-col items-center justify-center min-w-[75px] shadow-sm">
-                          <span className="text-[9px] uppercase font-bold text-amber-400">Guru</span>
+                        <div className="p-3 bg-yellow-50 border border-yellow-100 text-yellow-700 rounded-xl h-fit flex flex-col items-center justify-center min-w-[75px] shadow-sm">
+                          <span className="text-[9px] uppercase font-bold text-yellow-600">Guru</span>
                           <span className="text-2xl font-black">{card.scoreAdvisor}</span>
                         </div>
                         <div className="flex-1 flex flex-col gap-1 text-xs">
-                          <div className="grid grid-cols-3 gap-2 text-[11px] text-gray-400">
-                            <div className="bg-white/2 p-1.5 rounded border border-white/5 text-center">
-                              <span className="block font-semibold text-gray-300">{card.scoreAdvisorDiscipline}</span>
+                          <div className="grid grid-cols-3 gap-2 text-[11px] text-slate-500">
+                            <div className="bg-white p-1.5 rounded border border-[#E2E8F0] text-center">
+                              <span className="block font-bold text-slate-800">{card.scoreAdvisorDiscipline}</span>
                               Kedisiplinan
                             </div>
-                            <div className="bg-white/2 p-1.5 rounded border border-white/5 text-center">
-                              <span className="block font-semibold text-gray-300">{card.scoreAdvisorReport}</span>
+                            <div className="bg-white p-1.5 rounded border border-[#E2E8F0] text-center">
+                              <span className="block font-bold text-slate-800">{card.scoreAdvisorReport}</span>
                               Laporan
                             </div>
-                            <div className="bg-white/2 p-1.5 rounded border border-white/5 text-center">
-                              <span className="block font-semibold text-gray-300">{card.scoreAdvisorCommunication}</span>
+                            <div className="bg-white p-1.5 rounded border border-[#E2E8F0] text-center">
+                              <span className="block font-bold text-slate-800">{card.scoreAdvisorCommunication}</span>
                               Komunikasi
                             </div>
                           </div>
                         </div>
                       </div>
-                      <div className="text-xs bg-black/20 p-2.5 rounded-lg border border-white/5">
-                        <span className="text-[10px] text-amber-400 font-semibold block mb-0.5">Umpan Balik Guru:</span>
-                        <p className="text-gray-300 italic">&ldquo;{card.feedbackAdvisor || 'Belum ada catatan tambahan.'}&rdquo;</p>
+                      <div className="text-xs bg-white p-2.5 rounded-lg border border-[#E2E8F0]">
+                        <span className="text-[10px] text-yellow-600 font-semibold block mb-0.5">Umpan Balik Guru:</span>
+                        <p className="text-slate-600 italic">&ldquo;{card.feedbackAdvisor || 'Belum ada catatan tambahan.'}&rdquo;</p>
                       </div>
                     </div>
                   ) : (
-                    <p className="text-xs text-gray-500 italic">Belum dinilai oleh Guru Pembimbing.</p>
+                    <p className="text-xs text-slate-400 italic">Belum dinilai oleh Guru Pembimbing.</p>
                   )}
                 </div>
 
                 {/* Grading form for Mentor */}
                 {isMentor && (card.columnId === 'review' || card.columnId === 'selesai') && (
-                  <form onSubmit={handleMentorGradeSubmit} className="bg-purple-950/10 border border-purple-500/20 rounded-xl p-4 flex flex-col gap-4">
-                    <h4 className="text-xs font-bold text-purple-400 uppercase tracking-wider flex items-center gap-1.5">
+                  <form onSubmit={handleMentorGradeSubmit} className="bg-slate-50 border border-[#E2E8F0] rounded-xl p-4 flex flex-col gap-4">
+                    {validationError && (
+                      <div className="p-3 bg-red-50 border border-red-200 text-[#EF4444] rounded-lg text-xs font-semibold animate-in fade-in duration-200">
+                        {validationError}
+                      </div>
+                    )}
+                    <h4 className="text-xs font-bold text-purple-600 uppercase tracking-wider flex items-center gap-1.5">
                       <CheckCircle size={14} />
                       Form Penilaian Mentor Lapangan
                     </h4>
                     <div className="grid grid-cols-3 gap-3">
                       <div>
-                        <label className="text-[10px] text-gray-400 font-semibold block mb-1">Kedisiplinan (0-100)</label>
+                        <label className="text-[10px] text-[#64748B] font-semibold block mb-1">Kedisiplinan (0-100)</label>
                         <input
                           type="number"
                           required
@@ -531,11 +624,11 @@ export const CardModal: React.FC<CardModalProps> = ({ card, onClose }) => {
                           max="100"
                           value={mentorDiscipline}
                           onChange={(e) => setMentorDiscipline(e.target.value !== '' ? Number(e.target.value) : '')}
-                          className="w-full bg-black/40 border border-white/10 rounded-lg p-2 text-xs text-gray-200 focus:outline-none focus:border-purple-500"
+                          className="w-full bg-white border border-[#E2E8F0] rounded-lg p-2 text-xs text-[#0F172A] focus:outline-none focus:border-[#2563EB]"
                         />
                       </div>
                       <div>
-                        <label className="text-[10px] text-gray-400 font-semibold block mb-1">Keahlian (0-100)</label>
+                        <label className="text-[10px] text-[#64748B] font-semibold block mb-1">Keahlian (0-100)</label>
                         <input
                           type="number"
                           required
@@ -543,11 +636,11 @@ export const CardModal: React.FC<CardModalProps> = ({ card, onClose }) => {
                           max="100"
                           value={mentorSkill}
                           onChange={(e) => setMentorSkill(e.target.value !== '' ? Number(e.target.value) : '')}
-                          className="w-full bg-black/40 border border-white/10 rounded-lg p-2 text-xs text-gray-200 focus:outline-none focus:border-purple-500"
+                          className="w-full bg-white border border-[#E2E8F0] rounded-lg p-2 text-xs text-[#0F172A] focus:outline-none focus:border-[#2563EB]"
                         />
                       </div>
                       <div>
-                        <label className="text-[10px] text-gray-400 font-semibold block mb-1">Sikap (0-100)</label>
+                        <label className="text-[10px] text-[#64748B] font-semibold block mb-1">Sikap (0-100)</label>
                         <input
                           type="number"
                           required
@@ -555,24 +648,24 @@ export const CardModal: React.FC<CardModalProps> = ({ card, onClose }) => {
                           max="100"
                           value={mentorAttitude}
                           onChange={(e) => setMentorAttitude(e.target.value !== '' ? Number(e.target.value) : '')}
-                          className="w-full bg-black/40 border border-white/10 rounded-lg p-2 text-xs text-gray-200 focus:outline-none focus:border-purple-500"
+                          className="w-full bg-white border border-[#E2E8F0] rounded-lg p-2 text-xs text-[#0F172A] focus:outline-none focus:border-[#2563EB]"
                         />
                       </div>
                     </div>
                     <div>
-                      <label className="text-[10px] text-gray-400 font-semibold block mb-1">Catatan / Umpan Balik Mentor</label>
+                      <label className="text-[10px] text-[#64748B] font-semibold block mb-1">Catatan / Umpan Balik Mentor</label>
                       <textarea
                         required
                         rows={2}
                         value={mentorFeedback}
                         onChange={(e) => setMentorFeedback(e.target.value)}
                         placeholder="Berikan umpan balik atau instruksi revisi..."
-                        className="w-full bg-black/40 border border-white/10 rounded-lg p-2.5 text-xs text-gray-200 focus:outline-none focus:border-purple-500 resize-none"
+                        className="w-full bg-white border border-[#E2E8F0] rounded-lg p-2.5 text-xs text-[#0F172A] focus:outline-none focus:border-[#2563EB] resize-none"
                       />
                     </div>
                     <button
                       type="submit"
-                      className="py-2 bg-purple-600 hover:bg-purple-700 text-white text-xs font-semibold rounded-lg shadow-md transition w-full"
+                      className="py-2 bg-[#2563EB] hover:bg-[#1D4ED8] text-white text-xs font-semibold rounded-lg shadow-sm transition w-full cursor-pointer"
                     >
                       Kirim Penilaian Mentor & Setujui
                     </button>
@@ -581,14 +674,19 @@ export const CardModal: React.FC<CardModalProps> = ({ card, onClose }) => {
 
                 {/* Grading form for Advisor (Guru) */}
                 {activeRole === 'Dosen Pembimbing' && (card.columnId === 'review' || card.columnId === 'selesai') && (
-                  <form onSubmit={handleAdvisorGradeSubmit} className="bg-amber-950/10 border border-amber-500/20 rounded-xl p-4 flex flex-col gap-4">
-                    <h4 className="text-xs font-bold text-amber-400 uppercase tracking-wider flex items-center gap-1.5">
+                  <form onSubmit={handleAdvisorGradeSubmit} className="bg-slate-50 border border-[#E2E8F0] rounded-xl p-4 flex flex-col gap-4">
+                    {validationError && (
+                      <div className="p-3 bg-red-50 border border-red-200 text-[#EF4444] rounded-lg text-xs font-semibold animate-in fade-in duration-200">
+                        {validationError}
+                      </div>
+                    )}
+                    <h4 className="text-xs font-bold text-yellow-600 uppercase tracking-wider flex items-center gap-1.5">
                       <CheckCircle size={14} />
                       Form Penilaian Guru Pembimbing (Internal)
                     </h4>
                     <div className="grid grid-cols-3 gap-3">
                       <div>
-                        <label className="text-[10px] text-gray-400 font-semibold block mb-1">Kedisiplinan (0-100)</label>
+                        <label className="text-[10px] text-[#64748B] font-semibold block mb-1">Kedisiplinan (0-100)</label>
                         <input
                           type="number"
                           required
@@ -596,11 +694,11 @@ export const CardModal: React.FC<CardModalProps> = ({ card, onClose }) => {
                           max="100"
                           value={advisorDiscipline}
                           onChange={(e) => setAdvisorDiscipline(e.target.value !== '' ? Number(e.target.value) : '')}
-                          className="w-full bg-black/40 border border-white/10 rounded-lg p-2 text-xs text-gray-200 focus:outline-none focus:border-amber-500"
+                          className="w-full bg-white border border-[#E2E8F0] rounded-lg p-2 text-xs text-[#0F172A] focus:outline-none focus:border-[#2563EB]"
                         />
                       </div>
                       <div>
-                        <label className="text-[10px] text-gray-400 font-semibold block mb-1">Laporan (0-100)</label>
+                        <label className="text-[10px] text-[#64748B] font-semibold block mb-1">Laporan (0-100)</label>
                         <input
                           type="number"
                           required
@@ -608,11 +706,11 @@ export const CardModal: React.FC<CardModalProps> = ({ card, onClose }) => {
                           max="100"
                           value={advisorReport}
                           onChange={(e) => setAdvisorReport(e.target.value !== '' ? Number(e.target.value) : '')}
-                          className="w-full bg-black/40 border border-white/10 rounded-lg p-2 text-xs text-gray-200 focus:outline-none focus:border-amber-500"
+                          className="w-full bg-white border border-[#E2E8F0] rounded-lg p-2 text-xs text-[#0F172A] focus:outline-none focus:border-[#2563EB]"
                         />
                       </div>
                       <div>
-                        <label className="text-[10px] text-gray-400 font-semibold block mb-1">Komunikasi (0-100)</label>
+                        <label className="text-[10px] text-[#64748B] font-semibold block mb-1">Komunikasi (0-100)</label>
                         <input
                           type="number"
                           required
@@ -620,24 +718,24 @@ export const CardModal: React.FC<CardModalProps> = ({ card, onClose }) => {
                           max="100"
                           value={advisorCommunication}
                           onChange={(e) => setAdvisorCommunication(e.target.value !== '' ? Number(e.target.value) : '')}
-                          className="w-full bg-black/40 border border-white/10 rounded-lg p-2 text-xs text-gray-200 focus:outline-none focus:border-amber-500"
+                          className="w-full bg-white border border-[#E2E8F0] rounded-lg p-2 text-xs text-[#0F172A] focus:outline-none focus:border-[#2563EB]"
                         />
                       </div>
                     </div>
                     <div>
-                      <label className="text-[10px] text-gray-400 font-semibold block mb-1">Catatan / Umpan Balik Guru</label>
+                      <label className="text-[10px] text-[#64748B] font-semibold block mb-1">Catatan / Umpan Balik Guru</label>
                       <textarea
                         required
                         rows={2}
                         value={advisorFeedback}
                         onChange={(e) => setAdvisorFeedback(e.target.value)}
                         placeholder="Berikan umpan balik atau saran akademik..."
-                        className="w-full bg-black/40 border border-white/10 rounded-lg p-2.5 text-xs text-gray-200 focus:outline-none focus:border-amber-500 resize-none"
+                        className="w-full bg-white border border-[#E2E8F0] rounded-lg p-2.5 text-xs text-[#0F172A] focus:outline-none focus:border-[#2563EB] resize-none"
                       />
                     </div>
                     <button
                       type="submit"
-                      className="py-2 bg-amber-600 hover:bg-amber-700 text-white text-xs font-semibold rounded-lg shadow-md transition w-full"
+                      className="py-2 bg-[#2563EB] hover:bg-[#1D4ED8] text-white text-xs font-semibold rounded-lg shadow-sm transition w-full cursor-pointer"
                     >
                       Kirim Penilaian Guru
                     </button>
@@ -645,34 +743,34 @@ export const CardModal: React.FC<CardModalProps> = ({ card, onClose }) => {
                 )}
 
                 {/* Comment Section */}
-                <div className="flex flex-col gap-4 border-t border-white/5 pt-6">
-                  <h4 className="text-xs font-bold text-gray-400 uppercase tracking-wider flex items-center gap-1.5">
-                    <MessageSquare size={14} className="text-indigo-400" />
+                <div className="flex flex-col gap-4 border-t border-[#E2E8F0] pt-6">
+                  <h4 className="text-xs font-bold text-[#64748B] uppercase tracking-wider flex items-center gap-1.5">
+                    <MessageSquare size={14} className="text-[#2563EB]" />
                     Kolom Diskusi ({card.comments.length})
                   </h4>
 
                   <div className="flex flex-col gap-3 max-h-[300px] overflow-y-auto pr-1">
                     {card.comments.length === 0 ? (
-                      <p className="text-xs text-gray-500 italic py-4 text-center">Belum ada diskusi untuk tugas ini.</p>
+                      <p className="text-xs text-gray-400 italic py-4 text-center">Belum ada diskusi untuk tugas ini.</p>
                     ) : (
                       card.comments.map((comment) => (
-                        <div key={comment.id} className="flex flex-col bg-white/2 rounded-xl p-3 border border-white/5">
+                        <div key={comment.id} className="flex flex-col bg-white rounded-xl p-3 border border-[#E2E8F0] shadow-sm">
                           <div className="flex justify-between items-center gap-2 mb-1.5">
                             <div className="flex items-center gap-2">
-                              <span className="text-xs font-semibold text-gray-200">{comment.userName}</span>
+                              <span className="text-xs font-semibold text-slate-800">{comment.userName}</span>
                               <span className={`text-[9px] uppercase px-1.5 py-0.2 rounded font-bold ${
-                                comment.role === 'Mentor' ? 'bg-purple-500/15 text-purple-400 border border-purple-500/10' :
-                                comment.role === 'Dosen Pembimbing' ? 'bg-amber-500/15 text-amber-400 border border-amber-500/10' :
-                                'bg-indigo-500/15 text-indigo-400 border border-indigo-500/10'
+                                comment.role === 'Mentor' ? 'bg-purple-50 text-purple-700 border border-purple-100' :
+                                comment.role === 'Dosen Pembimbing' ? 'bg-yellow-50 text-yellow-700 border border-yellow-100' :
+                                'bg-blue-50 text-blue-700 border border-blue-100'
                               }`}>
                                 {comment.role}
                               </span>
                             </div>
-                            <span className="text-[10px] text-gray-500">
+                            <span className="text-[10px] text-slate-400">
                               {new Date(comment.createdAt).toLocaleDateString('id-ID', { hour: '2-digit', minute: '2-digit' })}
                             </span>
                           </div>
-                          <p className="text-xs text-gray-300 leading-relaxed whitespace-pre-wrap">{comment.text}</p>
+                          <p className="text-xs text-slate-600 leading-relaxed whitespace-pre-wrap">{comment.text}</p>
                         </div>
                       ))
                     )}
@@ -684,11 +782,11 @@ export const CardModal: React.FC<CardModalProps> = ({ card, onClose }) => {
                       placeholder="Tulis tanggapan atau saran..."
                       value={commentText}
                       onChange={(e) => setCommentText(e.target.value)}
-                      className="flex-1 bg-white/2 border border-white/5 rounded-xl px-4 py-2 text-xs text-gray-200 focus:outline-none focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500"
+                      className="flex-1 bg-white border border-[#E2E8F0] rounded-xl px-4 py-2 text-xs text-[#0F172A] focus:outline-none focus:border-[#2563EB] focus:ring-1 focus:ring-[#2563EB]"
                     />
                     <button
                       type="submit"
-                      className="p-2.5 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white shadow-md transition"
+                      className="p-2.5 rounded-xl bg-[#2563EB] hover:bg-[#1D4ED8] text-white shadow-sm transition cursor-pointer"
                     >
                       <Send size={14} />
                     </button>
@@ -699,73 +797,83 @@ export const CardModal: React.FC<CardModalProps> = ({ card, onClose }) => {
 
               {/* Right Column: Sidebar Metrics */}
               <div className="flex flex-col gap-4">
-                <h4 className="text-xs font-bold text-gray-400 uppercase tracking-wider">Status & Metadata</h4>
+                <h4 className="text-xs font-bold text-[#64748B] uppercase tracking-wider">Status & Metadata</h4>
                 
-                <div className="glass rounded-xl p-4 flex flex-col gap-3.5 border border-white/5 text-xs text-gray-300">
-                  <div className="flex justify-between items-center py-1.5 border-b border-white/5">
-                    <span className="text-gray-400 flex items-center gap-1.5">
+                <div className="bg-white border border-[#E2E8F0] rounded-xl p-4 flex flex-col gap-3.5 text-xs text-slate-700 shadow-sm">
+                  <div className="flex justify-between items-center py-1.5 border-b border-[#E2E8F0]">
+                    <span className="text-slate-500 flex items-center gap-1.5">
                       <Calendar size={13} /> Due Date
                     </span>
-                    <span className="font-semibold text-gray-200">{card.dueDate}</span>
+                    <span className="font-semibold text-slate-800">{card.dueDate}</span>
                   </div>
 
-                  <div className="flex justify-between items-center py-1.5 border-b border-white/5">
-                    <span className="text-gray-400 flex items-center gap-1.5">
+                  <div className="flex justify-between items-center py-1.5 border-b border-[#E2E8F0]">
+                    <span className="text-slate-500 flex items-center gap-1.5">
                       <Clock size={13} /> Waktu Mulai
                     </span>
-                    <span className="font-semibold text-gray-200">{card.startTime || '-'}</span>
+                    <span className="font-semibold text-slate-800">{card.startTime || '-'}</span>
                   </div>
 
-                  <div className="flex justify-between items-center py-1.5 border-b border-white/5">
-                    <span className="text-gray-400 flex items-center gap-1.5">
+                  <div className="flex justify-between items-center py-1.5 border-b border-[#E2E8F0]">
+                    <span className="text-slate-500 flex items-center gap-1.5">
                       <Clock size={13} /> Waktu Selesai
                     </span>
-                    <span className="font-semibold text-gray-200">{card.endTime || '-'}</span>
+                    <span className="font-semibold text-slate-800">{card.endTime || '-'}</span>
                   </div>
 
-                  <div className="flex justify-between items-center py-1.5 border-b border-white/5">
-                    <span className="text-gray-400">Dibuat</span>
-                    <span className="text-gray-400">
+                  <div className="flex justify-between items-center py-1.5 border-b border-[#E2E8F0]">
+                    <span className="text-slate-500">Dibuat</span>
+                    <span className="text-slate-600">
                       {new Date(card.createdAt).toLocaleDateString('id-ID')}
                     </span>
                   </div>
 
                   <div className="flex justify-between items-center py-1.5">
-                    <span className="text-gray-400">Pemilik</span>
-                    <span className="font-medium text-gray-300">{state.studentName}</span>
+                    <span className="text-slate-500">Pemilik</span>
+                    <span className="font-medium text-slate-700">{state.studentName}</span>
                   </div>
                 </div>
 
                 {/* Status Transitions panel */}
                 <div className="flex flex-col gap-2">
-                  <h4 className="text-xs font-bold text-gray-400 uppercase tracking-wider">Pindahkan Status</h4>
+                  <h4 className="text-xs font-bold text-[#64748B] uppercase tracking-wider">Pindahkan Status</h4>
                   <div className="flex flex-col gap-1.5">
                     {[
                       { id: 'rencana', label: 'Rencana Kegiatan' },
                       { id: 'progres', label: 'Sedang Dikerjakan' },
                       { id: 'review', label: 'Butuh Review' },
                       { id: 'selesai', label: 'Selesai (Disetujui)' },
-                    ].map((col) => (
-                      <button
-                        key={col.id}
-                        disabled={card.columnId === col.id}
-                        onClick={() => updateCardColumn(card.id, col.id as PKLCard['columnId'])}
-                        className={`w-full py-1.5 px-3 rounded-xl text-left text-xs font-medium border transition ${
-                          card.columnId === col.id
-                            ? 'bg-indigo-600/20 border-indigo-500/30 text-indigo-400 cursor-default'
-                            : 'bg-white/2 border-white/5 text-gray-400 hover:bg-white/5 hover:text-gray-300'
-                        }`}
-                      >
-                        {col.label}
-                      </button>
-                    ))}
+                    ].map((col) => {
+                      const isDisabled = card.columnId === col.id || (col.id === 'selesai' && isStudent);
+                      return (
+                        <button
+                          key={col.id}
+                          disabled={isDisabled}
+                          onClick={() => updateCardColumn(card.id, col.id as PKLCard['columnId'])}
+                          className={`w-full py-1.5 px-3 rounded-xl text-left text-xs font-semibold border transition cursor-pointer ${
+                            card.columnId === col.id
+                              ? 'bg-blue-50 border-blue-200 text-[#2563EB] cursor-default'
+                              : col.id === 'selesai' && isStudent
+                              ? 'bg-slate-50 border-slate-200 text-slate-400 cursor-not-allowed opacity-50'
+                              : 'bg-white border-[#E2E8F0] text-slate-700 hover:bg-slate-50 hover:text-slate-900'
+                          }`}
+                        >
+                          {col.label}
+                        </button>
+                      );
+                    })}
+                    {isStudent && (
+                      <span className="text-[10px] text-yellow-600/90 mt-1 italic leading-tight">
+                        * Status Selesai hanya dapat disetujui setelah kegiatan dinilai oleh Pembimbing.
+                      </span>
+                    )}
                   </div>
                 </div>
 
                 {/* Delete button */}
                 <button
                   onClick={handleDelete}
-                  className="mt-auto py-2.5 bg-rose-950/20 hover:bg-rose-950/30 border border-rose-500/20 text-rose-400 rounded-xl text-xs font-medium flex items-center justify-center gap-1.5 transition"
+                  className="mt-auto py-2.5 bg-red-50 hover:bg-red-100 border border-red-200 text-[#EF4444] rounded-xl text-xs font-semibold flex items-center justify-center gap-1.5 transition cursor-pointer"
                 >
                   <Trash2 size={13} />
                   <span>Hapus Kegiatan</span>
@@ -781,16 +889,16 @@ export const CardModal: React.FC<CardModalProps> = ({ card, onClose }) => {
                   <div key={log.id} className="flex gap-4 items-start relative pb-6 group">
                     {/* Vertical connecting line */}
                     {index < card.history.length - 1 && (
-                      <div className="absolute left-2.5 top-6 bottom-0 w-0.5 bg-white/5 group-hover:bg-indigo-500/10 transition" />
+                      <div className="absolute left-2.5 top-6 bottom-0 w-0.5 bg-slate-200 group-hover:bg-blue-50 transition" />
                     )}
                     {/* Indicator Dot */}
-                    <div className="w-5 h-5 rounded-full bg-indigo-500/10 border border-indigo-500/30 flex items-center justify-center shrink-0 z-10 mt-0.5">
-                      <div className="w-1.5 h-1.5 rounded-full bg-indigo-400" />
+                    <div className="w-5 h-5 rounded-full bg-blue-50 border border-blue-200 flex items-center justify-center shrink-0 z-10 mt-0.5">
+                      <div className="w-1.5 h-1.5 rounded-full bg-[#2563EB]" />
                     </div>
                     {/* Text content */}
                     <div className="flex-1">
-                      <p className="text-xs text-gray-200 leading-normal">{log.text}</p>
-                      <span className="text-[10px] text-gray-500">
+                      <p className="text-xs text-slate-800 leading-normal">{log.text}</p>
+                      <span className="text-[10px] text-slate-400">
                         {new Date(log.createdAt).toLocaleString('id-ID')}
                       </span>
                     </div>

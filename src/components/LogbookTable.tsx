@@ -14,13 +14,13 @@ export const LogbookTable: React.FC = () => {
   const getStatusBadge = (status: string) => {
     switch (status) {
       case 'selesai':
-        return 'text-emerald-400 bg-emerald-500/10 border-emerald-500/20';
+        return 'text-green-700 bg-green-50 border-green-200';
       case 'review':
-        return 'text-amber-400 bg-amber-500/10 border-amber-500/20';
+        return 'text-yellow-700 bg-yellow-50 border-yellow-200';
       case 'progres':
-        return 'text-indigo-400 bg-indigo-500/10 border-indigo-500/20';
+        return 'text-blue-700 bg-blue-50 border-blue-200';
       default:
-        return 'text-slate-400 bg-slate-500/10 border-slate-500/20';
+        return 'text-slate-600 bg-slate-50 border-slate-200';
     }
   };
 
@@ -34,17 +34,17 @@ export const LogbookTable: React.FC = () => {
   };
 
   return (
-    <div className="flex flex-col gap-6">
+    <div className="flex flex-col gap-6 text-[#0F172A] font-sans">
       
       {/* Table Action Header (non-printable) */}
-      <div className="flex justify-between items-center bg-white/3 border border-white/5 rounded-2xl p-4 glass print:hidden">
+      <div className="flex justify-between items-center bg-white border border-[#E2E8F0] rounded-2xl p-4 shadow-sm print:hidden">
         <div className="flex items-center gap-2">
-          <Printer size={18} className="text-indigo-400" />
-          <h3 className="font-semibold text-gray-200 text-sm">Cetak Laporan Logbook Jurnal PKL</h3>
+          <Printer size={18} className="text-[#2563EB]" />
+          <h3 className="font-semibold text-slate-800 text-sm">Cetak Laporan Logbook Jurnal PKL</h3>
         </div>
         <button
           onClick={handlePrint}
-          className="px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white font-semibold text-xs rounded-xl shadow-md flex items-center gap-1.5 transition"
+          className="px-4 py-2 bg-[#2563EB] hover:bg-[#1D4ED8] text-white font-semibold text-xs rounded-xl shadow-sm flex items-center gap-1.5 transition cursor-pointer"
         >
           <Printer size={14} />
           <span>Cetak / Simpan PDF</span>
@@ -52,37 +52,43 @@ export const LogbookTable: React.FC = () => {
       </div>
 
       {/* Main Printable Logbook Container */}
-      <div className="glass rounded-2xl p-8 border border-white/5 shadow-xl bg-slate-950/40 relative overflow-hidden print:bg-white print:text-black print:p-0 print:border-none print:shadow-none print:rounded-none">
+      <div className="bg-white rounded-2xl p-8 border border-[#E2E8F0] shadow-sm relative overflow-hidden print:bg-white print:text-black print:p-0 print:border-none print:shadow-none print:rounded-none">
         
         {/* Printable Header Info */}
-        <div className="flex flex-col gap-6 mb-8 border-b border-white/10 pb-6 print:border-black/20">
+        <div className="flex flex-col gap-6 mb-8 border-b border-[#E2E8F0] pb-6 print:border-black/20">
           <div className="text-center">
-            <h2 className="text-xl font-bold text-gray-100 uppercase tracking-wide print:text-black print:text-lg">
+            <h2 className="text-xl font-bold text-[#0F172A] uppercase tracking-wide print:text-black print:text-lg">
               Jurnal Kegiatan Harian (Logbook) PKL
             </h2>
-            <p className="text-xs text-gray-400 mt-1 print:text-black/60">
+            <p className="text-xs text-[#64748B] mt-1 print:text-black/60">
               Program Praktek Kerja Lapangan & Monitoring Akademik
             </p>
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-2 text-xs">
-            <div className="flex flex-col gap-1.5 text-gray-300 print:text-black">
+            <div className="flex flex-col gap-1.5 text-slate-700 print:text-black">
               <div className="flex">
-                <span className="w-32 text-gray-500 shrink-0 print:text-black/60">Nama Mahasiswa</span>
+                <span className="w-36 text-[#64748B] shrink-0 print:text-black/60">Nama Siswa</span>
                 <span className="font-semibold">: {state.studentName}</span>
               </div>
+              {state.nisn && (
+                <div className="flex">
+                  <span className="w-36 text-[#64748B] shrink-0 print:text-black/60">NIS / NISN</span>
+                  <span className="font-semibold">: {state.nisn}</span>
+                </div>
+              )}
               <div className="flex">
-                <span className="w-32 text-gray-500 shrink-0 print:text-black/60">Tempat PKL</span>
+                <span className="w-36 text-[#64748B] shrink-0 print:text-black/60">Tempat PKL</span>
                 <span className="font-semibold">: {state.companyName}</span>
               </div>
             </div>
-            <div className="flex flex-col gap-1.5 text-gray-300 print:text-black">
+            <div className="flex flex-col gap-1.5 text-slate-700 print:text-black">
               <div className="flex">
-                <span className="w-32 text-gray-500 shrink-0 print:text-black/60">Pembimbing Lapangan</span>
+                <span className="w-36 text-[#64748B] shrink-0 print:text-black/60">Pembimbing Lapangan</span>
                 <span className="font-semibold">: {state.mentorName}</span>
               </div>
               <div className="flex">
-                <span className="w-32 text-gray-500 shrink-0 print:text-black/60">Dosen Pembimbing</span>
+                <span className="w-36 text-[#64748B] shrink-0 print:text-black/60">Pembimbing Internal</span>
                 <span className="font-semibold">: {state.advisorName}</span>
               </div>
             </div>
@@ -91,9 +97,9 @@ export const LogbookTable: React.FC = () => {
 
         {/* Table representation */}
         <div className="overflow-x-auto w-full">
-          <table className="w-full text-left border-collapse text-xs">
+          <table className="w-full text-left border-collapse text-xs border border-[#E2E8F0] rounded-xl overflow-hidden shadow-sm">
             <thead>
-              <tr className="border-b border-white/10 text-gray-400 font-semibold uppercase tracking-wider print:border-black/30 print:text-black">
+              <tr className="border-b border-[#E2E8F0] text-slate-500 font-semibold uppercase tracking-wider bg-[#F8FAFC] print:border-black/30 print:text-black print:bg-transparent">
                 <th className="py-3 px-2 w-10 text-center">No</th>
                 <th className="py-3 px-3 w-28">Tanggal</th>
                 <th className="py-3 px-3 w-24">Kategori</th>
@@ -104,36 +110,36 @@ export const LogbookTable: React.FC = () => {
                 <th className="py-3 px-4 w-48 print:w-36">Evaluasi Pembimbing</th>
               </tr>
             </thead>
-            <tbody className="divide-y divide-white/5 print:divide-black/10 text-gray-300 print:text-black">
+            <tbody className="divide-y divide-[#E2E8F0] print:divide-black/10 text-slate-700 print:text-black">
               {state.cards.length === 0 ? (
                 <tr>
-                  <td colSpan={8} className="py-8 text-center text-gray-500 italic">
+                  <td colSpan={8} className="py-8 text-center text-slate-400 italic">
                     Belum ada catatan logbook harian.
                   </td>
                 </tr>
               ) : (
                 state.cards.map((card, index) => (
-                  <tr key={card.id} className="hover:bg-white/1 transition duration-150 print:hover:bg-transparent">
+                  <tr key={card.id} className="hover:bg-[#F8FAFC] transition duration-150 print:hover:bg-transparent">
                     <td className="py-4 px-2 text-center font-medium">{index + 1}</td>
                     <td className="py-4 px-3 font-medium flex items-center gap-1.5 whitespace-nowrap">
-                      <Calendar size={12} className="text-gray-500 print:hidden" />
+                      <Calendar size={12} className="text-gray-400 print:hidden" />
                       {new Date(card.createdAt).toLocaleDateString('id-ID', { year: 'numeric', month: '2-digit', day: '2-digit' })}
                     </td>
                     <td className="py-4 px-3">
-                      <span className="px-2 py-0.5 rounded border border-white/5 bg-white/2 print:border-black/20 print:bg-transparent text-[11px]">
+                      <span className="px-2 py-0.5 rounded border border-[#E2E8F0] bg-slate-50 print:border-black/20 print:bg-transparent text-[11px] text-slate-700">
                         {card.category}
                       </span>
                     </td>
                     <td className="py-4 px-4 leading-relaxed font-medium">
-                      <div className="font-bold text-gray-100 print:text-black mb-0.5">{card.title}</div>
-                      <div className="text-[11px] text-gray-400 print:text-black/75 line-clamp-2 print:line-clamp-none">
+                      <div className="font-bold text-slate-800 print:text-black mb-0.5">{card.title}</div>
+                      <div className="text-[11px] text-[#64748B] print:text-black/75 line-clamp-2 print:line-clamp-none">
                         {card.description}
                       </div>
                     </td>
-                    <td className="py-4 px-3 text-center text-gray-200 print:text-black font-semibold">
+                    <td className="py-4 px-3 text-center text-slate-800 print:text-black font-semibold">
                       {card.startTime || '-'}
                     </td>
-                    <td className="py-4 px-3 text-center text-gray-200 print:text-black font-semibold">
+                    <td className="py-4 px-3 text-center text-slate-800 print:text-black font-semibold">
                       {card.endTime || '-'}
                     </td>
                     <td className="py-4 px-3 text-center whitespace-nowrap">
@@ -145,36 +151,36 @@ export const LogbookTable: React.FC = () => {
                       <div className="flex flex-col gap-1.5 text-[10px]">
                         {/* Mentor Evaluation */}
                         {card.scoreMentor !== undefined ? (
-                          <div className="flex flex-col gap-0.5 border-b border-white/5 pb-1 last:border-0 last:pb-0 print:border-black/10">
-                            <div className="flex items-center gap-1 text-purple-400 font-bold text-[10px] print:text-black">
+                          <div className="flex flex-col gap-0.5 border-b border-[#E2E8F0] pb-1 last:border-0 last:pb-0 print:border-black/10">
+                            <div className="flex items-center gap-1 text-purple-600 font-bold text-[10px] print:text-black">
                               <Award size={10} className="print:hidden" />
                               Mentor: {card.scoreMentor}/100 (D:{card.scoreMentorDiscipline} K:{card.scoreMentorSkill} S:{card.scoreMentorAttitude})
                             </div>
                             {card.feedbackMentor && (
-                              <div className="text-[9px] text-gray-400 italic leading-snug print:text-black/75">
+                              <div className="text-[9px] text-[#64748B] italic leading-snug print:text-black/75">
                                 &ldquo;{card.feedbackMentor}&rdquo;
                               </div>
                             )}
                           </div>
                         ) : (
-                          <span className="text-gray-500 italic text-[9px] border-b border-white/5 pb-1">Belum dinilai Mentor</span>
+                          <span className="text-slate-400 italic text-[9px] border-b border-[#E2E8F0] pb-1">Belum dinilai Mentor</span>
                         )}
 
                         {/* Guru Evaluation */}
                         {card.scoreAdvisor !== undefined ? (
                           <div className="flex flex-col gap-0.5 pt-0.5">
-                            <div className="flex items-center gap-1 text-amber-400 font-bold text-[10px] print:text-black">
+                            <div className="flex items-center gap-1 text-yellow-600 font-bold text-[10px] print:text-black">
                               <Award size={10} className="print:hidden" />
                               Guru: {card.scoreAdvisor}/100 (D:{card.scoreAdvisorDiscipline} L:{card.scoreAdvisorReport} K:{card.scoreAdvisorCommunication})
                             </div>
                             {card.feedbackAdvisor && (
-                              <div className="text-[9px] text-gray-400 italic leading-snug print:text-black/75">
+                              <div className="text-[9px] text-[#64748B] italic leading-snug print:text-black/75">
                                 &ldquo;{card.feedbackAdvisor}&rdquo;
                               </div>
                             )}
                           </div>
                         ) : (
-                          <span className="text-gray-500 italic text-[9px] pt-0.5">Belum dinilai Guru</span>
+                          <span className="text-slate-400 italic text-[9px] pt-0.5">Belum dinilai Guru</span>
                         )}
                       </div>
                     </td>
@@ -195,11 +201,11 @@ export const LogbookTable: React.FC = () => {
             <span className="text-[10px] text-black/60">{state.companyName}</span>
           </div>
           <div className="flex flex-col items-center">
-            <span>Yogyakarta, {new Date().toLocaleDateString('id-ID', { day: 'numeric', month: 'long', year: 'numeric' })}</span>
-            <span className="font-semibold mt-1">Mahasiswa PKL</span>
+            <span>Bojong, {new Date().toLocaleDateString('id-ID', { day: 'numeric', month: 'long', year: 'numeric' })}</span>
+            <span className="font-semibold mt-1">Siswa PKL</span>
             <div className="h-16" />
             <span className="font-bold underline">{state.studentName}</span>
-            <span className="text-[10px] text-black/60">NIM / NISN</span>
+            <span className="text-[10px] text-black/60">{state.nisn ? `NIS/NISN: ${state.nisn}` : 'NIS / NISN'}</span>
           </div>
         </div>
 
@@ -211,15 +217,37 @@ export const LogbookTable: React.FC = () => {
           body {
             background: white !important;
             color: black !important;
+            font-size: 10px !important;
           }
           /* Hide non-printable elements */
-          nav, header, footer, button, .print\:hidden, [role="button"] {
+          nav, header, footer, button, .print\:hidden, [role="button"], [title] {
             display: none !important;
           }
-          /* Ensure columns take full width */
+          /* Remove layout containers shadows */
+          main, div, table, tr, td {
+            box-shadow: none !important;
+            border-color: #94a3b8 !important;
+          }
           main {
             padding: 0 !important;
             margin: 0 !important;
+            width: 100% !important;
+          }
+          /* Prevent row splitting across pages */
+          tr {
+            page-break-inside: avoid !important;
+            break-inside: avoid !important;
+          }
+          /* Format signature block nicely */
+          .print\:grid {
+            display: grid !important;
+            page-break-inside: avoid !important;
+            break-inside: avoid !important;
+          }
+          /* Page margins and layout */
+          @page {
+            size: A4 portrait;
+            margin: 1.5cm 1cm 1.5cm 1cm;
           }
         }
       `}</style>
