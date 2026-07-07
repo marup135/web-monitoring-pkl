@@ -9,6 +9,20 @@ interface GuruPortalProps {
   onPantau: (studentId: string) => void;
 }
 
+interface DashboardMetrics {
+  totalStudents: number;
+  monitoringToday: number;
+  pendingReview: number;
+  pendingGrades: number;
+  averageGrade: number;
+  columnCounts: {
+    rencana: number;
+    progres: number;
+    review: number;
+    selesai: number;
+  };
+}
+
 export const GuruPortal: React.FC<GuruPortalProps> = ({ onPantau }) => {
   const {
     currentUser,
@@ -17,7 +31,7 @@ export const GuruPortal: React.FC<GuruPortalProps> = ({ onPantau }) => {
     setSelectedClassId,
   } = usePKL();
 
-  const [metrics, setMetrics] = useState<any>(null);
+  const [metrics, setMetrics] = useState<DashboardMetrics | null>(null);
   const [loadingMetrics, setLoadingMetrics] = useState(false);
 
   useEffect(() => {
@@ -26,7 +40,7 @@ export const GuruPortal: React.FC<GuruPortalProps> = ({ onPantau }) => {
         setLoadingMetrics(true);
         try {
           const m = await getDashboardMetricsAction(selectedClassId, undefined);
-          setMetrics(m);
+          setMetrics(m as DashboardMetrics);
         } catch (e) {
           console.error(e);
         } finally {
@@ -38,7 +52,7 @@ export const GuruPortal: React.FC<GuruPortalProps> = ({ onPantau }) => {
   }, [selectedClassId]);
 
   const hasAssignment = currentUser?.classes && currentUser.classes.length > 0;
-  const activeClassName = currentUser?.classes?.find((c: any) => c.id === selectedClassId)?.name || 'Kelas Aktif';
+  const activeClassName = currentUser?.classes?.find((c: { id: string; name: string }) => c.id === selectedClassId)?.name || 'Kelas Aktif';
 
   // Empty state when no classes are assigned
   if (!hasAssignment) {
@@ -82,7 +96,7 @@ export const GuruPortal: React.FC<GuruPortalProps> = ({ onPantau }) => {
               onChange={(e) => setSelectedClassId(e.target.value)}
               className="bg-white border border-[#E2E8F0] rounded-xl px-3 py-1.5 text-xs text-[#0F172A] focus:outline-none focus:border-[#2563EB]"
             >
-              {currentUser.classes.map((c: any) => (
+              {currentUser.classes.map((c: { id: string; name: string }) => (
                 <option key={c.id} value={c.id}>{c.name}</option>
               ))}
             </select>
@@ -170,8 +184,8 @@ export const GuruPortal: React.FC<GuruPortalProps> = ({ onPantau }) => {
               </div>
             ) : metrics ? (
               <div className="flex flex-col gap-4">
-                {Object.entries(metrics.columnCounts).map(([col, val]: any) => {
-                  const total = Object.values(metrics.columnCounts).reduce((a: any, b: any) => a + b, 0) as number;
+                {Object.entries(metrics.columnCounts).map(([col, val]) => {
+                  const total = Object.values(metrics.columnCounts).reduce((a, b) => a + b, 0);
                   const percent = total > 0 ? Math.round((val / total) * 100) : 0;
                   const label = col === 'rencana' ? 'Rencana' : col === 'progres' ? 'Progres' : col === 'review' ? 'Review' : 'Selesai';
                   const color = col === 'rencana' ? 'bg-blue-400' : col === 'progres' ? 'bg-yellow-400' : col === 'review' ? 'bg-purple-400' : 'bg-green-500';

@@ -119,14 +119,14 @@ export const AdminPortal: React.FC = () => {
   const handleSiswaClassChange = async (userId: string, classId: string) => {
     const user = allUsersList.find((u: any) => u.id === userId);
     const companyId = user?.companyId || null;
-    const res = await assignSiswa(userId, classId || null, companyId, user?.name, user?.nisn);
+    const res = await assignSiswa(userId, classId || null, companyId, user?.name, user?.nisn || undefined);
     if (!res.success) alert(res.error);
   };
 
   const handleSiswaCompanyChange = async (userId: string, companyId: string) => {
     const user = allUsersList.find((u: any) => u.id === userId);
     const classId = user?.classId || null;
-    const res = await assignSiswa(userId, classId, companyId || null, user?.name, user?.nisn);
+    const res = await assignSiswa(userId, classId, companyId || null, user?.name, user?.nisn || undefined);
     if (!res.success) alert(res.error);
   };
 

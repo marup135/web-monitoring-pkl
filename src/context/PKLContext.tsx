@@ -51,6 +51,34 @@ export interface UserProfile {
   nisn?: string | null;
 }
 
+export interface ClassItem {
+  id: string;
+  name: string;
+  createdAt: Date;
+}
+
+export interface CompanyItem {
+  id: string;
+  name: string;
+  createdAt: Date;
+}
+
+export interface UserItem {
+  id: string;
+  username: string;
+  name: string;
+  role: string;
+  company: string | null;
+  school?: string;
+  classId: string | null;
+  companyId: string | null;
+  nisn: string | null;
+  classes: { id: string; name: string }[];
+  companies: { id: string; name: string }[];
+  class?: { id: string; name: string } | null;
+  perusahaan?: { id: string; name: string } | null;
+}
+
 export interface StudentMetric {
   id: string;
   name: string;
@@ -75,9 +103,9 @@ interface PKLContextProps {
   selectedStudentId: string | null;
   selectedClassId: string | null;
   selectedCompanyId: string | null;
-  classesList: any[];
-  companiesList: any[];
-  allUsersList: any[];
+  classesList: ClassItem[];
+  companiesList: CompanyItem[];
+  allUsersList: UserItem[];
   setActiveTab: (tab: 'board' | 'logbook' | 'stats') => void;
   setSelectedStudentId: (studentId: string | null) => Promise<void>;
   setSelectedClassId: (classId: string | null) => Promise<void>;
@@ -145,9 +173,9 @@ export const PKLProvider: React.FC<{ children: React.ReactNode }> = ({ children 
   const [selectedStudentId, setSelectedStudentIdState] = useState<string | null>(null);
   const [selectedClassId, setSelectedClassIdState] = useState<string | null>(null);
   const [selectedCompanyId, setSelectedCompanyIdState] = useState<string | null>(null);
-  const [classesList, setClassesList] = useState<any[]>([]);
-  const [companiesList, setCompaniesList] = useState<any[]>([]);
-  const [allUsersList, setAllUsersList] = useState<any[]>([]);
+  const [classesList, setClassesList] = useState<ClassItem[]>([]);
+  const [companiesList, setCompaniesList] = useState<CompanyItem[]>([]);
+  const [allUsersList, setAllUsersList] = useState<UserItem[]>([]);
 
   const activeRole: PKLRole = currentUser
     ? currentUser.role === 'siswa'
@@ -319,7 +347,7 @@ export const PKLProvider: React.FC<{ children: React.ReactNode }> = ({ children 
         
         let initialClassId = null;
         let initialCompanyId = null;
-        const regUser = res.user as any;
+        const regUser = res.user as UserProfile;
         if (regUser.role === 'pembimbing_internal' && regUser.classes && regUser.classes.length > 0) {
           initialClassId = regUser.classes[0].id;
           setSelectedClassIdState(initialClassId);
