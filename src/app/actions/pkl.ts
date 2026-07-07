@@ -171,7 +171,7 @@ export async function getPKLState(selectedStudentId?: string): Promise<PKLState>
     });
 
     // Mapped cards
-    const mappedCards: PKLCard[] = cards.map(c => ({
+    const mappedCards: PKLCard[] = cards.map((c: any) => ({
       id: c.id,
       title: c.title,
       description: c.description,
@@ -200,14 +200,14 @@ export async function getPKLState(selectedStudentId?: string): Promise<PKLState>
       score: c.scoreMentor ?? undefined,
       feedback: c.feedbackMentor ?? undefined,
 
-      comments: c.comments.map(comm => ({
+      comments: c.comments.map((comm: any) => ({
         id: comm.id,
         userName: comm.userName,
         role: comm.role as PKLRole,
         text: comm.text,
         createdAt: comm.createdAt.toISOString(),
       })),
-      history: c.history.map(h => ({
+      history: c.history.map((h: any) => ({
         id: h.id,
         text: h.text,
         createdAt: h.createdAt.toISOString(),
