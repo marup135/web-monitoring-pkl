@@ -3,7 +3,7 @@
 import React, { useState } from 'react';
 import { usePKL } from '../context/PKLContext';
 import { PKLCard, TaskCategory } from '../types/pkl';
-import { Plus, Calendar, Clock, MessageSquare, Award, Search, Filter, BookOpen } from 'lucide-react';
+import { Plus, Calendar, Clock, MessageSquare, Award, Search, Filter, BookOpen, ChevronDown } from 'lucide-react';
 
 interface KanbanBoardProps {
   onOpenCard: (card: PKLCard) => void;
@@ -15,11 +15,15 @@ export const KanbanBoard: React.FC<KanbanBoardProps> = ({ onOpenCard }) => {
   const [selectedCategory, setSelectedCategory] = useState<string>('Semua');
   const [draggedOverColumn, setDraggedOverColumn] = useState<string | null>(null);
 
+  // Custom Dropdown State
+  const [isDropdownOpen, setIsDropdownOpen] = useState(false);
+
   // Inline card creation form
   const [activeAddColumn, setActiveAddColumn] = useState<PKLCard['columnId'] | null>(null);
   const [newTitle, setNewTitle] = useState('');
   const [newDesc, setNewDesc] = useState('');
-  const [newCategory, setNewCategory] = useState<TaskCategory>('Coding');
+  const [newCategory, setNewCategory] = useState<string>('Coding');
+  const [customCategory, setCustomCategory] = useState('');
   const [newDueDate, setNewDueDate] = useState(() => {
     const today = new Date();
     today.setDate(today.getDate() + 7);
@@ -29,10 +33,12 @@ export const KanbanBoard: React.FC<KanbanBoardProps> = ({ onOpenCard }) => {
   const handleAddCardSubmit = (e: React.FormEvent, colId: PKLCard['columnId']) => {
     e.preventDefault();
     if (!newTitle.trim()) return;
-    addCard(newTitle, newDesc, newCategory, newDueDate, colId);
+    const categoryToSave = newCategory === 'Lainnya' ? customCategory.trim() || 'Lainnya' : newCategory;
+    addCard(newTitle, newDesc, categoryToSave, newDueDate, colId);
     setNewTitle('');
     setNewDesc('');
     setNewCategory('Coding');
+    setCustomCategory('');
     setActiveAddColumn(null);
   };
 
@@ -99,6 +105,29 @@ export const KanbanBoard: React.FC<KanbanBoardProps> = ({ onOpenCard }) => {
     }
   };
 
+  const getCategoryFilterStyle = (cat: string, isSelected: boolean) => {
+    if (!isSelected) {
+      return 'bg-white/2 text-gray-400 border-white/5 hover:bg-white/5 hover:text-gray-300 hover:border-white/10';
+    }
+    switch (cat) {
+      case 'Coding':
+      case 'Semua':
+        return 'bg-indigo-500/20 text-indigo-300 border-indigo-500/30';
+      case 'Design':
+        return 'bg-purple-500/20 text-purple-300 border-purple-500/30';
+      case 'Laporan':
+        return 'bg-emerald-500/20 text-emerald-300 border-emerald-500/30';
+      case 'Networking':
+        return 'bg-sky-500/20 text-sky-300 border-sky-500/30';
+      default:
+        return 'bg-slate-500/20 text-slate-300 border-slate-500/30';
+    }
+  };
+
+  const standardCategories = ['Coding', 'Design', 'Laporan', 'Networking'];
+  const existingCategories = Array.from(new Set(state.cards.map(c => c.category)));
+  const filterCategories = ['Semua', ...Array.from(new Set([...standardCategories, ...existingCategories]))];
+
   return (
     <div className="flex flex-col gap-6">
       {/* Filtering and Search Controls */}
@@ -116,15 +145,11 @@ export const KanbanBoard: React.FC<KanbanBoardProps> = ({ onOpenCard }) => {
 
         <div className="flex items-center gap-2 w-full md:w-auto overflow-x-auto py-1">
           <Filter size={16} className="text-gray-400 shrink-0" />
-          {['Semua', 'Coding', 'Design', 'Laporan', 'Networking', 'Lainnya'].map((cat) => (
+          {filterCategories.map((cat) => (
             <button
               key={cat}
               onClick={() => setSelectedCategory(cat)}
-              className={`text-xs px-3 py-1.5 rounded-lg border font-medium whitespace-nowrap transition ${
-                selectedCategory === cat
-                  ? 'bg-indigo-500/20 text-indigo-300 border-indigo-500/30'
-                  : 'bg-white/2 text-gray-400 border-white/5 hover:bg-white/4'
-              }`}
+              className={`text-xs px-3 py-1.5 rounded-lg border font-medium whitespace-nowrap transition ${getCategoryFilterStyle(cat, selectedCategory === cat)}`}
             >
               {cat}
             </button>
@@ -195,10 +220,10 @@ export const KanbanBoard: React.FC<KanbanBoardProps> = ({ onOpenCard }) => {
                       </div>
 
                       <div className="flex items-center gap-3">
-                        {card.hoursLogged > 0 && (
-                          <div className="flex items-center gap-0.5">
+                        {(card.startTime || card.endTime) && (
+                          <div className="flex items-center gap-1.5 text-gray-400">
                             <Clock size={12} className="text-indigo-400" />
-                            <span className="font-semibold text-gray-300">{card.hoursLogged}j</span>
+                            <span>{card.startTime || '-'}-{card.endTime || '-'}</span>
                           </div>
                         )}
                         {card.comments.length > 0 && (
@@ -240,30 +265,62 @@ export const KanbanBoard: React.FC<KanbanBoardProps> = ({ onOpenCard }) => {
                         rows={2}
                         className="w-full bg-black/20 border border-white/5 rounded-lg px-3 py-1.5 text-xs text-gray-200 focus:outline-none focus:border-indigo-500 resize-none"
                       />
-                      <div className="grid grid-cols-2 gap-2">
-                        <div>
-                          <label className="text-[10px] text-gray-400 block mb-1">Kategori</label>
-                          <select
-                            value={newCategory}
-                            onChange={(e) => setNewCategory(e.target.value as TaskCategory)}
-                            className="w-full bg-black/20 border border-white/5 rounded-lg px-2 py-1 text-xs text-gray-200 focus:outline-none"
-                          >
-                            <option value="Coding">Coding</option>
-                            <option value="Design">Design</option>
-                            <option value="Laporan">Laporan</option>
-                            <option value="Networking">Networking</option>
-                            <option value="Lainnya">Lainnya</option>
-                          </select>
+                      <div className="flex flex-col gap-2">
+                        <div className="grid grid-cols-2 gap-2">
+                          <div>
+                            <label className="text-[10px] text-gray-400 block mb-1">Kategori</label>
+                            <div className="relative">
+                              <button
+                                type="button"
+                                onClick={() => setIsDropdownOpen(!isDropdownOpen)}
+                                className="w-full bg-black/40 border border-white/10 rounded-lg px-2.5 py-1.5 text-left text-xs text-gray-200 focus:outline-none flex justify-between items-center hover:border-indigo-500/50 transition cursor-pointer"
+                              >
+                                <span>{newCategory}</span>
+                                <ChevronDown size={12} className={`text-gray-400 transition-transform ${isDropdownOpen ? 'rotate-180' : ''}`} />
+                              </button>
+                              
+                              {isDropdownOpen && (
+                                <div className="absolute left-0 right-0 mt-1 bg-slate-950/95 border border-white/10 rounded-lg shadow-xl z-50 overflow-hidden glass">
+                                  {['Coding', 'Design', 'Laporan', 'Networking', 'Lainnya'].map((cat) => (
+                                    <button
+                                      key={cat}
+                                      type="button"
+                                      onClick={() => {
+                                        setNewCategory(cat);
+                                        setIsDropdownOpen(false);
+                                      }}
+                                      className={`w-full text-left px-3 py-1.5 text-xs transition-colors hover:bg-indigo-500/10 hover:text-indigo-300 flex items-center justify-between cursor-pointer ${newCategory === cat ? 'bg-indigo-500/15 text-indigo-400 font-semibold' : 'text-gray-300'}`}
+                                    >
+                                      {cat}
+                                    </button>
+                                  ))}
+                                </div>
+                              )}
+                            </div>
+                          </div>
+                          <div>
+                            <label className="text-[10px] text-gray-400 block mb-1">Tenggat Waktu</label>
+                            <input
+                              type="date"
+                              value={newDueDate}
+                              onChange={(e) => setNewDueDate(e.target.value)}
+                              className="w-full bg-black/20 border border-white/5 rounded-lg px-2 py-1 text-xs text-gray-200 focus:outline-none"
+                            />
+                          </div>
                         </div>
-                        <div>
-                          <label className="text-[10px] text-gray-400 block mb-1">Tenggat Waktu</label>
-                          <input
-                            type="date"
-                            value={newDueDate}
-                            onChange={(e) => setNewDueDate(e.target.value)}
-                            className="w-full bg-black/20 border border-white/5 rounded-lg px-2 py-1 text-xs text-gray-200 focus:outline-none"
-                          />
-                        </div>
+                        {newCategory === 'Lainnya' && (
+                          <div>
+                            <label className="text-[10px] text-gray-400 block mb-1">Isi Kategori Lainnya</label>
+                            <input
+                              type="text"
+                              required
+                              placeholder="Kategori baru..."
+                              value={customCategory}
+                              onChange={(e) => setCustomCategory(e.target.value)}
+                              className="w-full bg-black/20 border border-white/5 rounded-lg px-3 py-1.5 text-xs text-gray-200 focus:outline-none focus:border-indigo-500"
+                            />
+                          </div>
+                        )}
                       </div>
                       <div className="flex gap-2 justify-end mt-1">
                         <button

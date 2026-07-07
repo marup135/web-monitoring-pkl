@@ -28,11 +28,28 @@ model Card {
   description  String        @db.Text
   columnId     String        @default("rencana")
   category     String        @default("Coding")
-  hoursLogged  Int           @default(0)
+  startTime    String        @default("")
+  endTime      String        @default("")
   dueDate      String
   createdAt    DateTime      @default(now())
-  score        Int?
-  feedback     String?       @db.Text
+  
+  // Mentor (Pembimbing Eksternal) scores
+  scoreMentor           Int?
+  scoreMentorDiscipline Int?
+  scoreMentorSkill      Int?
+  scoreMentorAttitude   Int?
+  feedbackMentor        String?       @db.Text
+
+  // Advisor (Pembimbing Internal / Guru) scores
+  scoreAdvisor              Int?
+  scoreAdvisorDiscipline    Int?
+  scoreAdvisorReport        Int?
+  scoreAdvisorCommunication Int?
+  feedbackAdvisor           String?       @db.Text
+
+  // Attachments JSON string
+  attachmentsJson           String?       @db.Text
+
   comments     Comment[]
   history      HistoryItem[]
 

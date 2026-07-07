@@ -8,7 +8,7 @@ import { DashboardStats } from '../components/DashboardStats';
 import { CardModal } from '../components/CardModal';
 import { AuthPage } from '../components/AuthPage';
 import { PKLCard } from '../types/pkl';
-import { LayoutDashboard, FileSpreadsheet, BarChart3, GraduationCap, Building2, UserCheck, RefreshCw } from 'lucide-react';
+import { LayoutDashboard, FileSpreadsheet, BarChart3, Building2, UserCheck, RefreshCw } from 'lucide-react';
 
 function DashboardContent() {
   const {
@@ -43,12 +43,14 @@ function DashboardContent() {
         <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 mb-8 border-b border-white/5 pb-6">
           <div>
             <div className="flex items-center gap-3">
-              <div className="p-2.5 rounded-xl bg-gradient-to-r from-indigo-500 to-purple-600 text-white shadow-md shadow-indigo-500/10">
-                <GraduationCap size={28} />
-              </div>
+              <img
+                src="/logo.jpg"
+                alt="NeboTrack Logo"
+                className="w-10 h-10 object-contain rounded-xl shadow-md border border-white/5"
+              />
               <div>
                 <h1 className="text-2xl font-black bg-gradient-to-r from-white via-gray-200 to-gray-400 bg-clip-text text-transparent tracking-tight">
-                  PORTAL PEMBIMBING - TELTRACK NEBO
+                  PORTAL PEMBIMBING - NEBOTRACK
                 </h1>
                 <p className="text-xs text-gray-400 font-medium mt-0.5">
                   Selamat datang, <span className="text-indigo-400 font-bold">{currentUser.name}</span> (Peran: {currentUser.role === 'pembimbing_internal' ? 'Pembimbing Internal - Sekolah' : 'Pembimbing Eksternal - Perusahaan'})
@@ -84,7 +86,7 @@ function DashboardContent() {
           <div className="absolute top-0 right-0 w-64 h-64 bg-indigo-500/5 rounded-full blur-3xl pointer-events-none" />
           <h2 className="text-sm font-bold uppercase tracking-wider text-gray-400 mb-4 flex items-center gap-2">
             <UserCheck size={16} className="text-indigo-400" />
-            Daftar Siswa PKL Terdaftar (SMKN 1 BOJONG)
+            Daftar Siswa PKL Terdaftar (SMKN 1 Bojong)
           </h2>
           
           {studentsList.length === 0 ? (
@@ -150,13 +152,15 @@ function DashboardContent() {
       <div className="flex flex-col lg:flex-row justify-between items-start lg:items-center gap-6 mb-8 border-b border-white/5 pb-6 print:hidden">
         <div>
           <div className="flex items-center gap-3">
-            <div className="p-2.5 rounded-xl bg-gradient-to-r from-indigo-500 to-purple-600 text-white shadow-md shadow-indigo-500/10">
-              <GraduationCap size={28} />
-            </div>
+            <img
+              src="/logo.jpg"
+              alt="NeboTrack Logo"
+              className="w-10 h-10 object-contain rounded-xl shadow-md border border-white/5"
+            />
             <div>
               <div className="flex items-center gap-2">
                 <h1 className="text-2xl font-black bg-gradient-to-r from-white via-gray-200 to-gray-400 bg-clip-text text-transparent tracking-tight">
-                  TelTrack Nebo
+                  NeboTrack
                 </h1>
                 {loading && (
                   <div className="flex items-center gap-1.5 px-2 py-0.5 rounded-md bg-indigo-500/10 border border-indigo-500/20 text-[10px] text-indigo-400 font-semibold uppercase animate-pulse">
@@ -166,7 +170,7 @@ function DashboardContent() {
                 )}
               </div>
               <p className="text-xs text-gray-400 font-medium mt-0.5">
-                Tracking & Logbook Harian PKL SMKN 1 BOJONG (Telkom Tracking)
+                Monitoring & Logbook Harian PKL SMKN 1 Bojong
               </p>
             </div>
           </div>
@@ -295,7 +299,7 @@ export default function Home() {
       <div className="min-h-screen flex flex-col justify-between font-sans">
         <HomeWrapper />
         <footer className="py-6 border-t border-white/5 text-center text-xs text-gray-500 print:hidden mt-12 bg-black/20">
-          <span>&copy; 2026 TelTrack Nebo. Built with Next.js & Tailwind CSS. Designed by Antigravity.</span>
+          <span>&copy; 2026 NeboTrack. Built with Next.js & Tailwind CSS. Designed by Antigravity.</span>
         </footer>
       </div>
     </PKLProvider>

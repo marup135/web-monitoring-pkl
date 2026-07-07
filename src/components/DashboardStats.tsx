@@ -3,6 +3,7 @@
 import React, { useState } from 'react';
 import { usePKL } from '../context/PKLContext';
 import { Clock, CheckSquare, Award, MessageSquare, Plus, FileText, Calendar } from 'lucide-react';
+import { calculateDuration } from '@/utils/time';
 
 export const DashboardStats: React.FC = () => {
   const { state, activeRole, addAdvisorNote } = usePKL();
@@ -15,11 +16,18 @@ export const DashboardStats: React.FC = () => {
   const progressCards = state.cards.filter(c => c.columnId === 'progres');
   const plannedCards = state.cards.filter(c => c.columnId === 'rencana');
 
-  const totalHours = state.cards.reduce((sum, card) => sum + card.hoursLogged, 0);
+  const totalHours = Math.round(
+    state.cards.reduce((sum, card) => sum + calculateDuration(card.startTime, card.endTime), 0)
+  );
   
-  const gradedCards = state.cards.filter(c => c.score !== undefined);
-  const averageScore = gradedCards.length > 0
-    ? Math.round(gradedCards.reduce((sum, card) => sum + (card.score || 0), 0) / gradedCards.length)
+  const mentorGradedCards = state.cards.filter(c => c.scoreMentor !== undefined && c.scoreMentor !== null);
+  const averageScoreMentor = mentorGradedCards.length > 0
+    ? Math.round(mentorGradedCards.reduce((sum, card) => sum + (card.scoreMentor || 0), 0) / mentorGradedCards.length)
+    : 0;
+
+  const advisorGradedCards = state.cards.filter(c => c.scoreAdvisor !== undefined && c.scoreAdvisor !== null);
+  const averageScoreAdvisor = advisorGradedCards.length > 0
+    ? Math.round(advisorGradedCards.reduce((sum, card) => sum + (card.scoreAdvisor || 0), 0) / advisorGradedCards.length)
     : 0;
 
   // Category counts
@@ -78,11 +86,15 @@ export const DashboardStats: React.FC = () => {
             <Award size={24} />
           </div>
           <div>
-            <span className="text-[10px] uppercase font-bold text-gray-400 tracking-wider block">Rata-Rata Nilai</span>
-            <span className="text-3xl font-black text-gray-100">
-              {averageScore > 0 ? averageScore : '-'}{' '}
-              {averageScore > 0 && <span className="text-xs font-semibold text-emerald-400">/ 100</span>}
-            </span>
+            <span className="text-[10px] uppercase font-bold text-gray-400 tracking-wider block mb-1">Rata-Rata Nilai</span>
+            <div className="flex flex-col gap-1 text-[11px] font-semibold text-gray-300">
+              <div>
+                Pembimbing Eksternal: <span className="text-sm font-bold text-purple-400">{averageScoreMentor > 0 ? `${averageScoreMentor}/100` : '-'}</span>
+              </div>
+              <div>
+                Pembimbing Internal: <span className="text-sm font-bold text-amber-400">{averageScoreAdvisor > 0 ? `${averageScoreAdvisor}/100` : '-'}</span>
+              </div>
+            </div>
           </div>
         </div>
 
@@ -143,7 +155,7 @@ export const DashboardStats: React.FC = () => {
               <h4 className="text-xs font-semibold text-gray-400 uppercase tracking-wider">Distribusi Kategori Pekerjaan</h4>
               
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                {['Coding', 'Design', 'Laporan', 'Networking', 'Lainnya'].map((cat) => {
+                {Array.from(new Set([...['Coding', 'Design', 'Laporan', 'Networking'], ...Object.keys(categoryCounts)])).map((cat) => {
                   const count = categoryCounts[cat] || 0;
                   const percent = totalCards > 0 ? Math.round((count / totalCards) * 100) : 0;
                   return (
@@ -178,13 +190,13 @@ export const DashboardStats: React.FC = () => {
           <div className="glass rounded-2xl p-6 border border-white/5 shadow-xl flex flex-col gap-6 h-full min-h-[400px]">
             <div className="flex items-center gap-2">
               <FileText size={18} className="text-indigo-400" />
-              <h3 className="font-bold text-gray-200 text-base">Catatan Dosen Pembimbing</h3>
+              <h3 className="font-bold text-gray-200 text-base">Catatan Pembimbing Internal</h3>
             </div>
 
             {/* Advisor form for student to document notes */}
             <form onSubmit={handleNoteSubmit} className="flex flex-col gap-3">
               <textarea
-                placeholder="Catat saran, masukan, atau arahan dari Dosen Pembimbing Anda..."
+                placeholder="Catat saran, masukan, atau arahan dari Pembimbing Internal Anda..."
                 required
                 rows={3}
                 value={newNoteText}

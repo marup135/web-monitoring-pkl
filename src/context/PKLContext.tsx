@@ -9,10 +9,14 @@ import {
   updateCardDetailsAction,
   addCommentAction,
   gradeCardAction,
+  gradeCardByMentorAction,
+  gradeCardByAdvisorAction,
   addAdvisorNoteAction,
   deleteCardAction,
   resetDatabaseAction,
   getStudentsAction,
+  addAttachmentAction,
+  deleteAttachmentAction,
 } from '@/app/actions/pkl';
 import {
   registerAction,
@@ -31,20 +35,33 @@ interface PKLContextProps {
   selectedStudentId: string | null;
   setActiveTab: (tab: 'board' | 'logbook' | 'stats') => void;
   setSelectedStudentId: (studentId: string | null) => Promise<void>;
-  addCard: (title: string, description: string, category: TaskCategory, dueDate: string, columnId?: PKLCard['columnId']) => Promise<void>;
+  addCard: (title: string, description: string, category: string, dueDate: string, columnId?: PKLCard['columnId']) => Promise<void>;
   updateCardColumn: (cardId: string, targetColumn: PKLCard['columnId']) => Promise<void>;
   updateCardDetails: (
     cardId: string,
     title: string,
     description: string,
-    category: TaskCategory,
+    category: string,
     dueDate: string,
-    hoursLogged: number,
-    score?: number | null,
-    feedback?: string | null
+    startTime: string,
+    endTime: string,
+    scoreMentor?: number | null,
+    scoreMentorDiscipline?: number | null,
+    scoreMentorSkill?: number | null,
+    scoreMentorAttitude?: number | null,
+    feedbackMentor?: string | null,
+    scoreAdvisor?: number | null,
+    scoreAdvisorDiscipline?: number | null,
+    scoreAdvisorReport?: number | null,
+    scoreAdvisorCommunication?: number | null,
+    feedbackAdvisor?: string | null
   ) => Promise<void>;
   addComment: (cardId: string, text: string) => Promise<void>;
   gradeCard: (cardId: string, score: number, feedback: string) => Promise<void>;
+  gradeCardByMentor: (cardId: string, discipline: number, skill: number, attitude: number, feedback: string) => Promise<void>;
+  gradeCardByAdvisor: (cardId: string, discipline: number, report: number, communication: number, feedback: string) => Promise<void>;
+  addAttachment: (cardId: string, name: string, url: string, type: string) => Promise<void>;
+  deleteAttachment: (cardId: string, index: number) => Promise<void>;
   addAdvisorNote: (text: string) => Promise<void>;
   deleteCard: (cardId: string) => Promise<void>;
   resetState: () => Promise<void>;
@@ -202,7 +219,7 @@ export const PKLProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     }
   };
 
-  const addCard = async (title: string, description: string, category: TaskCategory, dueDate: string, columnId?: PKLCard['columnId']) => {
+  const addCard = async (title: string, description: string, category: string, dueDate: string, columnId?: PKLCard['columnId']) => {
     setLoading(true);
     try {
       await createCardAction(title, description, category, dueDate, state.studentName, activeRole, columnId);
@@ -244,16 +261,45 @@ export const PKLProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     cardId: string,
     title: string,
     description: string,
-    category: TaskCategory,
+    category: string,
     dueDate: string,
-    hoursLogged: number,
-    score?: number | null,
-    feedback?: string | null
+    startTime: string,
+    endTime: string,
+    scoreMentor?: number | null,
+    scoreMentorDiscipline?: number | null,
+    scoreMentorSkill?: number | null,
+    scoreMentorAttitude?: number | null,
+    feedbackMentor?: string | null,
+    scoreAdvisor?: number | null,
+    scoreAdvisorDiscipline?: number | null,
+    scoreAdvisorReport?: number | null,
+    scoreAdvisorCommunication?: number | null,
+    feedbackAdvisor?: string | null
   ) => {
     setLoading(true);
     try {
       const actorName = currentUser ? currentUser.name : state.studentName;
-      await updateCardDetailsAction(cardId, title, description, category, dueDate, hoursLogged, actorName, activeRole, score, feedback);
+      await updateCardDetailsAction(
+        cardId,
+        title,
+        description,
+        category,
+        dueDate,
+        startTime,
+        endTime,
+        actorName,
+        activeRole,
+        scoreMentor,
+        scoreMentorDiscipline,
+        scoreMentorSkill,
+        scoreMentorAttitude,
+        feedbackMentor,
+        scoreAdvisor,
+        scoreAdvisorDiscipline,
+        scoreAdvisorReport,
+        scoreAdvisorCommunication,
+        feedbackAdvisor
+      );
       await fetchState();
     } catch (e) {
       console.error(e);
@@ -283,6 +329,54 @@ export const PKLProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     } catch (e) {
       console.error(e);
       alert('Gagal menilai kegiatan.');
+      setLoading(false);
+    }
+  };
+
+  const gradeCardByMentor = async (cardId: string, discipline: number, skill: number, attitude: number, feedback: string) => {
+    setLoading(true);
+    try {
+      await gradeCardByMentorAction(cardId, discipline, skill, attitude, feedback, state.mentorName);
+      await fetchState();
+    } catch (e) {
+      console.error(e);
+      alert('Gagal menilai kegiatan (Mentor).');
+      setLoading(false);
+    }
+  };
+
+  const gradeCardByAdvisor = async (cardId: string, discipline: number, report: number, communication: number, feedback: string) => {
+    setLoading(true);
+    try {
+      await gradeCardByAdvisorAction(cardId, discipline, report, communication, feedback, state.advisorName);
+      await fetchState();
+    } catch (e) {
+      console.error(e);
+      alert('Gagal menilai kegiatan (Guru).');
+      setLoading(false);
+    }
+  };
+
+  const addAttachment = async (cardId: string, name: string, url: string, type: string) => {
+    setLoading(true);
+    try {
+      await addAttachmentAction(cardId, name, url, type);
+      await fetchState();
+    } catch (e) {
+      console.error(e);
+      alert('Gagal menambahkan lampiran.');
+      setLoading(false);
+    }
+  };
+
+  const deleteAttachment = async (cardId: string, index: number) => {
+    setLoading(true);
+    try {
+      await deleteAttachmentAction(cardId, index);
+      await fetchState();
+    } catch (e) {
+      console.error(e);
+      alert('Gagal menghapus lampiran.');
       setLoading(false);
     }
   };
@@ -342,6 +436,10 @@ export const PKLProvider: React.FC<{ children: React.ReactNode }> = ({ children 
         updateCardDetails,
         addComment,
         gradeCard,
+        gradeCardByMentor,
+        gradeCardByAdvisor,
+        addAttachment,
+        deleteAttachment,
         addAdvisorNote,
         deleteCard,
         resetState,

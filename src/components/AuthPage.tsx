@@ -2,7 +2,7 @@
 
 import React, { useState } from 'react';
 import { usePKL } from '../context/PKLContext';
-import { GraduationCap, Building2, User, Key, ArrowRight, ShieldCheck } from 'lucide-react';
+import { Building2, User, Key, ArrowRight, ShieldCheck } from 'lucide-react';
 
 export const AuthPage: React.FC = () => {
   const { login, register } = usePKL();
@@ -56,14 +56,16 @@ export const AuthPage: React.FC = () => {
         
         {/* Logo and Header */}
         <div className="flex flex-col items-center mb-8">
-          <div className="p-3.5 rounded-2xl bg-gradient-to-r from-indigo-500 to-purple-600 text-white shadow-xl shadow-indigo-500/20 mb-3">
-            <GraduationCap size={32} />
-          </div>
+          <img
+            src="/logo.jpg"
+            alt="NeboTrack Logo"
+            className="w-[100px] h-[100px] object-contain rounded-2xl mb-4 shadow-xl border border-white/10"
+          />
           <h1 className="text-3xl font-black bg-gradient-to-r from-white via-gray-200 to-gray-400 bg-clip-text text-transparent tracking-tight">
-            TelTrack Nebo
+            NeboTrack
           </h1>
           <p className="text-xs text-gray-400 font-medium mt-1 text-center max-w-[280px]">
-            SMKN 1 BOJONG - Telkom Tracking & Logbook PKL
+            SMKN 1 Bojong - Monitoring & Logbook Harian PKL
           </p>
         </div>
 

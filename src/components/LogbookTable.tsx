@@ -98,15 +98,16 @@ export const LogbookTable: React.FC = () => {
                 <th className="py-3 px-3 w-28">Tanggal</th>
                 <th className="py-3 px-3 w-24">Kategori</th>
                 <th className="py-3 px-4">Rincian Kegiatan</th>
-                <th className="py-3 px-3 w-20 text-center">Jam Kerja</th>
+                <th className="py-3 px-2 w-16 text-center">Mulai</th>
+                <th className="py-3 px-2 w-16 text-center">Selesai</th>
                 <th className="py-3 px-3 w-28 text-center print:w-24">Status</th>
-                <th className="py-3 px-4 w-44 print:w-36">Evaluasi Mentor</th>
+                <th className="py-3 px-4 w-48 print:w-36">Evaluasi Pembimbing</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-white/5 print:divide-black/10 text-gray-300 print:text-black">
               {state.cards.length === 0 ? (
                 <tr>
-                  <td colSpan={7} className="py-8 text-center text-gray-500 italic">
+                  <td colSpan={8} className="py-8 text-center text-gray-500 italic">
                     Belum ada catatan logbook harian.
                   </td>
                 </tr>
@@ -129,8 +130,11 @@ export const LogbookTable: React.FC = () => {
                         {card.description}
                       </div>
                     </td>
-                    <td className="py-4 px-3 text-center font-semibold text-gray-200 print:text-black">
-                      {card.hoursLogged} jam
+                    <td className="py-4 px-3 text-center text-gray-200 print:text-black font-semibold">
+                      {card.startTime || '-'}
+                    </td>
+                    <td className="py-4 px-3 text-center text-gray-200 print:text-black font-semibold">
+                      {card.endTime || '-'}
                     </td>
                     <td className="py-4 px-3 text-center whitespace-nowrap">
                       <span className={`px-2 py-0.5 rounded border text-[10px] font-bold ${getStatusBadge(card.columnId)} print:border-black/30 print:text-black print:bg-transparent`}>
@@ -138,21 +142,41 @@ export const LogbookTable: React.FC = () => {
                       </span>
                     </td>
                     <td className="py-4 px-4">
-                      {card.score !== undefined ? (
-                        <div className="flex flex-col gap-0.5">
-                          <div className="flex items-center gap-1 text-emerald-400 font-bold text-[11px] print:text-black">
-                            <Award size={12} className="print:hidden" />
-                            Nilai: {card.score}/100
-                          </div>
-                          {card.feedback && (
-                            <div className="text-[10px] text-gray-400 italic leading-snug print:text-black/75">
-                              &ldquo;{card.feedback}&rdquo;
+                      <div className="flex flex-col gap-1.5 text-[10px]">
+                        {/* Mentor Evaluation */}
+                        {card.scoreMentor !== undefined ? (
+                          <div className="flex flex-col gap-0.5 border-b border-white/5 pb-1 last:border-0 last:pb-0 print:border-black/10">
+                            <div className="flex items-center gap-1 text-purple-400 font-bold text-[10px] print:text-black">
+                              <Award size={10} className="print:hidden" />
+                              Mentor: {card.scoreMentor}/100 (D:{card.scoreMentorDiscipline} K:{card.scoreMentorSkill} S:{card.scoreMentorAttitude})
                             </div>
-                          )}
-                        </div>
-                      ) : (
-                        <span className="text-[10px] text-gray-500 italic print:text-black/40">-</span>
-                      )}
+                            {card.feedbackMentor && (
+                              <div className="text-[9px] text-gray-400 italic leading-snug print:text-black/75">
+                                &ldquo;{card.feedbackMentor}&rdquo;
+                              </div>
+                            )}
+                          </div>
+                        ) : (
+                          <span className="text-gray-500 italic text-[9px] border-b border-white/5 pb-1">Belum dinilai Mentor</span>
+                        )}
+
+                        {/* Guru Evaluation */}
+                        {card.scoreAdvisor !== undefined ? (
+                          <div className="flex flex-col gap-0.5 pt-0.5">
+                            <div className="flex items-center gap-1 text-amber-400 font-bold text-[10px] print:text-black">
+                              <Award size={10} className="print:hidden" />
+                              Guru: {card.scoreAdvisor}/100 (D:{card.scoreAdvisorDiscipline} L:{card.scoreAdvisorReport} K:{card.scoreAdvisorCommunication})
+                            </div>
+                            {card.feedbackAdvisor && (
+                              <div className="text-[9px] text-gray-400 italic leading-snug print:text-black/75">
+                                &ldquo;{card.feedbackAdvisor}&rdquo;
+                              </div>
+                            )}
+                          </div>
+                        ) : (
+                          <span className="text-gray-500 italic text-[9px] pt-0.5">Belum dinilai Guru</span>
+                        )}
+                      </div>
                     </td>
                   </tr>
                 ))

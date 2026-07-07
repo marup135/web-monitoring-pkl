@@ -14,19 +14,46 @@ export interface HistoryItem {
   createdAt: string;
 }
 
-export type TaskCategory = 'Coding' | 'Design' | 'Laporan' | 'Networking' | 'Lainnya';
+export type TaskCategory = string;
+
+export interface Attachment {
+  name: string;
+  url: string;
+  type: string;
+}
 
 export interface PKLCard {
   id: string;
   title: string;
   description: string;
   columnId: 'rencana' | 'progres' | 'review' | 'selesai';
-  category: TaskCategory;
-  hoursLogged: number;
+  category: string;
+  startTime: string;
+  endTime: string;
   dueDate: string;
   createdAt: string;
-  score?: number;      // 1-100 assigned by mentor
-  feedback?: string;   // final approval feedback from mentor
+  
+  // Mentor (Pembimbing Eksternal) grades
+  scoreMentor?: number;
+  scoreMentorDiscipline?: number;
+  scoreMentorSkill?: number;
+  scoreMentorAttitude?: number;
+  feedbackMentor?: string;
+
+  // Advisor (Pembimbing Internal / Guru) grades
+  scoreAdvisor?: number;
+  scoreAdvisorDiscipline?: number;
+  scoreAdvisorReport?: number;
+  scoreAdvisorCommunication?: number;
+  feedbackAdvisor?: string;
+
+  // Attachments
+  attachments: Attachment[];
+
+  // Legacy fields for compatibility
+  score?: number;
+  feedback?: string;
+
   comments: Comment[];
   history: HistoryItem[];
 }

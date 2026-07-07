@@ -13,8 +13,8 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "TelTrack Nebo",
-  description: "Telkom Tracking SMKN 1 BOJONG - Logbook & Monitoring PKL",
+  title: "NeboTrack",
+  description: "Sistem Monitoring dan Logbook Harian PKL SMKN 1 Bojong",
 };
 
 export default function RootLayout({

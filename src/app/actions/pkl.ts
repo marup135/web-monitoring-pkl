@@ -4,6 +4,10 @@ import prisma from '@/lib/prisma';
 import { PKLCard, AdvisorNote, TaskCategory, PKLRole, PKLState } from '@/types/pkl';
 import { cookies } from 'next/headers';
 import { verifySession, hashPassword } from '@/lib/auth';
+import { writeFile, mkdir } from 'fs/promises';
+import path from 'path';
+
+import { calculateDuration } from '@/utils/time';
 
 // Helper to check logged-in session and return user
 async function getAuthenticatedUser() {
@@ -94,12 +98,30 @@ export async function getPKLState(selectedStudentId?: string): Promise<PKLState>
       title: c.title,
       description: c.description,
       columnId: c.columnId as PKLCard['columnId'],
-      category: c.category as TaskCategory,
-      hoursLogged: c.hoursLogged,
+      category: c.category,
+      startTime: c.startTime,
+      endTime: c.endTime,
       dueDate: c.dueDate,
       createdAt: c.createdAt.toISOString(),
-      score: c.score ?? undefined,
-      feedback: c.feedback ?? undefined,
+      
+      scoreMentor: c.scoreMentor ?? undefined,
+      scoreMentorDiscipline: c.scoreMentorDiscipline ?? undefined,
+      scoreMentorSkill: c.scoreMentorSkill ?? undefined,
+      scoreMentorAttitude: c.scoreMentorAttitude ?? undefined,
+      feedbackMentor: c.feedbackMentor ?? undefined,
+
+      scoreAdvisor: c.scoreAdvisor ?? undefined,
+      scoreAdvisorDiscipline: c.scoreAdvisorDiscipline ?? undefined,
+      scoreAdvisorReport: c.scoreAdvisorReport ?? undefined,
+      scoreAdvisorCommunication: c.scoreAdvisorCommunication ?? undefined,
+      feedbackAdvisor: c.feedbackAdvisor ?? undefined,
+
+      attachments: JSON.parse(c.attachmentsJson || '[]'),
+      
+      // Legacy compatibility mapping
+      score: c.scoreMentor ?? undefined,
+      feedback: c.feedbackMentor ?? undefined,
+
       comments: c.comments.map(comm => ({
         id: comm.id,
         userName: comm.userName,
@@ -217,7 +239,18 @@ export async function updateCardColumnAction(
         where: { id: cardId },
         data: {
           columnId: targetColumn,
-          ...(targetColumn !== 'selesai' ? { score: null, feedback: null } : {}),
+          ...(targetColumn !== 'selesai' ? {
+            scoreMentor: null,
+            scoreMentorDiscipline: null,
+            scoreMentorSkill: null,
+            scoreMentorAttitude: null,
+            feedbackMentor: null,
+            scoreAdvisor: null,
+            scoreAdvisorDiscipline: null,
+            scoreAdvisorReport: null,
+            scoreAdvisorCommunication: null,
+            feedbackAdvisor: null
+          } : {}),
         },
       });
 
@@ -240,13 +273,24 @@ export async function updateCardDetailsAction(
   cardId: string,
   title: string,
   description: string,
-  category: TaskCategory,
+  category: string,
   dueDate: string,
-  hoursLogged: number,
+  startTime: string,
+  endTime: string,
   actorName: string,
   actorRole: PKLRole,
-  score?: number | null,
-  feedback?: string | null
+  
+  scoreMentor?: number | null,
+  scoreMentorDiscipline?: number | null,
+  scoreMentorSkill?: number | null,
+  scoreMentorAttitude?: number | null,
+  feedbackMentor?: string | null,
+
+  scoreAdvisor?: number | null,
+  scoreAdvisorDiscipline?: number | null,
+  scoreAdvisorReport?: number | null,
+  scoreAdvisorCommunication?: number | null,
+  feedbackAdvisor?: string | null
 ) {
   try {
     const text = `Detail kartu diperbarui oleh ${actorName} (${actorRole})`;
@@ -259,9 +303,20 @@ export async function updateCardDetailsAction(
           description,
           category,
           dueDate,
-          hoursLogged,
-          score: score !== undefined ? score : undefined,
-          feedback: feedback !== undefined ? feedback : undefined,
+          startTime,
+          endTime,
+          
+          scoreMentor: scoreMentor !== undefined ? scoreMentor : undefined,
+          scoreMentorDiscipline: scoreMentorDiscipline !== undefined ? scoreMentorDiscipline : undefined,
+          scoreMentorSkill: scoreMentorSkill !== undefined ? scoreMentorSkill : undefined,
+          scoreMentorAttitude: scoreMentorAttitude !== undefined ? scoreMentorAttitude : undefined,
+          feedbackMentor: feedbackMentor !== undefined ? feedbackMentor : undefined,
+
+          scoreAdvisor: scoreAdvisor !== undefined ? scoreAdvisor : undefined,
+          scoreAdvisorDiscipline: scoreAdvisorDiscipline !== undefined ? scoreAdvisorDiscipline : undefined,
+          scoreAdvisorReport: scoreAdvisorReport !== undefined ? scoreAdvisorReport : undefined,
+          scoreAdvisorCommunication: scoreAdvisorCommunication !== undefined ? scoreAdvisorCommunication : undefined,
+          feedbackAdvisor: feedbackAdvisor !== undefined ? feedbackAdvisor : undefined,
         },
       });
 
@@ -314,22 +369,28 @@ export async function addCommentAction(
   }
 }
 
-export async function gradeCardAction(
+export async function gradeCardByMentorAction(
   cardId: string,
-  score: number,
+  discipline: number,
+  skill: number,
+  attitude: number,
   feedback: string,
   mentorName: string
 ) {
   try {
-    const text = `Disetujui dan dinilai (${score}/100) oleh Mentor ${mentorName}`;
+    const overallScore = Math.round((discipline + skill + attitude) / 3);
+    const text = `Mentor ${mentorName} menyetujui & menilai (Rata-rata: ${overallScore}/100) - Disiplin: ${discipline}, Keahlian: ${skill}, Sikap: ${attitude}`;
 
     await prisma.$transaction(async (tx) => {
       await tx.card.update({
         where: { id: cardId },
         data: {
           columnId: 'selesai',
-          score,
-          feedback,
+          scoreMentor: overallScore,
+          scoreMentorDiscipline: discipline,
+          scoreMentorSkill: skill,
+          scoreMentorAttitude: attitude,
+          feedbackMentor: feedback,
         },
       });
 
@@ -343,7 +404,128 @@ export async function gradeCardAction(
 
     return { success: true };
   } catch (error) {
-    console.error('Failed to grade card', error);
+    console.error('Failed to grade card by mentor', error);
+    throw new Error('Database operation failed');
+  }
+}
+
+export async function gradeCardByAdvisorAction(
+  cardId: string,
+  discipline: number,
+  report: number,
+  communication: number,
+  feedback: string,
+  advisorName: string
+) {
+  try {
+    const overallScore = Math.round((discipline + report + communication) / 3);
+    const text = `Pembimbing Internal ${advisorName} menilai (Rata-rata: ${overallScore}/100) - Disiplin: ${discipline}, Laporan: ${report}, Komunikasi: ${communication}`;
+
+    await prisma.$transaction(async (tx) => {
+      await tx.card.update({
+        where: { id: cardId },
+        data: {
+          scoreAdvisor: overallScore,
+          scoreAdvisorDiscipline: discipline,
+          scoreAdvisorReport: report,
+          scoreAdvisorCommunication: communication,
+          feedbackAdvisor: feedback,
+        },
+      });
+
+      await tx.historyItem.create({
+        data: {
+          cardId,
+          text,
+        },
+      });
+    });
+
+    return { success: true };
+  } catch (error) {
+    console.error('Failed to grade card by advisor', error);
+    throw new Error('Database operation failed');
+  }
+}
+
+export async function gradeCardAction(
+  cardId: string,
+  score: number,
+  feedback: string,
+  mentorName: string
+) {
+  return gradeCardByMentorAction(cardId, score, score, score, feedback, mentorName);
+}
+
+export async function uploadFileAction(formData: FormData) {
+  try {
+    const file = formData.get('file') as File;
+    if (!file) throw new Error('No file provided');
+
+    const bytes = await file.arrayBuffer();
+    const buffer = Buffer.from(bytes);
+
+    const uploadDir = path.join(process.cwd(), 'public', 'uploads');
+    await mkdir(uploadDir, { recursive: true });
+
+    // sanitize filename and append timestamp
+    const ext = path.extname(file.name);
+    const baseName = path.basename(file.name, ext).replace(/[^a-zA-Z0-9]/g, '_');
+    const filename = `${baseName}_${Date.now()}${ext}`;
+    const filePath = path.join(uploadDir, filename);
+
+    await writeFile(filePath, buffer);
+
+    const fileUrl = `/uploads/${filename}`;
+    
+    // Determine type
+    let type = 'other';
+    const mime = file.type.toLowerCase();
+    if (mime.startsWith('image/')) type = 'image';
+    else if (mime === 'application/pdf') type = 'pdf';
+    else if (mime.includes('word') || mime.includes('officedocument') || ext === '.doc' || ext === '.docx') type = 'doc';
+
+    return { success: true, fileUrl, name: file.name, type };
+  } catch (error) {
+    console.error('File upload failed', error);
+    return { success: false, error: 'File upload failed' };
+  }
+}
+
+export async function addAttachmentAction(cardId: string, name: string, url: string, type: string) {
+  try {
+    const card = await prisma.card.findUnique({ where: { id: cardId } });
+    if (!card) throw new Error('Card not found');
+    const attachments = JSON.parse(card.attachmentsJson || '[]');
+    attachments.push({ name, url, type });
+    
+    await prisma.card.update({
+      where: { id: cardId },
+      data: { attachmentsJson: JSON.stringify(attachments) }
+    });
+    
+    return { success: true };
+  } catch (error) {
+    console.error('Failed to add attachment', error);
+    throw new Error('Database operation failed');
+  }
+}
+
+export async function deleteAttachmentAction(cardId: string, index: number) {
+  try {
+    const card = await prisma.card.findUnique({ where: { id: cardId } });
+    if (!card) throw new Error('Card not found');
+    const attachments = JSON.parse(card.attachmentsJson || '[]');
+    attachments.splice(index, 1);
+
+    await prisma.card.update({
+      where: { id: cardId },
+      data: { attachmentsJson: JSON.stringify(attachments) }
+    });
+
+    return { success: true };
+  } catch (error) {
+    console.error('Failed to delete attachment', error);
     throw new Error('Database operation failed');
   }
 }
@@ -397,10 +579,10 @@ export async function getStudentsAction() {
       students.map(async (student) => {
         const cards = await prisma.card.findMany({
           where: { studentId: student.id },
-          select: { columnId: true, hoursLogged: true }
+          select: { columnId: true, startTime: true, endTime: true }
         });
 
-        const totalHours = cards.reduce((sum, c) => sum + c.hoursLogged, 0);
+        const totalHours = cards.reduce((sum, c) => sum + calculateDuration(c.startTime, c.endTime), 0);
         const completedCount = cards.filter(c => c.columnId === 'selesai').length;
         const totalCount = cards.length;
 
@@ -410,7 +592,7 @@ export async function getStudentsAction() {
           company: student.company || '-',
           totalTasks: totalCount,
           completedTasks: completedCount,
-          hoursLogged: totalHours,
+          hoursLogged: Math.round(totalHours),
           completionPercent: totalCount > 0 ? Math.round((completedCount / totalCount) * 100) : 0
         };
       })
@@ -477,11 +659,20 @@ export async function resetDatabaseAction() {
         description: 'Membuat rancangan antarmuka pengguna untuk dashboard monitoring admin menggunakan Figma. Desain mencakup view mobile dan desktop dengan mengikuti brand guidelines perusahaan.',
         columnId: 'selesai',
         category: 'Design',
-        hoursLogged: 16,
+        startTime: '08:00',
+        endTime: '16:00',
         dueDate: dateOffset(-8).toISOString().split('T')[0],
         createdAt: dateOffset(-12),
-        score: 92,
-        feedback: 'Desain bersih, alur UX sangat intuitif, dan implementasi auto-layout Figma sangat baik. Lanjutkan ke tahap slicing code!',
+        scoreMentor: 92,
+        scoreMentorDiscipline: 90,
+        scoreMentorSkill: 95,
+        scoreMentorAttitude: 91,
+        feedbackMentor: 'Desain bersih, alur UX sangat intuitif, dan implementasi auto-layout Figma sangat baik. Lanjutkan ke tahap slicing code!',
+        scoreAdvisor: 85,
+        scoreAdvisorDiscipline: 80,
+        scoreAdvisorReport: 90,
+        scoreAdvisorCommunication: 85,
+        feedbackAdvisor: 'Laporan tersusun dengan sangat baik, layout UI di Figma terlihat rapi.',
         history: {
           createMany: {
             data: [
@@ -527,7 +718,8 @@ export async function resetDatabaseAction() {
         description: 'Mengganti local state prop drilling pada halaman dashboard utama menggunakan React Context API agar data tersinkronisasi lebih bersih dan rapi antar panel monitoring.',
         columnId: 'review',
         category: 'Coding',
-        hoursLogged: 8,
+        startTime: '09:00',
+        endTime: '17:00',
         dueDate: dateOffset(-1).toISOString().split('T')[0],
         createdAt: dateOffset(-3),
         history: {
@@ -558,7 +750,8 @@ export async function resetDatabaseAction() {
         description: 'Menyambungkan form login dan register dengan rest API auth jwt perusahaan. Menyimpan accessToken di secure cookies dan setup interceptors axios untuk header otorisasi.',
         columnId: 'progres',
         category: 'Coding',
-        hoursLogged: 12,
+        startTime: '08:30',
+        endTime: '17:00',
         dueDate: dateOffset(2).toISOString().split('T')[0],
         createdAt: dateOffset(-4),
         history: {
@@ -580,7 +773,8 @@ export async function resetDatabaseAction() {
         description: 'Menyusun test cases menggunakan Jest untuk memvalidasi endpoint-endpoint utama PKL seperti getLogs, createCard, dan updateCardStatus.',
         columnId: 'rencana',
         category: 'Coding',
-        hoursLogged: 0,
+        startTime: '',
+        endTime: '',
         dueDate: dateOffset(5).toISOString().split('T')[0],
         createdAt: dateOffset(-1),
         history: {
@@ -600,7 +794,8 @@ export async function resetDatabaseAction() {
         description: 'Menuliskan metodologi penelitian dan rancangan arsitektur sistem (flowchart, DFD, dan ERD) pada Bab 3 dokumen draf Laporan PKL.',
         columnId: 'rencana',
         category: 'Laporan',
-        hoursLogged: 0,
+        startTime: '',
+        endTime: '',
         dueDate: dateOffset(8).toISOString().split('T')[0],
         createdAt: dateOffset(-1),
         history: {
