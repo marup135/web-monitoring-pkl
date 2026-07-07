@@ -148,7 +148,7 @@ export const KanbanBoard: React.FC<KanbanBoardProps> = ({ onOpenCard }) => {
               placeholder="Cari tugas atau deskripsi..."
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              className="w-full bg-white border border-[#E2E8F0] rounded-xl py-2 pl-10 pr-4 text-sm text-[#0F172A] focus:outline-none focus:border-[#2563EB] focus:ring-1 focus:ring-[#2563EB]"
+              className="w-full bg-white border border-[#E2E8F0] rounded-xl pl-10 pr-4 text-sm text-[#0F172A] focus:outline-none focus:border-[#2563EB] focus:ring-1 focus:ring-[#2563EB] min-h-[48px] py-3 md:min-h-0 md:py-2"
             />
           </div>
 
@@ -158,7 +158,7 @@ export const KanbanBoard: React.FC<KanbanBoardProps> = ({ onOpenCard }) => {
               <button
                 key={cat}
                 onClick={() => setSelectedCategory(cat)}
-                className={`text-xs px-3 py-1.5 rounded-lg border font-medium whitespace-nowrap transition cursor-pointer ${getCategoryFilterStyle(cat, selectedCategory === cat)}`}
+                className={`text-sm md:text-xs px-4 py-2.5 md:px-3 md:py-1.5 rounded-xl md:rounded-lg border font-medium whitespace-nowrap transition cursor-pointer min-h-[48px] md:min-h-0 ${getCategoryFilterStyle(cat, selectedCategory === cat)}`}
               >
                 {cat}
               </button>
@@ -170,7 +170,7 @@ export const KanbanBoard: React.FC<KanbanBoardProps> = ({ onOpenCard }) => {
           <button
             type="button"
             onClick={() => setIsAddModalOpen(true)}
-            className="w-full lg:w-auto px-4 py-2 bg-[#2563EB] hover:bg-[#1D4ED8] text-white font-semibold text-xs rounded-xl shadow-sm transition flex items-center justify-center gap-2 hover:scale-[1.02] active:scale-[0.98] shrink-0 cursor-pointer"
+            className="w-full lg:w-auto px-4 py-3 md:py-2 bg-[#2563EB] hover:bg-[#1D4ED8] text-white font-semibold text-sm md:text-xs rounded-xl shadow-sm transition flex items-center justify-center gap-2 hover:scale-[1.02] active:scale-[0.98] shrink-0 cursor-pointer min-h-[48px] md:min-h-0"
           >
             <Plus size={14} />
             <span>Tambah Kegiatan</span>
@@ -179,7 +179,7 @@ export const KanbanBoard: React.FC<KanbanBoardProps> = ({ onOpenCard }) => {
       </div>
 
       {/* Kanban Columns Grid */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 items-start">
+      <div className="flex overflow-x-auto gap-4 pb-6 md:grid md:grid-cols-2 lg:grid-cols-4 md:overflow-x-visible -mx-4 px-4 md:mx-0 md:px-0 items-start">
         {columns.map((col) => {
           const colCards = filteredCards.filter(c => c.columnId === col.id);
           const isOver = draggedOverColumn === col.id;
@@ -190,7 +190,7 @@ export const KanbanBoard: React.FC<KanbanBoardProps> = ({ onOpenCard }) => {
               onDragOver={(e) => handleDragOver(e, col.id)}
               onDragLeave={handleDragLeave}
               onDrop={(e) => handleDrop(e, col.id)}
-              className={`flex flex-col rounded-2xl bg-[#F1F5F9] border border-[#E2E8F0] border-t-[4px] ${col.color} p-4 min-h-[500px] shadow-sm transition-all ${
+              className={`flex flex-col rounded-2xl bg-[#F1F5F9] border border-[#E2E8F0] border-t-[4px] ${col.color} p-4 min-h-[500px] shadow-sm transition-all w-[300px] shrink-0 md:w-auto md:shrink-1 ${
                 isOver ? 'bg-slate-200/60 ring-2 ring-[#2563EB]/15 scale-[1.01]' : ''
               }`}
             >
@@ -203,7 +203,7 @@ export const KanbanBoard: React.FC<KanbanBoardProps> = ({ onOpenCard }) => {
               </div>
 
               {/* Column Cards Container */}
-              <div className="flex flex-col gap-3 flex-1 overflow-y-auto max-h-[600px] pr-1">
+              <div className="flex flex-col gap-4 md:gap-3 flex-1 overflow-y-auto max-h-[600px] pr-1">
                 {colCards.map((card) => {
                   const isOverdue = card.columnId !== 'selesai' && card.dueDate && card.dueDate < todayString;
 
@@ -213,7 +213,7 @@ export const KanbanBoard: React.FC<KanbanBoardProps> = ({ onOpenCard }) => {
                       draggable={activeRole !== 'Dosen Pembimbing'}
                       onDragStart={(e) => handleDragStart(e, card.id)}
                       onClick={() => onOpenCard(card)}
-                      className={`bg-white border rounded-xl p-4 cursor-pointer relative shadow-sm hover:border-slate-300 hover:shadow transition duration-200 group ${
+                      className={`bg-white border rounded-2xl md:rounded-xl p-5 md:p-4 cursor-pointer relative shadow-sm hover:border-slate-300 hover:shadow transition duration-200 group ${
                         isOverdue
                           ? 'border-red-200 hover:border-red-300 bg-red-50/10'
                           : 'border-[#E2E8F0] hover:border-slate-300'
@@ -299,14 +299,14 @@ export const KanbanBoard: React.FC<KanbanBoardProps> = ({ onOpenCard }) => {
               <button
                 type="button"
                 onClick={() => setIsAddModalOpen(false)}
-                className="p-1.5 rounded-lg bg-slate-50 hover:bg-slate-100 text-slate-500 hover:text-slate-700 transition cursor-pointer"
+                className="p-1.5 rounded-lg bg-slate-50 hover:bg-slate-100 text-slate-500 hover:text-slate-700 transition cursor-pointer min-h-[44px] min-w-[44px] flex items-center justify-center"
               >
                 <X size={18} />
               </button>
             </div>
 
             {/* Modal Body / Form */}
-            <form onSubmit={handleModalSubmit} className="p-6 overflow-y-auto flex flex-col gap-4 text-left">
+            <form onSubmit={handleModalSubmit} className="p-5 md:p-6 overflow-y-auto flex flex-col gap-4 text-left">
               <div className="flex flex-col gap-1.5">
                 <label className="text-[11px] text-[#64748B] font-semibold uppercase tracking-wider">Judul Rencana Kegiatan</label>
                 <input
@@ -315,7 +315,7 @@ export const KanbanBoard: React.FC<KanbanBoardProps> = ({ onOpenCard }) => {
                   required
                   value={newTitle}
                   onChange={(e) => setNewTitle(e.target.value)}
-                  className="w-full bg-white border border-[#E2E8F0] rounded-lg px-3 py-2 text-sm text-[#0F172A] focus:outline-none focus:border-[#2563EB] focus:ring-1 focus:ring-[#2563EB]"
+                  className="w-full bg-white border border-[#E2E8F0] rounded-xl px-3 text-sm text-[#0F172A] focus:outline-none focus:border-[#2563EB] focus:ring-1 focus:ring-[#2563EB] min-h-[48px] py-3 md:min-h-0 md:py-2"
                 />
               </div>
 
@@ -326,11 +326,11 @@ export const KanbanBoard: React.FC<KanbanBoardProps> = ({ onOpenCard }) => {
                   value={newDesc}
                   onChange={(e) => setNewDesc(e.target.value)}
                   rows={3}
-                  className="w-full bg-white border border-[#E2E8F0] rounded-lg px-3 py-2 text-sm text-[#0F172A] focus:outline-none focus:border-[#2563EB] focus:ring-1 focus:ring-[#2563EB] resize-none"
+                  className="w-full bg-white border border-[#E2E8F0] rounded-xl px-3 text-sm text-[#0F172A] focus:outline-none focus:border-[#2563EB] focus:ring-1 focus:ring-[#2563EB] resize-none min-h-[80px] py-3 md:min-h-0 md:py-2"
                 />
               </div>
 
-              <div className="grid grid-cols-2 gap-4">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 {/* Category Dropdown */}
                 <div className="relative text-left">
                   <label className="text-[11px] text-[#64748B] font-semibold uppercase tracking-wider block mb-1.5">Kategori</label>
@@ -340,7 +340,7 @@ export const KanbanBoard: React.FC<KanbanBoardProps> = ({ onOpenCard }) => {
                       setIsCategoryDropdownOpen(!isCategoryDropdownOpen);
                       setIsColumnDropdownOpen(false);
                     }}
-                    className="w-full bg-white border border-[#E2E8F0] rounded-lg px-3 py-2 text-left text-sm text-[#0F172A] focus:outline-none flex justify-between items-center hover:bg-slate-50 transition cursor-pointer"
+                    className="w-full bg-white border border-[#E2E8F0] rounded-xl px-3 text-left text-sm text-[#0F172A] focus:outline-none flex justify-between items-center hover:bg-slate-50 transition cursor-pointer min-h-[48px] py-3 md:min-h-0 md:py-2"
                   >
                     <span>{newCategory}</span>
                     <ChevronDown size={14} className={`text-slate-400 transition-transform ${isCategoryDropdownOpen ? 'rotate-180' : ''}`} />
@@ -374,7 +374,7 @@ export const KanbanBoard: React.FC<KanbanBoardProps> = ({ onOpenCard }) => {
                       setIsColumnDropdownOpen(!isColumnDropdownOpen);
                       setIsCategoryDropdownOpen(false);
                     }}
-                    className="w-full bg-white border border-[#E2E8F0] rounded-lg px-3 py-2 text-left text-sm text-[#0F172A] focus:outline-none flex justify-between items-center hover:bg-slate-50 transition cursor-pointer"
+                    className="w-full bg-white border border-[#E2E8F0] rounded-xl px-3 text-left text-sm text-[#0F172A] focus:outline-none flex justify-between items-center hover:bg-slate-50 transition cursor-pointer min-h-[48px] py-3 md:min-h-0 md:py-2"
                   >
                     <span>{getColumnTitle(newColumnId)}</span>
                     <ChevronDown size={14} className={`text-slate-400 transition-transform ${isColumnDropdownOpen ? 'rotate-180' : ''}`} />
@@ -414,7 +414,7 @@ export const KanbanBoard: React.FC<KanbanBoardProps> = ({ onOpenCard }) => {
                     placeholder="Nama kategori baru..."
                     value={customCategory}
                     onChange={(e) => setCustomCategory(e.target.value)}
-                    className="w-full bg-white border border-[#E2E8F0] rounded-lg px-3 py-2 text-sm text-[#0F172A] focus:outline-none focus:border-[#2563EB] focus:ring-1 focus:ring-[#2563EB]"
+                    className="w-full bg-white border border-[#E2E8F0] rounded-xl px-3 text-sm text-[#0F172A] focus:outline-none focus:border-[#2563EB] focus:ring-1 focus:ring-[#2563EB] min-h-[48px] py-3 md:min-h-0 md:py-2"
                   />
                 </div>
               )}
@@ -426,22 +426,22 @@ export const KanbanBoard: React.FC<KanbanBoardProps> = ({ onOpenCard }) => {
                   type="date"
                   value={newDueDate}
                   onChange={(e) => setNewDueDate(e.target.value)}
-                  className="w-full bg-white border border-[#E2E8F0] rounded-lg px-3 py-2 text-sm text-[#0F172A] focus:outline-none focus:border-[#2563EB] focus:ring-1 focus:ring-[#2563EB]"
+                  className="w-full bg-white border border-[#E2E8F0] rounded-xl px-3 text-sm text-[#0F172A] focus:outline-none focus:border-[#2563EB] focus:ring-1 focus:ring-[#2563EB] min-h-[48px] py-3 md:min-h-0 md:py-2"
                 />
               </div>
 
               {/* Modal Actions */}
-              <div className="flex gap-3 justify-end mt-4 border-t border-[#E2E8F0] pt-4">
+              <div className="flex flex-col md:flex-row gap-3 justify-end mt-4 border-t border-[#E2E8F0] pt-4">
                 <button
                   type="button"
                   onClick={() => setIsAddModalOpen(false)}
-                  className="px-4 py-2 rounded-xl bg-white border border-[#E2E8F0] text-xs font-semibold text-slate-700 hover:bg-slate-50 transition cursor-pointer"
+                  className="w-full md:w-auto px-4 py-3 md:py-2 rounded-xl bg-white border border-[#E2E8F0] text-sm md:text-xs font-semibold text-slate-700 hover:bg-slate-50 transition cursor-pointer min-h-[48px] md:min-h-0"
                 >
                   Batal
                 </button>
                 <button
                   type="submit"
-                  className="px-4 py-2 rounded-xl bg-[#2563EB] hover:bg-[#1D4ED8] text-xs font-semibold text-white shadow-sm hover:shadow-indigo-500/10 transition cursor-pointer"
+                  className="w-full md:w-auto px-4 py-3 md:py-2 rounded-xl bg-[#2563EB] hover:bg-[#1D4ED8] text-sm md:text-xs font-semibold text-white shadow-sm hover:shadow-indigo-500/10 transition cursor-pointer min-h-[48px] md:min-h-0"
                 >
                   Simpan Kegiatan
                 </button>

@@ -149,7 +149,7 @@ export const AdminPortal: React.FC = () => {
   return (
     <div className="flex flex-col gap-6 text-[#0F172A]">
       {/* Header and Sync Actions */}
-      <div className="flex justify-between items-center bg-white border border-[#E2E8F0] rounded-2xl p-4 shadow-sm">
+      <div className="flex flex-col sm:flex-row gap-3 justify-between items-start sm:items-center bg-white border border-[#E2E8F0] rounded-2xl p-4 shadow-sm">
         <div>
           <h2 className="text-sm font-bold uppercase tracking-wider text-[#64748B] flex items-center gap-2">
             <ShieldAlert size={16} className="text-red-500" />
@@ -157,17 +157,17 @@ export const AdminPortal: React.FC = () => {
           </h2>
           <p className="text-[11px] text-[#64748B]">Kelola data master kelas, perusahaan, dan hubungan pembimbing siswa.</p>
         </div>
-        <div className="flex gap-2">
+        <div className="flex items-center gap-2 w-full sm:w-auto justify-end">
           <button 
             onClick={reloadAll}
-            className="p-2 bg-slate-100 hover:bg-slate-200 rounded-xl transition cursor-pointer text-slate-600"
+            className="p-2 bg-slate-100 hover:bg-slate-200 rounded-xl transition cursor-pointer text-slate-600 min-h-[44px] min-w-[44px] flex items-center justify-center"
             title="Refresh Data"
           >
             <RefreshCw size={16} className={loading ? "animate-spin" : ""} />
           </button>
           <button
             onClick={handleResetData}
-            className="px-3 py-1.5 bg-red-600 hover:bg-red-700 text-white font-bold text-xs rounded-xl transition shadow-sm cursor-pointer"
+            className="px-4 py-2.5 sm:px-3 sm:py-1.5 bg-red-600 hover:bg-red-700 text-white font-bold text-xs rounded-xl transition shadow-sm cursor-pointer min-h-[44px] flex items-center justify-center"
           >
             Reset Database
           </button>
@@ -175,7 +175,7 @@ export const AdminPortal: React.FC = () => {
       </div>
 
       {/* Tabs Menu */}
-      <div className="flex border-b border-[#E2E8F0] gap-4">
+      <div className="flex border-b border-[#E2E8F0] gap-4 overflow-x-auto py-1 whitespace-nowrap -mx-4 px-4 sm:mx-0 sm:px-0 scrollbar-none">
         {[
           { key: 'overview', label: 'Ringkasan' },
           { key: 'kelas', label: 'Data Kelas' },
@@ -185,7 +185,7 @@ export const AdminPortal: React.FC = () => {
           <button
             key={tab.key}
             onClick={() => setActiveTab(tab.key as any)}
-            className={`pb-2 px-1 text-xs font-bold transition-all border-b-2 cursor-pointer ${
+            className={`pb-2.5 px-1 text-sm md:text-xs font-bold transition-all border-b-2 cursor-pointer ${
               activeTab === tab.key
                 ? 'border-[#2563EB] text-[#2563EB]'
                 : 'border-transparent text-[#64748B] hover:text-[#0F172A]'
@@ -197,10 +197,10 @@ export const AdminPortal: React.FC = () => {
       </div>
 
       {/* Tab Content */}
-      <div className="bg-white border border-[#E2E8F0] rounded-2xl p-6 shadow-sm min-h-[300px]">
+      <div className="bg-white border border-[#E2E8F0] rounded-2xl p-4 md:p-6 shadow-sm min-h-[300px]">
         {activeTab === 'overview' && (
           <div className="flex flex-col gap-6">
-            <div className="grid grid-cols-1 sm:grid-cols-4 gap-4">
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
               <div className="bg-slate-50 border border-slate-200/80 p-4 rounded-2xl flex items-center gap-3">
                 <div className="p-3 bg-blue-100 text-blue-600 rounded-xl"><Users size={20} /></div>
                 <div>
@@ -261,18 +261,18 @@ export const AdminPortal: React.FC = () => {
         {activeTab === 'kelas' && (
           <div className="flex flex-col gap-6">
             {/* Add Class Form */}
-            <form onSubmit={handleAddClass} className="flex gap-2">
+            <form onSubmit={handleAddClass} className="flex flex-col sm:flex-row gap-2">
               <input
                 type="text"
                 required
                 placeholder="Tambah nama kelas baru (Contoh: XII PPLG 3)"
                 value={newClassName}
                 onChange={(e) => setNewClassName(e.target.value)}
-                className="bg-white border border-[#E2E8F0] rounded-xl px-3 py-2 text-xs flex-1 text-[#0F172A] focus:outline-none focus:border-[#2563EB]"
+                className="bg-white border border-[#E2E8F0] rounded-xl px-3 py-2.5 text-sm flex-1 text-[#0F172A] focus:outline-none focus:border-[#2563EB] min-h-[48px] md:min-h-0 md:py-2 md:text-xs"
               />
               <button 
                 type="submit"
-                className="px-4 py-2 bg-[#2563EB] hover:bg-[#1D4ED8] text-white font-bold text-xs rounded-xl flex items-center gap-1 transition cursor-pointer shadow-sm"
+                className="px-4 py-2.5 bg-[#2563EB] hover:bg-[#1D4ED8] text-white font-bold text-sm md:text-xs rounded-xl flex items-center justify-center gap-1 transition cursor-pointer shadow-sm min-h-[48px] md:min-h-0 w-full sm:w-auto"
               >
                 <Plus size={14} />
                 Tambah Kelas
@@ -280,8 +280,8 @@ export const AdminPortal: React.FC = () => {
             </form>
 
             {/* List */}
-            <div className="border border-[#E2E8F0] rounded-xl overflow-hidden text-xs">
-              <table className="w-full text-left border-collapse">
+            <div className="border border-[#E2E8F0] rounded-xl overflow-x-auto text-xs">
+              <table className="w-full text-left border-collapse min-w-[400px]">
                 <thead>
                   <tr className="bg-slate-50 border-b border-[#E2E8F0] text-slate-500 font-semibold">
                     <th className="py-2.5 px-4">Nama Kelas</th>
@@ -297,7 +297,7 @@ export const AdminPortal: React.FC = () => {
                             type="text"
                             value={editText}
                             onChange={(e) => setEditText(e.target.value)}
-                            className="bg-white border border-[#E2E8F0] rounded-lg px-2 py-1 text-xs text-[#0F172A] focus:outline-none"
+                            className="bg-white border border-[#E2E8F0] rounded-xl px-3 text-sm text-[#0F172A] focus:outline-none focus:border-[#2563EB] min-h-[44px] py-2"
                           />
                         ) : (
                           c.name
@@ -308,13 +308,13 @@ export const AdminPortal: React.FC = () => {
                           <div className="flex gap-2 justify-end">
                             <button
                               onClick={() => handleUpdate('class', c.id)}
-                              className="px-2 py-1 bg-green-600 hover:bg-green-700 text-white font-bold rounded-lg"
+                              className="px-3 py-1.5 bg-green-600 hover:bg-green-700 text-white font-bold rounded-lg min-h-[36px]"
                             >
                               Simpan
                             </button>
                             <button
                               onClick={() => setEditingId(null)}
-                              className="px-2 py-1 bg-slate-300 hover:bg-slate-400 text-slate-700 font-bold rounded-lg"
+                              className="px-3 py-1.5 bg-slate-300 hover:bg-slate-400 text-slate-700 font-bold rounded-lg min-h-[36px]"
                             >
                               Batal
                             </button>
@@ -323,13 +323,13 @@ export const AdminPortal: React.FC = () => {
                           <div className="flex gap-2 justify-end text-slate-500">
                             <button
                               onClick={() => { setEditingId(c.id); setEditText(c.name); }}
-                              className="p-1 hover:text-[#2563EB] hover:bg-blue-50 rounded transition cursor-pointer"
+                              className="p-2.5 hover:text-[#2563EB] hover:bg-blue-50 rounded transition cursor-pointer min-h-[40px] min-w-[40px] flex items-center justify-center"
                             >
                               <Plus size={14} className="rotate-45" /> {/* Use custom rotation for edit icon mock */}
                             </button>
                             <button
                               onClick={() => handleDelete('class', c.id)}
-                              className="p-1 hover:text-red-500 hover:bg-red-50 rounded transition cursor-pointer"
+                              className="p-2.5 hover:text-red-500 hover:bg-red-50 rounded transition cursor-pointer min-h-[40px] min-w-[40px] flex items-center justify-center"
                             >
                               <Trash2 size={14} />
                             </button>
@@ -347,18 +347,18 @@ export const AdminPortal: React.FC = () => {
         {activeTab === 'perusahaan' && (
           <div className="flex flex-col gap-6">
             {/* Add Company Form */}
-            <form onSubmit={handleAddCompany} className="flex gap-2">
+            <form onSubmit={handleAddCompany} className="flex flex-col sm:flex-row gap-2">
               <input
                 type="text"
                 required
                 placeholder="Tambah nama perusahaan baru (Contoh: GoTo)"
                 value={newCompanyName}
                 onChange={(e) => setNewCompanyName(e.target.value)}
-                className="bg-white border border-[#E2E8F0] rounded-xl px-3 py-2 text-xs flex-1 text-[#0F172A] focus:outline-none focus:border-[#2563EB]"
+                className="bg-white border border-[#E2E8F0] rounded-xl px-3 py-2.5 text-sm flex-1 text-[#0F172A] focus:outline-none focus:border-[#2563EB] min-h-[48px] md:min-h-0 md:py-2 md:text-xs"
               />
               <button 
                 type="submit"
-                className="px-4 py-2 bg-[#2563EB] hover:bg-[#1D4ED8] text-white font-bold text-xs rounded-xl flex items-center gap-1 transition cursor-pointer shadow-sm"
+                className="px-4 py-2.5 bg-[#2563EB] hover:bg-[#1D4ED8] text-white font-bold text-sm md:text-xs rounded-xl flex items-center justify-center gap-1 transition cursor-pointer shadow-sm min-h-[48px] md:min-h-0 w-full sm:w-auto"
               >
                 <Plus size={14} />
                 Tambah Perusahaan
@@ -366,8 +366,8 @@ export const AdminPortal: React.FC = () => {
             </form>
 
             {/* List */}
-            <div className="border border-[#E2E8F0] rounded-xl overflow-hidden text-xs">
-              <table className="w-full text-left border-collapse">
+            <div className="border border-[#E2E8F0] rounded-xl overflow-x-auto text-xs">
+              <table className="w-full text-left border-collapse min-w-[400px]">
                 <thead>
                   <tr className="bg-slate-50 border-b border-[#E2E8F0] text-slate-500 font-semibold">
                     <th className="py-2.5 px-4">Nama Perusahaan</th>
@@ -383,7 +383,7 @@ export const AdminPortal: React.FC = () => {
                             type="text"
                             value={editText}
                             onChange={(e) => setEditText(e.target.value)}
-                            className="bg-white border border-[#E2E8F0] rounded-lg px-2 py-1 text-xs text-[#0F172A] focus:outline-none"
+                            className="bg-white border border-[#E2E8F0] rounded-xl px-3 text-sm text-[#0F172A] focus:outline-none focus:border-[#2563EB] min-h-[44px] py-2"
                           />
                         ) : (
                           co.name
@@ -394,13 +394,13 @@ export const AdminPortal: React.FC = () => {
                           <div className="flex gap-2 justify-end">
                             <button
                               onClick={() => handleUpdate('company', co.id)}
-                              className="px-2 py-1 bg-green-600 hover:bg-green-700 text-white font-bold rounded-lg"
+                              className="px-3 py-1.5 bg-green-600 hover:bg-green-700 text-white font-bold rounded-lg min-h-[36px]"
                             >
                               Simpan
                             </button>
                             <button
                               onClick={() => setEditingId(null)}
-                              className="px-2 py-1 bg-slate-300 hover:bg-slate-400 text-slate-700 font-bold rounded-lg"
+                              className="px-3 py-1.5 bg-slate-300 hover:bg-slate-400 text-slate-700 font-bold rounded-lg min-h-[36px]"
                             >
                               Batal
                             </button>
@@ -409,13 +409,13 @@ export const AdminPortal: React.FC = () => {
                           <div className="flex gap-2 justify-end text-slate-500">
                             <button
                               onClick={() => { setEditingId(co.id); setEditText(co.name); }}
-                              className="p-1 hover:text-[#2563EB] hover:bg-blue-50 rounded transition cursor-pointer"
+                              className="p-2.5 hover:text-[#2563EB] hover:bg-blue-50 rounded transition cursor-pointer min-h-[40px] min-w-[40px] flex items-center justify-center"
                             >
                               <Edit2 size={14} />
                             </button>
                             <button
                               onClick={() => handleDelete('company', co.id)}
-                              className="p-1 hover:text-red-500 hover:bg-red-50 rounded transition cursor-pointer"
+                              className="p-2.5 hover:text-red-500 hover:bg-red-50 rounded transition cursor-pointer min-h-[40px] min-w-[40px] flex items-center justify-center"
                             >
                               <Trash2 size={14} />
                             </button>
@@ -446,19 +446,19 @@ export const AdminPortal: React.FC = () => {
                   ) : allUsersList.filter(u => u.role === 'pembimbing_internal').map((guru: any) => {
                     const currentClassIds = guru.classes?.map((c: any) => c.id) || [];
                     return (
-                      <div key={guru.id} className="bg-white border border-[#E2E8F0] p-3 rounded-lg flex flex-col sm:flex-row justify-between sm:items-center gap-2">
+                      <div key={guru.id} className="bg-white border border-[#E2E8F0] p-3 rounded-lg flex flex-col md:flex-row justify-between md:items-center gap-3">
                         <div>
-                          <p className="font-bold text-slate-800">{guru.name}</p>
-                          <p className="text-[10px] text-slate-400">Username: {guru.username}</p>
+                          <p className="font-bold text-slate-800 text-sm md:text-xs">{guru.name}</p>
+                          <p className="text-[10px] text-slate-400 font-medium">Username: {guru.username}</p>
                         </div>
-                        <div className="flex flex-wrap gap-3">
+                        <div className="flex flex-wrap gap-2">
                           {classesList.map(c => {
                             const isAssigned = currentClassIds.includes(c.id);
                             return (
                               <button
                                 key={c.id}
                                 onClick={() => handleGuruClassToggle(guru.id, currentClassIds, c.id)}
-                                className={`flex items-center gap-1 px-2.5 py-1 rounded-lg transition cursor-pointer font-semibold ${
+                                className={`flex items-center gap-1.5 px-3 py-2 md:px-2.5 md:py-1 rounded-xl md:rounded-lg transition cursor-pointer font-semibold min-h-[44px] md:min-h-0 text-xs md:text-[11px] ${
                                   isAssigned 
                                     ? 'bg-blue-50 border border-blue-200 text-[#2563EB]' 
                                     : 'bg-white border border-slate-200 text-slate-500'
@@ -487,19 +487,19 @@ export const AdminPortal: React.FC = () => {
                   ) : allUsersList.filter(u => u.role === 'pembimbing_eksternal').map((mentor: any) => {
                     const currentCompIds = mentor.companies?.map((c: any) => c.id) || [];
                     return (
-                      <div key={mentor.id} className="bg-white border border-[#E2E8F0] p-3 rounded-lg flex flex-col sm:flex-row justify-between sm:items-center gap-2">
+                      <div key={mentor.id} className="bg-white border border-[#E2E8F0] p-3 rounded-lg flex flex-col md:flex-row justify-between md:items-center gap-3">
                         <div>
-                          <p className="font-bold text-slate-800">{mentor.name}</p>
-                          <p className="text-[10px] text-slate-400">Username: {mentor.username}</p>
+                          <p className="font-bold text-slate-800 text-sm md:text-xs">{mentor.name}</p>
+                          <p className="text-[10px] text-slate-400 font-medium">Username: {mentor.username}</p>
                         </div>
-                        <div className="flex flex-wrap gap-3">
+                        <div className="flex flex-wrap gap-2">
                           {companiesList.map(co => {
                             const isAssigned = currentCompIds.includes(co.id);
                             return (
                               <button
                                 key={co.id}
                                 onClick={() => handleMentorCompanyToggle(mentor.id, currentCompIds, co.id)}
-                                className={`flex items-center gap-1 px-2.5 py-1 rounded-lg transition cursor-pointer font-semibold ${
+                                className={`flex items-center gap-1.5 px-3 py-2 md:px-2.5 md:py-1 rounded-xl md:rounded-lg transition cursor-pointer font-semibold min-h-[44px] md:min-h-0 text-xs md:text-[11px] ${
                                   isAssigned 
                                     ? 'bg-emerald-50 border border-emerald-200 text-emerald-600' 
                                     : 'bg-white border border-slate-200 text-slate-500'
@@ -528,7 +528,7 @@ export const AdminPortal: React.FC = () => {
                   ) : allUsersList.filter(u => u.role === 'siswa').map((siswa: any) => {
                     return (
                       <div key={siswa.id} className="bg-white border border-[#E2E8F0] p-3 rounded-lg flex flex-col gap-3">
-                        <div className="flex flex-col sm:flex-row justify-between sm:items-center gap-3">
+                        <div className="flex flex-col lg:flex-row justify-between lg:items-center gap-3">
                           <div className="flex-1 flex flex-col sm:flex-row gap-3">
                             <div className="flex flex-col gap-1 flex-1">
                               <label className="text-[9px] uppercase tracking-wider text-slate-400 font-bold">Nama Lengkap</label>
@@ -536,7 +536,7 @@ export const AdminPortal: React.FC = () => {
                                 type="text"
                                 defaultValue={siswa.name}
                                 onBlur={(e) => handleSiswaProfileUpdate(siswa.id, e.target.value, siswa.nisn || '')}
-                                className="bg-slate-50 border border-slate-200 rounded-lg p-1.5 text-xs text-slate-800 focus:outline-none"
+                                className="bg-slate-50 border border-slate-200 rounded-xl md:rounded-lg px-3 py-2 md:p-1.5 text-sm md:text-xs text-slate-800 focus:outline-none min-h-[48px] md:min-h-0"
                               />
                             </div>
                             <div className="flex flex-col gap-1 flex-1">
@@ -546,18 +546,18 @@ export const AdminPortal: React.FC = () => {
                                 defaultValue={siswa.nisn || ''}
                                 placeholder="Belum diisi"
                                 onBlur={(e) => handleSiswaProfileUpdate(siswa.id, siswa.name, e.target.value)}
-                                className="bg-slate-50 border border-slate-200 rounded-lg p-1.5 text-xs text-slate-800 focus:outline-none"
+                                className="bg-slate-50 border border-slate-200 rounded-xl md:rounded-lg px-3 py-2 md:p-1.5 text-sm md:text-xs text-slate-800 focus:outline-none min-h-[48px] md:min-h-0"
                               />
                             </div>
                           </div>
                           
-                          <div className="flex gap-3">
-                            <div className="flex flex-col gap-1 min-w-[120px]">
+                          <div className="flex flex-col sm:flex-row gap-3 w-full lg:w-auto">
+                            <div className="flex flex-col gap-1 min-w-[120px] flex-1">
                               <label className="text-[9px] uppercase tracking-wider text-slate-400 font-bold">Kelas</label>
                               <select
                                 value={siswa.classId || ''}
                                 onChange={(e) => handleSiswaClassChange(siswa.id, e.target.value)}
-                                className="bg-slate-50 border border-slate-200 rounded-lg p-1.5 text-xs focus:outline-none"
+                                className="bg-slate-50 border border-slate-200 rounded-xl md:rounded-lg px-3 py-2 md:p-1.5 text-sm md:text-xs focus:outline-none min-h-[48px] md:min-h-0 w-full"
                               >
                                 <option value="">-- Tanpa Kelas --</option>
                                 {classesList.map(c => (
@@ -566,12 +566,12 @@ export const AdminPortal: React.FC = () => {
                               </select>
                             </div>
 
-                            <div className="flex flex-col gap-1 min-w-[150px]">
+                            <div className="flex flex-col gap-1 min-w-[150px] flex-1">
                               <label className="text-[9px] uppercase tracking-wider text-slate-400 font-bold">Perusahaan</label>
                               <select
                                 value={siswa.companyId || ''}
                                 onChange={(e) => handleSiswaCompanyChange(siswa.id, e.target.value)}
-                                className="bg-slate-50 border border-slate-200 rounded-lg p-1.5 text-xs focus:outline-none"
+                                className="bg-slate-50 border border-slate-200 rounded-xl md:rounded-lg px-3 py-2 md:p-1.5 text-sm md:text-xs focus:outline-none min-h-[48px] md:min-h-0 w-full"
                               >
                                 <option value="">-- Tanpa Perusahaan --</option>
                                 {companiesList.map(co => (

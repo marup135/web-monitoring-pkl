@@ -37,14 +37,14 @@ export const LogbookTable: React.FC = () => {
     <div className="flex flex-col gap-6 text-[#0F172A] font-sans">
       
       {/* Table Action Header (non-printable) */}
-      <div className="flex justify-between items-center bg-white border border-[#E2E8F0] rounded-2xl p-4 shadow-sm print:hidden">
+      <div className="flex flex-col sm:flex-row gap-3 justify-between items-start sm:items-center bg-white border border-[#E2E8F0] rounded-2xl p-4 shadow-sm print:hidden">
         <div className="flex items-center gap-2">
           <Printer size={18} className="text-[#2563EB]" />
           <h3 className="font-semibold text-slate-800 text-sm">Cetak Laporan Logbook Jurnal PKL</h3>
         </div>
         <button
           onClick={handlePrint}
-          className="px-4 py-2 bg-[#2563EB] hover:bg-[#1D4ED8] text-white font-semibold text-xs rounded-xl shadow-sm flex items-center gap-1.5 transition cursor-pointer"
+          className="w-full sm:w-auto px-4 py-3 md:py-2 bg-[#2563EB] hover:bg-[#1D4ED8] text-white font-semibold text-sm md:text-xs rounded-xl shadow-sm flex items-center justify-center gap-1.5 transition cursor-pointer min-h-[48px] md:min-h-0"
         >
           <Printer size={14} />
           <span>Cetak / Simpan PDF</span>
@@ -52,12 +52,12 @@ export const LogbookTable: React.FC = () => {
       </div>
 
       {/* Main Printable Logbook Container */}
-      <div className="bg-white rounded-2xl p-8 border border-[#E2E8F0] shadow-sm relative overflow-hidden print:bg-white print:text-black print:p-0 print:border-none print:shadow-none print:rounded-none">
+      <div className="bg-white rounded-2xl p-5 md:p-8 border border-[#E2E8F0] shadow-sm relative overflow-hidden print:bg-white print:text-black print:p-0 print:border-none print:shadow-none print:rounded-none">
         
         {/* Printable Header Info */}
         <div className="flex flex-col gap-6 mb-8 border-b border-[#E2E8F0] pb-6 print:border-black/20">
           <div className="text-center">
-            <h2 className="text-xl font-bold text-[#0F172A] uppercase tracking-wide print:text-black print:text-lg">
+            <h2 className="text-lg md:text-xl font-bold text-[#0F172A] uppercase tracking-wide print:text-black print:text-lg">
               Jurnal Kegiatan Harian (Logbook) PKL
             </h2>
             <p className="text-xs text-[#64748B] mt-1 print:text-black/60">
@@ -68,27 +68,27 @@ export const LogbookTable: React.FC = () => {
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-2 text-xs">
             <div className="flex flex-col gap-1.5 text-slate-700 print:text-black">
               <div className="flex">
-                <span className="w-36 text-[#64748B] shrink-0 print:text-black/60">Nama Siswa</span>
+                <span className="w-28 sm:w-36 text-[#64748B] shrink-0 print:text-black/60">Nama Siswa</span>
                 <span className="font-semibold">: {state.studentName}</span>
               </div>
               {state.nisn && (
                 <div className="flex">
-                  <span className="w-36 text-[#64748B] shrink-0 print:text-black/60">NIS / NISN</span>
+                  <span className="w-28 sm:w-36 text-[#64748B] shrink-0 print:text-black/60">NIS / NISN</span>
                   <span className="font-semibold">: {state.nisn}</span>
                 </div>
               )}
               <div className="flex">
-                <span className="w-36 text-[#64748B] shrink-0 print:text-black/60">Tempat PKL</span>
+                <span className="w-28 sm:w-36 text-[#64748B] shrink-0 print:text-black/60">Tempat PKL</span>
                 <span className="font-semibold">: {state.companyName}</span>
               </div>
             </div>
             <div className="flex flex-col gap-1.5 text-slate-700 print:text-black">
               <div className="flex">
-                <span className="w-36 text-[#64748B] shrink-0 print:text-black/60">Pembimbing Lapangan</span>
+                <span className="w-28 sm:w-36 text-[#64748B] shrink-0 print:text-black/60">Pembimbing Lapangan</span>
                 <span className="font-semibold">: {state.mentorName}</span>
               </div>
               <div className="flex">
-                <span className="w-36 text-[#64748B] shrink-0 print:text-black/60">Pembimbing Internal</span>
+                <span className="w-28 sm:w-36 text-[#64748B] shrink-0 print:text-black/60">Pembimbing Internal</span>
                 <span className="font-semibold">: {state.advisorName}</span>
               </div>
             </div>

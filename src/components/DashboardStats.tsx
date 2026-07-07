@@ -44,24 +44,24 @@ export const DashboardStats: React.FC = () => {
   };
 
   return (
-    <div className="flex flex-col gap-8 text-[#0F172A] font-sans">
+    <div className="flex flex-col gap-6 md:gap-8 text-[#0F172A] font-sans">
       {/* Metrics Row */}
-      <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 md:gap-6">
         
         {/* Metric 1: Total Hours */}
-        <div className="bg-white border border-[#E2E8F0] rounded-2xl p-6 flex items-center gap-4 relative overflow-hidden shadow-sm">
+        <div className="bg-white border border-[#E2E8F0] rounded-2xl p-5 md:p-6 flex items-center gap-4 relative overflow-hidden shadow-sm">
           <div className="absolute top-0 right-0 w-32 h-32 bg-[#2563EB]/2 rounded-full blur-2xl pointer-events-none" />
           <div className="p-3.5 bg-blue-50 border border-blue-100 text-[#2563EB] rounded-xl">
             <Clock size={24} />
           </div>
           <div>
             <span className="text-[10px] uppercase font-bold text-[#64748B] tracking-wider block">Total Jam Kerja</span>
-            <span className="text-3xl font-black text-slate-800">{totalHours} <span className="text-sm font-normal text-[#64748B]">jam</span></span>
+            <span className="text-2xl md:text-3xl font-black text-slate-800">{totalHours} <span className="text-xs md:text-sm font-normal text-[#64748B]">jam</span></span>
           </div>
         </div>
 
         {/* Metric 2: Completion Rate */}
-        <div className="bg-white border border-[#E2E8F0] rounded-2xl p-6 flex items-center gap-4 relative overflow-hidden shadow-sm">
+        <div className="bg-white border border-[#E2E8F0] rounded-2xl p-5 md:p-6 flex items-center gap-4 relative overflow-hidden shadow-sm">
           <div className="absolute top-0 right-0 w-32 h-32 bg-green-500/2 rounded-full blur-2xl pointer-events-none" />
           <div className="p-3.5 bg-green-50 border border-green-100 text-[#22C55E] rounded-xl">
             <CheckSquare size={24} />
@@ -69,16 +69,16 @@ export const DashboardStats: React.FC = () => {
           <div className="flex-1">
             <span className="text-[10px] uppercase font-bold text-[#64748B] tracking-wider block">Persentase Selesai</span>
             <div className="flex items-baseline gap-2">
-              <span className="text-3xl font-black text-slate-800">
+              <span className="text-2xl md:text-3xl font-black text-slate-800">
                 {totalCards > 0 ? Math.round((completedCards.length / totalCards) * 100) : 0}%
               </span>
-              <span className="text-xs text-[#64748B]">({completedCards.length}/{totalCards} tugas)</span>
+              <span className="text-[10px] md:text-xs text-[#64748B]">({completedCards.length}/{totalCards} tugas)</span>
             </div>
           </div>
         </div>
 
         {/* Metric 3: Average Score */}
-        <div className="bg-white border border-[#E2E8F0] rounded-2xl p-6 flex items-center gap-4 relative overflow-hidden shadow-sm">
+        <div className="bg-white border border-[#E2E8F0] rounded-2xl p-5 md:p-6 flex items-center gap-4 relative overflow-hidden shadow-sm">
           <div className="absolute top-0 right-0 w-32 h-32 bg-purple-500/2 rounded-full blur-2xl pointer-events-none" />
           <div className="p-3.5 bg-purple-50 border border-purple-100 text-purple-600 rounded-xl">
             <Award size={24} />
@@ -87,35 +87,35 @@ export const DashboardStats: React.FC = () => {
             <span className="text-[10px] uppercase font-bold text-[#64748B] tracking-wider block mb-1">Rata-Rata Nilai</span>
             <div className="flex flex-col gap-1 text-[11px] font-semibold text-slate-700">
               <div>
-                Pembimbing Eksternal: <span className="text-sm font-bold text-purple-600">{averageScoreMentor > 0 ? `${averageScoreMentor}/100` : '-'}</span>
+                Eksternal: <span className="text-sm font-bold text-purple-600">{averageScoreMentor > 0 ? `${averageScoreMentor}/100` : '-'}</span>
               </div>
               <div>
-                Pembimbing Internal: <span className="text-sm font-bold text-yellow-600">{averageScoreAdvisor > 0 ? `${averageScoreAdvisor}/100` : '-'}</span>
+                Internal: <span className="text-sm font-bold text-yellow-600">{averageScoreAdvisor > 0 ? `${averageScoreAdvisor}/100` : '-'}</span>
               </div>
             </div>
           </div>
         </div>
 
         {/* Metric 4: Review Pending */}
-        <div className="bg-white border border-[#E2E8F0] rounded-2xl p-6 flex items-center gap-4 relative overflow-hidden shadow-sm">
+        <div className="bg-white border border-[#E2E8F0] rounded-2xl p-5 md:p-6 flex items-center gap-4 relative overflow-hidden shadow-sm">
           <div className="absolute top-0 right-0 w-32 h-32 bg-yellow-500/2 rounded-full blur-2xl pointer-events-none" />
           <div className="p-3.5 bg-yellow-50 border border-yellow-100 text-yellow-600 rounded-xl">
             <MessageSquare size={24} />
           </div>
           <div>
             <span className="text-[10px] uppercase font-bold text-[#64748B] tracking-wider block">Menunggu Review</span>
-            <span className="text-3xl font-black text-slate-800">{reviewCards.length} <span className="text-sm font-normal text-[#64748B]">tugas</span></span>
+            <span className="text-2xl md:text-3xl font-black text-slate-800">{reviewCards.length} <span className="text-xs md:text-sm font-normal text-[#64748B]">tugas</span></span>
           </div>
         </div>
 
       </div>
 
       {/* Main Grid: Details breakdown & Advisor notes */}
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 text-left">
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 md:gap-8 text-left">
         
         {/* Left Side (2 cols): Charts / Detailed progress */}
         <div className="lg:col-span-2 flex flex-col gap-6">
-          <div className="bg-white border border-[#E2E8F0] rounded-2xl p-6 shadow-sm flex flex-col gap-6">
+          <div className="bg-white border border-[#E2E8F0] rounded-2xl p-5 md:p-6 shadow-sm flex flex-col gap-6">
             <h3 className="font-bold text-slate-800 text-base">Distribusi Status & Kategori Kegiatan</h3>
             
             {/* Status Breakdown Bars */}
@@ -185,7 +185,7 @@ export const DashboardStats: React.FC = () => {
 
         {/* Right Side: Advisor notes (Dosen Pembimbing) */}
         <div className="flex flex-col gap-6">
-          <div className="bg-white border border-[#E2E8F0] rounded-2xl p-6 shadow-sm flex flex-col gap-6 h-full min-h-[400px]">
+          <div className="bg-white border border-[#E2E8F0] rounded-2xl p-5 md:p-6 shadow-sm flex flex-col gap-6 h-full min-h-[400px]">
             <div className="flex items-center gap-2">
               <FileText size={18} className="text-[#2563EB]" />
               <h3 className="font-bold text-slate-800 text-base">Catatan Pembimbing Internal</h3>
@@ -199,11 +199,11 @@ export const DashboardStats: React.FC = () => {
                 rows={3}
                 value={newNoteText}
                 onChange={(e) => setNewNoteText(e.target.value)}
-                className="w-full bg-white border border-[#E2E8F0] rounded-xl p-3 text-xs text-[#0F172A] focus:outline-none focus:border-[#2563EB] focus:ring-1 focus:ring-[#2563EB] resize-none shadow-sm"
+                className="w-full bg-white border border-[#E2E8F0] rounded-xl p-3.5 text-sm md:text-xs focus:outline-none focus:border-[#2563EB] focus:ring-1 focus:ring-[#2563EB] resize-none shadow-sm min-h-[80px] md:min-h-0 md:p-3"
               />
               <button
                 type="submit"
-                className="w-full py-2 bg-[#2563EB] hover:bg-[#1D4ED8] text-white font-semibold text-xs rounded-xl shadow-sm flex items-center justify-center gap-1.5 transition cursor-pointer"
+                className="w-full py-3 md:py-2 bg-[#2563EB] hover:bg-[#1D4ED8] text-white font-semibold text-sm md:text-xs rounded-xl shadow-sm flex items-center justify-center gap-1.5 transition cursor-pointer min-h-[48px] md:min-h-0"
               >
                 <Plus size={14} />
                 <span>Simpan Catatan Bimbingan</span>

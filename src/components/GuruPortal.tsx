@@ -105,9 +105,9 @@ export const GuruPortal: React.FC<GuruPortalProps> = ({ onPantau }) => {
       </div>
 
       {/* Metrics Grid */}
-      <div className="grid grid-cols-2 lg:grid-cols-5 gap-4">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4">
         {/* Card 1: Total Siswa */}
-        <div className="bg-white border border-[#E2E8F0] rounded-2xl p-4 shadow-sm flex items-center gap-3">
+        <div className="bg-white border border-[#E2E8F0] rounded-2xl p-5 shadow-sm flex items-center gap-3">
           <div className="p-3 bg-blue-50 text-[#2563EB] rounded-xl">
             <Users size={20} />
           </div>
@@ -118,7 +118,7 @@ export const GuruPortal: React.FC<GuruPortalProps> = ({ onPantau }) => {
         </div>
 
         {/* Card 2: Monitoring Hari Ini */}
-        <div className="bg-white border border-[#E2E8F0] rounded-2xl p-4 shadow-sm flex items-center gap-3">
+        <div className="bg-white border border-[#E2E8F0] rounded-2xl p-5 shadow-sm flex items-center gap-3">
           <div className="p-3 bg-amber-50 text-amber-600 rounded-xl">
             <Calendar size={20} />
           </div>
@@ -129,7 +129,7 @@ export const GuruPortal: React.FC<GuruPortalProps> = ({ onPantau }) => {
         </div>
 
         {/* Card 3: Belum Direview */}
-        <div className="bg-white border border-[#E2E8F0] rounded-2xl p-4 shadow-sm flex items-center gap-3">
+        <div className="bg-white border border-[#E2E8F0] rounded-2xl p-5 shadow-sm flex items-center gap-3">
           <div className="p-3 bg-purple-50 text-purple-600 rounded-xl">
             <FileSpreadsheet size={20} />
           </div>
@@ -140,7 +140,7 @@ export const GuruPortal: React.FC<GuruPortalProps> = ({ onPantau }) => {
         </div>
 
         {/* Card 4: Penilaian Belum Diisi */}
-        <div className="bg-white border border-[#E2E8F0] rounded-2xl p-4 shadow-sm flex items-center gap-3">
+        <div className="bg-white border border-[#E2E8F0] rounded-2xl p-5 shadow-sm flex items-center gap-3">
           <div className="p-3 bg-red-50 text-red-600 rounded-xl">
             <AlertCircle size={20} />
           </div>
@@ -151,7 +151,7 @@ export const GuruPortal: React.FC<GuruPortalProps> = ({ onPantau }) => {
         </div>
 
         {/* Card 5: Rata-rata Nilai */}
-        <div className="bg-white border border-[#E2E8F0] rounded-2xl p-4 shadow-sm flex items-center gap-3">
+        <div className="bg-white border border-[#E2E8F0] rounded-2xl p-5 shadow-sm flex items-center gap-3">
           <div className="p-3 bg-green-50 text-[#22C55E] rounded-xl">
             <Award size={20} />
           </div>
@@ -251,7 +251,7 @@ export const GuruPortal: React.FC<GuruPortalProps> = ({ onPantau }) => {
                       <td className="py-3 px-2 text-center">
                         <button
                           onClick={() => onPantau(student.id)}
-                          className="px-2.5 py-1 bg-[#2563EB] hover:bg-[#1D4ED8] text-white font-bold text-[10px] rounded-lg transition shadow-sm cursor-pointer"
+                          className="min-h-[44px] px-3.5 py-2 text-xs md:min-h-0 md:px-2.5 md:py-1 md:text-[10px] bg-[#2563EB] hover:bg-[#1D4ED8] text-white font-bold rounded-lg transition shadow-sm cursor-pointer w-full md:w-auto flex items-center justify-center"
                         >
                           Pantau
                         </button>
