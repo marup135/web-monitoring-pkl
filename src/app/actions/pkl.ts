@@ -214,7 +214,7 @@ export async function getPKLState(selectedStudentId?: string): Promise<PKLState>
       })),
     }));
 
-    const mappedNotes: AdvisorNote[] = advisorNotes.map(n => ({
+    const mappedNotes: AdvisorNote[] = advisorNotes.map((n: any) => ({
       id: n.id,
       advisorName: n.advisorName,
       text: n.text,
