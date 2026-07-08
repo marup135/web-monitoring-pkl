@@ -198,7 +198,7 @@ export const LogbookTable: React.FC<LogbookTableProps> = ({ onOpenCard, onEditCa
         </div>
 
         {/* Mobile Timeline/Card List (Mobile-only) */}
-        <div className="block md:hidden flex flex-col gap-4 mt-2 print:hidden">
+        <div className="md:hidden flex flex-col gap-4 mt-2 print:hidden">
           {state.cards.length === 0 ? (
             <div className="flex flex-col items-center justify-center p-8 bg-white border border-[#E2E8F0] rounded-2xl text-center text-slate-400">
               <span className="italic text-sm">Belum ada catatan logbook harian.</span>
@@ -345,7 +345,7 @@ export const LogbookTable: React.FC<LogbookTableProps> = ({ onOpenCard, onEditCa
             font-size: 10px !important;
           }
           /* Hide non-printable elements */
-          nav, header, footer, button, .print\:hidden, [role="button"], [title] {
+          nav, header, footer, button, .print\:hidden, [role="button"] {
             display: none !important;
           }
           /* Remove layout containers shadows */

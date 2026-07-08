@@ -222,7 +222,7 @@ export const CardModal: React.FC<CardModalProps> = ({ card, onClose, initialEdit
 
   return (
     <div className="fixed inset-0 z-50 flex items-end md:items-center justify-center p-0 md:p-4 bg-slate-900/40 backdrop-blur-sm">
-      <div className="bg-white rounded-t-3xl md:rounded-2xl w-full max-w-3xl h-[92vh] md:h-auto max-h-[95vh] md:max-h-[90vh] flex flex-col border border-[#E2E8F0] shadow-xl relative animate-in fade-in slide-in-from-bottom-10 md:zoom-in-95 duration-300 text-[#0F172A]">
+      <div className="bg-white rounded-t-3xl md:rounded-2xl w-full max-w-3xl max-h-[92vh] md:max-h-[90vh] flex flex-col border border-[#E2E8F0] shadow-xl relative animate-in fade-in slide-in-from-bottom-10 md:zoom-in-95 duration-300 text-[#0F172A]">
         
         {/* Modal Header */}
         <div className="flex items-center justify-between p-6 border-b border-[#E2E8F0]">
@@ -243,7 +243,7 @@ export const CardModal: React.FC<CardModalProps> = ({ card, onClose, initialEdit
           </div>
           <button
             onClick={onClose}
-            className="p-1.5 rounded-lg bg-slate-50 hover:bg-slate-100 text-slate-500 hover:text-slate-700 transition cursor-pointer"
+            className="p-1.5 rounded-lg bg-slate-50 hover:bg-slate-100 text-slate-500 hover:text-slate-700 transition cursor-pointer min-h-[44px] min-w-[44px] flex items-center justify-center"
           >
             <X size={18} />
           </button>

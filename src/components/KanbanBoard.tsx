@@ -148,17 +148,17 @@ export const KanbanBoard: React.FC<KanbanBoardProps> = ({ onOpenCard }) => {
               placeholder="Cari tugas atau deskripsi..."
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              className="w-full bg-white border border-[#E2E8F0] rounded-xl pl-10 pr-4 text-sm text-[#0F172A] focus:outline-none focus:border-[#2563EB] focus:ring-1 focus:ring-[#2563EB] min-h-[48px] py-3 md:min-h-0 md:py-2"
+              className="w-full bg-white border border-[#E2E8F0] rounded-xl pl-10 pr-4 text-sm text-[#0F172A] focus:outline-none focus:border-[#2563EB] focus:ring-1 focus:ring-[#2563EB] min-h-[44px] py-2.5 md:min-h-0 md:py-2"
             />
           </div>
 
-          <div className="flex items-center gap-2 w-full md:w-auto overflow-x-auto py-1">
+          <div className="flex items-center gap-2 w-full md:w-auto overflow-x-auto py-1 scrollbar-none scroll-smooth">
             <Filter size={16} className="text-gray-400 shrink-0" />
             {filterCategories.map((cat) => (
               <button
                 key={cat}
                 onClick={() => setSelectedCategory(cat)}
-                className={`text-sm md:text-xs px-4 py-2.5 md:px-3 md:py-1.5 rounded-xl md:rounded-lg border font-medium whitespace-nowrap transition cursor-pointer min-h-[48px] md:min-h-0 ${getCategoryFilterStyle(cat, selectedCategory === cat)}`}
+                className={`text-sm md:text-xs px-3.5 py-2 md:px-3 md:py-1.5 rounded-xl md:rounded-lg border font-medium whitespace-nowrap transition cursor-pointer min-h-[40px] md:min-h-0 ${getCategoryFilterStyle(cat, selectedCategory === cat)}`}
               >
                 {cat}
               </button>
@@ -179,7 +179,7 @@ export const KanbanBoard: React.FC<KanbanBoardProps> = ({ onOpenCard }) => {
       </div>
 
       {/* Kanban Columns Grid */}
-      <div className="flex overflow-x-auto gap-4 pb-6 md:grid md:grid-cols-2 lg:grid-cols-4 md:overflow-x-visible -mx-4 px-4 md:mx-0 md:px-0 items-start snap-x snap-mandatory scroll-smooth">
+      <div className="flex overflow-x-auto gap-4 pb-4 md:grid md:grid-cols-2 lg:grid-cols-4 md:overflow-x-visible -mx-4 px-4 md:mx-0 md:px-0 items-start snap-x snap-mandatory scroll-smooth scrollbar-none">
         {columns.map((col) => {
           const colCards = filteredCards.filter(c => c.columnId === col.id);
           const isOver = draggedOverColumn === col.id;
@@ -190,12 +190,12 @@ export const KanbanBoard: React.FC<KanbanBoardProps> = ({ onOpenCard }) => {
               onDragOver={(e) => handleDragOver(e, col.id)}
               onDragLeave={handleDragLeave}
               onDrop={(e) => handleDrop(e, col.id)}
-              className={`flex flex-col rounded-2xl bg-[#F1F5F9] border border-[#E2E8F0] border-t-[4px] ${col.color} p-4 shadow-sm transition-all w-[85vw] snap-center shrink-0 min-h-0 h-fit md:min-h-[500px] md:w-auto md:shrink-1 ${
+              className={`flex flex-col rounded-2xl bg-[#F1F5F9] border border-[#E2E8F0] border-t-[4px] ${col.color} p-4 shadow-sm transition-all w-[80vw] min-w-[280px] snap-center shrink-0 min-h-[200px] h-fit md:min-h-[500px] md:w-auto md:shrink-1 ${
                 isOver ? 'bg-slate-200/60 ring-2 ring-[#2563EB]/15 scale-[1.01]' : ''
               }`}
             >
               {/* Column Header */}
-              <div className="sticky top-14 md:relative bg-[#F1F5F9] z-10 flex items-center justify-between pb-3 md:pb-0 mb-4 -mx-4 px-4 -mt-4 pt-4 md:pt-0 md:mt-0 rounded-t-2xl border-b border-slate-200/30 md:border-b-0">
+              <div className="flex items-center justify-between pb-3 mb-3 border-b border-slate-200/50">
                 <h3 className="font-semibold text-[#0F172A] text-sm tracking-wide">{col.title}</h3>
                 <span className={`text-xs font-semibold px-2 py-0.5 rounded-full ${col.bgBadge}`}>
                   {colCards.length}

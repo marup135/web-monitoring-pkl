@@ -1,8 +1,11 @@
-# 📋 Web Monitoring PKL (100% Pakai AI)
+# 📋 Web Monitoring PKL (NeboTrack)
 
-Aplikasi berbasis web modern untuk memantau, melaporkan, dan mengevaluasi kegiatan siswa selama melaksanakan **Praktek Kerja Lapangan (PKL)**. Proyek ini memfasilitasi komunikasi dan kolaborasi yang efisien antara **Siswa**, **Pembimbing Internal (Sekolah)**, dan **Pembimbing Eksternal (Perusahaan)**.
+Aplikasi berbasis web modern untuk memantau, melaporkan, dan mengevaluasi kegiatan siswa selama melaksanakan **Praktek Kerja Lapangan (PKL)**. Proyek ini memfasilitasi komunikasi dan kolaborasi yang efisien antara **Siswa**, **Pembimbing Internal (Sekolah/Guru)**, dan **Pembimbing Eksternal (Perusahaan)**.
+
+Aplikasi: **NeboTrack** (Next.js + Prisma + MySQL/MariaDB).
 
 ---
+
 
 ## 🚀 Deskripsi Proyek
 
@@ -18,7 +21,8 @@ Aplikasi ini dibangun menggunakan teknologi modern berikut:
 - **UI & Logic:** [React 19](https://react.dev/) & [TypeScript](https://www.typescriptlang.org/)
 - **Styling:** [Tailwind CSS v4](https://tailwindcss.com/)
 - **Database ORM:** [Prisma v7.8.0](https://www.prisma.io/)
-- **Database Engine:** MySQL / MariaDB
+- **Database Engine:** MySQL / MariaDB (Prisma adapter: `@prisma/adapter-mariadb`)
+
 - **Icons:** [Lucide React](https://lucide.dev/)
 - **Compiler:** React Compiler (Babel plugin)
 
@@ -94,6 +98,52 @@ Sebelum menjalankan aplikasi di lokal, pastikan perangkat Anda telah terinstal:
    ```
 
 3. **Konfigurasi Variabel Lingkungan (`.env`)**
+   Buat file `.env` di root folder proyek (jika belum ada) dan sesuaikan database:
+   ```env
+   DATABASE_URL="mysql://username:password@localhost:3306/minitor_pkl"
+   ```
+
+4. **Singkronisasi Database & Generate Prisma Client**
+   ```bash
+   npx prisma db push
+   npx prisma generate
+   ```
+
+5. **Jalankan Aplikasi dalam Mode Pengembangan (Development)**
+   ```bash
+   npm run dev
+   ```
+   Aplikasi akan berjalan di [http://localhost:3000](http://localhost:3000).
+
+6. **Build untuk Produksi (Production)**
+   ```bash
+   npm run build
+   npm run start
+   ```
+
+---
+
+## ☁️ Deploy (Vercel)
+
+
+Jika deploy ke **Vercel** dan database memakai **Railway (MySQL)**:
+- Pastikan environment variable berikut diset di Vercel:
+  - `DATABASE_URL` (format sesuai Railway MySQL)
+- Build & start otomatis mengikuti konfigurasi Next.js.
+
+
+1. **Clone Repositori**
+   ```bash
+   git clone https://github.com/Marup135/web-monitoring-pkl.git
+   cd web-monitoring-pkl
+   ```
+
+2. **Instal Dependensi**
+   ```bash
+   npm install
+   ```
+
+3. **Konfigurasi Variabel Lingkungan (`.env`)**
    Buat file `.env` di root folder proyek (jika belum ada) dan sesuaikan link database MySQL Anda:
    ```env
    DATABASE_URL="mysql://username:password@localhost:3306/minitor_pkl"
@@ -123,14 +173,24 @@ Sebelum menjalankan aplikasi di lokal, pastikan perangkat Anda telah terinstal:
 
 ## 📊 Skema Database (Prisma Models)
 
-Berikut gambaran relasi tabel database pada proyek ini:
+Model utama pada database (berdasarkan `prisma/schema.prisma`):
 
-- **`User`**: Menyimpan profil akun siswa dan pembimbing.
-- **`Card`**: Representasi tugas/aktivitas harian siswa pada Kanban Board.
-- **`Comment`**: Menyimpan riwayat komentar diskusi di setiap aktivitas `Card`.
-- **`HistoryItem`**: Log pencatatan perubahan status atau aktivitas yang terjadi pada kartu.
-- **`AdvisorNote`**: Catatan resmi atau evaluasi umum yang diberikan oleh pembimbing untuk siswa.
+- **`User`**: Akun pengguna (role: `siswa`, `pembimbing_internal`, `pembimbing_eksternal`, `admin`).
+- **`Kelas`**: Data kelas untuk siswa.
+- **`Perusahaan`**: Data perusahaan untuk siswa.
+- **`Card`**: Tugas/aktivitas harian siswa pada Kanban Board (termasuk penilaian & lampiran).
+- **`Comment`**: Komentar diskusi per `Card`.
+- **`HistoryItem`**: Riwayat perubahan/aktivitas per `Card`.
+- **`AdvisorNote`**: Catatan resmi pembimbing untuk siswa.
+
+---
+
+## 👤 Catatan Role & Registrasi
+
+- Role yang didukung saat registrasi: `siswa`, `pembimbing_internal`, `pembimbing_eksternal`.
+- Role **`admin`** tidak dapat dibuat lewat fitur registrasi (dibuat manual/seed sesuai kebutuhan).
 
 ---
 
 Dibuat dengan ❤️ untuk kemudahan monitoring PKL siswa **SMKN 1 BOJONG**.
+
