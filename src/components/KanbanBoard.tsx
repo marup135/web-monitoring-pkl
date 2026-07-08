@@ -179,7 +179,7 @@ export const KanbanBoard: React.FC<KanbanBoardProps> = ({ onOpenCard }) => {
       </div>
 
       {/* Kanban Columns Grid */}
-      <div className="flex overflow-x-auto gap-4 pb-6 md:grid md:grid-cols-2 lg:grid-cols-4 md:overflow-x-visible -mx-4 px-4 md:mx-0 md:px-0 items-start">
+      <div className="flex overflow-x-auto gap-4 pb-6 md:grid md:grid-cols-2 lg:grid-cols-4 md:overflow-x-visible -mx-4 px-4 md:mx-0 md:px-0 items-start snap-x snap-mandatory scroll-smooth">
         {columns.map((col) => {
           const colCards = filteredCards.filter(c => c.columnId === col.id);
           const isOver = draggedOverColumn === col.id;
@@ -190,12 +190,12 @@ export const KanbanBoard: React.FC<KanbanBoardProps> = ({ onOpenCard }) => {
               onDragOver={(e) => handleDragOver(e, col.id)}
               onDragLeave={handleDragLeave}
               onDrop={(e) => handleDrop(e, col.id)}
-              className={`flex flex-col rounded-2xl bg-[#F1F5F9] border border-[#E2E8F0] border-t-[4px] ${col.color} p-4 min-h-[500px] shadow-sm transition-all w-[300px] shrink-0 md:w-auto md:shrink-1 ${
+              className={`flex flex-col rounded-2xl bg-[#F1F5F9] border border-[#E2E8F0] border-t-[4px] ${col.color} p-4 shadow-sm transition-all w-[85vw] snap-center shrink-0 min-h-0 h-fit md:min-h-[500px] md:w-auto md:shrink-1 ${
                 isOver ? 'bg-slate-200/60 ring-2 ring-[#2563EB]/15 scale-[1.01]' : ''
               }`}
             >
               {/* Column Header */}
-              <div className="flex items-center justify-between mb-4">
+              <div className="sticky top-14 md:relative bg-[#F1F5F9] z-10 flex items-center justify-between pb-3 md:pb-0 mb-4 -mx-4 px-4 -mt-4 pt-4 md:pt-0 md:mt-0 rounded-t-2xl border-b border-slate-200/30 md:border-b-0">
                 <h3 className="font-semibold text-[#0F172A] text-sm tracking-wide">{col.title}</h3>
                 <span className={`text-xs font-semibold px-2 py-0.5 rounded-full ${col.bgBadge}`}>
                   {colCards.length}
@@ -203,7 +203,7 @@ export const KanbanBoard: React.FC<KanbanBoardProps> = ({ onOpenCard }) => {
               </div>
 
               {/* Column Cards Container */}
-              <div className="flex flex-col gap-4 md:gap-3 flex-1 overflow-y-auto max-h-[600px] pr-1">
+              <div className="flex flex-col gap-4 md:gap-3 flex-1 md:overflow-y-auto md:max-h-[600px] pr-1">
                 {colCards.map((card) => {
                   const isOverdue = card.columnId !== 'selesai' && card.dueDate && card.dueDate < todayString;
 

@@ -2,10 +2,16 @@
 
 import React from 'react';
 import { usePKL } from '../context/PKLContext';
-import { Printer, Calendar, Award } from 'lucide-react';
+import { PKLCard } from '../types/pkl';
+import { Printer, Calendar, Award, Clock, Eye, Edit2, Trash2 } from 'lucide-react';
 
-export const LogbookTable: React.FC = () => {
-  const { state } = usePKL();
+interface LogbookTableProps {
+  onOpenCard?: (card: PKLCard) => void;
+  onEditCard?: (card: PKLCard) => void;
+}
+
+export const LogbookTable: React.FC<LogbookTableProps> = ({ onOpenCard, onEditCard }) => {
+  const { state, currentUser, deleteCard } = usePKL();
 
   const handlePrint = () => {
     window.print();
@@ -95,8 +101,8 @@ export const LogbookTable: React.FC = () => {
           </div>
         </div>
 
-        {/* Table representation */}
-        <div className="overflow-x-auto w-full">
+        {/* Table representation (Desktop) */}
+        <div className="hidden md:block overflow-x-auto w-full">
           <table className="w-full text-left border-collapse text-xs border border-[#E2E8F0] rounded-xl overflow-hidden shadow-sm">
             <thead>
               <tr className="border-b border-[#E2E8F0] text-slate-500 font-semibold uppercase tracking-wider bg-[#F8FAFC] print:border-black/30 print:text-black print:bg-transparent">
@@ -189,6 +195,125 @@ export const LogbookTable: React.FC = () => {
               )}
             </tbody>
           </table>
+        </div>
+
+        {/* Mobile Timeline/Card List (Mobile-only) */}
+        <div className="block md:hidden flex flex-col gap-4 mt-2 print:hidden">
+          {state.cards.length === 0 ? (
+            <div className="flex flex-col items-center justify-center p-8 bg-white border border-[#E2E8F0] rounded-2xl text-center text-slate-400">
+              <span className="italic text-sm">Belum ada catatan logbook harian.</span>
+            </div>
+          ) : (
+            state.cards.map((card) => {
+              const formattedDate = new Date(card.createdAt).toLocaleDateString('id-ID', {
+                weekday: 'long',
+                day: 'numeric',
+                month: 'long',
+                year: 'numeric',
+              });
+              const hasMentorScore = card.scoreMentor !== undefined && card.scoreMentor !== null;
+              const hasAdvisorScore = card.scoreAdvisor !== undefined && card.scoreAdvisor !== null;
+              const isSiswa = currentUser?.role === 'siswa';
+
+              return (
+                <div
+                  key={card.id}
+                  className="bg-white border border-[#E2E8F0] rounded-2xl p-5 shadow-sm hover:shadow transition duration-200 flex flex-col gap-4"
+                >
+                  {/* Header: Category & Status */}
+                  <div className="flex items-center justify-between">
+                    <span className="px-2.5 py-1 rounded-lg border border-[#E2E8F0] bg-slate-50 text-[11px] font-bold text-slate-700 uppercase tracking-wider">
+                      {card.category}
+                    </span>
+                    <span className={`px-2.5 py-1 rounded-lg border text-[10px] font-bold uppercase tracking-wider ${getStatusBadge(card.columnId)}`}>
+                      {getStatusText(card.columnId)}
+                    </span>
+                  </div>
+
+                  {/* Title & Description */}
+                  <div>
+                    <h4 className="text-sm font-bold text-slate-800 mb-1 leading-snug">{card.title}</h4>
+                    <p className="text-xs text-slate-500 leading-relaxed line-clamp-2">{card.description}</p>
+                  </div>
+
+                  {/* Date & Time */}
+                  <div className="flex flex-wrap gap-y-2 gap-x-4 text-xs text-slate-500 border-t border-slate-100 pt-3">
+                    <div className="flex items-center gap-1.5">
+                      <Calendar size={13} className="text-slate-400" />
+                      <span>{formattedDate}</span>
+                    </div>
+                    {(card.startTime || card.endTime) && (
+                      <div className="flex items-center gap-1.5">
+                        <Clock size={13} className="text-[#2563EB]" />
+                        <span>{card.startTime || '-'} - {card.endTime || '-'}</span>
+                      </div>
+                    )}
+                  </div>
+
+                  {/* Evaluations info */}
+                  {(hasMentorScore || hasAdvisorScore) && (
+                    <div className="bg-slate-50 rounded-xl p-3 border border-slate-100 flex flex-col gap-2.5 text-[10px] text-slate-700">
+                      {hasMentorScore && (
+                        <div className="flex flex-col gap-0.5">
+                          <div className="flex items-center gap-1 text-purple-700 font-bold">
+                            <Award size={12} />
+                            <span>Mentor: {card.scoreMentor}/100</span>
+                          </div>
+                          {card.feedbackMentor && (
+                            <p className="text-slate-500 italic pl-4">&ldquo;{card.feedbackMentor}&rdquo;</p>
+                          )}
+                        </div>
+                      )}
+                      {hasAdvisorScore && (
+                        <div className={`flex flex-col gap-0.5 ${hasMentorScore ? 'border-t border-slate-200/50 pt-2' : ''}`}>
+                          <div className="flex items-center gap-1 text-yellow-700 font-bold">
+                            <Award size={12} />
+                            <span>Guru: {card.scoreAdvisor}/100</span>
+                          </div>
+                          {card.feedbackAdvisor && (
+                            <p className="text-slate-500 italic pl-4">&ldquo;{card.feedbackAdvisor}&rdquo;</p>
+                          )}
+                        </div>
+                      )}
+                    </div>
+                  )}
+
+                  {/* Action Buttons */}
+                  <div className="flex gap-2 border-t border-slate-100 pt-4 mt-1">
+                    <button
+                      onClick={() => onOpenCard?.(card)}
+                      className="flex-1 flex items-center justify-center gap-1.5 border border-slate-200 hover:bg-slate-50 text-slate-700 rounded-xl font-bold text-xs min-h-[48px] transition cursor-pointer"
+                    >
+                      <Eye size={14} />
+                      <span>Detail</span>
+                    </button>
+
+                    {isSiswa && (
+                      <>
+                        <button
+                          onClick={() => onEditCard?.(card)}
+                          className="flex-1 flex items-center justify-center gap-1.5 border border-blue-100 bg-blue-50/50 hover:bg-blue-50 text-blue-700 rounded-xl font-bold text-xs min-h-[48px] transition cursor-pointer"
+                        >
+                          <Edit2 size={14} />
+                          <span>Edit</span>
+                        </button>
+                        <button
+                          onClick={() => {
+                            if (confirm('Apakah Anda yakin ingin menghapus kegiatan ini?')) {
+                              deleteCard(card.id);
+                            }
+                          }}
+                          className="flex items-center justify-center border border-red-100 bg-red-50/50 hover:bg-red-50 text-red-600 rounded-xl font-bold text-xs min-h-[48px] px-3.5 transition cursor-pointer"
+                        >
+                          <Trash2 size={14} />
+                        </button>
+                      </>
+                    )}
+                  </div>
+                </div>
+              );
+            })
+          )}
         </div>
 
         {/* Printable Signature Lines */}

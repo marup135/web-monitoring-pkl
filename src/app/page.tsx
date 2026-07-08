@@ -11,7 +11,8 @@ import { GuruPortal } from '../components/GuruPortal';
 import { MentorPortal } from '../components/MentorPortal';
 import { AdminPortal } from '../components/AdminPortal';
 import { PKLCard } from '../types/pkl';
-import { LayoutDashboard, FileSpreadsheet, BarChart3, Building2, UserCheck, RefreshCw, Menu, X, User, Settings } from 'lucide-react';
+import { LayoutDashboard, FileSpreadsheet, BarChart3, Building2, UserCheck, RefreshCw, Menu, X, User, Settings, Key, LogOut } from 'lucide-react';
+import { SettingsPage } from '../components/SettingsPage';
 
 function DashboardContent() {
   const {
@@ -27,8 +28,12 @@ function DashboardContent() {
   } = usePKL();
   
   const [selectedCard, setSelectedCard] = useState<PKLCard | null>(null);
+  const [selectedCardEditMode, setSelectedCardEditMode] = useState(false);
   const [viewMode, setViewMode] = useState<'list' | 'detail'>('list');
   const [isDrawerOpen, setIsDrawerOpen] = useState(false);
+  const [isSettingsActive, setIsSettingsActive] = useState(false);
+  const [settingsActiveSection, setSettingsActiveSection] = useState<'profile' | 'password' | null>(null);
+  const [isUserMenuOpen, setIsUserMenuOpen] = useState(false);
 
   const isPembimbing = currentUser && currentUser.role !== 'siswa';
 
@@ -108,12 +113,15 @@ function DashboardContent() {
         <div className="flex items-center gap-2">
           <img src="/logo.jpg" alt="Logo" className="w-6 h-6 object-contain rounded" />
           <span className="font-bold text-sm text-slate-800 uppercase tracking-tight">
-            {activeTab === 'board' ? 'Kanban Board' : activeTab === 'logbook' ? 'Logbook Jurnal' : 'Statistik'}
+            {isSettingsActive ? 'Pengaturan' : activeTab === 'board' ? 'Kanban Board' : activeTab === 'logbook' ? 'Logbook Jurnal' : 'Statistik'}
           </span>
         </div>
-        <div className="w-8 h-8 rounded-full bg-blue-100 flex items-center justify-center text-blue-600 font-bold text-xs">
+        <button
+          onClick={() => setIsUserMenuOpen(true)}
+          className="w-8 h-8 rounded-full bg-blue-100 flex items-center justify-center text-blue-600 font-bold text-xs cursor-pointer min-h-0 min-w-0"
+        >
           {currentUser?.name?.charAt(0).toUpperCase()}
-        </div>
+        </button>
       </div>
 
       {/* Mobile Sidebar Drawer */}
@@ -139,31 +147,40 @@ function DashboardContent() {
             
             <div className="flex flex-col gap-1.5 flex-1">
               <button
-                onClick={() => { setActiveTab('stats'); setIsDrawerOpen(false); }}
+                onClick={() => { setActiveTab('stats'); setIsSettingsActive(false); setIsDrawerOpen(false); }}
                 className={`flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-semibold transition duration-200 w-full text-left cursor-pointer min-h-[48px] ${
-                  activeTab === 'stats' ? 'bg-blue-50 text-[#2563EB]' : 'text-slate-600 hover:bg-slate-50'
+                  !isSettingsActive && activeTab === 'stats' ? 'bg-blue-50 text-[#2563EB]' : 'text-slate-600 hover:bg-slate-50'
                 }`}
               >
                 <BarChart3 size={18} />
                 Dashboard (Statistik)
               </button>
               <button
-                onClick={() => { setActiveTab('board'); setIsDrawerOpen(false); }}
+                onClick={() => { setActiveTab('board'); setIsSettingsActive(false); setIsDrawerOpen(false); }}
                 className={`flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-semibold transition duration-200 w-full text-left cursor-pointer min-h-[48px] ${
-                  activeTab === 'board' ? 'bg-blue-50 text-[#2563EB]' : 'text-slate-600 hover:bg-slate-50'
+                  !isSettingsActive && activeTab === 'board' ? 'bg-blue-50 text-[#2563EB]' : 'text-slate-600 hover:bg-slate-50'
                 }`}
               >
                 <LayoutDashboard size={18} />
                 Kanban Board
               </button>
               <button
-                onClick={() => { setActiveTab('logbook'); setIsDrawerOpen(false); }}
+                onClick={() => { setActiveTab('logbook'); setIsSettingsActive(false); setIsDrawerOpen(false); }}
                 className={`flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-semibold transition duration-200 w-full text-left cursor-pointer min-h-[48px] ${
-                  activeTab === 'logbook' ? 'bg-blue-50 text-[#2563EB]' : 'text-slate-600 hover:bg-slate-50'
+                  !isSettingsActive && activeTab === 'logbook' ? 'bg-blue-50 text-[#2563EB]' : 'text-slate-600 hover:bg-slate-50'
                 }`}
               >
                 <FileSpreadsheet size={18} />
                 Jurnal Harian
+              </button>
+              <button
+                onClick={() => { setIsSettingsActive(true); setIsDrawerOpen(false); }}
+                className={`flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-semibold transition duration-200 w-full text-left cursor-pointer min-h-[48px] ${
+                  isSettingsActive ? 'bg-blue-50 text-[#2563EB]' : 'text-slate-600 hover:bg-slate-50'
+                }`}
+              >
+                <Settings size={18} />
+                Pengaturan Aplikasi
               </button>
             </div>
 
@@ -191,44 +208,46 @@ function DashboardContent() {
       {/* Mobile Bottom Navigation */}
       <div className="fixed bottom-0 left-0 right-0 z-40 bg-white border-t border-slate-200 flex md:hidden items-center justify-around h-16 pb-safe shadow-lg print:hidden">
         <button
-          onClick={() => setActiveTab('stats')}
+          onClick={() => { setActiveTab('stats'); setIsSettingsActive(false); }}
           className={`flex flex-col items-center justify-center w-14 h-14 cursor-pointer transition ${
-            activeTab === 'stats' ? 'text-[#2563EB]' : 'text-slate-400'
+            !isSettingsActive && activeTab === 'stats' ? 'text-[#2563EB]' : 'text-slate-400'
           }`}
         >
           <BarChart3 size={20} />
           <span className="text-[9px] font-bold mt-1">Dashboard</span>
         </button>
         <button
-          onClick={() => setActiveTab('board')}
+          onClick={() => { setActiveTab('board'); setIsSettingsActive(false); }}
           className={`flex flex-col items-center justify-center w-14 h-14 cursor-pointer transition ${
-            activeTab === 'board' ? 'text-[#2563EB]' : 'text-slate-400'
+            !isSettingsActive && activeTab === 'board' ? 'text-[#2563EB]' : 'text-slate-400'
           }`}
         >
           <LayoutDashboard size={20} />
           <span className="text-[9px] font-bold mt-1">Board</span>
         </button>
         <button
-          onClick={() => setActiveTab('logbook')}
+          onClick={() => { setActiveTab('logbook'); setIsSettingsActive(false); }}
           className={`flex flex-col items-center justify-center w-14 h-14 cursor-pointer transition ${
-            activeTab === 'logbook' ? 'text-[#2563EB]' : 'text-slate-400'
+            !isSettingsActive && activeTab === 'logbook' ? 'text-[#2563EB]' : 'text-slate-400'
           }`}
         >
           <FileSpreadsheet size={20} />
           <span className="text-[9px] font-bold mt-1">Logbook</span>
         </button>
         <button
-          onClick={() => {
-            alert(`Profil Siswa:\nNama: ${state.studentName}\nNISN: ${state.nisn || '-'}\nPerusahaan: ${state.companyName}`);
-          }}
-          className="flex flex-col items-center justify-center w-14 h-14 cursor-pointer transition text-slate-400"
+          onClick={() => setIsUserMenuOpen(true)}
+          className={`flex flex-col items-center justify-center w-14 h-14 cursor-pointer transition ${
+            isUserMenuOpen ? 'text-[#2563EB]' : 'text-slate-400'
+          }`}
         >
           <User size={20} />
-          <span className="text-[9px] font-bold mt-1">Users</span>
+          <span className="text-[9px] font-bold mt-1">Profil</span>
         </button>
         <button
-          onClick={() => setIsDrawerOpen(true)}
-          className="flex flex-col items-center justify-center w-14 h-14 cursor-pointer transition text-slate-400"
+          onClick={() => setIsSettingsActive(true)}
+          className={`flex flex-col items-center justify-center w-14 h-14 cursor-pointer transition ${
+            isSettingsActive ? 'text-[#2563EB]' : 'text-slate-400'
+          }`}
         >
           <Settings size={20} />
           <span className="text-[9px] font-bold mt-1">Settings</span>
@@ -367,16 +386,119 @@ function DashboardContent() {
 
       {/* Render Active View Tab */}
       <div className="min-h-[500px]">
-        {activeTab === 'board' && (
-          <KanbanBoard onOpenCard={(card) => setSelectedCard(card)} />
+        {isSettingsActive ? (
+          <SettingsPage 
+            onBackToBoard={() => setIsSettingsActive(false)} 
+            activeSection={settingsActiveSection}
+            onClearActiveSection={() => setSettingsActiveSection(null)}
+          />
+        ) : (
+          <>
+            {activeTab === 'board' && (
+              <KanbanBoard onOpenCard={(card) => setSelectedCard(card)} />
+            )}
+            {activeTab === 'logbook' && (
+              <LogbookTable 
+                onOpenCard={(card) => {
+                  setSelectedCard(card);
+                  setSelectedCardEditMode(false);
+                }}
+                onEditCard={(card) => {
+                  setSelectedCard(card);
+                  setSelectedCardEditMode(true);
+                }}
+              />
+            )}
+            {activeTab === 'stats' && <DashboardStats />}
+          </>
         )}
-        {activeTab === 'logbook' && <LogbookTable />}
-        {activeTab === 'stats' && <DashboardStats />}
       </div>
 
       {/* Modal Detail */}
       {activeCard && (
-        <CardModal card={activeCard} onClose={() => setSelectedCard(null)} />
+        <CardModal 
+          card={activeCard} 
+          onClose={() => {
+            setSelectedCard(null);
+            setSelectedCardEditMode(false);
+          }} 
+          initialEdit={selectedCardEditMode}
+        />
+      )}
+
+      {/* User Menu Bottom Sheet */}
+      {isUserMenuOpen && (
+        <div className="fixed inset-0 z-50 flex items-end justify-center print:hidden animate-in fade-in duration-200">
+          <div 
+            onClick={() => setIsUserMenuOpen(false)}
+            className="fixed inset-0 bg-slate-900/40 backdrop-blur-sm"
+          />
+          <div className="relative w-full max-w-lg bg-white rounded-t-3xl shadow-2xl p-6 flex flex-col gap-5 z-10 animate-in slide-in-from-bottom duration-300 max-h-[85vh] overflow-y-auto pb-safe">
+            <div className="w-12 h-1.5 bg-slate-200 rounded-full mx-auto mb-2" />
+            
+            <div className="flex items-center gap-4">
+              <div className="w-14 h-14 rounded-2xl bg-gradient-to-tr from-[#2563EB] to-blue-400 flex items-center justify-center text-white font-black text-xl shadow-md shrink-0">
+                {currentUser?.name?.charAt(0).toUpperCase()}
+              </div>
+              <div className="overflow-hidden">
+                <h3 className="font-extrabold text-slate-800 text-base leading-snug truncate">{currentUser?.name}</h3>
+                <div className="flex flex-wrap gap-1.5 items-center mt-1">
+                  <span className="inline-block px-2.5 py-0.5 rounded bg-blue-50 border border-blue-100 text-[#2563EB] font-bold text-[9px] uppercase tracking-wider">
+                    {currentUser?.role?.replace('_', ' ')}
+                  </span>
+                </div>
+                <p className="text-[11px] text-slate-400 mt-1 truncate">{currentUser?.username}@nebotrack.com</p>
+              </div>
+            </div>
+
+            <hr className="border-[#E2E8F0] my-1" />
+
+            <div className="flex flex-col gap-2">
+              <button
+                onClick={() => {
+                  setIsUserMenuOpen(false);
+                  setIsSettingsActive(true);
+                  setSettingsActiveSection('profile');
+                }}
+                className="flex items-center gap-3 px-4 py-3 hover:bg-slate-50 rounded-2xl text-slate-700 font-bold text-xs text-left transition min-h-[48px] cursor-pointer"
+              >
+                <div className="w-8 h-8 rounded-xl bg-slate-100 flex items-center justify-center text-slate-500 shrink-0">
+                  <User size={16} />
+                </div>
+                <span>Profil Saya</span>
+              </button>
+
+              <button
+                onClick={() => {
+                  setIsUserMenuOpen(false);
+                  setIsSettingsActive(true);
+                  setSettingsActiveSection('password');
+                }}
+                className="flex items-center gap-3 px-4 py-3 hover:bg-slate-50 rounded-2xl text-slate-700 font-bold text-xs text-left transition min-h-[48px] cursor-pointer"
+              >
+                <div className="w-8 h-8 rounded-xl bg-slate-100 flex items-center justify-center text-slate-500 shrink-0">
+                  <Key size={16} />
+                </div>
+                <span>Ganti Password</span>
+              </button>
+
+              <hr className="border-[#E2E8F0] my-2" />
+
+              <button
+                onClick={() => {
+                  setIsUserMenuOpen(false);
+                  logout();
+                }}
+                className="flex items-center gap-3 px-4 py-3 bg-red-50/50 hover:bg-red-50 rounded-2xl text-[#EF4444] border border-red-100/50 font-bold text-xs text-left transition min-h-[48px] cursor-pointer"
+              >
+                <div className="w-8 h-8 rounded-xl bg-red-50 flex items-center justify-center text-[#EF4444] shrink-0">
+                  <LogOut size={16} />
+                </div>
+                <span>Keluar (Logout)</span>
+              </button>
+            </div>
+          </div>
+        </div>
       )}
     </main>
   );

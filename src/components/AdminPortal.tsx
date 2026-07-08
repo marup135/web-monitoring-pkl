@@ -47,7 +47,10 @@ export const AdminPortal: React.FC = () => {
   };
 
   useEffect(() => {
-    reloadAll();
+    const timer = setTimeout(() => {
+      reloadAll();
+    }, 0);
+    return () => clearTimeout(timer);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 

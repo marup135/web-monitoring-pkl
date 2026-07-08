@@ -153,6 +153,7 @@ interface PKLContextProps {
   login: (username: string, password: string) => Promise<{ success: boolean; error?: string }>;
   register: (username: string, password: string, name: string, role: string, companyName?: string, className?: string, nisn?: string) => Promise<{ success: boolean; error?: string }>;
   logout: () => Promise<void>;
+  updateCurrentUserName?: (name: string) => void;
 }
 
 const PKLContext = createContext<PKLContextProps | undefined>(undefined);
@@ -800,6 +801,12 @@ export const PKLProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     }
   };
 
+  const updateCurrentUserName = (name: string) => {
+    if (currentUser) {
+      setCurrentUser({ ...currentUser, name });
+    }
+  };
+
   const resetState = async () => {
     setLoading(true);
     try {
@@ -856,6 +863,7 @@ export const PKLProvider: React.FC<{ children: React.ReactNode }> = ({ children 
         login,
         register,
         logout,
+        updateCurrentUserName,
       }}
     >
       {children}

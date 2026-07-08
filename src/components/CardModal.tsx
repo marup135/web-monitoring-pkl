@@ -8,9 +8,10 @@ import { X, Calendar, Clock, MessageSquare, Award, Trash2, Edit2, Send, History,
 interface CardModalProps {
   card: PKLCard;
   onClose: () => void;
+  initialEdit?: boolean;
 }
 
-export const CardModal: React.FC<CardModalProps> = ({ card, onClose }) => {
+export const CardModal: React.FC<CardModalProps> = ({ card, onClose, initialEdit }) => {
   const {
     activeRole,
     state,
@@ -26,7 +27,7 @@ export const CardModal: React.FC<CardModalProps> = ({ card, onClose }) => {
   const [activeTab, setActiveTab] = useState<'details' | 'history'>('details');
 
   // Edit Mode states (for Student)
-  const [isEditing, setIsEditing] = useState(false);
+  const [isEditing, setIsEditing] = useState(initialEdit || false);
   const [editTitle, setEditTitle] = useState(card.title);
   const [editDesc, setEditDesc] = useState(card.description);
   
