@@ -3,7 +3,7 @@
 import React, { useState } from 'react';
 import { usePKL } from '../context/PKLContext';
 import { PKLCard, TaskCategory } from '../types/pkl';
-import { Plus, Calendar, Clock, MessageSquare, Award, Search, Filter, BookOpen, ChevronDown, X } from 'lucide-react';
+import { Plus, Calendar, Clock, MessageSquare, Award, Search, Filter, ChevronDown, X } from 'lucide-react';
 
 interface KanbanBoardProps {
   onOpenCard: (card: PKLCard) => void;
@@ -139,26 +139,26 @@ export const KanbanBoard: React.FC<KanbanBoardProps> = ({ onOpenCard }) => {
   return (
     <div className="flex flex-col gap-6 text-[#0F172A] font-sans">
       {/* Filtering and Search Controls */}
-      <div className="flex flex-col lg:flex-row gap-4 items-center justify-between bg-white border border-[#E2E8F0] rounded-2xl p-4 shadow-sm">
+      <div className="sticky top-[56px] md:static z-30 flex flex-col lg:flex-row gap-4 items-center justify-between bg-white border-b md:border border-[#E2E8F0] md:rounded-2xl p-4 md:shadow-sm -mx-4 md:mx-0">
         <div className="flex flex-col md:flex-row gap-4 items-center w-full lg:w-auto flex-1">
           <div className="relative w-full md:w-80">
-            <Search size={18} className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
+            <Search size={18} className="absolute left-4 md:left-3 top-1/2 -translate-y-1/2 text-slate-400" />
             <input
               type="text"
               placeholder="Cari tugas atau deskripsi..."
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              className="w-full bg-white border border-[#E2E8F0] rounded-xl pl-10 pr-4 text-sm text-[#0F172A] focus:outline-none focus:border-[#2563EB] focus:ring-1 focus:ring-[#2563EB] min-h-[44px] py-2.5 md:min-h-0 md:py-2"
+              className="w-full bg-slate-50 md:bg-white border border-[#E2E8F0] rounded-full md:rounded-xl pl-11 md:pl-10 pr-4 text-sm text-[#0F172A] focus:outline-none focus:border-[#2563EB] focus:ring-1 focus:ring-[#2563EB] min-h-[48px] py-3 md:min-h-0 md:py-2 transition-all"
             />
           </div>
 
-          <div className="flex items-center gap-2 w-full md:w-auto overflow-x-auto py-1 scrollbar-none scroll-smooth">
-            <Filter size={16} className="text-gray-400 shrink-0" />
+          <div className="flex items-center gap-2 w-full md:w-auto overflow-x-auto py-2 scrollbar-none scroll-smooth mask-linear-fade">
+            <Filter size={16} className="text-gray-400 shrink-0 hidden md:block" />
             {filterCategories.map((cat) => (
               <button
                 key={cat}
                 onClick={() => setSelectedCategory(cat)}
-                className={`text-sm md:text-xs px-3.5 py-2 md:px-3 md:py-1.5 rounded-xl md:rounded-lg border font-medium whitespace-nowrap transition cursor-pointer min-h-[40px] md:min-h-0 ${getCategoryFilterStyle(cat, selectedCategory === cat)}`}
+                className={`text-sm md:text-xs px-4 py-2 md:px-3 md:py-1.5 rounded-full md:rounded-lg border font-medium whitespace-nowrap transition-all duration-300 cursor-pointer min-h-[40px] md:min-h-0 ${getCategoryFilterStyle(cat, selectedCategory === cat)}`}
               >
                 {cat}
               </button>
@@ -170,7 +170,7 @@ export const KanbanBoard: React.FC<KanbanBoardProps> = ({ onOpenCard }) => {
           <button
             type="button"
             onClick={() => setIsAddModalOpen(true)}
-            className="w-full lg:w-auto px-4 py-3 md:py-2 bg-[#2563EB] hover:bg-[#1D4ED8] text-white font-semibold text-sm md:text-xs rounded-xl shadow-sm transition flex items-center justify-center gap-2 hover:scale-[1.02] active:scale-[0.98] shrink-0 cursor-pointer min-h-[48px] md:min-h-0"
+            className="hidden md:flex w-full lg:w-auto px-4 py-3 md:py-2 bg-[#2563EB] hover:bg-[#1D4ED8] text-white font-semibold text-sm md:text-xs rounded-xl shadow-sm transition items-center justify-center gap-2 hover:scale-[1.02] active:scale-[0.98] shrink-0 cursor-pointer min-h-[48px] md:min-h-0"
           >
             <Plus size={14} />
             <span>Tambah Kegiatan</span>
@@ -179,7 +179,7 @@ export const KanbanBoard: React.FC<KanbanBoardProps> = ({ onOpenCard }) => {
       </div>
 
       {/* Kanban Columns Grid */}
-      <div className="flex overflow-x-auto gap-4 pb-4 md:grid md:grid-cols-2 lg:grid-cols-4 md:overflow-x-visible -mx-4 px-4 md:mx-0 md:px-0 items-start snap-x snap-mandatory scroll-smooth scrollbar-none">
+      <div className="flex flex-col md:grid md:grid-cols-2 lg:grid-cols-4 gap-6 md:gap-4 pb-20 md:pb-4 items-start scroll-smooth">
         {columns.map((col) => {
           const colCards = filteredCards.filter(c => c.columnId === col.id);
           const isOver = draggedOverColumn === col.id;
@@ -190,20 +190,21 @@ export const KanbanBoard: React.FC<KanbanBoardProps> = ({ onOpenCard }) => {
               onDragOver={(e) => handleDragOver(e, col.id)}
               onDragLeave={handleDragLeave}
               onDrop={(e) => handleDrop(e, col.id)}
-              className={`flex flex-col rounded-2xl bg-[#F1F5F9] border border-[#E2E8F0] border-t-[4px] ${col.color} p-4 shadow-sm transition-all w-[80vw] min-w-[280px] snap-center shrink-0 min-h-[200px] h-fit md:min-h-[500px] md:w-auto md:shrink-1 ${
-                isOver ? 'bg-slate-200/60 ring-2 ring-[#2563EB]/15 scale-[1.01]' : ''
+              className={`flex flex-col bg-transparent md:bg-[#F1F5F9] md:border border-[#E2E8F0] md:border-t-[4px] md:${col.color} md:p-4 md:rounded-2xl md:shadow-sm transition-all w-full md:min-h-[500px] h-fit md:shrink-1 ${
+                isOver ? 'md:bg-slate-200/60 ring-2 ring-[#2563EB]/15 scale-[1.01]' : ''
               }`}
             >
               {/* Column Header */}
-              <div className="flex items-center justify-between pb-3 mb-3 border-b border-slate-200/50">
-                <h3 className="font-semibold text-[#0F172A] text-sm tracking-wide">{col.title}</h3>
-                <span className={`text-xs font-semibold px-2 py-0.5 rounded-full ${col.bgBadge}`}>
-                  {colCards.length}
+              <div className="flex items-center gap-3 pb-3 mb-3 border-b border-slate-200/50 px-2 md:px-0">
+                <div className={`w-3 h-3 rounded-full md:hidden ${col.bgBadge.split(' ')[0]} border ${col.bgBadge.split(' ')[2]}`} />
+                <h3 className="font-bold text-[#0F172A] text-base md:text-sm tracking-wide md:font-semibold flex-1">{col.title}</h3>
+                <span className={`text-xs font-bold px-2.5 py-1 md:px-2 md:py-0.5 rounded-full ${col.bgBadge}`}>
+                  {colCards.length} Task
                 </span>
               </div>
 
               {/* Column Cards Container */}
-              <div className="flex flex-col gap-4 md:gap-3 flex-1 md:overflow-y-auto md:max-h-[600px] pr-1">
+              <div className="flex flex-col gap-4 md:gap-3 flex-1 md:overflow-y-auto md:max-h-[600px] md:pr-1 px-1 md:px-0">
                 {colCards.map((card) => {
                   const isOverdue = card.columnId !== 'selesai' && card.dueDate && card.dueDate < todayString;
 
@@ -274,9 +275,17 @@ export const KanbanBoard: React.FC<KanbanBoardProps> = ({ onOpenCard }) => {
                 })}
 
                 {colCards.length === 0 && (
-                  <div className="flex flex-col items-center justify-center border-2 border-dashed border-[#E2E8F0] bg-white/40 rounded-xl p-8 text-center text-[#64748B] h-32">
-                    <BookOpen size={20} className="mb-1 text-slate-300" />
-                    <span className="text-xs">Belum ada kegiatan</span>
+                  <div className="flex flex-col items-center justify-center border-2 border-dashed border-[#E2E8F0] bg-slate-50/50 md:bg-white/40 rounded-2xl md:rounded-xl p-8 text-center text-[#64748B] h-40 md:h-32">
+                    <div className="text-4xl mb-3 md:mb-2 opacity-50">📖</div>
+                    <span className="text-sm md:text-xs font-medium text-slate-500 mb-2">Belum ada kegiatan.</span>
+                    {activeRole === 'Mahasiswa' && col.id === 'rencana' && (
+                       <button
+                         onClick={() => setIsAddModalOpen(true)}
+                         className="text-xs text-[#2563EB] font-bold mt-2 md:hidden bg-blue-50 px-4 py-2 rounded-full active:scale-95 transition-transform"
+                       >
+                         + Tambah Kegiatan
+                       </button>
+                    )}
                   </div>
                 )}
               </div>
@@ -284,6 +293,16 @@ export const KanbanBoard: React.FC<KanbanBoardProps> = ({ onOpenCard }) => {
           );
         })}
       </div>
+
+      {/* Floating Action Button (Mobile Only) */}
+      {activeRole === 'Mahasiswa' && (
+        <button
+          onClick={() => setIsAddModalOpen(true)}
+          className="md:hidden fixed bottom-24 right-5 z-40 w-14 h-14 bg-[#2563EB] hover:bg-[#1D4ED8] rounded-full flex items-center justify-center text-white shadow-[0_4px_14px_rgba(37,99,235,0.4)] active:scale-90 transition-transform duration-200"
+        >
+          <Plus size={24} />
+        </button>
+      )}
 
       {/* Modal Tambah Kegiatan */}
       {isAddModalOpen && (

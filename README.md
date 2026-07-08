@@ -1,196 +1,209 @@
-# 📋 Web Monitoring PKL (NeboTrack)
+<div align="center">
+  <img src="public/logo.jpg" alt="NeboTrack Logo" width="120" />
+  <h1>NeboTrack</h1>
+  <p><strong>Aplikasi Monitoring & Logbook Jurnal Harian PKL SMKN 1 Bojong</strong></p>
 
-Aplikasi berbasis web modern untuk memantau, melaporkan, dan mengevaluasi kegiatan siswa selama melaksanakan **Praktek Kerja Lapangan (PKL)**. Proyek ini memfasilitasi komunikasi dan kolaborasi yang efisien antara **Siswa**, **Pembimbing Internal (Sekolah/Guru)**, dan **Pembimbing Eksternal (Perusahaan)**.
+  [![Next.js](https://img.shields.io/badge/Next.js-16.2-black?logo=next.js)](https://nextjs.org/)
+  [![React](https://img.shields.io/badge/React-19.2-blue?logo=react)](https://reactjs.org/)
+  [![TailwindCSS](https://img.shields.io/badge/TailwindCSS-v4-38B2AC?logo=tailwind-css)](https://tailwindcss.com/)
+  [![Prisma](https://img.shields.io/badge/Prisma-7.8-2D3748?logo=prisma)](https://prisma.io/)
+  [![License](https://img.shields.io/badge/License-MIT-green.svg)](https://opensource.org/licenses/MIT)
+</div>
 
-Aplikasi: **NeboTrack** (Next.js + Prisma + MySQL/MariaDB).
+<hr />
 
----
+## 📖 Deskripsi Aplikasi
 
+**NeboTrack** adalah platform monitoring terpadu yang dirancang khusus untuk memfasilitasi program Praktek Kerja Lapangan (PKL) bagi siswa SMKN 1 Bojong. Aplikasi ini menjembatani komunikasi, pelaporan, dan evaluasi berkala antara tiga pihak utama: **Siswa**, **Guru Pembimbing (Internal)**, dan **Mentor Perusahaan (Eksternal)**.
 
-## 🚀 Deskripsi Proyek
-
-Aplikasi **Web Monitoring PKL** ini dirancang untuk menggantikan pencatatan logbook fisik yang rentan hilang atau rusak. Dengan fitur alur kerja berbasis Kanban dan sistem penilaian langsung, pembimbing sekolah dan perusahaan dapat terus memantau perkembangan siswa secara *real-time*.
-
----
-
-## 🛠️ Teknologi yang Digunakan
-
-Aplikasi ini dibangun menggunakan teknologi modern berikut:
-
-- **Framework & Rendering:** [Next.js 16 (App Router)](https://nextjs.org/)
-- **UI & Logic:** [React 19](https://react.dev/) & [TypeScript](https://www.typescriptlang.org/)
-- **Styling:** [Tailwind CSS v4](https://tailwindcss.com/)
-- **Database ORM:** [Prisma v7.8.0](https://www.prisma.io/)
-- **Database Engine:** MySQL / MariaDB (Prisma adapter: `@prisma/adapter-mariadb`)
-
-- **Icons:** [Lucide React](https://lucide.dev/)
-- **Compiler:** React Compiler (Babel plugin)
+Dengan antarmuka yang modern—mendukung *Kanban Board* di Desktop dan *Mobile Timeline* di *Smartphone*—NeboTrack membuat proses dokumentasi kegiatan PKL menjadi transparan, efisien, dan mudah dipantau secara *real-time*.
 
 ---
 
-## 🔑 Fitur Utama Berdasarkan Peran (Multi-Role)
+## ✨ Fitur Utama
 
-Aplikasi mendukung tiga tipe akun pengguna:
-
-1. **Siswa (`siswa`)**
-   - Mengisi logbook harian melalui **Kanban Board** yang interaktif (*Rencana*, *Sedang Dikerjakan*, *Selesai*).
-   - Mencatat jumlah jam kerja (`hoursLogged`) pada setiap tugas.
-   - Melihat feedback dan nilai (`score`) dari pembimbing.
-   - Diskusi interaktif dengan pembimbing melalui kolom komentar di setiap tugas.
-
-2. **Pembimbing Internal (`pembimbing_internal`) & Pembimbing Eksternal (`pembimbing_eksternal`)**
-   - **Dashboard Stats:** Melihat ringkasan grafik dan statistik kemajuan siswa.
-   - **Logbook Table:** Membuka tabel rekap logbook lengkap siswa secara detail.
-   - **Evaluasi & Feedback:** Memberikan nilai (`score`) dan masukan (`feedback`) langsung pada detail tugas siswa.
-   - **Advisor Notes:** Menulis catatan bimbingan resmi yang dikhususkan bagi siswa bimbingan.
+- 📊 **Dashboard & Statistik**: Pantau progress harian, jam kerja, dan nilai rata-rata siswa secara langsung.
+- 📋 **Kanban Board**: Manajemen tugas bergaya Trello yang intuitif (Rencana Kegiatan, Menunggu Review, Sedang Dikerjakan, Selesai).
+- 📱 **Mobile-First Design**: Tampilan logbook bergaya *timeline* dan interaksi gestur (bottom sheet) khusus perangkat *mobile*.
+- 📝 **Logbook Harian**: Fitur pencatatan jurnal kegiatan beserta evaluasi dan *feedback* langsung dari Mentor dan Guru.
+- 🌙 **Dark Mode & Multilingual**: Dukungan mode gelap (*Dark Mode*) dan pergantian bahasa (Indonesia/English).
+- 👥 **Multi-Role Access**: Hak akses yang dibedakan secara aman untuk Admin, Guru Pembimbing, Mentor, dan Siswa.
 
 ---
 
-## 📁 Struktur Folder Proyek
+## 🛠 Teknologi yang Digunakan
 
-```text
-pkl-monitoring2/
-├── prisma/
-│   └── schema.prisma        # Definisi skema database Prisma (MySQL)
-├── public/                  # Aset gambar statis dan ikon
-├── src/
-│   ├── app/
-│   │   ├── actions/         # Server Actions (Autentikasi, Logbook, dll)
-│   │   ├── globals.css      # Konfigurasi Tailwind CSS v4
-│   │   ├── layout.tsx       # Root layout aplikasi
-│   │   └── page.tsx         # Dashboard utama, Kanban, & Halaman Login
-│   ├── components/          # Komponen UI reusable
-│   │   ├── AuthPage.tsx       # Halaman Autentikasi (Login & Register)
-│   │   ├── CardModal.tsx      # Modal Detail & Form Edit Aktivitas (Kanban Card)
-│   │   ├── DashboardStats.tsx # Ringkasan statistik monitoring
-│   │   ├── KanbanBoard.tsx    # Kanban Board utama untuk tracking aktivitas siswa
-│   │   └── LogbookTable.tsx   # Tabel komprehensif rekap logbook siswa
-│   ├── context/             # React Context untuk state management
-│   ├── lib/                 # Inisialisasi library (Prisma client dll)
-│   ├── types/               # Definisi tipe TypeScript
-│   └── utils/               # Fungsi utilitas helper
-├── .env                     # Konfigurasi variabel lingkungan (Local)
-├── package.json             # Dependensi dan script NPM
-└── tsconfig.json            # Konfigurasi TypeScript
+- **Framework**: [Next.js 16 (App Router)](https://nextjs.org/)
+- **Library UI**: [React 19](https://reactjs.org/) & [Lucide Icons](https://lucide.dev/)
+- **Styling**: [Tailwind CSS v4](https://tailwindcss.com/)
+- **ORM & Database**: [Prisma](https://prisma.io/) (Adapter MariaDB) & MariaDB
+- **Deployment**: [Vercel](https://vercel.com/) (Frontend/Backend) & [Railway](https://railway.app/) (Database)
+
+---
+
+## 📸 Screenshot
+
+| Desktop (Kanban Board) | Mobile (Timeline Logbook) |
+| :---: | :---: |
+| ![Desktop Board Placeholder](https://placehold.co/600x400/2563EB/FFF?text=Desktop+Kanban+Board) | ![Mobile Logbook Placeholder](https://placehold.co/300x500/2563EB/FFF?text=Mobile+Timeline) |
+
+> *(Ganti URL gambar di atas dengan screenshot asli saat project siap dipublikasikan).*
+
+---
+
+## ⚙️ Cara Instalasi
+
+Pastikan Anda telah menginstal **Node.js** (v18+) dan **Git** di komputer Anda.
+
+1. Clone repositori ini:
+   ```bash
+   git clone https://github.com/username/nebotrack.git
+   cd nebotrack
+   ```
+2. Instal dependensi:
+   ```bash
+   npm install
+   ```
+3. Salin file environment:
+   ```bash
+   cp .env.example .env
+   ```
+   *(Sesuaikan nilai di dalam `.env` dengan kredensial database Anda).*
+
+---
+
+## 🚀 Cara Menjalankan Project
+
+Jalankan *development server* menggunakan perintah berikut:
+
+```bash
+npm run dev
+```
+
+Buka [http://localhost:3000](http://localhost:3000) di browser untuk melihat hasilnya.
+
+---
+
+## 🔐 Environment Variables
+
+Aplikasi membutuhkan konfigurasi environment berikut. Buat file `.env` di *root directory*:
+
+```env
+# Koneksi Database
+DATABASE_URL="mysql://USER:PASSWORD@HOST:PORT/DATABASE_NAME"
+
+# Secret Key (Contoh untuk JWT/Session)
+NEXTAUTH_SECRET="your_secret_key_here"
+NEXTAUTH_URL="http://localhost:3000"
 ```
 
 ---
 
-## ⚙️ Persyaratan Sistem (Prerequisites)
+## 🗄 Prisma Migration
 
-Sebelum menjalankan aplikasi di lokal, pastikan perangkat Anda telah terinstal:
-- [Node.js](https://nodejs.org/) (versi 18.x atau yang lebih baru)
-- [MySQL](https://www.mysql.com/) atau [MariaDB](https://mariadb.org/) Server yang aktif berjalan
+Untuk melakukan sinkronisasi skema database:
 
----
-
-## 🚀 Langkah Instalasi & Menjalankan Proyek
-
-1. **Clone Repositori**
+1. Buat migrasi baru setelah mengubah skema:
    ```bash
-   git clone https://github.com/Marup135/web-monitoring-pkl.git
-   cd web-monitoring-pkl
+   npx prisma migrate dev --name init
    ```
-
-2. **Instal Dependensi**
+2. Generate Prisma Client:
    ```bash
-   npm install
-   ```
-
-3. **Konfigurasi Variabel Lingkungan (`.env`)**
-   Buat file `.env` di root folder proyek (jika belum ada) dan sesuaikan database:
-   ```env
-   DATABASE_URL="mysql://username:password@localhost:3306/minitor_pkl"
-   ```
-
-4. **Singkronisasi Database & Generate Prisma Client**
-   ```bash
-   npx prisma db push
    npx prisma generate
    ```
 
-5. **Jalankan Aplikasi dalam Mode Pengembangan (Development)**
-   ```bash
-   npm run dev
-   ```
-   Aplikasi akan berjalan di [http://localhost:3000](http://localhost:3000).
+---
 
-6. **Build untuk Produksi (Production)**
-   ```bash
-   npm run build
-   npm run start
-   ```
+## 🌱 Seeder (Data Awal)
+
+Untuk mengisi database dengan data awal (Siswa, Mentor, Admin), jalankan seeder:
+
+```bash
+npx prisma db seed
+```
+*(Pastikan file `prisma/seed.ts` sudah dikonfigurasi di `package.json`).*
 
 ---
 
-## ☁️ Deploy (Vercel)
+## 📂 Struktur Folder
 
-
-Jika deploy ke **Vercel** dan database memakai **Railway (MySQL)**:
-- Pastikan environment variable berikut diset di Vercel:
-  - `DATABASE_URL` (format sesuai Railway MySQL)
-- Build & start otomatis mengikuti konfigurasi Next.js.
-
-
-1. **Clone Repositori**
-   ```bash
-   git clone https://github.com/Marup135/web-monitoring-pkl.git
-   cd web-monitoring-pkl
-   ```
-
-2. **Instal Dependensi**
-   ```bash
-   npm install
-   ```
-
-3. **Konfigurasi Variabel Lingkungan (`.env`)**
-   Buat file `.env` di root folder proyek (jika belum ada) dan sesuaikan link database MySQL Anda:
-   ```env
-   DATABASE_URL="mysql://username:password@localhost:3306/minitor_pkl"
-   ```
-   *Sesuaikan `username`, `password`, dan port `3306` dengan konfigurasi database MySQL/MariaDB lokal Anda.*
-
-4. **Singkronisasi Database & Generate Prisma Client**
-   Jalankan perintah berikut untuk membuat tabel database berdasarkan skema Prisma:
-   ```bash
-   npx prisma db push
-   npx prisma generate
-   ```
-
-5. **Jalankan Aplikasi dalam Mode Pengembangan (Development)**
-   ```bash
-   npm run dev
-   ```
-   Aplikasi akan berjalan di [http://localhost:3000](http://localhost:3000).
-
-6. **Build untuk Produksi (Production)**
-   ```bash
-   npm run build
-   npm run start
-   ```
+```text
+nebotrack/
+├── prisma/             # Schema database dan file seeder
+├── public/             # Aset statis (Logo, Font, Gambar)
+├── src/
+│   ├── app/            # Next.js App Router (Halaman & API Routes)
+│   ├── components/     # Komponen React Reusable (KanbanBoard, Settings, dll)
+│   ├── context/        # React Context (State Management Global)
+│   ├── lib/            # Utility & Prisma Client Config
+│   └── types/          # Definisi Tipe TypeScript
+├── .env                # Variabel Lingkungan Lokal
+├── package.json        # Konfigurasi Dependensi
+└── tailwind.config.js  # Konfigurasi Styling
+```
 
 ---
 
-## 📊 Skema Database (Prisma Models)
+## 🎭 Role User
 
-Model utama pada database (berdasarkan `prisma/schema.prisma`):
+Terdapat 4 *role* utama di dalam NeboTrack:
 
-- **`User`**: Akun pengguna (role: `siswa`, `pembimbing_internal`, `pembimbing_eksternal`, `admin`).
-- **`Kelas`**: Data kelas untuk siswa.
-- **`Perusahaan`**: Data perusahaan untuk siswa.
-- **`Card`**: Tugas/aktivitas harian siswa pada Kanban Board (termasuk penilaian & lampiran).
-- **`Comment`**: Komentar diskusi per `Card`.
-- **`HistoryItem`**: Riwayat perubahan/aktivitas per `Card`.
-- **`AdvisorNote`**: Catatan resmi pembimbing untuk siswa.
+1. **Admin (`admin`)**: Mengelola data *master* seluruh pengguna, jurusan, dan perusahaan.
+2. **Guru Pembimbing (`pembimbing`)**: Memantau progress beberapa siswa sekaligus, memberikan evaluasi internal.
+3. **Mentor (`mentor`)**: Pihak perusahaan tempat PKL, berhak menyetujui logbook harian dan memberikan nilai performa pekerjaan.
+4. **Siswa (`siswa`)**: Mengisi jurnal kegiatan harian, memperbarui status pekerjaan, dan melihat evaluasi.
 
 ---
 
-## 👤 Catatan Role & Registrasi
+## 🔑 Cara Login
 
-- Role yang didukung saat registrasi: `siswa`, `pembimbing_internal`, `pembimbing_eksternal`.
-- Role **`admin`** tidak dapat dibuat lewat fitur registrasi (dibuat manual/seed sesuai kebutuhan).
+Silakan login menggunakan *username* atau *NIS/NIP* yang telah terdaftar melalui halaman utama aplikasi:
+
+- **Siswa**: Gunakan **NISN** dan *password* default (atau yang diberikan Admin).
+- **Guru/Mentor/Admin**: Gunakan **Username** dan *password* masing-masing.
 
 ---
 
-Dibuat dengan ❤️ untuk kemudahan monitoring PKL siswa **SMKN 1 BOJONG**.
+## ☁️ Database Railway
 
+Database utama direkomendasikan untuk di-hosting di [Railway](https://railway.app/).
+1. Buat proyek baru di Railway dan tambahkan layanan **MySQL/MariaDB**.
+2. Salin *Connection URL* yang diberikan oleh Railway.
+3. Masukkan ke dalam `DATABASE_URL` di Vercel atau di lokal `.env`.
+
+---
+
+## 🚀 Deploy ke Vercel
+
+Aplikasi ini dioptimalkan untuk di-deploy di Vercel:
+
+1. Push kode ke repositori GitHub.
+2. Impor project di Vercel Dashboard.
+3. Tambahkan environment variables (`DATABASE_URL`, dll).
+4. Di bagian Build Command, pastikan sudah terdapat `prisma generate`:
+   ```bash
+   npm run postinstall && npm run build
+   ```
+5. Klik **Deploy**!
+
+---
+
+## 🤝 Kontributor
+
+Kami menyambut kontribusi dari siapa saja! Jika Anda ingin berkontribusi:
+1. *Fork* repository ini.
+2. Buat *branch* fitur Anda (`git checkout -b feature/AmazingFeature`).
+3. *Commit* perubahan Anda (`git commit -m 'Add some AmazingFeature'`).
+4. *Push* ke branch (`git push origin feature/AmazingFeature`).
+5. Buka sebuah *Pull Request*.
+
+---
+
+## 📄 Lisensi
+
+Didistribusikan di bawah **MIT License**. Lihat file `LICENSE` untuk informasi lebih lanjut.
+
+---
+<div align="center">
+  Dibuat dengan ❤️ untuk kemajuan pendidikan Vokasi Indonesia.
+</div>

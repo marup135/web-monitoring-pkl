@@ -198,9 +198,9 @@ export const LogbookTable: React.FC<LogbookTableProps> = ({ onOpenCard, onEditCa
         </div>
 
         {/* Mobile Timeline/Card List (Mobile-only) */}
-        <div className="md:hidden flex flex-col gap-4 mt-2 print:hidden">
+        <div className="md:hidden flex flex-col gap-6 mt-4 print:hidden relative pl-4 border-l-2 border-slate-200 ml-4">
           {state.cards.length === 0 ? (
-            <div className="flex flex-col items-center justify-center p-8 bg-white border border-[#E2E8F0] rounded-2xl text-center text-slate-400">
+            <div className="flex flex-col items-center justify-center p-8 bg-white border border-[#E2E8F0] rounded-2xl text-center text-slate-400 -ml-4">
               <span className="italic text-sm">Belum ada catatan logbook harian.</span>
             </div>
           ) : (
@@ -216,10 +216,11 @@ export const LogbookTable: React.FC<LogbookTableProps> = ({ onOpenCard, onEditCa
               const isSiswa = currentUser?.role === 'siswa';
 
               return (
-                <div
-                  key={card.id}
-                  className="bg-white border border-[#E2E8F0] rounded-2xl p-5 shadow-sm hover:shadow transition duration-200 flex flex-col gap-4"
-                >
+                <div key={card.id} className="relative">
+                  {/* Timeline Dot */}
+                  <div className="absolute w-3.5 h-3.5 bg-[#2563EB] rounded-full -left-[23px] border-2 border-white top-6 shadow-sm z-10" />
+                  
+                  <div className="bg-white border border-[#E2E8F0] rounded-2xl p-5 shadow-sm hover:shadow transition duration-200 flex flex-col gap-4">
                   {/* Header: Category & Status */}
                   <div className="flex items-center justify-between">
                     <span className="px-2.5 py-1 rounded-lg border border-[#E2E8F0] bg-slate-50 text-[11px] font-bold text-slate-700 uppercase tracking-wider">
@@ -310,6 +311,7 @@ export const LogbookTable: React.FC<LogbookTableProps> = ({ onOpenCard, onEditCa
                       </>
                     )}
                   </div>
+                </div>
                 </div>
               );
             })

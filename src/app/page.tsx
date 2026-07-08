@@ -1,3 +1,4 @@
+/* eslint-disable @next/next/no-img-element, @typescript-eslint/no-unused-vars */
 'use client';
 
 import React, { useState, useEffect } from 'react';
@@ -113,7 +114,7 @@ function DashboardContent() {
         <div className="flex items-center gap-2">
           <img src="/logo.jpg" alt="Logo" className="w-6 h-6 object-contain rounded" />
           <span className="font-bold text-sm text-slate-800 uppercase tracking-tight">
-            {isSettingsActive ? 'Pengaturan' : activeTab === 'board' ? 'Kanban Board' : activeTab === 'logbook' ? 'Logbook Jurnal' : 'Statistik'}
+            NeboTrack
           </span>
         </div>
         <button
@@ -205,7 +206,7 @@ function DashboardContent() {
         </div>
       )}
 
-      {/* Mobile Bottom Navigation — 4 items for cleaner spacing */}
+      {/* Mobile Bottom Navigation — 5 items as requested */}
       <div className="fixed bottom-0 left-0 right-0 z-40 bg-white/95 backdrop-blur-sm border-t border-slate-200 flex md:hidden items-center justify-around h-16 pb-safe shadow-[0_-2px_10px_rgba(0,0,0,0.06)] print:hidden">
         <button
           onClick={() => { setActiveTab('stats'); setIsSettingsActive(false); }}
@@ -237,11 +238,20 @@ function DashboardContent() {
         <button
           onClick={() => setIsUserMenuOpen(true)}
           className={`flex flex-col items-center justify-center flex-1 h-full cursor-pointer transition-colors ${
-            isUserMenuOpen || isSettingsActive ? 'text-[#2563EB]' : 'text-slate-400'
+            isUserMenuOpen && !isSettingsActive ? 'text-[#2563EB]' : 'text-slate-400'
           }`}
         >
           <User size={20} />
-          <span className="text-[9px] font-bold mt-0.5">Profil</span>
+          <span className="text-[9px] font-bold mt-0.5">Users</span>
+        </button>
+        <button
+          onClick={() => setIsSettingsActive(true)}
+          className={`flex flex-col items-center justify-center flex-1 h-full cursor-pointer transition-colors ${
+            isSettingsActive ? 'text-[#2563EB]' : 'text-slate-400'
+          }`}
+        >
+          <Settings size={20} />
+          <span className="text-[9px] font-bold mt-0.5">Settings</span>
         </button>
       </div>
 
