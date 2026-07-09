@@ -773,21 +773,8 @@ export async function uploadFileAction(formData: FormData) {
       return { success: false, error: 'Tipe berkas tidak diizinkan. Hanya menerima gambar, PDF, Word, atau ZIP.' };
     }
 
-    const baseName = path.basename(file.name, ext)
-      .replace(/[^a-zA-Z0-9_-]/g, '_')
-      .substring(0, 100);
-    const filename = `${baseName}_${Date.now()}${ext}`;
-    const uploadDir = path.join(process.cwd(), 'public', 'uploads');
-
-    await mkdir(uploadDir, { recursive: true });
-
     const bytes = await file.arrayBuffer();
     const buffer = Buffer.from(bytes);
-    const filePath = path.join(uploadDir, filename);
-
-    await writeFile(filePath, buffer);
-
-    const fileUrl = `/uploads/${filename}`;
 
     // Determine type
     let type = 'other';
@@ -795,6 +782,10 @@ export async function uploadFileAction(formData: FormData) {
     if (mime.startsWith('image/')) type = 'image';
     else if (mime === 'application/pdf') type = 'pdf';
     else if (mime.includes('word') || mime.includes('officedocument') || ext === '.doc' || ext === '.docx') type = 'doc';
+
+    // Instead of writing to disk (which fails on Vercel), we convert to Base64
+    const base64 = buffer.toString('base64');
+    const fileUrl = `data:${mime};base64,${base64}`;
 
     return { success: true, fileUrl, name: file.name, type };
   } catch (error) {

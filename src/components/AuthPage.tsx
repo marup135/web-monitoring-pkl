@@ -43,7 +43,7 @@ interface ErrorState {
 }
 
 export const AuthPage: React.FC = () => {
-  const { login, register, currentUser, companiesList } = usePKL();
+  const { login, register, currentUser } = usePKL();
 
   const [isLogin, setIsLogin] = useState(true);
   const [errorState, setErrorState] = useState<ErrorState | null>(null);
@@ -61,11 +61,8 @@ export const AuthPage: React.FC = () => {
 
   const [isRoleDropdownOpen, setIsRoleDropdownOpen] = useState(false);
   const [isClassDropdownOpen, setIsClassDropdownOpen] = useState(false);
-  const [isCompanyDropdownOpen, setIsCompanyDropdownOpen] = useState(false);
-
   const roleDropdownRef = useRef<HTMLDivElement>(null);
   const classDropdownRef = useRef<HTMLDivElement>(null);
-  const companyDropdownRef = useRef<HTMLDivElement>(null);
 
   // If user is already logged in, the parent HomeWrapper will redirect automatically.
   // We guard here too as extra safety.
@@ -177,7 +174,7 @@ export const AuthPage: React.FC = () => {
       } else if (role === 'pembimbing_eksternal') {
         const cleanCompany = company.trim();
         if (!cleanCompany) {
-          setError('Perusahaan wajib dipilih atau diisi.', 'field');
+          setError('Nama perusahaan wajib diisi.', 'field');
           return;
         }
       }
@@ -189,6 +186,7 @@ export const AuthPage: React.FC = () => {
       if (isLogin) {
         const res = await login(cleanUsername, password);
         if (res.success) {
+          clearError();
           // Signal HomeWrapper to show success toast
           if (typeof window !== 'undefined') {
             sessionStorage.setItem('login_success', 'true');
@@ -205,7 +203,7 @@ export const AuthPage: React.FC = () => {
           ) {
             setError('Terjadi kesalahan pada server. Silakan coba beberapa saat lagi.', 'server');
           } else {
-            setError('Email atau password yang Anda masukkan salah.', 'credentials');
+            setError('Username atau password salah.', 'credentials');
           }
         }
       } else {
@@ -336,7 +334,7 @@ export const AuthPage: React.FC = () => {
                       value={username}
                       onChange={(e) => {
                         setUsername(e.target.value.toLowerCase().replace(/\s+/g, ''));
-                        if (errorState?.type === 'field') clearError();
+                        if (errorState) clearError();
                       }}
                       className={inputClass(usernameHasError)}
                     />
@@ -362,7 +360,7 @@ export const AuthPage: React.FC = () => {
                       value={password}
                       onChange={(e) => {
                         setPassword(e.target.value);
-                        if (errorState?.type === 'field') clearError();
+                        if (errorState) clearError();
                       }}
                       className={`${inputClass(passwordHasError)} pr-11`}
                     />
@@ -505,49 +503,22 @@ export const AuthPage: React.FC = () => {
 
             {/* Eksternal-specific fields — Register Only */}
             {!isLogin && role === 'pembimbing_eksternal' && (
-              <div
-                className="flex flex-col gap-1.5 relative md:col-span-2"
-                ref={companyDropdownRef}
-              >
+              <div className="flex flex-col gap-1.5 relative md:col-span-2">
                 <label className="text-[10px] text-[#64748B] dark:text-gray-300 uppercase font-bold tracking-wider">
-                  Pilih Perusahaan
+                  Nama Perusahaan
                 </label>
-                <button
-                  type="button"
-                  onClick={() => setIsCompanyDropdownOpen((prev) => !prev)}
-                  className="w-full bg-white dark:bg-[#243447] border border-[#E2E8F0] dark:border-gray-700 rounded-xl px-3.5 text-sm text-[#0F172A] dark:text-gray-200 text-left flex justify-between items-center focus:outline-none focus:border-[#2563EB] focus:ring-2 focus:ring-blue-100 cursor-pointer min-h-[48px] py-3 md:min-h-0 md:py-2.5 md:text-xs transition-all"
-                >
-                  <span>{company || 'Pilih perusahaan...'}</span>
-                  <ChevronDown
-                    size={14}
-                    className={`text-[#94A3B8] transition-transform duration-200 ${isCompanyDropdownOpen ? 'rotate-180' : ''}`}
+                <div className="relative">
+                  <input
+                    type="text"
+                    placeholder="Masukkan nama perusahaan"
+                    value={company}
+                    onChange={(e) => {
+                      setCompany(e.target.value);
+                      if (errorState) clearError();
+                    }}
+                    className={inputClass(false)}
                   />
-                </button>
-                {isCompanyDropdownOpen && (
-                  <div className="absolute left-0 right-0 top-[calc(100%+4px)] bg-white dark:bg-[#243447] border border-[#E2E8F0] dark:border-gray-700 rounded-xl shadow-xl z-50 max-h-[160px] overflow-y-auto">
-                    {companiesList && companiesList.length > 0 ? (
-                      companiesList.map((c) => (
-                        <button
-                          key={c.id}
-                          type="button"
-                          onClick={() => {
-                            setCompany(c.name);
-                            setIsCompanyDropdownOpen(false);
-                          }}
-                          className={`w-full text-left px-3.5 py-2.5 text-xs hover:bg-[#F1F5F9] dark:bg-gray-800 transition duration-150 block cursor-pointer ${
-                            company === c.name
-                              ? 'bg-[#2563EB]/8 text-[#2563EB] font-semibold'
-                              : 'text-[#0F172A] dark:text-gray-200'
-                          }`}
-                        >
-                          {c.name}
-                        </button>
-                      ))
-                    ) : (
-                      <div className="p-3 text-xs text-slate-500 text-center">Belum ada perusahaan</div>
-                    )}
-                  </div>
-                )}
+                </div>
               </div>
             )}
               </div>
@@ -569,7 +540,7 @@ export const AuthPage: React.FC = () => {
                       value={username}
                       onChange={(e) => {
                         setUsername(e.target.value.toLowerCase().replace(/\s+/g, ''));
-                        if (errorState?.type === 'field') clearError();
+                        if (errorState) clearError();
                       }}
                       className={inputClass(usernameHasError)}
                     />
@@ -595,7 +566,7 @@ export const AuthPage: React.FC = () => {
                       value={password}
                       onChange={(e) => {
                         setPassword(e.target.value);
-                        if (errorState?.type === 'field') clearError();
+                        if (errorState) clearError();
                       }}
                       className={`${inputClass(passwordHasError)} pr-11`}
                     />
