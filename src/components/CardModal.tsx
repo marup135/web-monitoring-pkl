@@ -222,16 +222,16 @@ export const CardModal: React.FC<CardModalProps> = ({ card, onClose, initialEdit
 
   return (
     <div className="fixed inset-0 z-50 flex items-end md:items-center justify-center p-0 md:p-4 bg-slate-900/40 backdrop-blur-sm">
-      <div className="bg-white dark:bg-slate-800 rounded-t-3xl md:rounded-2xl w-full max-w-3xl max-h-[92vh] md:max-h-[90vh] flex flex-col border border-[#E2E8F0] dark:border-slate-700 shadow-xl relative animate-in fade-in slide-in-from-bottom-10 md:zoom-in-95 duration-300 text-[#0F172A] dark:text-white">
+      <div className="bg-white dark:bg-[#243447] rounded-t-3xl md:rounded-2xl w-full max-w-3xl max-h-[92vh] md:max-h-[90vh] flex flex-col border border-[#E2E8F0] dark:border-gray-700 shadow-xl relative animate-in fade-in slide-in-from-bottom-10 md:zoom-in-95 duration-300 text-[#0F172A] dark:text-gray-200">
         
         {/* Modal Header */}
-        <div className="flex items-center justify-between p-6 border-b border-[#E2E8F0] dark:border-slate-700">
+        <div className="flex items-center justify-between p-6 border-b border-[#E2E8F0] dark:border-gray-700">
           <div className="flex items-center gap-3">
             <span className={`text-[10px] uppercase font-bold tracking-wider px-2 py-0.5 rounded border ${
               card.columnId === 'selesai' ? 'bg-green-50 text-green-700 border-green-100' :
               card.columnId === 'review' ? 'bg-yellow-50 text-yellow-700 border-yellow-100' :
               card.columnId === 'progres' ? 'bg-blue-50 text-blue-700 border-blue-100' :
-              'bg-slate-50 dark:bg-slate-800/50 text-slate-700 border-slate-100'
+              'bg-slate-50 dark:bg-gray-800/50 text-slate-700 border-slate-100'
             }`}>
               {card.columnId === 'selesai' ? 'Selesai' :
                card.columnId === 'review' ? 'Butuh Review' :
@@ -239,22 +239,22 @@ export const CardModal: React.FC<CardModalProps> = ({ card, onClose, initialEdit
                'Rencana Kegiatan'}
             </span>
             <span className="text-xs text-gray-300">•</span>
-            <span className="text-xs text-[#64748B] dark:text-slate-400 font-medium">{card.category}</span>
+            <span className="text-xs text-[#64748B] dark:text-gray-300 font-medium">{card.category}</span>
           </div>
           <button
             onClick={onClose}
-            className="p-1.5 rounded-lg bg-slate-50 dark:bg-slate-800/50 hover:bg-slate-100 dark:bg-slate-700 text-slate-500 dark:text-slate-400 hover:text-slate-700 transition cursor-pointer min-h-[44px] min-w-[44px] flex items-center justify-center"
+            className="p-1.5 rounded-lg bg-slate-50 dark:bg-gray-800/50 hover:bg-slate-100 dark:bg-gray-800 text-slate-500 dark:text-gray-300 hover:text-slate-700 transition cursor-pointer min-h-[44px] min-w-[44px] flex items-center justify-center"
           >
             <X size={18} />
           </button>
         </div>
 
         {/* Modal Navigation Tabs */}
-        <div className="flex border-b border-[#E2E8F0] dark:border-slate-700 px-6 bg-[#F8FAFC] dark:bg-slate-900">
+        <div className="flex border-b border-[#E2E8F0] dark:border-gray-700 px-6 bg-[#F8FAFC] dark:bg-gray-900">
           <button
             onClick={() => setActiveTab('details')}
             className={`py-3 px-4 text-xs font-semibold border-b-2 transition-all flex items-center gap-2 cursor-pointer ${
-              activeTab === 'details' ? 'border-[#2563EB] text-[#2563EB]' : 'border-transparent text-[#64748B] dark:text-slate-400 hover:text-[#0F172A] dark:text-white'
+              activeTab === 'details' ? 'border-[#2563EB] text-[#2563EB]' : 'border-transparent text-[#64748B] dark:text-gray-300 hover:text-[#0F172A] dark:text-gray-200'
             }`}
           >
             <MessageSquare size={14} />
@@ -263,7 +263,7 @@ export const CardModal: React.FC<CardModalProps> = ({ card, onClose, initialEdit
           <button
             onClick={() => setActiveTab('history')}
             className={`py-3 px-4 text-xs font-semibold border-b-2 transition-all flex items-center gap-2 cursor-pointer ${
-              activeTab === 'history' ? 'border-[#2563EB] text-[#2563EB]' : 'border-transparent text-[#64748B] dark:text-slate-400 hover:text-[#0F172A] dark:text-white'
+              activeTab === 'history' ? 'border-[#2563EB] text-[#2563EB]' : 'border-transparent text-[#64748B] dark:text-gray-300 hover:text-[#0F172A] dark:text-gray-200'
             }`}
           >
             <History size={14} />
@@ -282,12 +282,12 @@ export const CardModal: React.FC<CardModalProps> = ({ card, onClose, initialEdit
                 {validationError && !isEditing && (
                   <div className="p-3.5 bg-red-50 border border-red-200 text-[#EF4444] rounded-xl text-xs font-semibold flex items-center justify-between animate-in fade-in duration-200">
                     <span>{validationError}</span>
-                    <button onClick={() => setValidationError(null)} className="text-red-400 hover:text-red-600 font-bold ml-2 text-sm cursor-pointer">×</button>
+                    <button onClick={() => setValidationError(null)} className="text-red-400 hover:text-red-600 dark:text-red-500 font-bold ml-2 text-sm cursor-pointer">×</button>
                   </div>
                 )}
 
                 {/* Description Box */}
-                <div className="bg-[#F1F5F9] dark:bg-slate-700/50 border border-[#E2E8F0] dark:border-slate-700 rounded-xl p-4">
+                <div className="bg-[#F1F5F9] dark:bg-gray-800/50 border border-[#E2E8F0] dark:border-gray-700 rounded-xl p-4">
                   {isEditing ? (
                     <form onSubmit={handleSaveDetails} className="flex flex-col gap-4">
                       {validationError && (
@@ -296,41 +296,41 @@ export const CardModal: React.FC<CardModalProps> = ({ card, onClose, initialEdit
                         </div>
                       )}
                       <div className="flex flex-col gap-1">
-                        <label className="text-[10px] text-[#64748B] dark:text-slate-400 font-semibold uppercase">Judul</label>
+                        <label className="text-[10px] text-[#64748B] dark:text-gray-300 font-semibold uppercase">Judul</label>
                         <input
                           type="text"
                           required
                           value={editTitle}
                           onChange={(e) => setEditTitle(e.target.value)}
-                          className="bg-white dark:bg-slate-800 border border-[#E2E8F0] dark:border-slate-700 rounded-xl px-3 text-sm text-[#0F172A] dark:text-white focus:outline-none focus:border-[#2563EB] min-h-[48px] py-3 md:min-h-0 md:py-2 md:text-xs md:rounded-lg"
+                          className="bg-white dark:bg-[#243447] border border-[#E2E8F0] dark:border-gray-700 rounded-xl px-3 text-sm text-[#0F172A] dark:text-gray-200 focus:outline-none focus:border-[#2563EB] dark:focus:border-blue-500 min-h-[48px] py-3 md:min-h-0 md:py-2 md:text-xs md:rounded-lg"
                         />
                       </div>
                       
                       <div className="flex flex-col gap-1">
-                        <label className="text-[10px] text-[#64748B] dark:text-slate-400 font-semibold uppercase">Deskripsi</label>
+                        <label className="text-[10px] text-[#64748B] dark:text-gray-300 font-semibold uppercase">Deskripsi</label>
                         <textarea
                           required
                           rows={4}
                           value={editDesc}
                           onChange={(e) => setEditDesc(e.target.value)}
-                          className="bg-white dark:bg-slate-800 border border-[#E2E8F0] dark:border-slate-700 rounded-xl px-3 text-sm text-[#0F172A] dark:text-white focus:outline-none focus:border-[#2563EB] resize-none min-h-[80px] py-3 md:min-h-0 md:py-2 md:text-xs md:rounded-lg"
+                          className="bg-white dark:bg-[#243447] border border-[#E2E8F0] dark:border-gray-700 rounded-xl px-3 text-sm text-[#0F172A] dark:text-gray-200 focus:outline-none focus:border-[#2563EB] resize-none min-h-[80px] py-3 md:min-h-0 md:py-2 md:text-xs md:rounded-lg"
                         />
                       </div>
 
                       <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
                         <div className="relative">
-                          <label className="text-[10px] text-[#64748B] dark:text-slate-400 font-semibold uppercase">Kategori</label>
+                          <label className="text-[10px] text-[#64748B] dark:text-gray-300 font-semibold uppercase">Kategori</label>
                           <button
                             type="button"
                             onClick={() => setIsCategoryDropdownOpen(!isCategoryDropdownOpen)}
-                            className="w-full bg-white dark:bg-slate-800 border border-[#E2E8F0] dark:border-slate-700 rounded-xl px-3 text-left text-sm text-[#0F172A] dark:text-white focus:outline-none flex justify-between items-center hover:bg-slate-50 dark:bg-slate-800/50 transition cursor-pointer min-h-[48px] py-3 md:min-h-0 md:py-2 md:rounded-lg md:text-xs"
+                            className="w-full bg-white dark:bg-[#243447] border border-[#E2E8F0] dark:border-gray-700 rounded-xl px-3 text-left text-sm text-[#0F172A] dark:text-gray-200 focus:outline-none flex justify-between items-center hover:bg-slate-50 dark:hover:bg-[#2D435E] transition cursor-pointer min-h-[48px] py-3 md:min-h-0 md:py-2 md:rounded-lg md:text-xs"
                           >
                             <span>{selectCategory}</span>
                             <ChevronDown size={12} className={`text-slate-400 transition-transform ${isCategoryDropdownOpen ? 'rotate-180' : ''}`} />
                           </button>
                           
                           {isCategoryDropdownOpen && (
-                            <div className="absolute left-0 right-0 mt-1 bg-white dark:bg-slate-800 border border-[#E2E8F0] dark:border-slate-700 rounded-xl shadow-lg z-50 overflow-hidden">
+                            <div className="absolute left-0 right-0 mt-1 bg-white dark:bg-[#243447] border border-[#E2E8F0] dark:border-gray-700 rounded-xl shadow-lg z-50 overflow-hidden">
                               {['Coding', 'Design', 'Laporan', 'Networking', 'Lainnya'].map((cat) => (
                                 <button
                                   key={cat}
@@ -339,7 +339,7 @@ export const CardModal: React.FC<CardModalProps> = ({ card, onClose, initialEdit
                                     setSelectCategory(cat);
                                     setIsCategoryDropdownOpen(false);
                                   }}
-                                  className={`w-full text-left px-3 py-2.5 md:py-2 text-sm md:text-xs transition-colors hover:bg-slate-50 dark:bg-slate-800/50 flex items-center justify-between cursor-pointer ${selectCategory === cat ? 'bg-blue-50 text-[#2563EB] font-semibold' : 'text-slate-700'}`}
+                                  className={`w-full text-left px-3 py-2.5 md:py-2 text-sm md:text-xs transition-colors hover:bg-slate-50 dark:hover:bg-[#2D435E] flex items-center justify-between cursor-pointer ${selectCategory === cat ? 'bg-blue-50 text-[#2563EB] font-semibold' : 'text-slate-700'}`}
                                 >
                                   {cat}
                                 </button>
@@ -348,47 +348,47 @@ export const CardModal: React.FC<CardModalProps> = ({ card, onClose, initialEdit
                           )}
                         </div>
                         <div>
-                          <label className="text-[10px] text-[#64748B] dark:text-slate-400 font-semibold uppercase">Tenggat</label>
+                          <label className="text-[10px] text-[#64748B] dark:text-gray-300 font-semibold uppercase">Tenggat</label>
                           <input
                             type="date"
                             value={editDueDate}
                             onChange={(e) => setEditDueDate(e.target.value)}
-                            className="w-full bg-white dark:bg-slate-800 border border-[#E2E8F0] dark:border-slate-700 rounded-xl px-3 text-sm text-[#0F172A] dark:text-white focus:outline-none min-h-[48px] py-3 md:min-h-0 md:py-2 md:rounded-lg md:text-xs"
+                            className="w-full bg-white dark:bg-[#243447] border border-[#E2E8F0] dark:border-gray-700 rounded-xl px-3 text-sm text-[#0F172A] dark:text-gray-200 focus:outline-none min-h-[48px] py-3 md:min-h-0 md:py-2 md:rounded-lg md:text-xs"
                           />
                         </div>
                       </div>
 
                       {selectCategory === 'Lainnya' && (
                         <div className="flex flex-col gap-1">
-                          <label className="text-[10px] text-[#64748B] dark:text-slate-400 font-semibold uppercase">Isi Kategori Lainnya</label>
+                          <label className="text-[10px] text-[#64748B] dark:text-gray-300 font-semibold uppercase">Isi Kategori Lainnya</label>
                           <input
                             type="text"
                             required
                             placeholder="Kategori kustom..."
                             value={customCategory}
                             onChange={(e) => setCustomCategory(e.target.value)}
-                            className="bg-white dark:bg-slate-800 border border-[#E2E8F0] dark:border-slate-700 rounded-xl px-3 text-sm text-[#0F172A] dark:text-white focus:outline-none focus:border-[#2563EB] min-h-[48px] py-3 md:min-h-0 md:py-2 md:rounded-lg"
+                            className="bg-white dark:bg-[#243447] border border-[#E2E8F0] dark:border-gray-700 rounded-xl px-3 text-sm text-[#0F172A] dark:text-gray-200 focus:outline-none focus:border-[#2563EB] dark:focus:border-blue-500 min-h-[48px] py-3 md:min-h-0 md:py-2 md:rounded-lg"
                           />
                         </div>
                       )}
 
                       <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
                         <div>
-                          <label className="text-[10px] text-[#64748B] dark:text-slate-400 font-semibold uppercase">Waktu Mulai</label>
+                          <label className="text-[10px] text-[#64748B] dark:text-gray-300 font-semibold uppercase">Waktu Mulai</label>
                           <input
                             type="time"
                             value={editStartTime}
                             onChange={(e) => setEditStartTime(e.target.value)}
-                            className="w-full bg-white dark:bg-slate-800 border border-[#E2E8F0] dark:border-slate-700 rounded-xl px-3 text-sm text-[#0F172A] dark:text-white focus:outline-none focus:border-[#2563EB] min-h-[48px] py-3 md:min-h-0 md:py-2 md:rounded-lg md:text-xs"
+                            className="w-full bg-white dark:bg-[#243447] border border-[#E2E8F0] dark:border-gray-700 rounded-xl px-3 text-sm text-[#0F172A] dark:text-gray-200 focus:outline-none focus:border-[#2563EB] dark:focus:border-blue-500 min-h-[48px] py-3 md:min-h-0 md:py-2 md:rounded-lg md:text-xs"
                           />
                         </div>
                         <div>
-                          <label className="text-[10px] text-[#64748B] dark:text-slate-400 font-semibold uppercase">Waktu Selesai</label>
+                          <label className="text-[10px] text-[#64748B] dark:text-gray-300 font-semibold uppercase">Waktu Selesai</label>
                           <input
                             type="time"
                             value={editEndTime}
                             onChange={(e) => setEditEndTime(e.target.value)}
-                            className="w-full bg-white dark:bg-slate-800 border border-[#E2E8F0] dark:border-slate-700 rounded-xl px-3 text-sm text-[#0F172A] dark:text-white focus:outline-none focus:border-[#2563EB] min-h-[48px] py-3 md:min-h-0 md:py-2 md:rounded-lg md:text-xs"
+                            className="w-full bg-white dark:bg-[#243447] border border-[#E2E8F0] dark:border-gray-700 rounded-xl px-3 text-sm text-[#0F172A] dark:text-gray-200 focus:outline-none focus:border-[#2563EB] dark:focus:border-blue-500 min-h-[48px] py-3 md:min-h-0 md:py-2 md:rounded-lg md:text-xs"
                           />
                         </div>
                       </div>
@@ -406,7 +406,7 @@ export const CardModal: React.FC<CardModalProps> = ({ card, onClose, initialEdit
                             setEditEndTime(card.endTime || '');
                             setIsEditing(false);
                           }}
-                          className="w-full md:w-auto px-4 py-3 md:py-1.5 rounded-xl md:rounded-lg bg-white dark:bg-slate-800 border border-[#E2E8F0] dark:border-slate-700 text-sm md:text-xs font-semibold text-slate-700 hover:bg-slate-50 dark:bg-slate-800/50 transition cursor-pointer min-h-[48px] md:min-h-0"
+                          className="w-full md:w-auto px-4 py-3 md:py-1.5 rounded-xl md:rounded-lg bg-white dark:bg-[#243447] border border-[#E2E8F0] dark:border-gray-700 text-sm md:text-xs font-semibold text-slate-700 hover:bg-slate-50 dark:hover:bg-[#2D435E] transition cursor-pointer min-h-[48px] md:min-h-0"
                         >
                           Batal
                         </button>
@@ -421,11 +421,11 @@ export const CardModal: React.FC<CardModalProps> = ({ card, onClose, initialEdit
                   ) : (
                     <div>
                       <div className="flex justify-between items-start gap-4 mb-2">
-                        <h3 className="font-bold text-slate-800 dark:text-slate-100 text-lg">{card.title}</h3>
+                        <h3 className="font-bold text-slate-800 dark:text-gray-200 text-lg">{card.title}</h3>
                         {canEdit && (
                           <button
                             onClick={() => setIsEditing(true)}
-                            className="p-1.5 rounded-lg bg-white dark:bg-slate-800 border border-[#E2E8F0] dark:border-slate-700 hover:bg-slate-50 dark:bg-slate-800/50 text-slate-500 dark:text-slate-400 hover:text-[#2563EB] transition cursor-pointer"
+                            className="p-1.5 rounded-lg bg-white dark:bg-[#243447] border border-[#E2E8F0] dark:border-gray-700 hover:bg-slate-50 dark:hover:bg-[#2D435E] text-slate-500 dark:text-gray-300 hover:text-[#2563EB] transition cursor-pointer"
                           >
                             <Edit2 size={14} />
                           </button>
@@ -439,9 +439,9 @@ export const CardModal: React.FC<CardModalProps> = ({ card, onClose, initialEdit
                 </div>
 
                 {/* Attachments Section */}
-                <div className="bg-[#F1F5F9] dark:bg-slate-700/50 border border-[#E2E8F0] dark:border-slate-700 rounded-xl p-4 flex flex-col gap-4">
+                <div className="bg-[#F1F5F9] dark:bg-gray-800/50 border border-[#E2E8F0] dark:border-gray-700 rounded-xl p-4 flex flex-col gap-4">
                   <div className="flex justify-between items-center">
-                    <h4 className="text-xs font-bold text-[#64748B] dark:text-slate-400 uppercase tracking-wider flex items-center gap-1.5">
+                    <h4 className="text-xs font-bold text-[#64748B] dark:text-gray-300 uppercase tracking-wider flex items-center gap-1.5">
                       <Paperclip size={14} className="text-[#2563EB]" />
                       Berkas Lampiran ({card.attachments ? card.attachments.length : 0})
                     </h4>
@@ -475,12 +475,12 @@ export const CardModal: React.FC<CardModalProps> = ({ card, onClose, initialEdit
                   </div>
 
                   {(!card.attachments || card.attachments.length === 0) ? (
-                    <p className="text-xs text-gray-400 italic">Belum ada file lampiran.</p>
+                    <p className="text-xs text-slate-500 dark:text-gray-2000 italic">Belum ada file lampiran.</p>
                   ) : (
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-2.5">
                       {card.attachments.map((att, idx) => {
                         let IconComponent = File;
-                        let colorClass = 'text-slate-500 dark:text-slate-400 bg-slate-50 dark:bg-slate-800/50 border-slate-200 dark:border-slate-700';
+                        let colorClass = 'text-slate-500 dark:text-gray-300 bg-slate-50 dark:bg-gray-800/50 border-slate-200 dark:border-gray-700';
                         if (att.type === 'image') {
                           IconComponent = ImageIcon;
                           colorClass = 'text-pink-700 bg-pink-50 border-pink-100';
@@ -492,7 +492,7 @@ export const CardModal: React.FC<CardModalProps> = ({ card, onClose, initialEdit
                           colorClass = 'text-blue-700 bg-blue-50 border-blue-100';
                         }
                         return (
-                          <div key={idx} className="flex items-center justify-between p-2.5 bg-white dark:bg-slate-800 border border-[#E2E8F0] dark:border-slate-700 rounded-xl text-xs gap-3 shadow-sm">
+                          <div key={idx} className="flex items-center justify-between p-2.5 bg-white dark:bg-[#243447] border border-[#E2E8F0] dark:border-gray-700 rounded-xl text-xs gap-3 shadow-sm">
                             <div className="flex items-center gap-2 overflow-hidden">
                               <div className={`p-1.5 rounded-lg border ${colorClass} shrink-0`}>
                                 <IconComponent size={14} />
@@ -509,7 +509,7 @@ export const CardModal: React.FC<CardModalProps> = ({ card, onClose, initialEdit
                             {isStudent && (
                               <button
                                 onClick={() => deleteAttachment(card.id, idx)}
-                                className="p-1 rounded bg-slate-50 dark:bg-slate-800/50 hover:bg-red-50 text-slate-400 hover:text-[#EF4444] transition shrink-0 cursor-pointer"
+                                className="p-1 rounded bg-slate-50 dark:bg-gray-800/50 hover:bg-red-50 text-slate-400 hover:text-[#EF4444] transition shrink-0 cursor-pointer"
                               >
                                 <Trash2 size={13} />
                               </button>
@@ -522,8 +522,8 @@ export const CardModal: React.FC<CardModalProps> = ({ card, onClose, initialEdit
                 </div>
 
                 {/* Score & Feedback Panel for Mentor */}
-                <div className="bg-[#F1F5F9] dark:bg-slate-700/50 border border-[#E2E8F0] dark:border-slate-700 rounded-xl p-4 flex flex-col gap-4">
-                  <h4 className="text-xs font-bold text-[#64748B] dark:text-slate-400 uppercase tracking-wider flex items-center gap-1.5">
+                <div className="bg-[#F1F5F9] dark:bg-gray-800/50 border border-[#E2E8F0] dark:border-gray-700 rounded-xl p-4 flex flex-col gap-4">
+                  <h4 className="text-xs font-bold text-[#64748B] dark:text-gray-300 uppercase tracking-wider flex items-center gap-1.5">
                     <Award size={14} className="text-purple-600" />
                     Penilaian Mentor (Pembimbing Eksternal)
                   </h4>
@@ -536,35 +536,35 @@ export const CardModal: React.FC<CardModalProps> = ({ card, onClose, initialEdit
                           <span className="text-2xl font-black">{card.scoreMentor}</span>
                         </div>
                         <div className="flex-1 flex flex-col gap-1 text-xs">
-                          <div className="grid grid-cols-3 gap-2 text-[11px] text-slate-500 dark:text-slate-400">
-                            <div className="bg-white dark:bg-slate-800 p-1.5 rounded border border-[#E2E8F0] dark:border-slate-700 text-center">
-                              <span className="block font-bold text-slate-800 dark:text-slate-100">{card.scoreMentorDiscipline}</span>
+                          <div className="grid grid-cols-3 gap-2 text-[11px] text-slate-500 dark:text-gray-300">
+                            <div className="bg-white dark:bg-[#243447] p-1.5 rounded border border-[#E2E8F0] dark:border-gray-700 text-center">
+                              <span className="block font-bold text-slate-800 dark:text-gray-200">{card.scoreMentorDiscipline}</span>
                               Kedisiplinan
                             </div>
-                            <div className="bg-white dark:bg-slate-800 p-1.5 rounded border border-[#E2E8F0] dark:border-slate-700 text-center">
-                              <span className="block font-bold text-slate-800 dark:text-slate-100">{card.scoreMentorSkill}</span>
+                            <div className="bg-white dark:bg-[#243447] p-1.5 rounded border border-[#E2E8F0] dark:border-gray-700 text-center">
+                              <span className="block font-bold text-slate-800 dark:text-gray-200">{card.scoreMentorSkill}</span>
                               Keahlian
                             </div>
-                            <div className="bg-white dark:bg-slate-800 p-1.5 rounded border border-[#E2E8F0] dark:border-slate-700 text-center">
-                              <span className="block font-bold text-slate-800 dark:text-slate-100">{card.scoreMentorAttitude}</span>
+                            <div className="bg-white dark:bg-[#243447] p-1.5 rounded border border-[#E2E8F0] dark:border-gray-700 text-center">
+                              <span className="block font-bold text-slate-800 dark:text-gray-200">{card.scoreMentorAttitude}</span>
                               Sikap
                             </div>
                           </div>
                         </div>
                       </div>
-                      <div className="text-xs bg-white dark:bg-slate-800 p-2.5 rounded-lg border border-[#E2E8F0] dark:border-slate-700">
+                      <div className="text-xs bg-white dark:bg-[#243447] p-2.5 rounded-lg border border-[#E2E8F0] dark:border-gray-700">
                         <span className="text-[10px] text-purple-600 font-semibold block mb-0.5">Umpan Balik Mentor:</span>
                         <p className="text-slate-600 italic">&ldquo;{card.feedbackMentor || 'Kegiatan disetujui tanpa catatan tambahan.'}&rdquo;</p>
                       </div>
                     </div>
                   ) : (
-                    <p className="text-xs text-slate-400 italic">Belum dinilai oleh Mentor Lapangan.</p>
+                    <p className="text-xs text-slate-500 dark:text-gray-2000 italic">Belum dinilai oleh Mentor Lapangan.</p>
                   )}
                 </div>
 
                 {/* Score & Feedback Panel for Guru */}
-                <div className="bg-[#F1F5F9] dark:bg-slate-700/50 border border-[#E2E8F0] dark:border-slate-700 rounded-xl p-4 flex flex-col gap-4">
-                  <h4 className="text-xs font-bold text-[#64748B] dark:text-slate-400 uppercase tracking-wider flex items-center gap-1.5">
+                <div className="bg-[#F1F5F9] dark:bg-gray-800/50 border border-[#E2E8F0] dark:border-gray-700 rounded-xl p-4 flex flex-col gap-4">
+                  <h4 className="text-xs font-bold text-[#64748B] dark:text-gray-300 uppercase tracking-wider flex items-center gap-1.5">
                     <Award size={14} className="text-yellow-600" />
                     Penilaian Guru (Pembimbing Internal)
                   </h4>
@@ -577,35 +577,35 @@ export const CardModal: React.FC<CardModalProps> = ({ card, onClose, initialEdit
                           <span className="text-2xl font-black">{card.scoreAdvisor}</span>
                         </div>
                         <div className="flex-1 flex flex-col gap-1 text-xs">
-                          <div className="grid grid-cols-3 gap-2 text-[11px] text-slate-500 dark:text-slate-400">
-                            <div className="bg-white dark:bg-slate-800 p-1.5 rounded border border-[#E2E8F0] dark:border-slate-700 text-center">
-                              <span className="block font-bold text-slate-800 dark:text-slate-100">{card.scoreAdvisorDiscipline}</span>
+                          <div className="grid grid-cols-3 gap-2 text-[11px] text-slate-500 dark:text-gray-300">
+                            <div className="bg-white dark:bg-[#243447] p-1.5 rounded border border-[#E2E8F0] dark:border-gray-700 text-center">
+                              <span className="block font-bold text-slate-800 dark:text-gray-200">{card.scoreAdvisorDiscipline}</span>
                               Kedisiplinan
                             </div>
-                            <div className="bg-white dark:bg-slate-800 p-1.5 rounded border border-[#E2E8F0] dark:border-slate-700 text-center">
-                              <span className="block font-bold text-slate-800 dark:text-slate-100">{card.scoreAdvisorReport}</span>
+                            <div className="bg-white dark:bg-[#243447] p-1.5 rounded border border-[#E2E8F0] dark:border-gray-700 text-center">
+                              <span className="block font-bold text-slate-800 dark:text-gray-200">{card.scoreAdvisorReport}</span>
                               Laporan
                             </div>
-                            <div className="bg-white dark:bg-slate-800 p-1.5 rounded border border-[#E2E8F0] dark:border-slate-700 text-center">
-                              <span className="block font-bold text-slate-800 dark:text-slate-100">{card.scoreAdvisorCommunication}</span>
+                            <div className="bg-white dark:bg-[#243447] p-1.5 rounded border border-[#E2E8F0] dark:border-gray-700 text-center">
+                              <span className="block font-bold text-slate-800 dark:text-gray-200">{card.scoreAdvisorCommunication}</span>
                               Komunikasi
                             </div>
                           </div>
                         </div>
                       </div>
-                      <div className="text-xs bg-white dark:bg-slate-800 p-2.5 rounded-lg border border-[#E2E8F0] dark:border-slate-700">
+                      <div className="text-xs bg-white dark:bg-[#243447] p-2.5 rounded-lg border border-[#E2E8F0] dark:border-gray-700">
                         <span className="text-[10px] text-yellow-600 font-semibold block mb-0.5">Umpan Balik Guru:</span>
                         <p className="text-slate-600 italic">&ldquo;{card.feedbackAdvisor || 'Belum ada catatan tambahan.'}&rdquo;</p>
                       </div>
                     </div>
                   ) : (
-                    <p className="text-xs text-slate-400 italic">Belum dinilai oleh Guru Pembimbing.</p>
+                    <p className="text-xs text-slate-500 dark:text-gray-2000 italic">Belum dinilai oleh Guru Pembimbing.</p>
                   )}
                 </div>
 
                 {/* Grading form for Mentor */}
                 {isMentor && (card.columnId === 'review' || card.columnId === 'selesai') && (
-                  <form onSubmit={handleMentorGradeSubmit} className="bg-slate-50 dark:bg-slate-800/50 border border-[#E2E8F0] dark:border-slate-700 rounded-xl p-4 flex flex-col gap-4">
+                  <form onSubmit={handleMentorGradeSubmit} className="bg-slate-50 dark:bg-gray-800/50 border border-[#E2E8F0] dark:border-gray-700 rounded-xl p-4 flex flex-col gap-4">
                     {validationError && (
                       <div className="p-3 bg-red-50 border border-red-200 text-[#EF4444] rounded-lg text-xs font-semibold animate-in fade-in duration-200">
                         {validationError}
@@ -617,7 +617,7 @@ export const CardModal: React.FC<CardModalProps> = ({ card, onClose, initialEdit
                     </h4>
                     <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
                       <div>
-                        <label className="text-[10px] text-[#64748B] dark:text-slate-400 font-semibold block mb-1">Kedisiplinan (0-100)</label>
+                        <label className="text-[10px] text-[#64748B] dark:text-gray-300 font-semibold block mb-1">Kedisiplinan (0-100)</label>
                         <input
                           type="number"
                           required
@@ -625,11 +625,11 @@ export const CardModal: React.FC<CardModalProps> = ({ card, onClose, initialEdit
                           max="100"
                           value={mentorDiscipline}
                           onChange={(e) => setMentorDiscipline(e.target.value !== '' ? Number(e.target.value) : '')}
-                          className="w-full bg-white dark:bg-slate-800 border border-[#E2E8F0] dark:border-slate-700 rounded-xl px-3 text-sm text-[#0F172A] dark:text-white focus:outline-none focus:border-[#2563EB] min-h-[48px] py-3 md:min-h-0 md:py-2 md:text-xs md:rounded-lg"
+                          className="w-full bg-white dark:bg-[#243447] border border-[#E2E8F0] dark:border-gray-700 rounded-xl px-3 text-sm text-[#0F172A] dark:text-gray-200 focus:outline-none focus:border-[#2563EB] dark:focus:border-blue-500 min-h-[48px] py-3 md:min-h-0 md:py-2 md:text-xs md:rounded-lg"
                         />
                       </div>
                       <div>
-                        <label className="text-[10px] text-[#64748B] dark:text-slate-400 font-semibold block mb-1">Keahlian (0-100)</label>
+                        <label className="text-[10px] text-[#64748B] dark:text-gray-300 font-semibold block mb-1">Keahlian (0-100)</label>
                         <input
                           type="number"
                           required
@@ -637,11 +637,11 @@ export const CardModal: React.FC<CardModalProps> = ({ card, onClose, initialEdit
                           max="100"
                           value={mentorSkill}
                           onChange={(e) => setMentorSkill(e.target.value !== '' ? Number(e.target.value) : '')}
-                          className="w-full bg-white dark:bg-slate-800 border border-[#E2E8F0] dark:border-slate-700 rounded-xl px-3 text-sm text-[#0F172A] dark:text-white focus:outline-none focus:border-[#2563EB] min-h-[48px] py-3 md:min-h-0 md:py-2 md:text-xs md:rounded-lg"
+                          className="w-full bg-white dark:bg-[#243447] border border-[#E2E8F0] dark:border-gray-700 rounded-xl px-3 text-sm text-[#0F172A] dark:text-gray-200 focus:outline-none focus:border-[#2563EB] dark:focus:border-blue-500 min-h-[48px] py-3 md:min-h-0 md:py-2 md:text-xs md:rounded-lg"
                         />
                       </div>
                       <div>
-                        <label className="text-[10px] text-[#64748B] dark:text-slate-400 font-semibold block mb-1">Sikap (0-100)</label>
+                        <label className="text-[10px] text-[#64748B] dark:text-gray-300 font-semibold block mb-1">Sikap (0-100)</label>
                         <input
                           type="number"
                           required
@@ -649,19 +649,19 @@ export const CardModal: React.FC<CardModalProps> = ({ card, onClose, initialEdit
                           max="100"
                           value={mentorAttitude}
                           onChange={(e) => setMentorAttitude(e.target.value !== '' ? Number(e.target.value) : '')}
-                          className="w-full bg-white dark:bg-slate-800 border border-[#E2E8F0] dark:border-slate-700 rounded-xl px-3 text-sm text-[#0F172A] dark:text-white focus:outline-none focus:border-[#2563EB] min-h-[48px] py-3 md:min-h-0 md:py-2 md:text-xs md:rounded-lg"
+                          className="w-full bg-white dark:bg-[#243447] border border-[#E2E8F0] dark:border-gray-700 rounded-xl px-3 text-sm text-[#0F172A] dark:text-gray-200 focus:outline-none focus:border-[#2563EB] dark:focus:border-blue-500 min-h-[48px] py-3 md:min-h-0 md:py-2 md:text-xs md:rounded-lg"
                         />
                       </div>
                     </div>
                     <div>
-                      <label className="text-[10px] text-[#64748B] dark:text-slate-400 font-semibold block mb-1">Catatan / Umpan Balik Mentor</label>
+                      <label className="text-[10px] text-[#64748B] dark:text-gray-300 font-semibold block mb-1">Catatan / Umpan Balik Mentor</label>
                       <textarea
                         required
                         rows={2}
                         value={mentorFeedback}
                         onChange={(e) => setMentorFeedback(e.target.value)}
                         placeholder="Berikan umpan balik atau instruksi revisi..."
-                        className="w-full bg-white dark:bg-slate-800 border border-[#E2E8F0] dark:border-slate-700 rounded-xl px-3.5 text-sm text-[#0F172A] dark:text-white focus:outline-none focus:border-[#2563EB] resize-none min-h-[80px] py-3 md:min-h-0 md:py-2.5 md:text-xs md:rounded-lg"
+                        className="w-full bg-white dark:bg-[#243447] border border-[#E2E8F0] dark:border-gray-700 rounded-xl px-3.5 text-sm text-[#0F172A] dark:text-gray-200 focus:outline-none focus:border-[#2563EB] resize-none min-h-[80px] py-3 md:min-h-0 md:py-2.5 md:text-xs md:rounded-lg"
                       />
                     </div>
                     <button
@@ -675,7 +675,7 @@ export const CardModal: React.FC<CardModalProps> = ({ card, onClose, initialEdit
 
                 {/* Grading form for Advisor (Guru) */}
                 {activeRole === 'Dosen Pembimbing' && (card.columnId === 'review' || card.columnId === 'selesai') && (
-                  <form onSubmit={handleAdvisorGradeSubmit} className="bg-slate-50 dark:bg-slate-800/50 border border-[#E2E8F0] dark:border-slate-700 rounded-xl p-4 flex flex-col gap-4">
+                  <form onSubmit={handleAdvisorGradeSubmit} className="bg-slate-50 dark:bg-gray-800/50 border border-[#E2E8F0] dark:border-gray-700 rounded-xl p-4 flex flex-col gap-4">
                     {validationError && (
                       <div className="p-3 bg-red-50 border border-red-200 text-[#EF4444] rounded-lg text-xs font-semibold animate-in fade-in duration-200">
                         {validationError}
@@ -687,7 +687,7 @@ export const CardModal: React.FC<CardModalProps> = ({ card, onClose, initialEdit
                     </h4>
                     <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
                       <div>
-                        <label className="text-[10px] text-[#64748B] dark:text-slate-400 font-semibold block mb-1">Kedisiplinan (0-100)</label>
+                        <label className="text-[10px] text-[#64748B] dark:text-gray-300 font-semibold block mb-1">Kedisiplinan (0-100)</label>
                         <input
                           type="number"
                           required
@@ -695,11 +695,11 @@ export const CardModal: React.FC<CardModalProps> = ({ card, onClose, initialEdit
                           max="100"
                           value={advisorDiscipline}
                           onChange={(e) => setAdvisorDiscipline(e.target.value !== '' ? Number(e.target.value) : '')}
-                          className="w-full bg-white dark:bg-slate-800 border border-[#E2E8F0] dark:border-slate-700 rounded-xl px-3 text-sm text-[#0F172A] dark:text-white focus:outline-none focus:border-[#2563EB] min-h-[48px] py-3 md:min-h-0 md:py-2 md:text-xs md:rounded-lg"
+                          className="w-full bg-white dark:bg-[#243447] border border-[#E2E8F0] dark:border-gray-700 rounded-xl px-3 text-sm text-[#0F172A] dark:text-gray-200 focus:outline-none focus:border-[#2563EB] dark:focus:border-blue-500 min-h-[48px] py-3 md:min-h-0 md:py-2 md:text-xs md:rounded-lg"
                         />
                       </div>
                       <div>
-                        <label className="text-[10px] text-[#64748B] dark:text-slate-400 font-semibold block mb-1">Laporan (0-100)</label>
+                        <label className="text-[10px] text-[#64748B] dark:text-gray-300 font-semibold block mb-1">Laporan (0-100)</label>
                         <input
                           type="number"
                           required
@@ -707,11 +707,11 @@ export const CardModal: React.FC<CardModalProps> = ({ card, onClose, initialEdit
                           max="100"
                           value={advisorReport}
                           onChange={(e) => setAdvisorReport(e.target.value !== '' ? Number(e.target.value) : '')}
-                          className="w-full bg-white dark:bg-slate-800 border border-[#E2E8F0] dark:border-slate-700 rounded-xl px-3 text-sm text-[#0F172A] dark:text-white focus:outline-none focus:border-[#2563EB] min-h-[48px] py-3 md:min-h-0 md:py-2 md:text-xs md:rounded-lg"
+                          className="w-full bg-white dark:bg-[#243447] border border-[#E2E8F0] dark:border-gray-700 rounded-xl px-3 text-sm text-[#0F172A] dark:text-gray-200 focus:outline-none focus:border-[#2563EB] dark:focus:border-blue-500 min-h-[48px] py-3 md:min-h-0 md:py-2 md:text-xs md:rounded-lg"
                         />
                       </div>
                       <div>
-                        <label className="text-[10px] text-[#64748B] dark:text-slate-400 font-semibold block mb-1">Komunikasi (0-100)</label>
+                        <label className="text-[10px] text-[#64748B] dark:text-gray-300 font-semibold block mb-1">Komunikasi (0-100)</label>
                         <input
                           type="number"
                           required
@@ -719,19 +719,19 @@ export const CardModal: React.FC<CardModalProps> = ({ card, onClose, initialEdit
                           max="100"
                           value={advisorCommunication}
                           onChange={(e) => setAdvisorCommunication(e.target.value !== '' ? Number(e.target.value) : '')}
-                          className="w-full bg-white dark:bg-slate-800 border border-[#E2E8F0] dark:border-slate-700 rounded-xl px-3 text-sm text-[#0F172A] dark:text-white focus:outline-none focus:border-[#2563EB] min-h-[48px] py-3 md:min-h-0 md:py-2 md:text-xs md:rounded-lg"
+                          className="w-full bg-white dark:bg-[#243447] border border-[#E2E8F0] dark:border-gray-700 rounded-xl px-3 text-sm text-[#0F172A] dark:text-gray-200 focus:outline-none focus:border-[#2563EB] dark:focus:border-blue-500 min-h-[48px] py-3 md:min-h-0 md:py-2 md:text-xs md:rounded-lg"
                         />
                       </div>
                     </div>
                     <div>
-                      <label className="text-[10px] text-[#64748B] dark:text-slate-400 font-semibold block mb-1">Catatan / Umpan Balik Guru</label>
+                      <label className="text-[10px] text-[#64748B] dark:text-gray-300 font-semibold block mb-1">Catatan / Umpan Balik Guru</label>
                       <textarea
                         required
                         rows={2}
                         value={advisorFeedback}
                         onChange={(e) => setAdvisorFeedback(e.target.value)}
                         placeholder="Berikan umpan balik atau saran akademik..."
-                        className="w-full bg-white dark:bg-slate-800 border border-[#E2E8F0] dark:border-slate-700 rounded-xl px-3.5 text-sm text-[#0F172A] dark:text-white focus:outline-none focus:border-[#2563EB] resize-none min-h-[80px] py-3 md:min-h-0 md:py-2.5 md:text-xs md:rounded-lg"
+                        className="w-full bg-white dark:bg-[#243447] border border-[#E2E8F0] dark:border-gray-700 rounded-xl px-3.5 text-sm text-[#0F172A] dark:text-gray-200 focus:outline-none focus:border-[#2563EB] resize-none min-h-[80px] py-3 md:min-h-0 md:py-2.5 md:text-xs md:rounded-lg"
                       />
                     </div>
                     <button
@@ -744,21 +744,21 @@ export const CardModal: React.FC<CardModalProps> = ({ card, onClose, initialEdit
                 )}
 
                 {/* Comment Section */}
-                <div className="flex flex-col gap-4 border-t border-[#E2E8F0] dark:border-slate-700 pt-6">
-                  <h4 className="text-xs font-bold text-[#64748B] dark:text-slate-400 uppercase tracking-wider flex items-center gap-1.5">
+                <div className="flex flex-col gap-4 border-t border-[#E2E8F0] dark:border-gray-700 pt-6">
+                  <h4 className="text-xs font-bold text-[#64748B] dark:text-gray-300 uppercase tracking-wider flex items-center gap-1.5">
                     <MessageSquare size={14} className="text-[#2563EB]" />
                     Kolom Diskusi ({card.comments.length})
                   </h4>
 
                   <div className="flex flex-col gap-3 max-h-[300px] overflow-y-auto pr-1">
                     {card.comments.length === 0 ? (
-                      <p className="text-xs text-gray-400 italic py-4 text-center">Belum ada diskusi untuk tugas ini.</p>
+                      <p className="text-xs text-slate-500 dark:text-gray-2000 italic py-4 text-center">Belum ada diskusi untuk tugas ini.</p>
                     ) : (
                       card.comments.map((comment) => (
-                        <div key={comment.id} className="flex flex-col bg-white dark:bg-slate-800 rounded-xl p-3 border border-[#E2E8F0] dark:border-slate-700 shadow-sm">
+                        <div key={comment.id} className="flex flex-col bg-white dark:bg-[#243447] rounded-xl p-3 border border-[#E2E8F0] dark:border-gray-700 shadow-sm">
                           <div className="flex justify-between items-center gap-2 mb-1.5">
                             <div className="flex items-center gap-2">
-                              <span className="text-xs font-semibold text-slate-800 dark:text-slate-100">{comment.userName}</span>
+                              <span className="text-xs font-semibold text-slate-800 dark:text-white">{comment.userName}</span>
                               <span className={`text-[9px] uppercase px-1.5 py-0.2 rounded font-bold ${
                                 comment.role === 'Mentor' ? 'bg-purple-50 text-purple-700 border border-purple-100' :
                                 comment.role === 'Dosen Pembimbing' ? 'bg-yellow-50 text-yellow-700 border border-yellow-100' :
@@ -783,7 +783,7 @@ export const CardModal: React.FC<CardModalProps> = ({ card, onClose, initialEdit
                       placeholder="Tulis tanggapan atau saran..."
                       value={commentText}
                       onChange={(e) => setCommentText(e.target.value)}
-                      className="flex-1 bg-white dark:bg-slate-800 border border-[#E2E8F0] dark:border-slate-700 rounded-xl px-4 text-sm text-[#0F172A] dark:text-white focus:outline-none focus:border-[#2563EB] focus:ring-1 focus:ring-[#2563EB] min-h-[48px] py-3 md:min-h-0 md:py-2 md:text-xs"
+                      className="flex-1 bg-white dark:bg-[#243447] border border-[#E2E8F0] dark:border-gray-700 rounded-xl px-4 text-sm text-[#0F172A] dark:text-gray-200 focus:outline-none focus:border-[#2563EB] focus:ring-1 focus:ring-[#2563EB] min-h-[48px] py-3 md:min-h-0 md:py-2 md:text-xs"
                     />
                     <button
                       type="submit"
@@ -798,46 +798,46 @@ export const CardModal: React.FC<CardModalProps> = ({ card, onClose, initialEdit
 
               {/* Right Column: Sidebar Metrics */}
               <div className="flex flex-col gap-4">
-                <h4 className="text-xs font-bold text-[#64748B] dark:text-slate-400 uppercase tracking-wider">Status & Metadata</h4>
+                <h4 className="text-xs font-bold text-[#64748B] dark:text-gray-300 uppercase tracking-wider">Status & Metadata</h4>
                 
-                <div className="bg-white dark:bg-slate-800 border border-[#E2E8F0] dark:border-slate-700 rounded-xl p-4 flex flex-col gap-3.5 text-xs text-slate-700 shadow-sm">
-                  <div className="flex justify-between items-center py-1.5 border-b border-[#E2E8F0] dark:border-slate-700">
-                    <span className="text-slate-500 dark:text-slate-400 flex items-center gap-1.5">
+                <div className="bg-white dark:bg-[#243447] border border-[#E2E8F0] dark:border-gray-700 rounded-xl p-4 flex flex-col gap-3.5 text-xs text-slate-700 shadow-sm">
+                  <div className="flex justify-between items-center py-1.5 border-b border-[#E2E8F0] dark:border-gray-700">
+                    <span className="text-slate-500 dark:text-gray-300 flex items-center gap-1.5">
                       <Calendar size={13} /> Due Date
                     </span>
-                    <span className="font-semibold text-slate-800 dark:text-slate-100">{card.dueDate}</span>
+                    <span className="font-semibold text-slate-800 dark:text-white">{card.dueDate}</span>
                   </div>
 
-                  <div className="flex justify-between items-center py-1.5 border-b border-[#E2E8F0] dark:border-slate-700">
-                    <span className="text-slate-500 dark:text-slate-400 flex items-center gap-1.5">
+                  <div className="flex justify-between items-center py-1.5 border-b border-[#E2E8F0] dark:border-gray-700">
+                    <span className="text-slate-500 dark:text-gray-300 flex items-center gap-1.5">
                       <Clock size={13} /> Waktu Mulai
                     </span>
-                    <span className="font-semibold text-slate-800 dark:text-slate-100">{card.startTime || '-'}</span>
+                    <span className="font-semibold text-slate-800 dark:text-white">{card.startTime || '-'}</span>
                   </div>
 
-                  <div className="flex justify-between items-center py-1.5 border-b border-[#E2E8F0] dark:border-slate-700">
-                    <span className="text-slate-500 dark:text-slate-400 flex items-center gap-1.5">
+                  <div className="flex justify-between items-center py-1.5 border-b border-[#E2E8F0] dark:border-gray-700">
+                    <span className="text-slate-500 dark:text-gray-300 flex items-center gap-1.5">
                       <Clock size={13} /> Waktu Selesai
                     </span>
-                    <span className="font-semibold text-slate-800 dark:text-slate-100">{card.endTime || '-'}</span>
+                    <span className="font-semibold text-slate-800 dark:text-white">{card.endTime || '-'}</span>
                   </div>
 
-                  <div className="flex justify-between items-center py-1.5 border-b border-[#E2E8F0] dark:border-slate-700">
-                    <span className="text-slate-500 dark:text-slate-400">Dibuat</span>
+                  <div className="flex justify-between items-center py-1.5 border-b border-[#E2E8F0] dark:border-gray-700">
+                    <span className="text-slate-500 dark:text-gray-300">Dibuat</span>
                     <span className="text-slate-600">
                       {new Date(card.createdAt).toLocaleDateString('id-ID')}
                     </span>
                   </div>
 
                   <div className="flex justify-between items-center py-1.5">
-                    <span className="text-slate-500 dark:text-slate-400">Pemilik</span>
+                    <span className="text-slate-500 dark:text-gray-300">Pemilik</span>
                     <span className="font-medium text-slate-700">{state.studentName}</span>
                   </div>
                 </div>
 
                 {/* Status Transitions panel */}
                 <div className="flex flex-col gap-2">
-                  <h4 className="text-xs font-bold text-[#64748B] dark:text-slate-400 uppercase tracking-wider">Pindahkan Status</h4>
+                  <h4 className="text-xs font-bold text-[#64748B] dark:text-gray-300 uppercase tracking-wider">Pindahkan Status</h4>
                   <div className="flex flex-col gap-1.5">
                     {[
                       { id: 'rencana', label: 'Rencana Kegiatan' },
@@ -855,8 +855,8 @@ export const CardModal: React.FC<CardModalProps> = ({ card, onClose, initialEdit
                             card.columnId === col.id
                               ? 'bg-blue-50 border-blue-200 text-[#2563EB] cursor-default'
                               : col.id === 'selesai' && isStudent
-                              ? 'bg-slate-50 dark:bg-slate-800/50 border-slate-200 dark:border-slate-700 text-slate-400 cursor-not-allowed opacity-50'
-                              : 'bg-white dark:bg-slate-800 border-[#E2E8F0] dark:border-slate-700 text-slate-700 hover:bg-slate-50 dark:bg-slate-800/50 hover:text-slate-900'
+                              ? 'bg-slate-50 dark:bg-gray-800/50 border-slate-200 dark:border-gray-700 text-slate-400 cursor-not-allowed opacity-50'
+                              : 'bg-white dark:bg-[#243447] border-[#E2E8F0] dark:border-gray-700 text-slate-700 hover:bg-slate-50 dark:hover:bg-[#2D435E] hover:text-slate-900'
                           }`}
                         >
                           {col.label}
@@ -898,7 +898,7 @@ export const CardModal: React.FC<CardModalProps> = ({ card, onClose, initialEdit
                     </div>
                     {/* Text content */}
                     <div className="flex-1">
-                      <p className="text-xs text-slate-800 dark:text-slate-100 leading-normal">{log.text}</p>
+                      <p className="text-xs text-slate-800 dark:text-gray-200 leading-normal">{log.text}</p>
                       <span className="text-[10px] text-slate-400">
                         {new Date(log.createdAt).toLocaleString('id-ID')}
                       </span>

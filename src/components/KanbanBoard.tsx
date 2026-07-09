@@ -65,7 +65,7 @@ export const KanbanBoard: React.FC<KanbanBoardProps> = ({ onOpenCard }) => {
   });
 
   const columns: { id: PKLCard['columnId']; title: string; color: string; ringColor: string; bgBadge: string }[] = [
-    { id: 'rencana', title: 'Rencana Kegiatan', color: 'border-t-slate-400', ringColor: 'focus-within:ring-slate-500/10', bgBadge: 'bg-slate-100 dark:bg-slate-700 text-slate-700 border border-slate-200 dark:border-slate-700/50' },
+    { id: 'rencana', title: 'Rencana Kegiatan', color: 'border-t-slate-400', ringColor: 'focus-within:ring-slate-500/10', bgBadge: 'bg-slate-100 dark:bg-gray-800 text-slate-700 border border-slate-200 dark:border-gray-700/50' },
     { id: 'progres', title: 'Sedang Dikerjakan', color: 'border-t-blue-500', ringColor: 'focus-within:ring-blue-500/10', bgBadge: 'bg-blue-50 text-blue-700 border border-blue-100' },
     { id: 'review', title: 'Butuh Review', color: 'border-t-yellow-500', ringColor: 'focus-within:ring-yellow-500/10', bgBadge: 'bg-yellow-50 text-yellow-700 border border-yellow-100' },
     { id: 'selesai', title: 'Selesai (Disetujui)', color: 'border-t-green-500', ringColor: 'focus-within:ring-green-500/10', bgBadge: 'bg-green-50 text-green-700 border border-green-100' }
@@ -109,13 +109,13 @@ export const KanbanBoard: React.FC<KanbanBoardProps> = ({ onOpenCard }) => {
       case 'Design': return 'bg-purple-50 text-purple-700 border-purple-100';
       case 'Laporan': return 'bg-green-50 text-green-700 border-green-100';
       case 'Networking': return 'bg-sky-50 text-sky-700 border-sky-100';
-      default: return 'bg-slate-50 dark:bg-slate-800/50 text-slate-700 border-slate-100';
+      default: return 'bg-slate-50 dark:bg-gray-800/50 text-slate-700 border-slate-100';
     }
   };
 
   const getCategoryFilterStyle = (cat: string, isSelected: boolean) => {
     if (!isSelected) {
-      return 'bg-white dark:bg-slate-800 text-[#64748B] dark:text-slate-400 border-[#E2E8F0] dark:border-slate-700 hover:bg-slate-50 dark:bg-slate-800/50 hover:text-[#0F172A] dark:text-white hover:border-slate-300 dark:border-slate-600';
+      return 'bg-white dark:bg-[#243447] text-[#64748B] dark:text-gray-300 border-[#E2E8F0] dark:border-gray-700 hover:bg-slate-50 dark:hover:bg-[#2D435E] hover:text-[#0F172A] dark:text-gray-200 hover:border-slate-300 dark:border-gray-600';
     }
     switch (cat) {
       case 'Coding':
@@ -128,7 +128,7 @@ export const KanbanBoard: React.FC<KanbanBoardProps> = ({ onOpenCard }) => {
       case 'Networking':
         return 'bg-sky-50 text-sky-700 border-sky-200';
       default:
-        return 'bg-slate-50 dark:bg-slate-800/50 text-slate-700 border-slate-200 dark:border-slate-700';
+        return 'bg-slate-50 dark:bg-gray-800/50 text-slate-700 border-slate-200 dark:border-gray-700';
     }
   };
 
@@ -137,9 +137,9 @@ export const KanbanBoard: React.FC<KanbanBoardProps> = ({ onOpenCard }) => {
   const filterCategories = ['Semua', ...Array.from(new Set([...standardCategories, ...existingCategories]))];
 
   return (
-    <div className="flex flex-col gap-6 text-[#0F172A] dark:text-white font-sans">
+    <div className="flex flex-col gap-6 text-[#0F172A] dark:text-gray-200 font-sans">
       {/* Filtering and Search Controls */}
-      <div className="sticky top-[56px] md:static z-30 flex flex-col lg:flex-row gap-4 items-center justify-between bg-white dark:bg-slate-800 border-b md:border border-[#E2E8F0] dark:border-slate-700 md:rounded-2xl p-4 md:shadow-sm -mx-4 md:mx-0">
+      <div className="sticky top-[56px] md:static z-30 flex flex-col lg:flex-row gap-4 items-center justify-between bg-white dark:bg-[#243447] border-b md:border border-[#E2E8F0] dark:border-gray-700 md:rounded-2xl p-4 md:shadow-sm -mx-4 md:mx-0">
         <div className="flex flex-col md:flex-row gap-4 items-center w-full lg:w-auto flex-1">
           <div className="relative w-full md:w-80">
             <Search size={18} className="absolute left-4 md:left-3 top-1/2 -translate-y-1/2 text-slate-400" />
@@ -148,7 +148,7 @@ export const KanbanBoard: React.FC<KanbanBoardProps> = ({ onOpenCard }) => {
               placeholder="Cari tugas atau deskripsi..."
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              className="w-full bg-slate-50 dark:bg-slate-800/50 md:bg-white dark:bg-slate-800 border border-[#E2E8F0] dark:border-slate-700 rounded-full md:rounded-xl pl-11 md:pl-10 pr-4 text-sm text-[#0F172A] dark:text-white focus:outline-none focus:border-[#2563EB] focus:ring-1 focus:ring-[#2563EB] min-h-[48px] py-3 md:min-h-0 md:py-2 transition-all"
+              className="w-full bg-slate-50 dark:bg-gray-800/50 md:bg-white dark:bg-[#243447] border border-[#E2E8F0] dark:border-gray-700 rounded-full md:rounded-xl pl-11 md:pl-10 pr-4 text-sm text-[#0F172A] dark:text-gray-200 focus:outline-none focus:border-[#2563EB] focus:ring-1 focus:ring-[#2563EB] min-h-[48px] py-3 md:min-h-0 md:py-2 transition-all"
             />
           </div>
 
@@ -190,12 +190,12 @@ export const KanbanBoard: React.FC<KanbanBoardProps> = ({ onOpenCard }) => {
               onDragOver={(e) => handleDragOver(e, col.id)}
               onDragLeave={handleDragLeave}
               onDrop={(e) => handleDrop(e, col.id)}
-              className={`flex flex-col bg-transparent md:bg-[#F1F5F9] dark:bg-slate-700 md:border border-[#E2E8F0] dark:border-slate-700 md:border-t-[4px] md:${col.color} md:p-4 md:rounded-2xl md:shadow-sm transition-all w-full md:min-h-[500px] h-fit md:shrink-1 ${
+              className={`flex flex-col bg-transparent md:bg-[#F1F5F9] dark:bg-gray-800 md:border border-[#E2E8F0] dark:border-gray-700 md:border-t-[4px] md:${col.color} md:p-4 md:rounded-2xl md:shadow-sm transition-all w-full md:min-h-[500px] h-fit md:shrink-1 ${
                 isOver ? 'md:bg-slate-200/60 ring-2 ring-[#2563EB]/15 scale-[1.01]' : ''
               }`}
             >
               {/* Column Header */}
-              <div className="flex items-center gap-3 pb-3 mb-3 border-b border-slate-200 dark:border-slate-700/50 px-2 md:px-0">
+              <div className="flex items-center gap-3 pb-3 mb-3 border-b border-slate-200 dark:border-gray-700/50 px-2 md:px-0">
                 <div className={`w-3 h-3 rounded-full md:hidden ${col.bgBadge.split(' ')[0]} border ${col.bgBadge.split(' ')[2]}`} />
                 <h3 className="font-bold text-[#0F172A] dark:text-white text-base md:text-sm tracking-wide md:font-semibold flex-1">{col.title}</h3>
                 <span className={`text-xs font-bold px-2.5 py-1 md:px-2 md:py-0.5 rounded-full ${col.bgBadge}`}>
@@ -214,10 +214,10 @@ export const KanbanBoard: React.FC<KanbanBoardProps> = ({ onOpenCard }) => {
                       draggable={activeRole !== 'Dosen Pembimbing'}
                       onDragStart={(e) => handleDragStart(e, card.id)}
                       onClick={() => onOpenCard(card)}
-                      className={`bg-white dark:bg-slate-800 border rounded-2xl md:rounded-xl p-5 md:p-4 cursor-pointer relative shadow-sm hover:border-slate-300 dark:border-slate-600 hover:shadow transition duration-200 group ${
+                      className={`bg-white dark:bg-[#243447] border rounded-2xl md:rounded-xl p-5 md:p-4 cursor-pointer relative shadow-sm hover:border-slate-300 dark:border-gray-600 hover:shadow transition duration-200 group ${
                         isOverdue
                           ? 'border-red-200 hover:border-red-300 bg-red-50/10'
-                          : 'border-[#E2E8F0] dark:border-slate-700 hover:border-slate-300 dark:border-slate-600'
+                          : 'border-[#E2E8F0] dark:border-gray-700 hover:border-slate-300 dark:border-gray-600'
                       }`}
                     >
                       <div className="flex justify-between items-start gap-2 mb-2">
@@ -226,7 +226,7 @@ export const KanbanBoard: React.FC<KanbanBoardProps> = ({ onOpenCard }) => {
                             {card.category}
                           </span>
                           {isOverdue && (
-                            <span className="text-[9px] uppercase font-bold px-1.5 py-0.2 rounded bg-red-50 text-red-600 border border-red-100">
+                            <span className="text-[9px] uppercase font-bold px-1.5 py-0.2 rounded bg-red-50 text-red-600 dark:text-red-500 border border-red-100">
                               Terlambat
                             </span>
                           )}
@@ -239,15 +239,15 @@ export const KanbanBoard: React.FC<KanbanBoardProps> = ({ onOpenCard }) => {
                         )}
                       </div>
 
-                      <h4 className="font-semibold text-slate-800 dark:text-slate-100 text-sm line-clamp-2 mb-2 group-hover:text-[#2563EB] transition-colors">
+                      <h4 className="font-semibold text-slate-800 dark:text-white text-sm line-clamp-2 mb-2 group-hover:text-[#2563EB] transition-colors">
                         {card.title}
                       </h4>
 
-                      <p className="text-xs text-[#64748B] dark:text-slate-400 line-clamp-3 mb-4 leading-relaxed">
+                      <p className="text-xs text-[#64748B] dark:text-gray-300 line-clamp-3 mb-4 leading-relaxed">
                         {card.description}
                       </p>
 
-                      <div className="flex items-center justify-between text-[11px] text-[#64748B] dark:text-slate-400 border-t border-[#E2E8F0] dark:border-slate-700 pt-3">
+                      <div className="flex items-center justify-between text-[11px] text-[#64748B] dark:text-gray-300 border-t border-[#E2E8F0] dark:border-gray-700 pt-3">
                         <div className="flex items-center gap-1">
                           <Calendar size={12} className="text-gray-400" />
                           <span className={isOverdue ? 'text-[#EF4444] font-bold' : ''}>
@@ -257,7 +257,7 @@ export const KanbanBoard: React.FC<KanbanBoardProps> = ({ onOpenCard }) => {
 
                         <div className="flex items-center gap-3">
                           {(card.startTime || card.endTime) && (
-                            <div className="flex items-center gap-1 text-[#64748B] dark:text-slate-400">
+                            <div className="flex items-center gap-1 text-[#64748B] dark:text-gray-300">
                               <Clock size={12} className="text-[#2563EB]" />
                               <span>{card.startTime || '-'}-{card.endTime || '-'}</span>
                             </div>
@@ -275,9 +275,9 @@ export const KanbanBoard: React.FC<KanbanBoardProps> = ({ onOpenCard }) => {
                 })}
 
                 {colCards.length === 0 && (
-                  <div className="flex flex-col items-center justify-center border-2 border-dashed border-[#E2E8F0] dark:border-slate-700 bg-slate-50 dark:bg-slate-800/50/50 md:bg-white/40 rounded-2xl md:rounded-xl p-8 text-center text-[#64748B] dark:text-slate-400 h-40 md:h-32">
+                  <div className="flex flex-col items-center justify-center border-2 border-dashed border-[#E2E8F0] dark:border-gray-700 bg-slate-50 dark:bg-gray-800/50 md:bg-white/40 rounded-2xl md:rounded-xl p-8 text-center text-[#64748B] dark:text-gray-300 h-40 md:h-32">
                     <div className="text-4xl mb-3 md:mb-2 opacity-50">📖</div>
-                    <span className="text-sm md:text-xs font-medium text-slate-500 dark:text-slate-400 mb-2">Belum ada kegiatan.</span>
+                    <span className="text-sm md:text-xs font-medium text-slate-500 dark:text-gray-300 mb-2">Belum ada kegiatan.</span>
                     {activeRole === 'Mahasiswa' && col.id === 'rencana' && (
                        <button
                          onClick={() => setIsAddModalOpen(true)}
@@ -307,10 +307,10 @@ export const KanbanBoard: React.FC<KanbanBoardProps> = ({ onOpenCard }) => {
       {/* Modal Tambah Kegiatan */}
       {isAddModalOpen && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/40 backdrop-blur-sm">
-          <div className="bg-white dark:bg-slate-800 rounded-2xl w-full max-w-lg max-h-[90vh] flex flex-col border border-[#E2E8F0] dark:border-slate-700 shadow-xl relative animate-in fade-in zoom-in-95 duration-200">
+          <div className="bg-white dark:bg-[#243447] rounded-2xl w-full max-w-lg max-h-[90vh] flex flex-col border border-[#E2E8F0] dark:border-gray-700 shadow-xl relative animate-in fade-in zoom-in-95 duration-200">
             
             {/* Modal Header */}
-            <div className="flex items-center justify-between p-6 border-b border-[#E2E8F0] dark:border-slate-700">
+            <div className="flex items-center justify-between p-6 border-b border-[#E2E8F0] dark:border-gray-700">
               <h3 className="text-base font-bold text-[#0F172A] dark:text-white flex items-center gap-2">
                 <Plus size={18} className="text-[#2563EB]" />
                 Tambah Kegiatan Baru
@@ -318,7 +318,7 @@ export const KanbanBoard: React.FC<KanbanBoardProps> = ({ onOpenCard }) => {
               <button
                 type="button"
                 onClick={() => setIsAddModalOpen(false)}
-                className="p-1.5 rounded-lg bg-slate-50 dark:bg-slate-800/50 hover:bg-slate-100 dark:bg-slate-700 text-slate-500 dark:text-slate-400 hover:text-slate-700 transition cursor-pointer min-h-[44px] min-w-[44px] flex items-center justify-center"
+                className="p-1.5 rounded-lg bg-slate-50 dark:bg-gray-800/50 hover:bg-slate-100 dark:bg-gray-800 text-slate-500 dark:text-gray-300 hover:text-slate-700 transition cursor-pointer min-h-[44px] min-w-[44px] flex items-center justify-center"
               >
                 <X size={18} />
               </button>
@@ -327,46 +327,46 @@ export const KanbanBoard: React.FC<KanbanBoardProps> = ({ onOpenCard }) => {
             {/* Modal Body / Form */}
             <form onSubmit={handleModalSubmit} className="p-5 md:p-6 overflow-y-auto flex flex-col gap-4 text-left">
               <div className="flex flex-col gap-1.5">
-                <label className="text-[11px] text-[#64748B] dark:text-slate-400 font-semibold uppercase tracking-wider">Judul Rencana Kegiatan</label>
+                <label className="text-[11px] text-[#64748B] dark:text-gray-300 font-semibold uppercase tracking-wider">Judul Rencana Kegiatan</label>
                 <input
                   type="text"
                   placeholder="Masukkan judul kegiatan..."
                   required
                   value={newTitle}
                   onChange={(e) => setNewTitle(e.target.value)}
-                  className="w-full bg-white dark:bg-slate-800 border border-[#E2E8F0] dark:border-slate-700 rounded-xl px-3 text-sm text-[#0F172A] dark:text-white focus:outline-none focus:border-[#2563EB] focus:ring-1 focus:ring-[#2563EB] min-h-[48px] py-3 md:min-h-0 md:py-2"
+                  className="w-full bg-white dark:bg-[#243447] border border-[#E2E8F0] dark:border-gray-700 rounded-xl px-3 text-sm text-[#0F172A] dark:text-gray-200 focus:outline-none focus:border-[#2563EB] focus:ring-1 focus:ring-[#2563EB] min-h-[48px] py-3 md:min-h-0 md:py-2"
                 />
               </div>
 
               <div className="flex flex-col gap-1.5">
-                <label className="text-[11px] text-[#64748B] dark:text-slate-400 font-semibold uppercase tracking-wider">Deskripsi Singkat</label>
+                <label className="text-[11px] text-[#64748B] dark:text-gray-300 font-semibold uppercase tracking-wider">Deskripsi Singkat</label>
                 <textarea
                   placeholder="Masukkan deskripsi detail kegiatan..."
                   value={newDesc}
                   onChange={(e) => setNewDesc(e.target.value)}
                   rows={3}
-                  className="w-full bg-white dark:bg-slate-800 border border-[#E2E8F0] dark:border-slate-700 rounded-xl px-3 text-sm text-[#0F172A] dark:text-white focus:outline-none focus:border-[#2563EB] focus:ring-1 focus:ring-[#2563EB] resize-none min-h-[80px] py-3 md:min-h-0 md:py-2"
+                  className="w-full bg-white dark:bg-[#243447] border border-[#E2E8F0] dark:border-gray-700 rounded-xl px-3 text-sm text-[#0F172A] dark:text-gray-200 focus:outline-none focus:border-[#2563EB] focus:ring-1 focus:ring-[#2563EB] resize-none min-h-[80px] py-3 md:min-h-0 md:py-2"
                 />
               </div>
 
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 {/* Category Dropdown */}
                 <div className="relative text-left">
-                  <label className="text-[11px] text-[#64748B] dark:text-slate-400 font-semibold uppercase tracking-wider block mb-1.5">Kategori</label>
+                  <label className="text-[11px] text-[#64748B] dark:text-gray-300 font-semibold uppercase tracking-wider block mb-1.5">Kategori</label>
                   <button
                     type="button"
                     onClick={() => {
                       setIsCategoryDropdownOpen(!isCategoryDropdownOpen);
                       setIsColumnDropdownOpen(false);
                     }}
-                    className="w-full bg-white dark:bg-slate-800 border border-[#E2E8F0] dark:border-slate-700 rounded-xl px-3 text-left text-sm text-[#0F172A] dark:text-white focus:outline-none flex justify-between items-center hover:bg-slate-50 dark:bg-slate-800/50 transition cursor-pointer min-h-[48px] py-3 md:min-h-0 md:py-2"
+                    className="w-full bg-white dark:bg-[#243447] border border-[#E2E8F0] dark:border-gray-700 rounded-xl px-3 text-left text-sm text-[#0F172A] dark:text-gray-200 focus:outline-none flex justify-between items-center hover:bg-slate-50 dark:hover:bg-[#2D435E] transition cursor-pointer min-h-[48px] py-3 md:min-h-0 md:py-2"
                   >
                     <span>{newCategory}</span>
                     <ChevronDown size={14} className={`text-slate-400 transition-transform ${isCategoryDropdownOpen ? 'rotate-180' : ''}`} />
                   </button>
                   
                   {isCategoryDropdownOpen && (
-                    <div className="absolute left-0 right-0 mt-1 bg-white dark:bg-slate-800 border border-[#E2E8F0] dark:border-slate-700 rounded-lg shadow-lg z-50 overflow-hidden">
+                    <div className="absolute left-0 right-0 mt-1 bg-white dark:bg-[#243447] border border-[#E2E8F0] dark:border-gray-700 rounded-lg shadow-lg z-50 overflow-hidden">
                       {['Coding', 'Design', 'Laporan', 'Networking', 'Lainnya'].map((cat) => (
                         <button
                           key={cat}
@@ -375,7 +375,7 @@ export const KanbanBoard: React.FC<KanbanBoardProps> = ({ onOpenCard }) => {
                             setNewCategory(cat);
                             setIsCategoryDropdownOpen(false);
                           }}
-                          className={`w-full text-left px-3 py-2 text-xs transition-colors hover:bg-slate-50 dark:bg-slate-800/50 flex items-center justify-between cursor-pointer ${newCategory === cat ? 'bg-blue-50 text-[#2563EB] font-semibold' : 'text-slate-700'}`}
+                          className={`w-full text-left px-3 py-2 text-xs transition-colors hover:bg-slate-50 dark:hover:bg-[#2D435E] flex items-center justify-between cursor-pointer ${newCategory === cat ? 'bg-blue-50 text-[#2563EB] font-semibold' : 'text-slate-700'}`}
                         >
                           {cat}
                         </button>
@@ -386,21 +386,21 @@ export const KanbanBoard: React.FC<KanbanBoardProps> = ({ onOpenCard }) => {
 
                 {/* Column / Progress Status Dropdown */}
                 <div className="relative text-left">
-                  <label className="text-[11px] text-[#64748B] dark:text-slate-400 font-semibold uppercase tracking-wider block mb-1.5">Status Proses</label>
+                  <label className="text-[11px] text-[#64748B] dark:text-gray-300 font-semibold uppercase tracking-wider block mb-1.5">Status Proses</label>
                   <button
                     type="button"
                     onClick={() => {
                       setIsColumnDropdownOpen(!isColumnDropdownOpen);
                       setIsCategoryDropdownOpen(false);
                     }}
-                    className="w-full bg-white dark:bg-slate-800 border border-[#E2E8F0] dark:border-slate-700 rounded-xl px-3 text-left text-sm text-[#0F172A] dark:text-white focus:outline-none flex justify-between items-center hover:bg-slate-50 dark:bg-slate-800/50 transition cursor-pointer min-h-[48px] py-3 md:min-h-0 md:py-2"
+                    className="w-full bg-white dark:bg-[#243447] border border-[#E2E8F0] dark:border-gray-700 rounded-xl px-3 text-left text-sm text-[#0F172A] dark:text-gray-200 focus:outline-none flex justify-between items-center hover:bg-slate-50 dark:hover:bg-[#2D435E] transition cursor-pointer min-h-[48px] py-3 md:min-h-0 md:py-2"
                   >
                     <span>{getColumnTitle(newColumnId)}</span>
                     <ChevronDown size={14} className={`text-slate-400 transition-transform ${isColumnDropdownOpen ? 'rotate-180' : ''}`} />
                   </button>
                   
                   {isColumnDropdownOpen && (
-                    <div className="absolute left-0 right-0 mt-1 bg-white dark:bg-slate-800 border border-[#E2E8F0] dark:border-slate-700 rounded-lg shadow-lg z-50 overflow-hidden">
+                    <div className="absolute left-0 right-0 mt-1 bg-white dark:bg-[#243447] border border-[#E2E8F0] dark:border-gray-700 rounded-lg shadow-lg z-50 overflow-hidden">
                       {[
                         { id: 'rencana', title: 'Rencana Kegiatan' },
                         { id: 'progres', title: 'Sedang Dikerjakan' },
@@ -413,7 +413,7 @@ export const KanbanBoard: React.FC<KanbanBoardProps> = ({ onOpenCard }) => {
                             setNewColumnId(col.id as PKLCard['columnId']);
                             setIsColumnDropdownOpen(false);
                           }}
-                          className={`w-full text-left px-3 py-2 text-xs transition-colors hover:bg-slate-50 dark:bg-slate-800/50 flex items-center justify-between cursor-pointer ${newColumnId === col.id ? 'bg-blue-50 text-[#2563EB] font-semibold' : 'text-slate-700'}`}
+                          className={`w-full text-left px-3 py-2 text-xs transition-colors hover:bg-slate-50 dark:hover:bg-[#2D435E] flex items-center justify-between cursor-pointer ${newColumnId === col.id ? 'bg-blue-50 text-[#2563EB] font-semibold' : 'text-slate-700'}`}
                         >
                           {col.title}
                         </button>
@@ -426,35 +426,35 @@ export const KanbanBoard: React.FC<KanbanBoardProps> = ({ onOpenCard }) => {
               {/* Custom Category Input if 'Lainnya' is selected */}
               {newCategory === 'Lainnya' && (
                 <div className="flex flex-col gap-1.5">
-                  <label className="text-[11px] text-[#64748B] dark:text-slate-400 font-semibold uppercase tracking-wider">Isi Kategori Lainnya</label>
+                  <label className="text-[11px] text-[#64748B] dark:text-gray-300 font-semibold uppercase tracking-wider">Isi Kategori Lainnya</label>
                   <input
                     type="text"
                     required
                     placeholder="Nama kategori baru..."
                     value={customCategory}
                     onChange={(e) => setCustomCategory(e.target.value)}
-                    className="w-full bg-white dark:bg-slate-800 border border-[#E2E8F0] dark:border-slate-700 rounded-xl px-3 text-sm text-[#0F172A] dark:text-white focus:outline-none focus:border-[#2563EB] focus:ring-1 focus:ring-[#2563EB] min-h-[48px] py-3 md:min-h-0 md:py-2"
+                    className="w-full bg-white dark:bg-[#243447] border border-[#E2E8F0] dark:border-gray-700 rounded-xl px-3 text-sm text-[#0F172A] dark:text-gray-200 focus:outline-none focus:border-[#2563EB] focus:ring-1 focus:ring-[#2563EB] min-h-[48px] py-3 md:min-h-0 md:py-2"
                   />
                 </div>
               )}
 
               {/* Due Date */}
               <div className="flex flex-col gap-1.5">
-                <label className="text-[11px] text-[#64748B] dark:text-slate-400 font-semibold uppercase tracking-wider">Tenggat Waktu</label>
+                <label className="text-[11px] text-[#64748B] dark:text-gray-300 font-semibold uppercase tracking-wider">Tenggat Waktu</label>
                 <input
                   type="date"
                   value={newDueDate}
                   onChange={(e) => setNewDueDate(e.target.value)}
-                  className="w-full bg-white dark:bg-slate-800 border border-[#E2E8F0] dark:border-slate-700 rounded-xl px-3 text-sm text-[#0F172A] dark:text-white focus:outline-none focus:border-[#2563EB] focus:ring-1 focus:ring-[#2563EB] min-h-[48px] py-3 md:min-h-0 md:py-2"
+                  className="w-full bg-white dark:bg-[#243447] border border-[#E2E8F0] dark:border-gray-700 rounded-xl px-3 text-sm text-[#0F172A] dark:text-gray-200 focus:outline-none focus:border-[#2563EB] focus:ring-1 focus:ring-[#2563EB] min-h-[48px] py-3 md:min-h-0 md:py-2"
                 />
               </div>
 
               {/* Modal Actions */}
-              <div className="flex flex-col md:flex-row gap-3 justify-end mt-4 border-t border-[#E2E8F0] dark:border-slate-700 pt-4">
+              <div className="flex flex-col md:flex-row gap-3 justify-end mt-4 border-t border-[#E2E8F0] dark:border-gray-700 pt-4">
                 <button
                   type="button"
                   onClick={() => setIsAddModalOpen(false)}
-                  className="w-full md:w-auto px-4 py-3 md:py-2 rounded-xl bg-white dark:bg-slate-800 border border-[#E2E8F0] dark:border-slate-700 text-sm md:text-xs font-semibold text-slate-700 hover:bg-slate-50 dark:bg-slate-800/50 transition cursor-pointer min-h-[48px] md:min-h-0"
+                  className="w-full md:w-auto px-4 py-3 md:py-2 rounded-xl bg-white dark:bg-[#243447] border border-[#E2E8F0] dark:border-gray-700 text-sm md:text-xs font-semibold text-slate-700 hover:bg-slate-50 dark:hover:bg-[#2D435E] transition cursor-pointer min-h-[48px] md:min-h-0"
                 >
                   Batal
                 </button>

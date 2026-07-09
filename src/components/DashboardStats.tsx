@@ -44,47 +44,47 @@ export const DashboardStats: React.FC = () => {
   };
 
   return (
-    <div className="flex flex-col gap-6 md:gap-8 text-[#0F172A] dark:text-white font-sans">
+    <div className="flex flex-col gap-6 md:gap-8 text-[#0F172A] dark:text-gray-200 font-sans">
       {/* Metrics Row */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 md:gap-6">
         
         {/* Metric 1: Total Hours */}
-        <div className="bg-white dark:bg-slate-800 border border-[#E2E8F0] dark:border-slate-700 rounded-2xl p-5 md:p-6 flex items-center gap-4 relative overflow-hidden shadow-sm">
+        <div className="bg-white dark:bg-[#243447] border border-[#E2E8F0] dark:border-gray-700 rounded-2xl p-5 md:p-6 flex items-center gap-4 relative overflow-hidden shadow-sm">
           <div className="absolute top-0 right-0 w-32 h-32 bg-[#2563EB]/2 rounded-full blur-2xl pointer-events-none" />
-          <div className="p-3.5 bg-blue-50 border border-blue-100 text-[#2563EB] rounded-xl">
+          <div className="p-3.5 bg-blue-50 dark:bg-blue-500/10 border border-blue-100 dark:border-blue-500/20 text-[#2563EB] dark:text-blue-500 rounded-xl">
             <Clock size={24} />
           </div>
           <div>
-            <span className="text-[10px] uppercase font-bold text-[#64748B] dark:text-slate-400 tracking-wider block">Total Jam Kerja</span>
-            <span className="text-2xl md:text-3xl font-black text-slate-800 dark:text-slate-100">{totalHours} <span className="text-xs md:text-sm font-normal text-[#64748B] dark:text-slate-400">jam</span></span>
+            <span className="text-[10px] uppercase font-bold text-[#64748B] dark:text-gray-300 tracking-wider block">Total Jam Kerja</span>
+            <span className="text-2xl md:text-3xl font-black text-slate-800 dark:text-gray-200">{totalHours} <span className="text-xs md:text-sm font-normal text-[#64748B] dark:text-gray-300">jam</span></span>
           </div>
         </div>
 
         {/* Metric 2: Completion Rate */}
-        <div className="bg-white dark:bg-slate-800 border border-[#E2E8F0] dark:border-slate-700 rounded-2xl p-5 md:p-6 flex items-center gap-4 relative overflow-hidden shadow-sm">
+        <div className="bg-white dark:bg-[#243447] border border-[#E2E8F0] dark:border-gray-700 rounded-2xl p-5 md:p-6 flex items-center gap-4 relative overflow-hidden shadow-sm">
           <div className="absolute top-0 right-0 w-32 h-32 bg-green-500/2 rounded-full blur-2xl pointer-events-none" />
           <div className="p-3.5 bg-green-50 border border-green-100 text-[#22C55E] rounded-xl">
             <CheckSquare size={24} />
           </div>
           <div className="flex-1">
-            <span className="text-[10px] uppercase font-bold text-[#64748B] dark:text-slate-400 tracking-wider block">Persentase Selesai</span>
+            <span className="text-[10px] uppercase font-bold text-[#64748B] dark:text-gray-300 tracking-wider block">Persentase Selesai</span>
             <div className="flex items-baseline gap-2">
-              <span className="text-2xl md:text-3xl font-black text-slate-800 dark:text-slate-100">
+              <span className="text-2xl md:text-3xl font-black text-slate-800 dark:text-gray-200">
                 {totalCards > 0 ? Math.round((completedCards.length / totalCards) * 100) : 0}%
               </span>
-              <span className="text-[10px] md:text-xs text-[#64748B] dark:text-slate-400">({completedCards.length}/{totalCards} tugas)</span>
+              <span className="text-[10px] md:text-xs text-[#64748B] dark:text-gray-300">({completedCards.length}/{totalCards} tugas)</span>
             </div>
           </div>
         </div>
 
         {/* Metric 3: Average Score */}
-        <div className="bg-white dark:bg-slate-800 border border-[#E2E8F0] dark:border-slate-700 rounded-2xl p-5 md:p-6 flex items-center gap-4 relative overflow-hidden shadow-sm">
+        <div className="bg-white dark:bg-[#243447] border border-[#E2E8F0] dark:border-gray-700 rounded-2xl p-5 md:p-6 flex items-center gap-4 relative overflow-hidden shadow-sm">
           <div className="absolute top-0 right-0 w-32 h-32 bg-purple-500/2 rounded-full blur-2xl pointer-events-none" />
           <div className="p-3.5 bg-purple-50 border border-purple-100 text-purple-600 rounded-xl">
             <Award size={24} />
           </div>
           <div>
-            <span className="text-[10px] uppercase font-bold text-[#64748B] dark:text-slate-400 tracking-wider block mb-1">Rata-Rata Nilai</span>
+            <span className="text-[10px] uppercase font-bold text-[#64748B] dark:text-gray-300 tracking-wider block mb-1">Rata-Rata Nilai</span>
             <div className="flex flex-col gap-1 text-[11px] font-semibold text-slate-700">
               <div>
                 Eksternal: <span className="text-sm font-bold text-purple-600">{averageScoreMentor > 0 ? `${averageScoreMentor}/100` : '-'}</span>
@@ -97,14 +97,14 @@ export const DashboardStats: React.FC = () => {
         </div>
 
         {/* Metric 4: Review Pending */}
-        <div className="bg-white dark:bg-slate-800 border border-[#E2E8F0] dark:border-slate-700 rounded-2xl p-5 md:p-6 flex items-center gap-4 relative overflow-hidden shadow-sm">
+        <div className="bg-white dark:bg-[#243447] border border-[#E2E8F0] dark:border-gray-700 rounded-2xl p-5 md:p-6 flex items-center gap-4 relative overflow-hidden shadow-sm">
           <div className="absolute top-0 right-0 w-32 h-32 bg-yellow-500/2 rounded-full blur-2xl pointer-events-none" />
           <div className="p-3.5 bg-yellow-50 border border-yellow-100 text-yellow-600 rounded-xl">
             <MessageSquare size={24} />
           </div>
           <div>
-            <span className="text-[10px] uppercase font-bold text-[#64748B] dark:text-slate-400 tracking-wider block">Menunggu Review</span>
-            <span className="text-2xl md:text-3xl font-black text-slate-800 dark:text-slate-100">{reviewCards.length} <span className="text-xs md:text-sm font-normal text-[#64748B] dark:text-slate-400">tugas</span></span>
+            <span className="text-[10px] uppercase font-bold text-[#64748B] dark:text-gray-300 tracking-wider block">Menunggu Review</span>
+            <span className="text-2xl md:text-3xl font-black text-slate-800 dark:text-gray-200">{reviewCards.length} <span className="text-xs md:text-sm font-normal text-[#64748B] dark:text-gray-300">tugas</span></span>
           </div>
         </div>
 
@@ -115,13 +115,13 @@ export const DashboardStats: React.FC = () => {
         
         {/* Left Side (2 cols): Charts / Detailed progress */}
         <div className="lg:col-span-2 flex flex-col gap-6">
-          <div className="bg-white dark:bg-slate-800 border border-[#E2E8F0] dark:border-slate-700 rounded-2xl p-5 md:p-6 shadow-sm flex flex-col gap-6">
-            <h3 className="font-bold text-slate-800 dark:text-slate-100 text-base">Distribusi Status & Kategori Kegiatan</h3>
+          <div className="bg-white dark:bg-[#243447] border border-[#E2E8F0] dark:border-gray-700 rounded-2xl p-5 md:p-6 shadow-sm flex flex-col gap-6">
+            <h3 className="font-bold text-slate-800 dark:text-gray-200 text-base">Distribusi Status & Kategori Kegiatan</h3>
             
             {/* Status Breakdown Bars */}
             <div className="flex flex-col gap-3">
-              <h4 className="text-xs font-semibold text-[#64748B] dark:text-slate-400 uppercase tracking-wider">Status Progres Kegiatan</h4>
-              <div className="flex h-3 rounded-full overflow-hidden bg-[#F1F5F9] dark:bg-slate-700">
+              <h4 className="text-xs font-semibold text-[#64748B] dark:text-gray-300 uppercase tracking-wider">Status Progres Kegiatan</h4>
+              <div className="flex h-3 rounded-full overflow-hidden bg-[#F1F5F9] dark:bg-gray-800">
                 <div style={{ width: `${totalCards > 0 ? (completedCards.length / totalCards) * 100 : 0}%` }} className="bg-[#22C55E]" title="Selesai" />
                 <div style={{ width: `${totalCards > 0 ? (reviewCards.length / totalCards) * 100 : 0}%` }} className="bg-[#F59E0B]" title="Butuh Review" />
                 <div style={{ width: `${totalCards > 0 ? (progressCards.length / totalCards) * 100 : 0}%` }} className="bg-[#2563EB]" title="Sedang Dikerjakan" />
@@ -149,20 +149,20 @@ export const DashboardStats: React.FC = () => {
             </div>
 
             {/* Category breakdown */}
-            <div className="flex flex-col gap-4 border-t border-[#E2E8F0] dark:border-slate-700 pt-6">
-              <h4 className="text-xs font-semibold text-[#64748B] dark:text-slate-400 uppercase tracking-wider">Distribusi Kategori Pekerjaan</h4>
+            <div className="flex flex-col gap-4 border-t border-[#E2E8F0] dark:border-gray-700 pt-6">
+              <h4 className="text-xs font-semibold text-[#64748B] dark:text-gray-300 uppercase tracking-wider">Distribusi Kategori Pekerjaan</h4>
               
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 {Array.from(new Set([...['Coding', 'Design', 'Laporan', 'Networking'], ...Object.keys(categoryCounts)])).map((cat) => {
                   const count = categoryCounts[cat] || 0;
                   const percent = totalCards > 0 ? Math.round((count / totalCards) * 100) : 0;
                   return (
-                    <div key={cat} className="bg-[#F8FAFC] dark:bg-slate-900 border border-[#E2E8F0] dark:border-slate-700 rounded-xl p-3 flex flex-col gap-1.5 shadow-sm">
+                    <div key={cat} className="bg-[#F8FAFC] dark:bg-gray-900 border border-[#E2E8F0] dark:border-gray-700 rounded-xl p-3 flex flex-col gap-1.5 shadow-sm">
                       <div className="flex justify-between items-center text-xs">
-                        <span className="font-semibold text-slate-800 dark:text-slate-100">{cat}</span>
-                        <span className="text-[#64748B] dark:text-slate-400">{count} tugas ({percent}%)</span>
+                        <span className="font-semibold text-slate-800 dark:text-white">{cat}</span>
+                        <span className="text-[#64748B] dark:text-gray-300">{count} tugas ({percent}%)</span>
                       </div>
-                      <div className="w-full h-1.5 bg-[#F1F5F9] dark:bg-slate-700 rounded-full overflow-hidden">
+                      <div className="w-full h-1.5 bg-[#F1F5F9] dark:bg-gray-800 rounded-full overflow-hidden">
                         <div
                           style={{ width: `${percent}%` }}
                           className={`h-full rounded-full ${
@@ -185,10 +185,10 @@ export const DashboardStats: React.FC = () => {
 
         {/* Right Side: Advisor notes (Dosen Pembimbing) */}
         <div className="flex flex-col gap-6">
-          <div className="bg-white dark:bg-slate-800 border border-[#E2E8F0] dark:border-slate-700 rounded-2xl p-5 md:p-6 shadow-sm flex flex-col gap-6 h-full min-h-[400px]">
+          <div className="bg-white dark:bg-[#243447] border border-[#E2E8F0] dark:border-gray-700 rounded-2xl p-5 md:p-6 shadow-sm flex flex-col gap-6 h-full min-h-[400px]">
             <div className="flex items-center gap-2">
               <FileText size={18} className="text-[#2563EB]" />
-              <h3 className="font-bold text-slate-800 dark:text-slate-100 text-base">Catatan Pembimbing Internal</h3>
+              <h3 className="font-bold text-slate-800 dark:text-gray-200 text-base">Catatan Pembimbing Internal</h3>
             </div>
 
             {/* Advisor form for student to document notes */}
@@ -199,7 +199,7 @@ export const DashboardStats: React.FC = () => {
                 rows={3}
                 value={newNoteText}
                 onChange={(e) => setNewNoteText(e.target.value)}
-                className="w-full bg-white dark:bg-slate-800 border border-[#E2E8F0] dark:border-slate-700 rounded-xl p-3.5 text-sm md:text-xs focus:outline-none focus:border-[#2563EB] focus:ring-1 focus:ring-[#2563EB] resize-none shadow-sm min-h-[80px] md:min-h-0 md:p-3"
+                className="w-full bg-white dark:bg-[#243447] border border-[#E2E8F0] dark:border-gray-700 rounded-xl p-3.5 text-sm md:text-xs focus:outline-none focus:border-[#2563EB] focus:ring-1 focus:ring-[#2563EB] resize-none shadow-sm min-h-[80px] md:min-h-0 md:p-3"
               />
               <button
                 type="submit"
@@ -213,15 +213,15 @@ export const DashboardStats: React.FC = () => {
             {/* List of notes */}
             <div className="flex flex-col gap-4 overflow-y-auto max-h-[300px] flex-1 pr-1">
               {state.advisorNotes.length === 0 ? (
-                <p className="text-xs text-gray-400 italic text-center py-8">Belum ada catatan bimbingan.</p>
+                <p className="text-xs text-slate-500 dark:text-gray-2000 italic text-center py-8">Belum ada catatan bimbingan.</p>
               ) : (
                 state.advisorNotes.map((note) => (
-                  <div key={note.id} className="bg-[#F8FAFC] dark:bg-slate-900 border-l-2 border-[#2563EB] border-y border-r border-[#E2E8F0] dark:border-slate-700 rounded-r-xl p-3 flex flex-col gap-2 shadow-sm">
+                  <div key={note.id} className="bg-[#F8FAFC] dark:bg-gray-900 border-l-2 border-[#2563EB] border-y border-r border-[#E2E8F0] dark:border-gray-700 rounded-r-xl p-3 flex flex-col gap-2 shadow-sm">
                     <p className="text-xs text-slate-700 leading-relaxed font-medium">
                       &ldquo;{note.text}&rdquo;
                     </p>
-                    <div className="flex justify-between items-center text-[10px] text-slate-400 border-t border-[#E2E8F0] dark:border-slate-700 pt-2">
-                      <span className="font-semibold text-slate-500 dark:text-slate-400">{note.advisorName}</span>
+                    <div className="flex justify-between items-center text-[10px] text-slate-400 border-t border-[#E2E8F0] dark:border-gray-700 pt-2">
+                      <span className="font-semibold text-slate-500 dark:text-gray-300">{note.advisorName}</span>
                       <span className="flex items-center gap-1">
                         <Calendar size={10} />
                         {new Date(note.createdAt).toLocaleDateString('id-ID')}

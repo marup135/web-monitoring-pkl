@@ -33,7 +33,7 @@ function DashboardContent() {
   const [viewMode, setViewMode] = useState<'list' | 'detail'>('list');
   const [isDrawerOpen, setIsDrawerOpen] = useState(false);
   const [isSettingsActive, setIsSettingsActive] = useState(false);
-  const [settingsActiveSection, setSettingsActiveSection] = useState<'profile' | 'password' | null>(null);
+  const [settingsActiveSection, setSettingsActiveSection] = useState<'profile' | null>(null);
   const [isUserMenuOpen, setIsUserMenuOpen] = useState(false);
 
   const isPembimbing = currentUser && currentUser.role !== 'siswa';
@@ -51,21 +51,21 @@ function DashboardContent() {
   // Render Student List/Portal for Admin, Guru, and Mentor
   if (isPembimbing && viewMode === 'list') {
     return (
-      <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4 md:py-8 flex-1 w-full relative font-sans text-[#0F172A] dark:text-white">
+      <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4 md:py-8 flex-1 w-full relative font-sans text-[#0F172A] dark:text-gray-200">
         {/* Header */}
-        <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 mb-6 md:mb-8 border-b border-[#E2E8F0] dark:border-slate-700 pb-4 md:pb-6">
+        <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 mb-6 md:mb-8 border-b border-[#E2E8F0] dark:border-gray-700 pb-4 md:pb-6">
           <div>
             <div className="flex items-center gap-3">
               <img
                 src="/logo.jpg"
                 alt="NeboTrack Logo"
-                className="w-10 h-10 object-contain rounded-xl shadow-sm border border-[#E2E8F0] dark:border-slate-700"
+                className="w-10 h-10 object-contain rounded-xl shadow-sm border border-[#E2E8F0] dark:border-gray-700"
               />
               <div>
                 <h1 className="text-xl md:text-2xl font-black text-[#0F172A] dark:text-white tracking-tight">
                   PORTAL PEMBIMBING - NEBOTRACK
                 </h1>
-                <p className="text-[10px] md:text-xs text-[#64748B] dark:text-slate-400 font-medium mt-0.5">
+                <p className="text-[10px] md:text-xs text-[#64748B] dark:text-gray-300 font-medium mt-0.5">
                   Selamat datang, <span className="text-[#2563EB] font-bold">{currentUser.name}</span> (Peran:{' '}
                   {currentUser.role === 'admin'
                     ? 'Administrator'
@@ -81,7 +81,7 @@ function DashboardContent() {
           <div className="flex items-center gap-3 w-full md:w-auto">
             <button
               onClick={logout}
-              className="w-full md:w-auto px-4 py-3 md:py-2.5 bg-[#EF4444] hover:bg-[#DC2626] text-white font-semibold text-xs rounded-xl shadow-sm transition cursor-pointer min-h-[48px] md:min-h-0"
+              className="w-full md:w-auto px-4 py-3 md:py-2.5 bg-[#EF4444] hover:bg-[#DC2626] dark:bg-red-500/10 dark:hover:bg-red-500/20 dark:text-red-500 dark:border dark:border-red-500/20 text-white font-semibold text-xs rounded-xl shadow-sm transition cursor-pointer min-h-[48px] md:min-h-0"
             >
               Keluar (Logout)
             </button>
@@ -102,18 +102,18 @@ function DashboardContent() {
 
   // Monitoring student logbook OR Normal student view
   return (
-    <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4 md:py-8 flex-1 w-full relative text-[#0F172A] dark:text-white pb-28 md:pb-8">
+    <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4 md:py-8 flex-1 w-full relative text-[#0F172A] dark:text-gray-200 pb-28 md:pb-8">
       {/* Mobile Sticky Navbar */}
-      <div className="sticky top-0 z-40 bg-white/95 dark:bg-slate-800/95 backdrop-blur-sm border-b border-slate-200 dark:border-slate-700 flex md:hidden items-center justify-between px-4 h-14 -mx-4 sm:-mx-6 mb-4 print:hidden shadow-sm">
+      <div className="sticky top-0 z-40 bg-white/95 dark:bg-gray-900/95 backdrop-blur-sm border-b border-slate-200 dark:border-gray-700 flex md:hidden items-center justify-between px-4 h-14 -mx-4 sm:-mx-6 mb-4 print:hidden shadow-sm">
         <button
           onClick={() => setIsDrawerOpen(true)}
-          className="p-1.5 rounded-lg text-slate-600 hover:bg-slate-100 dark:bg-slate-700 cursor-pointer min-h-[44px] min-w-[44px] flex items-center justify-center"
+          className="p-1.5 rounded-lg text-slate-600 hover:bg-slate-100 dark:bg-gray-800 cursor-pointer min-h-[44px] min-w-[44px] flex items-center justify-center"
         >
           <Menu size={22} />
         </button>
         <div className="flex items-center gap-2">
           <img src="/logo.jpg" alt="Logo" className="w-6 h-6 object-contain rounded" />
-          <span className="font-bold text-sm text-slate-800 dark:text-slate-100 uppercase tracking-tight">
+          <span className="font-bold text-sm text-slate-800 dark:text-gray-200 uppercase tracking-tight">
             NeboTrack
           </span>
         </div>
@@ -132,15 +132,15 @@ function DashboardContent() {
             onClick={() => setIsDrawerOpen(false)}
             className="fixed inset-0 bg-slate-900/40 backdrop-blur-sm"
           />
-          <div className="relative w-72 bg-white dark:bg-slate-800 h-full shadow-2xl flex flex-col p-6 animate-in slide-in-from-left duration-300">
+          <div className="relative w-72 bg-white dark:bg-[#243447] h-full shadow-2xl flex flex-col p-6 animate-in slide-in-from-left duration-300">
             <div className="flex items-center justify-between mb-8">
               <div className="flex items-center gap-2">
                 <img src="/logo.jpg" alt="Logo" className="w-8 h-8 object-contain rounded-xl" />
-                <span className="font-black text-slate-800 dark:text-slate-100 text-base">NeboTrack</span>
+                <span className="font-black text-slate-800 dark:text-gray-200 text-base">NeboTrack</span>
               </div>
               <button 
                 onClick={() => setIsDrawerOpen(false)}
-                className="p-1.5 rounded-lg bg-slate-50 dark:bg-slate-800/50 text-slate-500 dark:text-slate-400 hover:text-slate-700 cursor-pointer min-h-[44px] min-w-[44px] flex items-center justify-center"
+                className="p-1.5 rounded-lg bg-slate-50 dark:bg-gray-800/50 text-slate-500 dark:text-gray-300 hover:text-slate-700 cursor-pointer min-h-[44px] min-w-[44px] flex items-center justify-center"
               >
                 <X size={18} />
               </button>
@@ -150,7 +150,7 @@ function DashboardContent() {
               <button
                 onClick={() => { setActiveTab('stats'); setIsSettingsActive(false); setIsDrawerOpen(false); }}
                 className={`flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-semibold transition duration-200 w-full text-left cursor-pointer min-h-[48px] ${
-                  !isSettingsActive && activeTab === 'stats' ? 'bg-blue-50 text-[#2563EB]' : 'text-slate-600 hover:bg-slate-50 dark:bg-slate-800/50'
+                  !isSettingsActive && activeTab === 'stats' ? 'bg-blue-50 text-[#2563EB]' : 'text-slate-600 hover:bg-slate-50 dark:hover:bg-[#2D435E]'
                 }`}
               >
                 <BarChart3 size={18} />
@@ -159,7 +159,7 @@ function DashboardContent() {
               <button
                 onClick={() => { setActiveTab('board'); setIsSettingsActive(false); setIsDrawerOpen(false); }}
                 className={`flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-semibold transition duration-200 w-full text-left cursor-pointer min-h-[48px] ${
-                  !isSettingsActive && activeTab === 'board' ? 'bg-blue-50 text-[#2563EB]' : 'text-slate-600 hover:bg-slate-50 dark:bg-slate-800/50'
+                  !isSettingsActive && activeTab === 'board' ? 'bg-blue-50 text-[#2563EB]' : 'text-slate-600 hover:bg-slate-50 dark:hover:bg-[#2D435E]'
                 }`}
               >
                 <LayoutDashboard size={18} />
@@ -168,7 +168,7 @@ function DashboardContent() {
               <button
                 onClick={() => { setActiveTab('logbook'); setIsSettingsActive(false); setIsDrawerOpen(false); }}
                 className={`flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-semibold transition duration-200 w-full text-left cursor-pointer min-h-[48px] ${
-                  !isSettingsActive && activeTab === 'logbook' ? 'bg-blue-50 text-[#2563EB]' : 'text-slate-600 hover:bg-slate-50 dark:bg-slate-800/50'
+                  !isSettingsActive && activeTab === 'logbook' ? 'bg-blue-50 text-[#2563EB]' : 'text-slate-600 hover:bg-slate-50 dark:hover:bg-[#2D435E]'
                 }`}
               >
                 <FileSpreadsheet size={18} />
@@ -177,7 +177,7 @@ function DashboardContent() {
               <button
                 onClick={() => { setIsSettingsActive(true); setIsDrawerOpen(false); }}
                 className={`flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-semibold transition duration-200 w-full text-left cursor-pointer min-h-[48px] ${
-                  isSettingsActive ? 'bg-blue-50 text-[#2563EB]' : 'text-slate-600 hover:bg-slate-50 dark:bg-slate-800/50'
+                  isSettingsActive ? 'bg-blue-50 text-[#2563EB]' : 'text-slate-600 hover:bg-slate-50 dark:hover:bg-[#2D435E]'
                 }`}
               >
                 <Settings size={18} />
@@ -185,13 +185,13 @@ function DashboardContent() {
               </button>
             </div>
 
-            <div className="border-t border-[#E2E8F0] dark:border-slate-700 pt-6 flex flex-col gap-3">
+            <div className="border-t border-[#E2E8F0] dark:border-gray-700 pt-6 flex flex-col gap-3">
               <div className="flex items-center gap-2 px-1">
                 <div className="w-8 h-8 rounded-full bg-blue-100 flex items-center justify-center text-blue-600 font-bold text-xs shrink-0">
                   {currentUser?.name?.charAt(0).toUpperCase()}
                 </div>
                 <div className="overflow-hidden">
-                  <p className="text-xs font-bold text-slate-800 dark:text-slate-100 truncate">{currentUser?.name}</p>
+                  <p className="text-xs font-bold text-slate-800 dark:text-gray-200 truncate">{currentUser?.name}</p>
                   <p className="text-[10px] text-slate-400 capitalize">{currentUser?.role}</p>
                 </div>
               </div>
@@ -207,7 +207,7 @@ function DashboardContent() {
       )}
 
       {/* Mobile Bottom Navigation — 5 items as requested */}
-      <div className="fixed bottom-0 left-0 right-0 z-40 bg-white/95 dark:bg-slate-800/95 backdrop-blur-sm border-t border-slate-200 dark:border-slate-700 flex md:hidden items-center justify-around h-16 pb-safe shadow-[0_-2px_10px_rgba(0,0,0,0.06)] print:hidden">
+      <div className="fixed bottom-0 left-0 right-0 z-40 bg-white/95 dark:bg-gray-900/95 backdrop-blur-sm border-t border-slate-200 dark:border-gray-700 flex md:hidden items-center justify-around h-16 pb-safe shadow-[0_-2px_10px_rgba(0,0,0,0.06)] print:hidden">
         <button
           onClick={() => { setActiveTab('stats'); setIsSettingsActive(false); }}
           className={`flex flex-col items-center justify-center flex-1 h-full cursor-pointer transition-colors ${
@@ -256,13 +256,13 @@ function DashboardContent() {
       </div>
 
       {/* App Header / Navigation Info */}
-      <div className="hidden md:flex flex-col lg:flex-row justify-between items-start lg:items-center gap-4 mb-6 border-b border-[#E2E8F0] dark:border-slate-700 pb-5 print:hidden">
+      <div className="hidden md:flex flex-col lg:flex-row justify-between items-start lg:items-center gap-4 mb-6 border-b border-[#E2E8F0] dark:border-gray-700 pb-5 print:hidden">
         <div>
           <div className="flex items-center gap-3">
             <img
               src="/logo.jpg"
               alt="NeboTrack Logo"
-              className="w-10 h-10 object-contain rounded-xl shadow-sm border border-[#E2E8F0] dark:border-slate-700"
+              className="w-10 h-10 object-contain rounded-xl shadow-sm border border-[#E2E8F0] dark:border-gray-700"
             />
             <div>
               <div className="flex items-center gap-2">
@@ -276,7 +276,7 @@ function DashboardContent() {
                   </div>
                 )}
               </div>
-              <p className="text-xs text-[#64748B] dark:text-slate-400 font-medium mt-0.5">
+              <p className="text-xs text-[#64748B] dark:text-gray-300 font-medium mt-0.5">
                 Monitoring & Logbook Harian PKL SMKN 1 Bojong
               </p>
             </div>
@@ -284,7 +284,7 @@ function DashboardContent() {
         </div>
 
         {/* Action / Profile Header */}
-        <div className="flex flex-wrap items-center gap-3 bg-white dark:bg-slate-800 border border-[#E2E8F0] dark:border-slate-700 rounded-2xl p-3 shadow-sm">
+        <div className="flex flex-wrap items-center gap-3 bg-white dark:bg-[#243447] border border-[#E2E8F0] dark:border-gray-700 rounded-2xl p-3 shadow-sm">
           {isPembimbing && (
             <button
               onClick={() => setViewMode('list')}
@@ -296,7 +296,7 @@ function DashboardContent() {
 
           <div className="flex items-center gap-2">
             <Building2 size={16} className="text-[#2563EB]" />
-            <span className="text-xs font-semibold text-[#0F172A] dark:text-white">
+            <span className="text-xs font-semibold text-[#0F172A] dark:text-gray-200">
               Siswa: <span className="text-[#2563EB] font-bold">{state.studentName}</span> {state.nisn ? `(NIS/NISN: ${state.nisn})` : ''} - {state.companyName}
             </span>
           </div>
@@ -304,7 +304,7 @@ function DashboardContent() {
           <span className="text-[#E2E8F0] hidden sm:inline">|</span>
           
           <div className="flex items-center gap-2">
-            <span className="text-xs text-[#64748B] dark:text-slate-400">
+            <span className="text-xs text-[#64748B] dark:text-gray-300">
               Pengguna: <span className="font-semibold text-[#2563EB]">{currentUser?.name}</span>
             </span>
           </div>
@@ -319,7 +319,7 @@ function DashboardContent() {
                 }
               }}
               title="Reset Database"
-              className="p-1.5 rounded-lg bg-white dark:bg-slate-800 border border-[#E2E8F0] dark:border-slate-700 hover:bg-[#F8FAFC] dark:bg-slate-900 text-[#64748B] dark:text-slate-400 hover:text-[#0F172A] dark:text-white transition cursor-pointer"
+              className="p-1.5 rounded-lg bg-white dark:bg-[#243447] border border-[#E2E8F0] dark:border-gray-700 hover:bg-[#F8FAFC] dark:bg-gray-900 text-[#64748B] dark:text-gray-300 hover:text-[#0F172A] dark:text-gray-200 transition cursor-pointer"
             >
               <RefreshCw size={13} />
             </button>
@@ -347,13 +347,13 @@ function DashboardContent() {
       )}
 
       {/* Main Tab Controls */}
-      <div className="hidden md:flex border-b border-[#E2E8F0] dark:border-slate-700 mb-6 gap-2 print:hidden overflow-x-auto py-1">
+      <div className="hidden md:flex border-b border-[#E2E8F0] dark:border-gray-700 mb-6 gap-2 print:hidden overflow-x-auto py-1">
         <button
           onClick={() => setActiveTab('board')}
           className={`flex items-center gap-2 px-4 py-2.5 rounded-xl border text-xs font-semibold whitespace-nowrap transition duration-200 cursor-pointer ${
             activeTab === 'board'
               ? 'bg-blue-50 border-[#2563EB]/30 text-[#2563EB]'
-              : 'bg-white dark:bg-slate-800 border-[#E2E8F0] dark:border-slate-700 text-[#64748B] dark:text-slate-400 hover:bg-[#F8FAFC] dark:bg-slate-900 hover:text-[#0F172A] dark:text-white'
+              : 'bg-white dark:bg-[#243447] border-[#E2E8F0] dark:border-gray-700 text-[#64748B] dark:text-gray-300 hover:bg-[#F8FAFC] dark:bg-gray-900 hover:text-[#0F172A] dark:text-gray-200'
           }`}
         >
           <LayoutDashboard size={14} />
@@ -365,7 +365,7 @@ function DashboardContent() {
           className={`flex items-center gap-2 px-4 py-2.5 rounded-xl border text-xs font-semibold whitespace-nowrap transition duration-200 cursor-pointer ${
             activeTab === 'logbook'
               ? 'bg-blue-50 border-[#2563EB]/30 text-[#2563EB]'
-              : 'bg-white dark:bg-slate-800 border-[#E2E8F0] dark:border-slate-700 text-[#64748B] dark:text-slate-400 hover:bg-[#F8FAFC] dark:bg-slate-900 hover:text-[#0F172A] dark:text-white'
+              : 'bg-white dark:bg-[#243447] border-[#E2E8F0] dark:border-gray-700 text-[#64748B] dark:text-gray-300 hover:bg-[#F8FAFC] dark:bg-gray-900 hover:text-[#0F172A] dark:text-gray-200'
           }`}
         >
           <FileSpreadsheet size={14} />
@@ -377,7 +377,7 @@ function DashboardContent() {
           className={`flex items-center gap-2 px-4 py-2.5 rounded-xl border text-xs font-semibold whitespace-nowrap transition duration-200 cursor-pointer ${
             activeTab === 'stats'
               ? 'bg-blue-50 border-[#2563EB]/30 text-[#2563EB]'
-              : 'bg-white dark:bg-slate-800 border-[#E2E8F0] dark:border-slate-700 text-[#64748B] dark:text-slate-400 hover:bg-[#F8FAFC] dark:bg-slate-900 hover:text-[#0F172A] dark:text-white'
+              : 'bg-white dark:bg-[#243447] border-[#E2E8F0] dark:border-gray-700 text-[#64748B] dark:text-gray-300 hover:bg-[#F8FAFC] dark:bg-gray-900 hover:text-[#0F172A] dark:text-gray-200'
           }`}
         >
           <BarChart3 size={14} />
@@ -434,7 +434,7 @@ function DashboardContent() {
             onClick={() => setIsUserMenuOpen(false)}
             className="fixed inset-0 bg-slate-900/40 backdrop-blur-sm"
           />
-          <div className="relative w-full max-w-lg bg-white dark:bg-slate-800 rounded-t-3xl shadow-2xl p-6 flex flex-col gap-5 z-10 animate-in slide-in-from-bottom duration-300 max-h-[85vh] overflow-y-auto pb-safe">
+          <div className="relative w-full max-w-lg bg-white dark:bg-[#243447] rounded-t-3xl shadow-2xl dark:shadow-sm dark:shadow-slate-900/20 dark:border-t dark:bg-gray-800 p-6 flex flex-col gap-5 z-10 animate-in slide-in-from-bottom duration-300 max-h-[85vh] overflow-y-auto pb-safe">
             <div className="w-12 h-1.5 bg-slate-200 rounded-full mx-auto mb-2" />
             
             <div className="flex items-center gap-4">
@@ -442,9 +442,9 @@ function DashboardContent() {
                 {currentUser?.name?.charAt(0).toUpperCase()}
               </div>
               <div className="overflow-hidden">
-                <h3 className="font-extrabold text-slate-800 dark:text-slate-100 text-base leading-snug truncate">{currentUser?.name}</h3>
+                <h3 className="font-extrabold text-slate-800 dark:text-gray-200 text-base leading-snug truncate">{currentUser?.name}</h3>
                 <div className="flex flex-wrap gap-1.5 items-center mt-1">
-                  <span className="inline-block px-2.5 py-0.5 rounded bg-blue-50 border border-blue-100 text-[#2563EB] font-bold text-[9px] uppercase tracking-wider">
+                  <span className="inline-block px-2.5 py-0.5 rounded bg-blue-50 dark:bg-blue-500/10 border border-blue-100 dark:border-blue-500/20 text-[#2563EB] dark:text-blue-500 font-bold text-[9px] uppercase tracking-wider">
                     {currentUser?.role?.replace('_', ' ')}
                   </span>
                 </div>
@@ -452,7 +452,7 @@ function DashboardContent() {
               </div>
             </div>
 
-            <hr className="border-[#E2E8F0] dark:border-slate-700 my-1" />
+            <hr className="border-[#E2E8F0] dark:border-gray-700 my-1" />
 
             <div className="flex flex-col gap-2">
               <button
@@ -461,38 +461,24 @@ function DashboardContent() {
                   setIsSettingsActive(true);
                   setSettingsActiveSection('profile');
                 }}
-                className="flex items-center gap-3 px-4 py-3 hover:bg-slate-50 dark:bg-slate-800/50 rounded-2xl text-slate-700 font-bold text-xs text-left transition min-h-[48px] cursor-pointer"
+                className="flex items-center gap-3 px-4 py-3 hover:bg-slate-50 dark:hover:bg-[#2D435E] rounded-2xl text-slate-700 font-bold text-xs text-left transition min-h-[48px] cursor-pointer"
               >
-                <div className="w-8 h-8 rounded-xl bg-slate-100 dark:bg-slate-700 flex items-center justify-center text-slate-500 dark:text-slate-400 shrink-0">
+                <div className="w-8 h-8 rounded-xl bg-slate-100 dark:bg-gray-800 flex items-center justify-center text-slate-500 dark:text-gray-300 shrink-0">
                   <User size={16} />
                 </div>
                 <span>Profil Saya</span>
               </button>
 
-              <button
-                onClick={() => {
-                  setIsUserMenuOpen(false);
-                  setIsSettingsActive(true);
-                  setSettingsActiveSection('password');
-                }}
-                className="flex items-center gap-3 px-4 py-3 hover:bg-slate-50 dark:bg-slate-800/50 rounded-2xl text-slate-700 font-bold text-xs text-left transition min-h-[48px] cursor-pointer"
-              >
-                <div className="w-8 h-8 rounded-xl bg-slate-100 dark:bg-slate-700 flex items-center justify-center text-slate-500 dark:text-slate-400 shrink-0">
-                  <Key size={16} />
-                </div>
-                <span>Ganti Password</span>
-              </button>
-
-              <hr className="border-[#E2E8F0] dark:border-slate-700 my-2" />
+              <hr className="border-[#E2E8F0] dark:border-gray-700 my-2" />
 
               <button
                 onClick={() => {
                   setIsUserMenuOpen(false);
                   logout();
                 }}
-                className="flex items-center gap-3 px-4 py-3 bg-red-50/50 hover:bg-red-50 rounded-2xl text-[#EF4444] border border-red-100/50 font-bold text-xs text-left transition min-h-[48px] cursor-pointer"
+                className="flex items-center gap-3 px-4 py-3 bg-red-50/50 dark:bg-red-500/10 hover:bg-red-50 dark:hover:bg-red-500/20 rounded-2xl text-[#EF4444] dark:text-red-500 border border-red-100/50 dark:border-red-500/20 font-bold text-xs text-left transition min-h-[48px] cursor-pointer"
               >
-                <div className="w-8 h-8 rounded-xl bg-red-50 flex items-center justify-center text-[#EF4444] shrink-0">
+                <div className="w-8 h-8 rounded-xl bg-red-50 dark:bg-red-500/20 flex items-center justify-center text-[#EF4444] dark:text-red-500 shrink-0">
                   <LogOut size={16} />
                 </div>
                 <span>Keluar (Logout)</span>
@@ -509,7 +495,7 @@ function LoginSuccessToast({ visible }: { visible: boolean }) {
   if (!visible) return null;
   return (
     <div className="fixed top-4 right-4 z-[9999] animate-in slide-in-from-top-3 fade-in duration-300">
-      <div className="flex items-center gap-3 bg-white dark:bg-slate-800 border border-green-200 text-[#0F172A] dark:text-white pl-4 pr-5 py-3 rounded-2xl shadow-xl shadow-green-100/60">
+      <div className="flex items-center gap-3 bg-white dark:bg-[#243447] border border-green-200 text-[#0F172A] dark:text-gray-200 pl-4 pr-5 py-3 rounded-2xl shadow-xl shadow-green-100/60">
         <div className="w-7 h-7 rounded-xl bg-[#22C55E] flex items-center justify-center shrink-0">
           <svg className="w-4 h-4 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
             <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
@@ -517,7 +503,7 @@ function LoginSuccessToast({ visible }: { visible: boolean }) {
         </div>
         <div>
           <p className="text-[13px] font-bold text-[#0F172A] dark:text-white">Login berhasil!</p>
-          <p className="text-[11px] text-[#64748B] dark:text-slate-400">Selamat datang kembali.</p>
+          <p className="text-[11px] text-[#64748B] dark:text-gray-300">Selamat datang kembali.</p>
         </div>
       </div>
     </div>
@@ -546,10 +532,10 @@ function HomeWrapper() {
 
   if (loading && !currentUser) {
     return (
-      <div className="min-h-screen flex flex-col items-center justify-center bg-[#F8FAFC] dark:bg-slate-900">
+      <div className="min-h-screen flex flex-col items-center justify-center bg-[#F8FAFC] dark:bg-gray-900">
         <div className="flex flex-col items-center gap-4 animate-in fade-in duration-300">
           <div className="w-12 h-12 rounded-2xl border-4 border-slate-100 border-t-[#2563EB] animate-spin" />
-          <span className="text-xs font-bold text-[#64748B] dark:text-slate-400 animate-pulse uppercase tracking-widest">Memuat Sesi...</span>
+          <span className="text-xs font-bold text-[#64748B] dark:text-gray-300 animate-pulse uppercase tracking-widest">Memuat Sesi...</span>
         </div>
       </div>
     );
@@ -563,7 +549,7 @@ function HomeWrapper() {
     <>
       <LoginSuccessToast visible={showToast} />
       <DashboardContent />
-      <footer className="py-6 border-t border-[#E2E8F0] dark:border-slate-700 text-center text-xs text-[#64748B] dark:text-slate-400 print:hidden mt-12 bg-white dark:bg-slate-800">
+      <footer className="py-6 border-t border-[#E2E8F0] dark:border-gray-700 text-center text-xs text-[#64748B] dark:text-gray-300 print:hidden mt-12 bg-white dark:bg-[#243447]">
         <span>&copy; 2026 NeboTrack. Built with Next.js &amp; Tailwind CSS.</span>
       </footer>
     </>
@@ -573,7 +559,7 @@ function HomeWrapper() {
 export default function Home() {
   return (
     <PKLProvider>
-      <div className="min-h-screen flex flex-col font-sans bg-[#F8FAFC] dark:bg-slate-900 text-[#0F172A] dark:text-white">
+      <div className="min-h-screen flex flex-col font-sans bg-[#F8FAFC] dark:bg-gray-900 text-[#0F172A] dark:text-gray-200">
         <HomeWrapper />
       </div>
     </PKLProvider>

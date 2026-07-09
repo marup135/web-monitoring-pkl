@@ -151,20 +151,20 @@ export const AdminPortal: React.FC = () => {
   };
 
   return (
-    <div className="flex flex-col gap-6 text-[#0F172A] dark:text-white">
+    <div className="flex flex-col gap-6 text-[#0F172A] dark:text-gray-200">
       {/* Header and Sync Actions */}
-      <div className="flex flex-col sm:flex-row gap-3 justify-between items-start sm:items-center bg-white dark:bg-slate-800 border border-[#E2E8F0] dark:border-slate-700 rounded-2xl p-4 shadow-sm">
+      <div className="flex flex-col sm:flex-row gap-3 justify-between items-start sm:items-center bg-white dark:bg-[#243447] border border-[#E2E8F0] dark:border-gray-700 rounded-2xl p-4 shadow-sm">
         <div>
-          <h2 className="text-sm font-bold uppercase tracking-wider text-[#64748B] dark:text-slate-400 flex items-center gap-2">
+          <h2 className="text-sm font-bold uppercase tracking-wider text-[#64748B] dark:text-gray-300 flex items-center gap-2">
             <ShieldAlert size={16} className="text-red-500" />
             Portal Administrator SMKN 1 Bojong
           </h2>
-          <p className="text-[11px] text-[#64748B] dark:text-slate-400">Kelola data master kelas, perusahaan, dan hubungan pembimbing siswa.</p>
+          <p className="text-[11px] text-[#64748B] dark:text-gray-300">Kelola data master kelas, perusahaan, dan hubungan pembimbing siswa.</p>
         </div>
         <div className="flex items-center gap-2 w-full sm:w-auto justify-end">
           <button 
             onClick={reloadAll}
-            className="p-2 bg-slate-100 dark:bg-slate-700 hover:bg-slate-200 rounded-xl transition cursor-pointer text-slate-600 min-h-[44px] min-w-[44px] flex items-center justify-center"
+            className="p-2 bg-slate-100 dark:bg-gray-800 hover:bg-slate-200 rounded-xl transition cursor-pointer text-slate-600 min-h-[44px] min-w-[44px] flex items-center justify-center"
             title="Refresh Data"
           >
             <RefreshCw size={16} className={loading ? "animate-spin" : ""} />
@@ -179,7 +179,7 @@ export const AdminPortal: React.FC = () => {
       </div>
 
       {/* Tabs Menu */}
-      <div className="flex border-b border-[#E2E8F0] dark:border-slate-700 gap-4 overflow-x-auto py-1 whitespace-nowrap -mx-4 px-4 sm:mx-0 sm:px-0 scrollbar-none">
+      <div className="flex border-b border-[#E2E8F0] dark:border-gray-700 gap-4 overflow-x-auto py-1 whitespace-nowrap -mx-4 px-4 sm:mx-0 sm:px-0 scrollbar-none">
         {[
           { key: 'overview', label: 'Ringkasan' },
           { key: 'kelas', label: 'Data Kelas' },
@@ -192,7 +192,7 @@ export const AdminPortal: React.FC = () => {
             className={`pb-2.5 px-1 text-sm md:text-xs font-bold transition-all border-b-2 cursor-pointer ${
               activeTab === tab.key
                 ? 'border-[#2563EB] text-[#2563EB]'
-                : 'border-transparent text-[#64748B] dark:text-slate-400 hover:text-[#0F172A] dark:text-white'
+                : 'border-transparent text-[#64748B] dark:text-gray-300 hover:text-[#0F172A] dark:text-gray-200'
             }`}
           >
             {tab.label}
@@ -201,41 +201,41 @@ export const AdminPortal: React.FC = () => {
       </div>
 
       {/* Tab Content */}
-      <div className="bg-white dark:bg-slate-800 border border-[#E2E8F0] dark:border-slate-700 rounded-2xl p-4 md:p-6 shadow-sm min-h-[300px]">
+      <div className="bg-white dark:bg-[#243447] border border-[#E2E8F0] dark:border-gray-700 rounded-2xl p-4 md:p-6 shadow-sm min-h-[300px]">
         {activeTab === 'overview' && (
           <div className="flex flex-col gap-6">
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-              <div className="bg-slate-50 dark:bg-slate-800/50 border border-slate-200 dark:border-slate-700/80 p-4 rounded-2xl flex items-center gap-3">
+              <div className="bg-slate-50 dark:bg-gray-800/50 border border-slate-200 dark:border-gray-700/80 p-4 rounded-2xl flex items-center gap-3">
                 <div className="p-3 bg-blue-100 text-blue-600 rounded-xl"><Users size={20} /></div>
                 <div>
-                  <span className="text-[10px] text-slate-500 dark:text-slate-400 uppercase block font-semibold">Total Siswa</span>
-                  <span className="text-lg font-black text-slate-800 dark:text-slate-100">{overallMetrics?.totalStudents ?? 0} orang</span>
+                  <span className="text-[10px] text-slate-500 dark:text-gray-300 uppercase block font-semibold">Total Siswa</span>
+                  <span className="text-lg font-black text-slate-800 dark:text-gray-200">{overallMetrics?.totalStudents ?? 0} orang</span>
                 </div>
               </div>
-              <div className="bg-slate-50 dark:bg-slate-800/50 border border-slate-200 dark:border-slate-700/80 p-4 rounded-2xl flex items-center gap-3">
+              <div className="bg-slate-50 dark:bg-gray-800/50 border border-slate-200 dark:border-gray-700/80 p-4 rounded-2xl flex items-center gap-3">
                 <div className="p-3 bg-amber-100 text-amber-600 rounded-xl"><Calendar size={20} /></div>
                 <div>
-                  <span className="text-[10px] text-slate-500 dark:text-slate-400 uppercase block font-semibold">Aktif Hari Ini</span>
-                  <span className="text-lg font-black text-slate-800 dark:text-slate-100">{overallMetrics?.monitoringToday ?? 0} keg.</span>
+                  <span className="text-[10px] text-slate-500 dark:text-gray-300 uppercase block font-semibold">Aktif Hari Ini</span>
+                  <span className="text-lg font-black text-slate-800 dark:text-gray-200">{overallMetrics?.monitoringToday ?? 0} keg.</span>
                 </div>
               </div>
-              <div className="bg-slate-50 dark:bg-slate-800/50 border border-slate-200 dark:border-slate-700/80 p-4 rounded-2xl flex items-center gap-3">
+              <div className="bg-slate-50 dark:bg-gray-800/50 border border-slate-200 dark:border-gray-700/80 p-4 rounded-2xl flex items-center gap-3">
                 <div className="p-3 bg-purple-100 text-purple-600 rounded-xl"><FileSpreadsheet size={20} /></div>
                 <div>
-                  <span className="text-[10px] text-slate-500 dark:text-slate-400 uppercase block font-semibold">Menunggu Review</span>
-                  <span className="text-lg font-black text-slate-800 dark:text-slate-100">{overallMetrics?.pendingReview ?? 0} log</span>
+                  <span className="text-[10px] text-slate-500 dark:text-gray-300 uppercase block font-semibold">Menunggu Review</span>
+                  <span className="text-lg font-black text-slate-800 dark:text-gray-200">{overallMetrics?.pendingReview ?? 0} log</span>
                 </div>
               </div>
-              <div className="bg-slate-50 dark:bg-slate-800/50 border border-slate-200 dark:border-slate-700/80 p-4 rounded-2xl flex items-center gap-3">
+              <div className="bg-slate-50 dark:bg-gray-800/50 border border-slate-200 dark:border-gray-700/80 p-4 rounded-2xl flex items-center gap-3">
                 <div className="p-3 bg-green-100 text-green-600 rounded-xl"><Award size={20} /></div>
                 <div>
-                  <span className="text-[10px] text-slate-500 dark:text-slate-400 uppercase block font-semibold">Rerata Nilai Sekolah</span>
-                  <span className="text-lg font-black text-slate-800 dark:text-slate-100">{overallMetrics?.averageGrade ?? 0}/100</span>
+                  <span className="text-[10px] text-slate-500 dark:text-gray-300 uppercase block font-semibold">Rerata Nilai Sekolah</span>
+                  <span className="text-lg font-black text-slate-800 dark:text-gray-200">{overallMetrics?.averageGrade ?? 0}/100</span>
                 </div>
               </div>
             </div>
 
-            <div className="border border-[#E2E8F0] dark:border-slate-700 rounded-xl p-4 bg-slate-50 dark:bg-slate-800/50/50">
+            <div className="border border-[#E2E8F0] dark:border-gray-700 rounded-xl p-4 bg-slate-50 dark:bg-gray-800/50">
               <h3 className="text-xs font-bold text-slate-700 uppercase mb-3 tracking-wider">Status Jurnal Seluruh Siswa</h3>
               {overallMetrics ? (
                 <div className="flex flex-col gap-3.5">
@@ -246,17 +246,17 @@ export const AdminPortal: React.FC = () => {
                     const color = col === 'rencana' ? 'bg-blue-400' : col === 'progres' ? 'bg-yellow-400' : col === 'review' ? 'bg-purple-400' : 'bg-green-500';
                     return (
                       <div key={col} className="flex items-center gap-3 text-xs">
-                        <span className="w-16 text-slate-500 dark:text-slate-400 font-semibold">{label}</span>
+                        <span className="w-16 text-slate-500 dark:text-gray-300 font-semibold">{label}</span>
                         <div className="flex-1 h-3 bg-slate-200 rounded-full overflow-hidden relative">
                           <div style={{ width: `${percent}%` }} className={`h-full ${color} rounded-full transition-all duration-500`} />
                         </div>
-                        <span className="w-16 text-right font-bold text-slate-800 dark:text-slate-100">{val} ({percent}%)</span>
+                        <span className="w-16 text-right font-bold text-slate-800 dark:text-gray-200">{val} ({percent}%)</span>
                       </div>
                     );
                   })}
                 </div>
               ) : (
-                <p className="text-xs text-slate-400 italic">Memuat grafik...</p>
+                <p className="text-xs text-slate-500 dark:text-gray-2000 italic">Memuat grafik...</p>
               )}
             </div>
           </div>
@@ -272,7 +272,7 @@ export const AdminPortal: React.FC = () => {
                 placeholder="Tambah nama kelas baru (Contoh: XII PPLG 3)"
                 value={newClassName}
                 onChange={(e) => setNewClassName(e.target.value)}
-                className="bg-white dark:bg-slate-800 border border-[#E2E8F0] dark:border-slate-700 rounded-xl px-3 py-2.5 text-sm flex-1 text-[#0F172A] dark:text-white focus:outline-none focus:border-[#2563EB] min-h-[48px] md:min-h-0 md:py-2 md:text-xs"
+                className="bg-white dark:bg-[#243447] border border-[#E2E8F0] dark:border-gray-700 rounded-xl px-3 py-2.5 text-sm flex-1 text-[#0F172A] dark:text-gray-200 focus:outline-none focus:border-[#2563EB] dark:focus:border-blue-500 min-h-[48px] md:min-h-0 md:py-2 md:text-xs"
               />
               <button 
                 type="submit"
@@ -284,24 +284,24 @@ export const AdminPortal: React.FC = () => {
             </form>
 
             {/* List */}
-            <div className="border border-[#E2E8F0] dark:border-slate-700 rounded-xl overflow-x-auto text-xs">
+            <div className="border border-[#E2E8F0] dark:border-gray-700 rounded-xl overflow-x-auto text-xs">
               <table className="w-full text-left border-collapse min-w-[400px]">
                 <thead>
-                  <tr className="bg-slate-50 dark:bg-slate-800/50 border-b border-[#E2E8F0] dark:border-slate-700 text-slate-500 dark:text-slate-400 font-semibold">
+                  <tr className="bg-slate-50 dark:bg-gray-800/50 border-b border-[#E2E8F0] dark:border-gray-700 text-slate-500 dark:text-gray-300 font-semibold">
                     <th className="py-2.5 px-4">Nama Kelas</th>
                     <th className="py-2.5 px-4 text-right">Tindakan</th>
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-[#E2E8F0]">
                   {classesList.map((c) => (
-                    <tr key={c.id} className="hover:bg-slate-50 dark:bg-slate-800/50 transition">
+                    <tr key={c.id} className="hover:bg-slate-50 dark:hover:bg-[#2D435E] transition">
                       <td className="py-3 px-4 font-semibold">
                         {editingId === c.id ? (
                           <input
                             type="text"
                             value={editText}
                             onChange={(e) => setEditText(e.target.value)}
-                            className="bg-white dark:bg-slate-800 border border-[#E2E8F0] dark:border-slate-700 rounded-xl px-3 text-sm text-[#0F172A] dark:text-white focus:outline-none focus:border-[#2563EB] min-h-[44px] py-2"
+                            className="bg-white dark:bg-[#243447] border border-[#E2E8F0] dark:border-gray-700 rounded-xl px-3 text-sm text-[#0F172A] dark:text-gray-200 focus:outline-none focus:border-[#2563EB] min-h-[44px] py-2"
                           />
                         ) : (
                           c.name
@@ -324,7 +324,7 @@ export const AdminPortal: React.FC = () => {
                             </button>
                           </div>
                         ) : (
-                          <div className="flex gap-2 justify-end text-slate-500 dark:text-slate-400">
+                          <div className="flex gap-2 justify-end text-slate-500 dark:text-gray-300">
                             <button
                               onClick={() => { setEditingId(c.id); setEditText(c.name); }}
                               className="p-2.5 hover:text-[#2563EB] hover:bg-blue-50 rounded transition cursor-pointer min-h-[40px] min-w-[40px] flex items-center justify-center"
@@ -358,7 +358,7 @@ export const AdminPortal: React.FC = () => {
                 placeholder="Tambah nama perusahaan baru (Contoh: GoTo)"
                 value={newCompanyName}
                 onChange={(e) => setNewCompanyName(e.target.value)}
-                className="bg-white dark:bg-slate-800 border border-[#E2E8F0] dark:border-slate-700 rounded-xl px-3 py-2.5 text-sm flex-1 text-[#0F172A] dark:text-white focus:outline-none focus:border-[#2563EB] min-h-[48px] md:min-h-0 md:py-2 md:text-xs"
+                className="bg-white dark:bg-[#243447] border border-[#E2E8F0] dark:border-gray-700 rounded-xl px-3 py-2.5 text-sm flex-1 text-[#0F172A] dark:text-gray-200 focus:outline-none focus:border-[#2563EB] dark:focus:border-blue-500 min-h-[48px] md:min-h-0 md:py-2 md:text-xs"
               />
               <button 
                 type="submit"
@@ -370,24 +370,24 @@ export const AdminPortal: React.FC = () => {
             </form>
 
             {/* List */}
-            <div className="border border-[#E2E8F0] dark:border-slate-700 rounded-xl overflow-x-auto text-xs">
+            <div className="border border-[#E2E8F0] dark:border-gray-700 rounded-xl overflow-x-auto text-xs">
               <table className="w-full text-left border-collapse min-w-[400px]">
                 <thead>
-                  <tr className="bg-slate-50 dark:bg-slate-800/50 border-b border-[#E2E8F0] dark:border-slate-700 text-slate-500 dark:text-slate-400 font-semibold">
+                  <tr className="bg-slate-50 dark:bg-gray-800/50 border-b border-[#E2E8F0] dark:border-gray-700 text-slate-500 dark:text-gray-300 font-semibold">
                     <th className="py-2.5 px-4">Nama Perusahaan</th>
                     <th className="py-2.5 px-4 text-right">Tindakan</th>
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-[#E2E8F0]">
                   {companiesList.map((co) => (
-                    <tr key={co.id} className="hover:bg-slate-50 dark:bg-slate-800/50 transition">
+                    <tr key={co.id} className="hover:bg-slate-50 dark:hover:bg-[#2D435E] transition">
                       <td className="py-3 px-4 font-semibold">
                         {editingId === co.id ? (
                           <input
                             type="text"
                             value={editText}
                             onChange={(e) => setEditText(e.target.value)}
-                            className="bg-white dark:bg-slate-800 border border-[#E2E8F0] dark:border-slate-700 rounded-xl px-3 text-sm text-[#0F172A] dark:text-white focus:outline-none focus:border-[#2563EB] min-h-[44px] py-2"
+                            className="bg-white dark:bg-[#243447] border border-[#E2E8F0] dark:border-gray-700 rounded-xl px-3 text-sm text-[#0F172A] dark:text-gray-200 focus:outline-none focus:border-[#2563EB] min-h-[44px] py-2"
                           />
                         ) : (
                           co.name
@@ -410,7 +410,7 @@ export const AdminPortal: React.FC = () => {
                             </button>
                           </div>
                         ) : (
-                          <div className="flex gap-2 justify-end text-slate-500 dark:text-slate-400">
+                          <div className="flex gap-2 justify-end text-slate-500 dark:text-gray-300">
                             <button
                               onClick={() => { setEditingId(co.id); setEditText(co.name); }}
                               className="p-2.5 hover:text-[#2563EB] hover:bg-blue-50 rounded transition cursor-pointer min-h-[40px] min-w-[40px] flex items-center justify-center"
@@ -436,23 +436,23 @@ export const AdminPortal: React.FC = () => {
 
         {activeTab === 'users' && (
           <div className="flex flex-col gap-6 text-xs">
-            <h3 className="text-xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider mb-2">Penugasan Pembimbing & Siswa</h3>
+            <h3 className="text-xs font-bold text-slate-500 dark:text-gray-300 uppercase tracking-wider mb-2">Penugasan Pembimbing & Siswa</h3>
             
             <div className="flex flex-col gap-6">
               {/* Guru Section */}
-              <div className="border border-[#E2E8F0] dark:border-slate-700 rounded-xl p-4 bg-slate-50 dark:bg-slate-800/50/40">
+              <div className="border border-[#E2E8F0] dark:border-gray-700 rounded-xl p-4 bg-slate-50 dark:bg-gray-800/40">
                 <h4 className="font-bold text-[#2563EB] text-xs uppercase mb-3 flex items-center gap-1.5">
                   Pembimbing Internal (Guru ↔ Kelas)
                 </h4>
                 <div className="flex flex-col gap-3">
                   {allUsersList.filter(u => u.role === 'pembimbing_internal').length === 0 ? (
-                    <p className="text-xs text-slate-400 italic py-2">Belum ada Pembimbing Internal terdaftar.</p>
+                    <p className="text-xs text-slate-500 dark:text-gray-2000 italic py-2">Belum ada Pembimbing Internal terdaftar.</p>
                   ) : allUsersList.filter(u => u.role === 'pembimbing_internal').map((guru: any) => {
                     const currentClassIds = guru.classes?.map((c: any) => c.id) || [];
                     return (
-                      <div key={guru.id} className="bg-white dark:bg-slate-800 border border-[#E2E8F0] dark:border-slate-700 p-3 rounded-lg flex flex-col md:flex-row justify-between md:items-center gap-3">
+                      <div key={guru.id} className="bg-white dark:bg-[#243447] border border-[#E2E8F0] dark:border-gray-700 p-3 rounded-lg flex flex-col md:flex-row justify-between md:items-center gap-3">
                         <div>
-                          <p className="font-bold text-slate-800 dark:text-slate-100 text-sm md:text-xs">{guru.name}</p>
+                          <p className="font-bold text-slate-800 dark:text-gray-200 text-sm md:text-xs">{guru.name}</p>
                           <p className="text-[10px] text-slate-400 font-medium">Username: {guru.username}</p>
                         </div>
                         <div className="flex flex-wrap gap-2">
@@ -465,7 +465,7 @@ export const AdminPortal: React.FC = () => {
                                 className={`flex items-center gap-1.5 px-3 py-2 md:px-2.5 md:py-1 rounded-xl md:rounded-lg transition cursor-pointer font-semibold min-h-[44px] md:min-h-0 text-xs md:text-[11px] ${
                                   isAssigned 
                                     ? 'bg-blue-50 border border-blue-200 text-[#2563EB]' 
-                                    : 'bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-500 dark:text-slate-400'
+                                    : 'bg-white dark:bg-[#243447] border border-slate-200 dark:border-gray-700 text-slate-500 dark:text-gray-300'
                                 }`}
                               >
                                 {isAssigned ? <CheckSquare size={12} /> : <Square size={12} />}
@@ -481,19 +481,19 @@ export const AdminPortal: React.FC = () => {
               </div>
 
               {/* Mentor Section */}
-              <div className="border border-[#E2E8F0] dark:border-slate-700 rounded-xl p-4 bg-slate-50 dark:bg-slate-800/50/40">
+              <div className="border border-[#E2E8F0] dark:border-gray-700 rounded-xl p-4 bg-slate-50 dark:bg-gray-800/40">
                 <h4 className="font-bold text-emerald-600 text-xs uppercase mb-3 flex items-center gap-1.5">
                   Pembimbing Eksternal (Mentor ↔ Perusahaan)
                 </h4>
                 <div className="flex flex-col gap-3">
                   {allUsersList.filter(u => u.role === 'pembimbing_eksternal').length === 0 ? (
-                    <p className="text-xs text-slate-400 italic py-2">Belum ada Pembimbing Eksternal terdaftar.</p>
+                    <p className="text-xs text-slate-500 dark:text-gray-2000 italic py-2">Belum ada Pembimbing Eksternal terdaftar.</p>
                   ) : allUsersList.filter(u => u.role === 'pembimbing_eksternal').map((mentor: any) => {
                     const currentCompIds = mentor.companies?.map((c: any) => c.id) || [];
                     return (
-                      <div key={mentor.id} className="bg-white dark:bg-slate-800 border border-[#E2E8F0] dark:border-slate-700 p-3 rounded-lg flex flex-col md:flex-row justify-between md:items-center gap-3">
+                      <div key={mentor.id} className="bg-white dark:bg-[#243447] border border-[#E2E8F0] dark:border-gray-700 p-3 rounded-lg flex flex-col md:flex-row justify-between md:items-center gap-3">
                         <div>
-                          <p className="font-bold text-slate-800 dark:text-slate-100 text-sm md:text-xs">{mentor.name}</p>
+                          <p className="font-bold text-slate-800 dark:text-gray-200 text-sm md:text-xs">{mentor.name}</p>
                           <p className="text-[10px] text-slate-400 font-medium">Username: {mentor.username}</p>
                         </div>
                         <div className="flex flex-wrap gap-2">
@@ -506,7 +506,7 @@ export const AdminPortal: React.FC = () => {
                                 className={`flex items-center gap-1.5 px-3 py-2 md:px-2.5 md:py-1 rounded-xl md:rounded-lg transition cursor-pointer font-semibold min-h-[44px] md:min-h-0 text-xs md:text-[11px] ${
                                   isAssigned 
                                     ? 'bg-emerald-50 border border-emerald-200 text-emerald-600' 
-                                    : 'bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-500 dark:text-slate-400'
+                                    : 'bg-white dark:bg-[#243447] border border-slate-200 dark:border-gray-700 text-slate-500 dark:text-gray-300'
                                 }`}
                               >
                                 {isAssigned ? <CheckSquare size={12} /> : <Square size={12} />}
@@ -522,16 +522,16 @@ export const AdminPortal: React.FC = () => {
               </div>
 
               {/* Student Section */}
-              <div className="border border-[#E2E8F0] dark:border-slate-700 rounded-xl p-4 bg-slate-50 dark:bg-slate-800/50/40">
+              <div className="border border-[#E2E8F0] dark:border-gray-700 rounded-xl p-4 bg-slate-50 dark:bg-gray-800/40">
                 <h4 className="font-bold text-purple-600 text-xs uppercase mb-3 flex items-center gap-1.5">
                   Siswa (Siswa ↔ Kelas & Perusahaan)
                 </h4>
                 <div className="flex flex-col gap-3">
                   {allUsersList.filter(u => u.role === 'siswa').length === 0 ? (
-                    <p className="text-xs text-slate-400 italic py-2">Belum ada Siswa terdaftar.</p>
+                    <p className="text-xs text-slate-500 dark:text-gray-2000 italic py-2">Belum ada Siswa terdaftar.</p>
                   ) : allUsersList.filter(u => u.role === 'siswa').map((siswa: any) => {
                     return (
-                      <div key={siswa.id} className="bg-white dark:bg-slate-800 border border-[#E2E8F0] dark:border-slate-700 p-3 rounded-lg flex flex-col gap-3">
+                      <div key={siswa.id} className="bg-white dark:bg-[#243447] border border-[#E2E8F0] dark:border-gray-700 p-3 rounded-lg flex flex-col gap-3">
                         <div className="flex flex-col lg:flex-row justify-between lg:items-center gap-3">
                           <div className="flex-1 flex flex-col sm:flex-row gap-3">
                             <div className="flex flex-col gap-1 flex-1">
@@ -540,7 +540,7 @@ export const AdminPortal: React.FC = () => {
                                 type="text"
                                 defaultValue={siswa.name}
                                 onBlur={(e) => handleSiswaProfileUpdate(siswa.id, e.target.value, siswa.nisn || '')}
-                                className="bg-slate-50 dark:bg-slate-800/50 border border-slate-200 dark:border-slate-700 rounded-xl md:rounded-lg px-3 py-2 md:p-1.5 text-sm md:text-xs text-slate-800 dark:text-slate-100 focus:outline-none min-h-[48px] md:min-h-0"
+                                className="bg-slate-50 dark:bg-gray-800/50 border border-slate-200 dark:border-gray-700 rounded-xl md:rounded-lg px-3 py-2 md:p-1.5 text-sm md:text-xs text-slate-800 dark:text-gray-200 focus:outline-none min-h-[48px] md:min-h-0"
                               />
                             </div>
                             <div className="flex flex-col gap-1 flex-1">
@@ -550,7 +550,7 @@ export const AdminPortal: React.FC = () => {
                                 defaultValue={siswa.nisn || ''}
                                 placeholder="Belum diisi"
                                 onBlur={(e) => handleSiswaProfileUpdate(siswa.id, siswa.name, e.target.value)}
-                                className="bg-slate-50 dark:bg-slate-800/50 border border-slate-200 dark:border-slate-700 rounded-xl md:rounded-lg px-3 py-2 md:p-1.5 text-sm md:text-xs text-slate-800 dark:text-slate-100 focus:outline-none min-h-[48px] md:min-h-0"
+                                className="bg-slate-50 dark:bg-gray-800/50 border border-slate-200 dark:border-gray-700 rounded-xl md:rounded-lg px-3 py-2 md:p-1.5 text-sm md:text-xs text-slate-800 dark:text-gray-200 focus:outline-none min-h-[48px] md:min-h-0"
                               />
                             </div>
                           </div>
@@ -561,7 +561,7 @@ export const AdminPortal: React.FC = () => {
                               <select
                                 value={siswa.classId || ''}
                                 onChange={(e) => handleSiswaClassChange(siswa.id, e.target.value)}
-                                className="bg-slate-50 dark:bg-slate-800/50 border border-slate-200 dark:border-slate-700 rounded-xl md:rounded-lg px-3 py-2 md:p-1.5 text-sm md:text-xs focus:outline-none min-h-[48px] md:min-h-0 w-full"
+                                className="bg-slate-50 dark:bg-gray-800/50 border border-slate-200 dark:border-gray-700 rounded-xl md:rounded-lg px-3 py-2 md:p-1.5 text-sm md:text-xs focus:outline-none min-h-[48px] md:min-h-0 w-full"
                               >
                                 <option value="">-- Tanpa Kelas --</option>
                                 {classesList.map(c => (
@@ -575,7 +575,7 @@ export const AdminPortal: React.FC = () => {
                               <select
                                 value={siswa.companyId || ''}
                                 onChange={(e) => handleSiswaCompanyChange(siswa.id, e.target.value)}
-                                className="bg-slate-50 dark:bg-slate-800/50 border border-slate-200 dark:border-slate-700 rounded-xl md:rounded-lg px-3 py-2 md:p-1.5 text-sm md:text-xs focus:outline-none min-h-[48px] md:min-h-0 w-full"
+                                className="bg-slate-50 dark:bg-gray-800/50 border border-slate-200 dark:border-gray-700 rounded-xl md:rounded-lg px-3 py-2 md:p-1.5 text-sm md:text-xs focus:outline-none min-h-[48px] md:min-h-0 w-full"
                               >
                                 <option value="">-- Tanpa Perusahaan --</option>
                                 {companiesList.map(co => (
