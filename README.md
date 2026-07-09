@@ -45,7 +45,7 @@ Dengan antarmuka yang modern—mendukung *Kanban Board* di Desktop dan *Mobile T
 
 | Desktop (Kanban Board) | Mobile (Timeline Logbook) |
 | :---: | :---: |
-| ![Desktop Board Placeholder] src/hasil-desktop.png | ![Mobile Logbook Placeholder](https://placehold.co/300x500/2563EB/FFF?text=Mobile+Timeline) |
+| ![Desktop Board Placeholder] (src/hasil-desktop.png) | ![Mobile Logbook Placeholder](https://placehold.co/300x500/2563EB/FFF?text=Mobile+Timeline) |
 
 > *(Ganti URL gambar di atas dengan screenshot asli saat project siap dipublikasikan).*
 
