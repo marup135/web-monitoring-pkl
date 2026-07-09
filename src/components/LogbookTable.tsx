@@ -60,7 +60,23 @@ export const LogbookTable: React.FC<LogbookTableProps> = ({ onOpenCard, onEditCa
       </div>
 
       {/* Main Printable Logbook Container */}
-      <div className="bg-white dark:bg-[#243447] rounded-2xl p-5 md:p-8 border border-[#E2E8F0] dark:border-gray-700 shadow-sm relative overflow-hidden print:bg-white dark:bg-[#243447] print:text-black print:p-0 print:border-none print:shadow-none print:rounded-none">
+      <div className="bg-white dark:bg-[#243447] rounded-2xl p-5 md:p-8 border border-[#E2E8F0] dark:border-gray-700 shadow-sm relative overflow-hidden print:overflow-visible print:bg-white dark:bg-[#243447] print:text-black print:p-0 print:border-none print:shadow-none print:rounded-none">
+        
+        {/* Printable Cover Page */}
+        <div className="hidden print:flex flex-col items-center justify-center min-h-[24cm] w-full" style={{ pageBreakAfter: 'always' }}>
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img src="/logo.jpg" alt="Logo" className="w-32 h-32 object-contain mb-8" />
+          <h1 className="text-2xl font-bold uppercase text-black mb-2 text-center">LAPORAN JURNAL KEGIATAN</h1>
+          <h2 className="text-xl font-bold uppercase text-black mb-12 text-center">PRAKTIK KERJA LAPANGAN (PKL)</h2>
+          
+          <div className="flex flex-col items-center text-lg space-y-4 mb-16 text-black">
+            <p><span className="font-semibold w-48 inline-block">Nama Siswa</span>: {state.studentName}</p>
+            {state.nisn && <p><span className="font-semibold w-48 inline-block">NIS/NISN</span>: {state.nisn}</p>}
+            <p><span className="font-semibold w-48 inline-block">Perusahaan</span>: {state.companyName}</p>
+            <p><span className="font-semibold w-48 inline-block">Pembimbing Lapangan</span>: {state.mentorName}</p>
+            <p><span className="font-semibold w-48 inline-block">Guru Pembimbing</span>: {state.advisorName}</p>
+          </div>
+        </div>
         
         {/* Printable Header Info */}
         <div className="flex flex-col gap-6 mb-8 border-b border-[#E2E8F0] dark:border-gray-700 pb-6 print:border-black/20">
@@ -104,9 +120,9 @@ export const LogbookTable: React.FC<LogbookTableProps> = ({ onOpenCard, onEditCa
         </div>
 
         {/* Table representation (Desktop) */}
-        <div className="hidden md:block overflow-x-auto w-full">
-          <table className="w-full text-left border-collapse text-xs border border-[#E2E8F0] dark:border-gray-700 rounded-xl overflow-hidden shadow-sm">
-            <thead>
+        <div className="hidden md:block print:block overflow-x-auto print:overflow-visible w-full">
+          <table className="w-full text-left border-collapse text-xs border border-[#E2E8F0] dark:border-gray-700 rounded-xl overflow-hidden print:overflow-visible shadow-sm">
+            <thead className="print:table-header-group">
               <tr className="border-b border-[#E2E8F0] dark:border-gray-700 text-slate-500 dark:text-gray-300 font-semibold uppercase tracking-wider bg-[#F8FAFC] dark:bg-gray-900 print:border-black/30 print:text-black print:bg-transparent">
                 <th className="py-3 px-2 w-10 text-center">{t('no')}</th>
                 <th className="py-3 px-3 w-28">{t('date')}</th>
@@ -367,6 +383,13 @@ export const LogbookTable: React.FC<LogbookTableProps> = ({ onOpenCard, onEditCa
             page-break-inside: avoid !important;
             break-inside: avoid !important;
           }
+          /* Ensure table headers repeat on multi-page tables */
+          thead {
+            display: table-header-group;
+          }
+          tfoot {
+            display: table-footer-group;
+          }
           /* Format signature block nicely */
           .print\:grid {
             display: grid !important;
@@ -376,7 +399,7 @@ export const LogbookTable: React.FC<LogbookTableProps> = ({ onOpenCard, onEditCa
           /* Page margins and layout */
           @page {
             size: A4 portrait;
-            margin: 1.5cm 1cm 1.5cm 1cm;
+            margin: 1.5cm;
           }
         }
       `}</style>
