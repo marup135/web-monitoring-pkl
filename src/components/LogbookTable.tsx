@@ -128,8 +128,7 @@ export const LogbookTable: React.FC<LogbookTableProps> = ({ onOpenCard, onEditCa
                 <th className="py-3 px-3 w-28">{t('date')}</th>
                 <th className="py-3 px-3 w-24">{t('category')}</th>
                 <th className="py-3 px-4">{t('details')}</th>
-                <th className="py-3 px-2 w-16 text-center">{t('start')}</th>
-                <th className="py-3 px-2 w-16 text-center">{t('end')}</th>
+                <th className="py-3 px-3 w-24 text-center hidden print:table-cell">Waktu</th>
                 <th className="py-3 px-3 w-28 text-center print:w-24">{t('status')}</th>
                 <th className="py-3 px-4 w-48 print:w-36">{t('eval')}</th>
               </tr>
@@ -145,9 +144,19 @@ export const LogbookTable: React.FC<LogbookTableProps> = ({ onOpenCard, onEditCa
                 state.cards.map((card, index) => (
                   <tr key={card.id} className="hover:bg-[#F8FAFC] dark:bg-gray-900 transition duration-150 print:hover:bg-transparent">
                     <td className="py-4 px-2 text-center font-medium">{index + 1}</td>
-                    <td className="py-4 px-3 font-medium flex items-center gap-1.5 whitespace-nowrap">
-                      <Calendar size={12} className="text-gray-400 print:hidden" />
-                      {new Date(card.createdAt).toLocaleDateString('id-ID', { year: 'numeric', month: '2-digit', day: '2-digit' })}
+                    <td className="py-4 px-3">
+                      <div className="flex flex-col gap-1.5">
+                        <div className="font-medium flex items-center gap-1.5 whitespace-nowrap">
+                          <Calendar size={12} className="text-gray-400 print:hidden" />
+                          {new Date(card.createdAt).toLocaleDateString('id-ID', { year: 'numeric', month: '2-digit', day: '2-digit' })}
+                        </div>
+                        {(card.startTime || card.endTime) && (
+                          <div className="flex items-center gap-1.5 text-[10px] text-slate-500 font-semibold print:hidden">
+                            <Clock size={11} className="text-[#2563EB]" />
+                            <span>{card.startTime || '-'} - {card.endTime || '-'}</span>
+                          </div>
+                        )}
+                      </div>
                     </td>
                     <td className="py-4 px-3">
                       <span className="px-2 py-0.5 rounded border border-[#E2E8F0] dark:border-gray-700 bg-slate-50 dark:bg-gray-800/50 print:border-black/20 print:bg-transparent text-[11px] text-slate-700">
@@ -160,11 +169,8 @@ export const LogbookTable: React.FC<LogbookTableProps> = ({ onOpenCard, onEditCa
                         {card.description}
                       </div>
                     </td>
-                    <td className="py-4 px-3 text-center text-slate-800 dark:text-gray-200 print:text-black font-semibold">
-                      {card.startTime || '-'}
-                    </td>
-                    <td className="py-4 px-3 text-center text-slate-800 dark:text-gray-200 print:text-black font-semibold">
-                      {card.endTime || '-'}
+                    <td className="py-4 px-3 text-center text-slate-800 dark:text-gray-200 print:text-black font-semibold hidden print:table-cell whitespace-nowrap">
+                      {card.startTime || '-'} - {card.endTime || '-'}
                     </td>
                     <td className="py-4 px-3 text-center whitespace-nowrap">
                       <span className={`px-2 py-0.5 rounded border text-[10px] font-bold ${getStatusBadge(card.columnId)} print:border-black/30 print:text-black print:bg-transparent`}>

@@ -120,7 +120,7 @@ interface PKLContextProps {
   assignGuruToClass: (userId: string, classIds: string[]) => Promise<{ success: boolean; error?: string }>;
   assignMentorToCompany: (userId: string, companyIds: string[]) => Promise<{ success: boolean; error?: string }>;
   assignSiswa: (userId: string, classId: string | null, companyId: string | null, name?: string, nisn?: string) => Promise<{ success: boolean; error?: string }>;
-  addCard: (title: string, description: string, category: string, dueDate: string, columnId?: PKLCard['columnId']) => Promise<void>;
+  addCard: (title: string, description: string, category: string, dueDate: string, startTime: string, endTime: string, columnId?: PKLCard['columnId']) => Promise<void>;
   updateCardColumn: (cardId: string, targetColumn: PKLCard['columnId']) => Promise<void>;
   updateCardDetails: (
     cardId: string,
@@ -570,10 +570,10 @@ export const PKLProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     }
   };
 
-  const addCard = async (title: string, description: string, category: string, dueDate: string, columnId?: PKLCard['columnId']) => {
+  const addCard = async (title: string, description: string, category: string, dueDate: string, startTime: string, endTime: string, columnId?: PKLCard['columnId']) => {
     setLoading(true);
     try {
-      const res = await createCardAction(title, description, category, dueDate, state.studentName, activeRole, columnId);
+      const res = await createCardAction(title, description, category, dueDate, state.studentName, activeRole, columnId, startTime, endTime);
       if (res && !res.success) {
         throw new Error(res.error || 'Gagal membuat kegiatan.');
       }

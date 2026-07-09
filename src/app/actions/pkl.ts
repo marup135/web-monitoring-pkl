@@ -297,7 +297,9 @@ export async function createCardAction(
   dueDate: string,
   studentName: string,
   activeRole: PKLRole,
-  columnId: PKLCard['columnId'] = 'rencana'
+  columnId: PKLCard['columnId'] = 'rencana',
+  startTime: string = '',
+  endTime: string = ''
 ) {
   try {
     const currentUser = await getAuthenticatedUser();
@@ -315,6 +317,8 @@ export async function createCardAction(
         description,
         category,
         dueDate,
+        startTime,
+        endTime,
         columnId,
         studentId: currentUser.id,
         history: {

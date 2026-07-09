@@ -321,151 +321,131 @@ export const AuthPage: React.FC = () => {
           {/* Form */}
           <form onSubmit={handleSubmit} className="flex flex-col gap-4" noValidate>
 
-            {/* Full Name — Register Only */}
+            {/* If Register: wrap fields in a grid */}
             {!isLogin && (
-              <div className="flex flex-col gap-1.5 animate-in fade-in duration-200">
-                <label className="text-[10px] text-[#64748B] dark:text-gray-300 uppercase font-bold tracking-wider">
-                  Nama Lengkap
-                </label>
-                <div className="relative">
-                  <User size={15} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-[#94A3B8]" />
-                  <input
-                    type="text"
-                    placeholder="Masukkan nama lengkap..."
-                    value={name}
-                    onChange={(e) => setName(e.target.value)}
-                    className={inputClass(false)}
-                  />
-                </div>
-              </div>
-            )}
-
-            {/* Username / Email */}
-            <div className="flex flex-col gap-1.5">
-              <label className="text-[10px] text-[#64748B] dark:text-gray-300 uppercase font-bold tracking-wider">
-                Username
-              </label>
-              <div className="relative">
-                <User size={15} className={`absolute left-3.5 top-1/2 -translate-y-1/2 ${usernameHasError ? 'text-red-400' : 'text-[#94A3B8]'}`} />
-                <input
-                  type="text"
-                  placeholder="Masukkan username..."
-                  value={username}
-                  onChange={(e) => {
-                    setUsername(e.target.value.toLowerCase().replace(/\s+/g, ''));
-                    // Only clear for field-specific errors, keep credentials error visible
-                    if (errorState?.type === 'field') clearError();
-                  }}
-                  className={inputClass(usernameHasError)}
-                />
-              </div>
-              {/* Only show inline message for field-type errors */}
-              {usernameHasError && errorState?.type === 'field' && (
-                <p className="text-[11px] text-red-500 font-medium flex items-center gap-1 animate-in fade-in duration-150">
-                  <AlertCircle size={11} />
-                  {errorState?.message}
-                </p>
-              )}
-            </div>
-
-            {/* Password */}
-            <div className="flex flex-col gap-1.5">
-              <label className="text-[10px] text-[#64748B] dark:text-gray-300 uppercase font-bold tracking-wider">
-                Password
-              </label>
-              <div className="relative">
-                <Key size={15} className={`absolute left-3.5 top-1/2 -translate-y-1/2 ${passwordHasError ? 'text-red-400' : 'text-[#94A3B8]'}`} />
-                <input
-                  type={showPassword ? 'text' : 'password'}
-                  placeholder="Masukkan password..."
-                  value={password}
-                  onChange={(e) => {
-                    setPassword(e.target.value);
-                    // Only clear for field-specific errors, keep credentials error visible
-                    if (errorState?.type === 'field') clearError();
-                  }}
-                  className={`${inputClass(passwordHasError)} pr-11`}
-                />
-                <button
-                  type="button"
-                  onClick={() => setShowPassword((prev) => !prev)}
-                  className="absolute right-3 top-1/2 -translate-y-1/2 p-1.5 text-[#94A3B8] hover:text-[#64748B] dark:text-gray-300 focus:outline-none rounded-lg transition-colors cursor-pointer"
-                  aria-label={showPassword ? 'Sembunyikan password' : 'Tampilkan password'}
-                >
-                  {showPassword ? <EyeOff size={16} /> : <Eye size={16} />}
-                </button>
-              </div>
-              {passwordHasError && errorState?.type === 'field' && (
-                <p className="text-[11px] text-red-500 font-medium flex items-center gap-1 animate-in fade-in duration-150">
-                  <AlertCircle size={11} />
-                  {errorState?.message}
-                </p>
-              )}
-            </div>
-
-            {/* Remember Me — Login Only */}
-            {isLogin && (
-              <div className="flex justify-between items-center">
-                <label className="flex items-center gap-2 cursor-pointer group">
-                  <input
-                    type="checkbox"
-                    id="rememberMe"
-                    className="h-4 w-4 rounded border-[#CBD5E1] text-[#2563EB] focus:ring-[#2563EB] focus:ring-offset-0 cursor-pointer"
-                  />
-                  <span className="text-[11px] text-[#64748B] dark:text-gray-300 font-medium group-hover:text-[#0F172A] dark:text-gray-200 transition-colors select-none">
-                    Ingat saya
-                  </span>
-                </label>
-              </div>
-            )}
-
-            {/* Role Dropdown — Register Only */}
-            {!isLogin && (
-              <div className="flex flex-col gap-1.5 relative animate-in fade-in duration-200" ref={roleDropdownRef}>
-                <label className="text-[10px] text-[#64748B] dark:text-gray-300 uppercase font-bold tracking-wider">
-                  Peran (Role)
-                </label>
-                <button
-                  type="button"
-                  onClick={() => setIsRoleDropdownOpen((prev) => !prev)}
-                  className="w-full bg-white dark:bg-[#243447] border border-[#E2E8F0] dark:border-gray-700 rounded-xl px-3.5 text-sm text-[#0F172A] dark:text-gray-200 text-left flex justify-between items-center focus:outline-none focus:border-[#2563EB] focus:ring-2 focus:ring-blue-100 cursor-pointer min-h-[48px] py-3 md:min-h-0 md:py-2.5 md:text-xs transition-all"
-                >
-                  <span>{currentRoleLabel}</span>
-                  <ChevronDown
-                    size={14}
-                    className={`text-[#94A3B8] transition-transform duration-200 ${isRoleDropdownOpen ? 'rotate-180' : ''}`}
-                  />
-                </button>
-                {isRoleDropdownOpen && (
-                  <div className="absolute left-0 right-0 top-[calc(100%+4px)] bg-white dark:bg-[#243447] border border-[#E2E8F0] dark:border-gray-700 rounded-xl shadow-xl dark:shadow-sm dark:shadow-slate-900/20 dark:border dark:bg-gray-800 z-50 animate-in fade-in slide-in-from-top-1 duration-150 overflow-hidden">
-                    {ROLES.map((r) => (
-                      <button
-                        key={r.value}
-                        type="button"
-                        onClick={() => {
-                          setRole(r.value);
-                          setIsRoleDropdownOpen(false);
-                        }}
-                        className={`w-full text-left px-3.5 py-2.5 text-xs hover:bg-[#F1F5F9] dark:bg-gray-800 transition duration-150 block cursor-pointer ${
-                          role === r.value
-                            ? 'bg-[#2563EB]/8 text-[#2563EB] font-semibold'
-                            : 'text-[#0F172A] dark:text-gray-200'
-                        }`}
-                      >
-                        {r.label}
-                      </button>
-                    ))}
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4 animate-in fade-in duration-200">
+                {/* Full Name */}
+                <div className="flex flex-col gap-1.5">
+                  <label className="text-[10px] text-[#64748B] dark:text-gray-300 uppercase font-bold tracking-wider">
+                    Nama Lengkap
+                  </label>
+                  <div className="relative">
+                    <User size={15} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-[#94A3B8]" />
+                    <input
+                      type="text"
+                      placeholder="Masukkan nama lengkap..."
+                      value={name}
+                      onChange={(e) => setName(e.target.value)}
+                      className={inputClass(false)}
+                    />
                   </div>
-                )}
-              </div>
-            )}
+                </div>
+
+                {/* Username */}
+                <div className="flex flex-col gap-1.5">
+                  <label className="text-[10px] text-[#64748B] dark:text-gray-300 uppercase font-bold tracking-wider">
+                    Username
+                  </label>
+                  <div className="relative">
+                    <User size={15} className={`absolute left-3.5 top-1/2 -translate-y-1/2 ${usernameHasError ? 'text-red-400' : 'text-[#94A3B8]'}`} />
+                    <input
+                      type="text"
+                      placeholder="Masukkan username..."
+                      value={username}
+                      onChange={(e) => {
+                        setUsername(e.target.value.toLowerCase().replace(/\s+/g, ''));
+                        if (errorState?.type === 'field') clearError();
+                      }}
+                      className={inputClass(usernameHasError)}
+                    />
+                  </div>
+                  {usernameHasError && errorState?.type === 'field' && (
+                    <p className="text-[11px] text-red-500 font-medium flex items-center gap-1">
+                      <AlertCircle size={11} />
+                      {errorState?.message}
+                    </p>
+                  )}
+                </div>
+
+                {/* Password */}
+                <div className="flex flex-col gap-1.5">
+                  <label className="text-[10px] text-[#64748B] dark:text-gray-300 uppercase font-bold tracking-wider">
+                    Password
+                  </label>
+                  <div className="relative">
+                    <Key size={15} className={`absolute left-3.5 top-1/2 -translate-y-1/2 ${passwordHasError ? 'text-red-400' : 'text-[#94A3B8]'}`} />
+                    <input
+                      type={showPassword ? 'text' : 'password'}
+                      placeholder="Masukkan password..."
+                      value={password}
+                      onChange={(e) => {
+                        setPassword(e.target.value);
+                        if (errorState?.type === 'field') clearError();
+                      }}
+                      className={`${inputClass(passwordHasError)} pr-11`}
+                    />
+                    <button
+                      type="button"
+                      onClick={() => setShowPassword((prev) => !prev)}
+                      className="absolute right-3 top-1/2 -translate-y-1/2 p-1.5 text-[#94A3B8] hover:text-[#64748B] dark:text-gray-300 focus:outline-none rounded-lg transition-colors cursor-pointer"
+                      aria-label={showPassword ? 'Sembunyikan password' : 'Tampilkan password'}
+                    >
+                      {showPassword ? <EyeOff size={16} /> : <Eye size={16} />}
+                    </button>
+                  </div>
+                  {passwordHasError && errorState?.type === 'field' && (
+                    <p className="text-[11px] text-red-500 font-medium flex items-center gap-1">
+                      <AlertCircle size={11} />
+                      {errorState?.message}
+                    </p>
+                  )}
+                </div>
+
+                {/* Role Dropdown */}
+                <div className="flex flex-col gap-1.5 relative" ref={roleDropdownRef}>
+                  <label className="text-[10px] text-[#64748B] dark:text-gray-300 uppercase font-bold tracking-wider">
+                    Peran (Role)
+                  </label>
+                  <button
+                    type="button"
+                    onClick={() => setIsRoleDropdownOpen((prev) => !prev)}
+                    className="w-full bg-white dark:bg-[#243447] border border-[#E2E8F0] dark:border-gray-700 rounded-xl px-3.5 text-sm text-[#0F172A] dark:text-gray-200 text-left flex justify-between items-center focus:outline-none focus:border-[#2563EB] focus:ring-2 focus:ring-blue-100 cursor-pointer min-h-[48px] py-3 md:min-h-0 md:py-2.5 md:text-xs transition-all"
+                  >
+                    <span>{currentRoleLabel}</span>
+                    <ChevronDown
+                      size={14}
+                      className={`text-[#94A3B8] transition-transform duration-200 ${isRoleDropdownOpen ? 'rotate-180' : ''}`}
+                    />
+                  </button>
+                  {isRoleDropdownOpen && (
+                    <div className="absolute left-0 right-0 top-[calc(100%+4px)] bg-white dark:bg-[#243447] border border-[#E2E8F0] dark:border-gray-700 rounded-xl shadow-xl dark:shadow-sm dark:shadow-slate-900/20 dark:border dark:bg-gray-800 z-50 overflow-hidden">
+                      {ROLES.map((r) => (
+                        <button
+                          key={r.value}
+                          type="button"
+                          onClick={() => {
+                            setRole(r.value);
+                            setIsRoleDropdownOpen(false);
+                          }}
+                          className={`w-full text-left px-3.5 py-2.5 text-xs hover:bg-[#F1F5F9] dark:bg-gray-800 transition duration-150 block cursor-pointer ${
+                            role === r.value
+                              ? 'bg-[#2563EB]/8 text-[#2563EB] font-semibold'
+                              : 'text-[#0F172A] dark:text-gray-200'
+                          }`}
+                        >
+                          {r.label}
+                        </button>
+                      ))}
+                    </div>
+                  )}
+                </div>
 
             {/* Siswa-specific fields — Register Only */}
             {!isLogin && role === 'siswa' && (
               <>
                 {/* Kelas Dropdown */}
                 <div
-                  className="flex flex-col gap-1.5 animate-in fade-in duration-200 relative"
+                  className="flex flex-col gap-1.5 relative"
                   ref={classDropdownRef}
                 >
                   <label className="text-[10px] text-[#64748B] dark:text-gray-300 uppercase font-bold tracking-wider">
@@ -483,7 +463,7 @@ export const AuthPage: React.FC = () => {
                     />
                   </button>
                   {isClassDropdownOpen && (
-                    <div className="absolute left-0 right-0 top-[calc(100%+4px)] bg-white dark:bg-[#243447] border border-[#E2E8F0] dark:border-gray-700 rounded-xl shadow-xl z-50 max-h-[160px] overflow-y-auto animate-in fade-in slide-in-from-top-1 duration-150">
+                    <div className="absolute left-0 right-0 top-[calc(100%+4px)] bg-white dark:bg-[#243447] border border-[#E2E8F0] dark:border-gray-700 rounded-xl shadow-xl z-50 max-h-[160px] overflow-y-auto">
                       {PREDEFINED_CLASSES.map((c) => (
                         <button
                           key={c}
@@ -506,7 +486,7 @@ export const AuthPage: React.FC = () => {
                 </div>
 
                 {/* NIS / NISN */}
-                <div className="flex flex-col gap-1.5 animate-in fade-in duration-200">
+                <div className="flex flex-col gap-1.5">
                   <label className="text-[10px] text-[#64748B] dark:text-gray-300 uppercase font-bold tracking-wider">
                     NIS / NISN
                   </label>
@@ -523,7 +503,7 @@ export const AuthPage: React.FC = () => {
                 </div>
 
                 {/* Perusahaan PKL */}
-                <div className="flex flex-col gap-1.5 animate-in fade-in duration-200">
+                <div className="flex flex-col gap-1.5 md:col-span-2">
                   <label className="text-[10px] text-[#64748B] dark:text-gray-300 uppercase font-bold tracking-wider">
                     Perusahaan PKL
                   </label>
@@ -537,6 +517,87 @@ export const AuthPage: React.FC = () => {
                       className={inputClass(false)}
                     />
                   </div>
+                </div>
+              </>
+            )}
+              </div>
+            )}
+
+            {/* If Login: fields are rendered in a simple flex column */}
+            {isLogin && (
+              <>
+                {/* Username */}
+                <div className="flex flex-col gap-1.5">
+                  <label className="text-[10px] text-[#64748B] dark:text-gray-300 uppercase font-bold tracking-wider">
+                    Username
+                  </label>
+                  <div className="relative">
+                    <User size={15} className={`absolute left-3.5 top-1/2 -translate-y-1/2 ${usernameHasError ? 'text-red-400' : 'text-[#94A3B8]'}`} />
+                    <input
+                      type="text"
+                      placeholder="Masukkan username..."
+                      value={username}
+                      onChange={(e) => {
+                        setUsername(e.target.value.toLowerCase().replace(/\s+/g, ''));
+                        if (errorState?.type === 'field') clearError();
+                      }}
+                      className={inputClass(usernameHasError)}
+                    />
+                  </div>
+                  {usernameHasError && errorState?.type === 'field' && (
+                    <p className="text-[11px] text-red-500 font-medium flex items-center gap-1">
+                      <AlertCircle size={11} />
+                      {errorState?.message}
+                    </p>
+                  )}
+                </div>
+
+                {/* Password */}
+                <div className="flex flex-col gap-1.5">
+                  <label className="text-[10px] text-[#64748B] dark:text-gray-300 uppercase font-bold tracking-wider">
+                    Password
+                  </label>
+                  <div className="relative">
+                    <Key size={15} className={`absolute left-3.5 top-1/2 -translate-y-1/2 ${passwordHasError ? 'text-red-400' : 'text-[#94A3B8]'}`} />
+                    <input
+                      type={showPassword ? 'text' : 'password'}
+                      placeholder="Masukkan password..."
+                      value={password}
+                      onChange={(e) => {
+                        setPassword(e.target.value);
+                        if (errorState?.type === 'field') clearError();
+                      }}
+                      className={`${inputClass(passwordHasError)} pr-11`}
+                    />
+                    <button
+                      type="button"
+                      onClick={() => setShowPassword((prev) => !prev)}
+                      className="absolute right-3 top-1/2 -translate-y-1/2 p-1.5 text-[#94A3B8] hover:text-[#64748B] dark:text-gray-300 focus:outline-none rounded-lg transition-colors cursor-pointer"
+                      aria-label={showPassword ? 'Sembunyikan password' : 'Tampilkan password'}
+                    >
+                      {showPassword ? <EyeOff size={16} /> : <Eye size={16} />}
+                    </button>
+                  </div>
+                  {passwordHasError && errorState?.type === 'field' && (
+                    <p className="text-[11px] text-red-500 font-medium flex items-center gap-1">
+                      <AlertCircle size={11} />
+                      {errorState?.message}
+                    </p>
+                  )}
+                </div>
+
+                {/* Remember Me */}
+                <div className="flex justify-between items-center">
+                  <label className="flex items-center gap-2 cursor-pointer group">
+                    <input
+                      type="checkbox"
+                      id="rememberMe"
+                      className="h-4 w-4 rounded border-[#CBD5E1] text-[#2563EB] focus:ring-[#2563EB] focus:ring-offset-0 cursor-pointer"
+                    />
+                    <span className="text-[11px] text-[#64748B] dark:text-gray-300 font-medium group-hover:text-[#0F172A] dark:text-gray-200 transition-colors select-none">
+                      Ingat saya
+                    </span>
+                  </label>
                 </div>
               </>
             )}

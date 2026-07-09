@@ -34,6 +34,9 @@ export const KanbanBoard: React.FC<KanbanBoardProps> = ({ onOpenCard }) => {
     today.setDate(today.getDate() + 7);
     return today.toISOString().split('T')[0];
   });
+  const [newStartTime, setNewStartTime] = useState('');
+  const [newEndTime, setNewEndTime] = useState('');
+  const [validationError, setValidationError] = useState<string | null>(null);
 
   const getColumnTitle = (id: PKLCard['columnId']) => {
     switch (id) {
@@ -47,14 +50,34 @@ export const KanbanBoard: React.FC<KanbanBoardProps> = ({ onOpenCard }) => {
 
   const handleModalSubmit = (e: React.FormEvent) => {
     e.preventDefault();
+    setValidationError(null);
+
+    if (!newStartTime || !newEndTime) {
+      setValidationError('Waktu mulai dan waktu selesai wajib diisi.');
+      return;
+    }
+
+    const [startH, startM] = newStartTime.split(':').map(Number);
+    const [endH, endM] = newEndTime.split(':').map(Number);
+    const startMin = startH * 60 + startM;
+    const endMin = endH * 60 + endM;
+    if (endMin < startMin) {
+      setValidationError('Waktu selesai harus lebih besar dari waktu mulai.');
+      return;
+    }
+
     if (!newTitle.trim()) return;
     const categoryToSave = newCategory === 'Lainnya' ? customCategory.trim() || 'Lainnya' : newCategory;
-    addCard(newTitle, newDesc, categoryToSave, newDueDate, newColumnId);
+    
+    addCard(newTitle, newDesc, categoryToSave, newDueDate, newStartTime, newEndTime, newColumnId);
+    
     setNewTitle('');
     setNewDesc('');
     setNewCategory('Coding');
     setCustomCategory('');
     setNewColumnId('rencana');
+    setNewStartTime('');
+    setNewEndTime('');
     setIsAddModalOpen(false);
   };
 
@@ -337,6 +360,48 @@ export const KanbanBoard: React.FC<KanbanBoardProps> = ({ onOpenCard }) => {
 
             {/* Modal Body / Form */}
             <form onSubmit={handleModalSubmit} className="p-5 md:p-6 overflow-y-auto flex flex-col gap-4 text-left">
+              {validationError && (
+                <div className="p-3 bg-red-50 border border-red-200 text-[#EF4444] rounded-lg text-xs font-semibold animate-in fade-in duration-200">
+                  {validationError}
+                </div>
+              )}
+              
+              {/* Due Date (1. Tanggal) */}
+              <div className="flex flex-col gap-1.5">
+                <label className="text-[11px] text-[#64748B] dark:text-gray-300 font-semibold uppercase tracking-wider">{t('dueDate')}</label>
+                <input
+                  type="date"
+                  value={newDueDate}
+                  onChange={(e) => setNewDueDate(e.target.value)}
+                  className="w-full bg-white dark:bg-[#243447] border border-[#E2E8F0] dark:border-gray-700 rounded-xl px-3 text-sm text-[#0F172A] dark:text-gray-200 focus:outline-none focus:border-[#2563EB] focus:ring-1 focus:ring-[#2563EB] min-h-[48px] py-3 md:min-h-0 md:py-2"
+                />
+              </div>
+
+              {/* Start & End Time (2. Waktu Mulai & 3. Waktu Selesai) */}
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div className="flex flex-col gap-1.5">
+                  <label className="text-[11px] text-[#64748B] dark:text-gray-300 font-semibold uppercase tracking-wider">{t('start')}</label>
+                  <input
+                    type="time"
+                    required
+                    value={newStartTime}
+                    onChange={(e) => setNewStartTime(e.target.value)}
+                    className="w-full bg-white dark:bg-[#243447] border border-[#E2E8F0] dark:border-gray-700 rounded-xl px-3 text-sm text-[#0F172A] dark:text-gray-200 focus:outline-none focus:border-[#2563EB] focus:ring-1 focus:ring-[#2563EB] min-h-[48px] py-3 md:min-h-0 md:py-2"
+                  />
+                </div>
+                <div className="flex flex-col gap-1.5">
+                  <label className="text-[11px] text-[#64748B] dark:text-gray-300 font-semibold uppercase tracking-wider">{t('end')}</label>
+                  <input
+                    type="time"
+                    required
+                    value={newEndTime}
+                    onChange={(e) => setNewEndTime(e.target.value)}
+                    className="w-full bg-white dark:bg-[#243447] border border-[#E2E8F0] dark:border-gray-700 rounded-xl px-3 text-sm text-[#0F172A] dark:text-gray-200 focus:outline-none focus:border-[#2563EB] focus:ring-1 focus:ring-[#2563EB] min-h-[48px] py-3 md:min-h-0 md:py-2"
+                  />
+                </div>
+              </div>
+
+              {/* Judul (4) */}
               <div className="flex flex-col gap-1.5">
                 <label className="text-[11px] text-[#64748B] dark:text-gray-300 font-semibold uppercase tracking-wider">{t('activityTitle')}</label>
                 <input
@@ -349,19 +414,8 @@ export const KanbanBoard: React.FC<KanbanBoardProps> = ({ onOpenCard }) => {
                 />
               </div>
 
-              <div className="flex flex-col gap-1.5">
-                <label className="text-[11px] text-[#64748B] dark:text-gray-300 font-semibold uppercase tracking-wider">{t('activityDesc')}</label>
-                <textarea
-                  placeholder="..."
-                  value={newDesc}
-                  onChange={(e) => setNewDesc(e.target.value)}
-                  rows={3}
-                  className="w-full bg-white dark:bg-[#243447] border border-[#E2E8F0] dark:border-gray-700 rounded-xl px-3 text-sm text-[#0F172A] dark:text-gray-200 focus:outline-none focus:border-[#2563EB] focus:ring-1 focus:ring-[#2563EB] resize-none min-h-[80px] py-3 md:min-h-0 md:py-2"
-                />
-              </div>
-
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                {/* Category Dropdown */}
+                {/* Category Dropdown (5. Kategori) */}
                 <div className="relative text-left">
                   <label className="text-[11px] text-[#64748B] dark:text-gray-300 font-semibold uppercase tracking-wider block mb-1.5">{t('category')}</label>
                   <button
@@ -395,7 +449,7 @@ export const KanbanBoard: React.FC<KanbanBoardProps> = ({ onOpenCard }) => {
                   )}
                 </div>
 
-                {/* Column / Progress Status Dropdown */}
+                {/* Column / Progress Status Dropdown (Status) */}
                 <div className="relative text-left">
                   <label className="text-[11px] text-[#64748B] dark:text-gray-300 font-semibold uppercase tracking-wider block mb-1.5">{t('status')}</label>
                   <button
@@ -449,14 +503,15 @@ export const KanbanBoard: React.FC<KanbanBoardProps> = ({ onOpenCard }) => {
                 </div>
               )}
 
-              {/* Due Date */}
+              {/* Deskripsi (6. Deskripsi) */}
               <div className="flex flex-col gap-1.5">
-                <label className="text-[11px] text-[#64748B] dark:text-gray-300 font-semibold uppercase tracking-wider">{t('dueDate')}</label>
-                <input
-                  type="date"
-                  value={newDueDate}
-                  onChange={(e) => setNewDueDate(e.target.value)}
-                  className="w-full bg-white dark:bg-[#243447] border border-[#E2E8F0] dark:border-gray-700 rounded-xl px-3 text-sm text-[#0F172A] dark:text-gray-200 focus:outline-none focus:border-[#2563EB] focus:ring-1 focus:ring-[#2563EB] min-h-[48px] py-3 md:min-h-0 md:py-2"
+                <label className="text-[11px] text-[#64748B] dark:text-gray-300 font-semibold uppercase tracking-wider">{t('activityDesc')}</label>
+                <textarea
+                  placeholder="..."
+                  value={newDesc}
+                  onChange={(e) => setNewDesc(e.target.value)}
+                  rows={3}
+                  className="w-full bg-white dark:bg-[#243447] border border-[#E2E8F0] dark:border-gray-700 rounded-xl px-3 text-sm text-[#0F172A] dark:text-gray-200 focus:outline-none focus:border-[#2563EB] focus:ring-1 focus:ring-[#2563EB] resize-none min-h-[80px] py-3 md:min-h-0 md:py-2"
                 />
               </div>
 

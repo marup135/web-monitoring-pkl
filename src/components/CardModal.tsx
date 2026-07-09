@@ -433,7 +433,24 @@ export const CardModal: React.FC<CardModalProps> = ({ card, onClose, initialEdit
                           </button>
                         )}
                       </div>
-                      <p className="text-sm text-slate-600 leading-relaxed whitespace-pre-wrap">
+                      
+                      {/* Tanggal & Waktu Display */}
+                      <div className="flex flex-col gap-1.5 mb-4 text-xs font-medium text-slate-600 dark:text-gray-300 border-b border-slate-100 dark:border-gray-700/50 pb-3">
+                        <div className="flex items-center gap-2">
+                          <span className="text-[#94A3B8] font-normal w-12">Tanggal</span>
+                          <span>
+                            {card.dueDate ? new Date(card.dueDate).toLocaleDateString('id-ID', { day: '2-digit', month: 'long', year: 'numeric' }) : '-'}
+                          </span>
+                        </div>
+                        {(card.startTime || card.endTime) && (
+                          <div className="flex items-center gap-2">
+                            <span className="text-[#94A3B8] font-normal w-12">Waktu</span>
+                            <span>{card.startTime || '-'} - {card.endTime || '-'}</span>
+                          </div>
+                        )}
+                      </div>
+
+                      <p className="text-sm text-slate-600 dark:text-gray-300 leading-relaxed whitespace-pre-wrap">
                         {card.description}
                       </p>
                     </div>
