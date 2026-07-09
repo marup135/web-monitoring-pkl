@@ -14,8 +14,10 @@ import { AdminPortal } from '../components/AdminPortal';
 import { PKLCard } from '../types/pkl';
 import { LayoutDashboard, FileSpreadsheet, BarChart3, Building2, UserCheck, RefreshCw, Menu, X, User, Settings, Key, LogOut } from 'lucide-react';
 import { SettingsPage } from '../components/SettingsPage';
+import { useLanguage } from '../context/LanguageContext';
 
 function DashboardContent() {
+  const { t } = useLanguage();
   const {
     state,
     activeTab,
@@ -146,61 +148,64 @@ function DashboardContent() {
               </button>
             </div>
             
-            <div className="flex flex-col gap-1.5 flex-1">
+            <div className="flex flex-col gap-2 flex-1 mt-4">
               <button
                 onClick={() => { setActiveTab('stats'); setIsSettingsActive(false); setIsDrawerOpen(false); }}
-                className={`flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-semibold transition duration-200 w-full text-left cursor-pointer min-h-[48px] ${
-                  !isSettingsActive && activeTab === 'stats' ? 'bg-blue-50 text-[#2563EB]' : 'text-slate-600 hover:bg-slate-50 dark:hover:bg-[#2D435E]'
+                className={`flex items-center gap-3 px-4 py-3.5 rounded-2xl text-sm font-bold transition duration-200 w-full text-left cursor-pointer min-h-[52px] ${
+                  !isSettingsActive && activeTab === 'stats' ? 'bg-blue-50 dark:bg-blue-500/10 text-blue-600 dark:text-blue-400' : 'text-slate-500 dark:text-gray-400 hover:bg-slate-50 dark:hover:bg-gray-800'
                 }`}
               >
-                <BarChart3 size={18} />
-                Dashboard (Statistik)
+                <BarChart3 size={20} />
+                {t('dashboard')}
               </button>
               <button
                 onClick={() => { setActiveTab('board'); setIsSettingsActive(false); setIsDrawerOpen(false); }}
-                className={`flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-semibold transition duration-200 w-full text-left cursor-pointer min-h-[48px] ${
-                  !isSettingsActive && activeTab === 'board' ? 'bg-blue-50 text-[#2563EB]' : 'text-slate-600 hover:bg-slate-50 dark:hover:bg-[#2D435E]'
+                className={`flex items-center gap-3 px-4 py-3.5 rounded-2xl text-sm font-bold transition duration-200 w-full text-left cursor-pointer min-h-[52px] ${
+                  !isSettingsActive && activeTab === 'board' ? 'bg-blue-50 dark:bg-blue-500/10 text-blue-600 dark:text-blue-400' : 'text-slate-500 dark:text-gray-400 hover:bg-slate-50 dark:hover:bg-gray-800'
                 }`}
               >
-                <LayoutDashboard size={18} />
-                Kanban Board
+                <LayoutDashboard size={20} />
+                {t('board')}
               </button>
               <button
                 onClick={() => { setActiveTab('logbook'); setIsSettingsActive(false); setIsDrawerOpen(false); }}
-                className={`flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-semibold transition duration-200 w-full text-left cursor-pointer min-h-[48px] ${
-                  !isSettingsActive && activeTab === 'logbook' ? 'bg-blue-50 text-[#2563EB]' : 'text-slate-600 hover:bg-slate-50 dark:hover:bg-[#2D435E]'
+                className={`flex items-center gap-3 px-4 py-3.5 rounded-2xl text-sm font-bold transition duration-200 w-full text-left cursor-pointer min-h-[52px] ${
+                  !isSettingsActive && activeTab === 'logbook' ? 'bg-blue-50 dark:bg-blue-500/10 text-blue-600 dark:text-blue-400' : 'text-slate-500 dark:text-gray-400 hover:bg-slate-50 dark:hover:bg-gray-800'
                 }`}
               >
-                <FileSpreadsheet size={18} />
-                Jurnal Harian
+                <FileSpreadsheet size={20} />
+                {t('logbook')}
               </button>
               <button
                 onClick={() => { setIsSettingsActive(true); setIsDrawerOpen(false); }}
-                className={`flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-semibold transition duration-200 w-full text-left cursor-pointer min-h-[48px] ${
-                  isSettingsActive ? 'bg-blue-50 text-[#2563EB]' : 'text-slate-600 hover:bg-slate-50 dark:hover:bg-[#2D435E]'
+                className={`flex items-center gap-3 px-4 py-3.5 rounded-2xl text-sm font-bold transition duration-200 w-full text-left cursor-pointer min-h-[52px] ${
+                  isSettingsActive ? 'bg-blue-50 dark:bg-blue-500/10 text-blue-600 dark:text-blue-400' : 'text-slate-500 dark:text-gray-400 hover:bg-slate-50 dark:hover:bg-gray-800'
                 }`}
               >
-                <Settings size={18} />
-                Pengaturan Aplikasi
+                <Settings size={20} />
+                {t('settings')}
               </button>
             </div>
 
-            <div className="border-t border-[#E2E8F0] dark:border-gray-700 pt-6 flex flex-col gap-3">
-              <div className="flex items-center gap-2 px-1">
-                <div className="w-8 h-8 rounded-full bg-blue-100 flex items-center justify-center text-blue-600 font-bold text-xs shrink-0">
-                  {currentUser?.name?.charAt(0).toUpperCase()}
+            <div className="mt-auto pt-6">
+              <div className="flex items-center justify-between p-3 bg-slate-50 dark:bg-gray-800/50 rounded-2xl border border-slate-100 dark:border-gray-700/50">
+                <div className="flex items-center gap-3 overflow-hidden">
+                  <div className="w-9 h-9 rounded-xl bg-blue-100 dark:bg-gray-800 flex items-center justify-center text-blue-600 dark:text-gray-300 font-bold text-sm shrink-0">
+                    {currentUser?.name?.charAt(0).toUpperCase()}
+                  </div>
+                  <div className="overflow-hidden">
+                    <p className="text-sm font-bold text-slate-800 dark:text-gray-200 truncate leading-tight">{currentUser?.name}</p>
+                    <p className="text-[11px] font-medium text-slate-400 dark:text-gray-400 capitalize truncate mt-0.5">{currentUser?.role}</p>
+                  </div>
                 </div>
-                <div className="overflow-hidden">
-                  <p className="text-xs font-bold text-slate-800 dark:text-gray-200 truncate">{currentUser?.name}</p>
-                  <p className="text-[10px] text-slate-400 capitalize">{currentUser?.role}</p>
-                </div>
+                <button
+                  onClick={logout}
+                  className="p-2.5 bg-white dark:bg-gray-800 hover:bg-red-50 dark:hover:bg-red-500/10 border border-slate-200 dark:border-gray-700 text-slate-400 hover:text-red-500 dark:hover:text-red-400 hover:border-red-200 dark:hover:border-red-500/30 rounded-xl transition cursor-pointer shrink-0"
+                  title="Logout"
+                >
+                  <LogOut size={18} />
+                </button>
               </div>
-              <button
-                onClick={logout}
-                className="w-full py-3 bg-red-50 hover:bg-red-100 border border-red-200 text-[#EF4444] font-bold text-sm rounded-xl transition cursor-pointer min-h-[48px]"
-              >
-                Logout
-              </button>
             </div>
           </div>
         </div>
@@ -215,7 +220,7 @@ function DashboardContent() {
           }`}
         >
           <BarChart3 size={20} />
-          <span className="text-[9px] font-bold mt-0.5">Dashboard</span>
+          <span className="text-[9px] font-bold mt-0.5">{t('dashboard').split(' ')[0]}</span>
         </button>
         <button
           onClick={() => { setActiveTab('board'); setIsSettingsActive(false); }}
@@ -224,7 +229,7 @@ function DashboardContent() {
           }`}
         >
           <LayoutDashboard size={20} />
-          <span className="text-[9px] font-bold mt-0.5">Board</span>
+          <span className="text-[9px] font-bold mt-0.5">{t('board').split(' ')[0]}</span>
         </button>
         <button
           onClick={() => { setActiveTab('logbook'); setIsSettingsActive(false); }}
@@ -233,7 +238,7 @@ function DashboardContent() {
           }`}
         >
           <FileSpreadsheet size={20} />
-          <span className="text-[9px] font-bold mt-0.5">Logbook</span>
+          <span className="text-[9px] font-bold mt-0.5">{t('logbook').split(' ')[0]}</span>
         </button>
         <button
           onClick={() => setIsUserMenuOpen(true)}
@@ -242,7 +247,7 @@ function DashboardContent() {
           }`}
         >
           <User size={20} />
-          <span className="text-[9px] font-bold mt-0.5">Users</span>
+          <span className="text-[9px] font-bold mt-0.5">{t('users')}</span>
         </button>
         <button
           onClick={() => setIsSettingsActive(true)}
@@ -251,7 +256,7 @@ function DashboardContent() {
           }`}
         >
           <Settings size={20} />
-          <span className="text-[9px] font-bold mt-0.5">Settings</span>
+          <span className="text-[9px] font-bold mt-0.5">{t('settings').split(' ')[0]}</span>
         </button>
       </div>
 
@@ -466,7 +471,7 @@ function DashboardContent() {
                 <div className="w-8 h-8 rounded-xl bg-slate-100 dark:bg-gray-800 flex items-center justify-center text-slate-500 dark:text-gray-300 shrink-0">
                   <User size={16} />
                 </div>
-                <span>Profil Saya</span>
+                <span>{t('profile')}</span>
               </button>
 
               <hr className="border-[#E2E8F0] dark:border-gray-700 my-2" />
@@ -481,7 +486,7 @@ function DashboardContent() {
                 <div className="w-8 h-8 rounded-xl bg-red-50 dark:bg-red-500/20 flex items-center justify-center text-[#EF4444] dark:text-red-500 shrink-0">
                   <LogOut size={16} />
                 </div>
-                <span>Keluar (Logout)</span>
+                <span>{t('logout')}</span>
               </button>
             </div>
           </div>

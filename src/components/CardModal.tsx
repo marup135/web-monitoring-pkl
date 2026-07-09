@@ -4,6 +4,7 @@ import React, { useState } from 'react';
 import { usePKL } from '../context/PKLContext';
 import { PKLCard } from '../types/pkl';
 import { X, Calendar, Clock, MessageSquare, Award, Trash2, Edit2, Send, History, CheckCircle, File, FileText, Image as ImageIcon, Paperclip, Loader2, Plus, ChevronDown } from 'lucide-react';
+import { useLanguage } from '../context/LanguageContext';
 
 interface CardModalProps {
   card: PKLCard;
@@ -24,6 +25,7 @@ export const CardModal: React.FC<CardModalProps> = ({ card, onClose, initialEdit
     deleteCard,
     updateCardColumn
   } = usePKL();
+  const { t } = useLanguage();
   const [activeTab, setActiveTab] = useState<'details' | 'history'>('details');
 
   // Edit Mode states (for Student)
@@ -233,13 +235,13 @@ export const CardModal: React.FC<CardModalProps> = ({ card, onClose, initialEdit
               card.columnId === 'progres' ? 'bg-blue-50 text-blue-700 border-blue-100' :
               'bg-slate-50 dark:bg-gray-800/50 text-slate-700 border-slate-100'
             }`}>
-              {card.columnId === 'selesai' ? 'Selesai' :
-               card.columnId === 'review' ? 'Butuh Review' :
-               card.columnId === 'progres' ? 'Sedang Dikerjakan' :
-               'Rencana Kegiatan'}
+              {card.columnId === 'selesai' ? t('statusDone') :
+               card.columnId === 'review' ? t('statusReview') :
+               card.columnId === 'progres' ? t('statusProgress') :
+               t('statusPlan')}
             </span>
             <span className="text-xs text-gray-300">•</span>
-            <span className="text-xs text-[#64748B] dark:text-gray-300 font-medium">{card.category}</span>
+            <span className="text-xs text-[#64748B] dark:text-gray-300 font-medium">{card.category === 'Laporan' ? t('report') : card.category === 'Lainnya' ? t('others') : card.category}</span>
           </div>
           <button
             onClick={onClose}
@@ -258,7 +260,7 @@ export const CardModal: React.FC<CardModalProps> = ({ card, onClose, initialEdit
             }`}
           >
             <MessageSquare size={14} />
-            Detail & Diskusi
+            {t('tabDetails')}
           </button>
           <button
             onClick={() => setActiveTab('history')}
@@ -267,7 +269,7 @@ export const CardModal: React.FC<CardModalProps> = ({ card, onClose, initialEdit
             }`}
           >
             <History size={14} />
-            Riwayat Aktivitas ({card.history.length})
+            {t('tabHistory')} ({card.history.length})
           </button>
         </div>
 
@@ -296,7 +298,7 @@ export const CardModal: React.FC<CardModalProps> = ({ card, onClose, initialEdit
                         </div>
                       )}
                       <div className="flex flex-col gap-1">
-                        <label className="text-[10px] text-[#64748B] dark:text-gray-300 font-semibold uppercase">Judul</label>
+                        <label className="text-[10px] text-[#64748B] dark:text-gray-300 font-semibold uppercase">{t('activityTitle')}</label>
                         <input
                           type="text"
                           required
@@ -307,7 +309,7 @@ export const CardModal: React.FC<CardModalProps> = ({ card, onClose, initialEdit
                       </div>
                       
                       <div className="flex flex-col gap-1">
-                        <label className="text-[10px] text-[#64748B] dark:text-gray-300 font-semibold uppercase">Deskripsi</label>
+                        <label className="text-[10px] text-[#64748B] dark:text-gray-300 font-semibold uppercase">{t('activityDesc')}</label>
                         <textarea
                           required
                           rows={4}
@@ -319,13 +321,13 @@ export const CardModal: React.FC<CardModalProps> = ({ card, onClose, initialEdit
 
                       <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
                         <div className="relative">
-                          <label className="text-[10px] text-[#64748B] dark:text-gray-300 font-semibold uppercase">Kategori</label>
+                          <label className="text-[10px] text-[#64748B] dark:text-gray-300 font-semibold uppercase">{t('category')}</label>
                           <button
                             type="button"
                             onClick={() => setIsCategoryDropdownOpen(!isCategoryDropdownOpen)}
                             className="w-full bg-white dark:bg-[#243447] border border-[#E2E8F0] dark:border-gray-700 rounded-xl px-3 text-left text-sm text-[#0F172A] dark:text-gray-200 focus:outline-none flex justify-between items-center hover:bg-slate-50 dark:hover:bg-[#2D435E] transition cursor-pointer min-h-[48px] py-3 md:min-h-0 md:py-2 md:rounded-lg md:text-xs"
                           >
-                            <span>{selectCategory}</span>
+                            <span>{selectCategory === 'Laporan' ? t('report') : selectCategory === 'Lainnya' ? t('others') : selectCategory}</span>
                             <ChevronDown size={12} className={`text-slate-400 transition-transform ${isCategoryDropdownOpen ? 'rotate-180' : ''}`} />
                           </button>
                           
@@ -341,14 +343,14 @@ export const CardModal: React.FC<CardModalProps> = ({ card, onClose, initialEdit
                                   }}
                                   className={`w-full text-left px-3 py-2.5 md:py-2 text-sm md:text-xs transition-colors hover:bg-slate-50 dark:hover:bg-[#2D435E] flex items-center justify-between cursor-pointer ${selectCategory === cat ? 'bg-blue-50 text-[#2563EB] font-semibold' : 'text-slate-700'}`}
                                 >
-                                  {cat}
+                                  {cat === 'Laporan' ? t('report') : cat === 'Lainnya' ? t('others') : cat}
                                 </button>
                               ))}
                             </div>
                           )}
                         </div>
                         <div>
-                          <label className="text-[10px] text-[#64748B] dark:text-gray-300 font-semibold uppercase">Tenggat</label>
+                          <label className="text-[10px] text-[#64748B] dark:text-gray-300 font-semibold uppercase">{t('dueDate')}</label>
                           <input
                             type="date"
                             value={editDueDate}
@@ -360,7 +362,7 @@ export const CardModal: React.FC<CardModalProps> = ({ card, onClose, initialEdit
 
                       {selectCategory === 'Lainnya' && (
                         <div className="flex flex-col gap-1">
-                          <label className="text-[10px] text-[#64748B] dark:text-gray-300 font-semibold uppercase">Isi Kategori Lainnya</label>
+                          <label className="text-[10px] text-[#64748B] dark:text-gray-300 font-semibold uppercase">{t('category')}</label>
                           <input
                             type="text"
                             required
@@ -374,7 +376,7 @@ export const CardModal: React.FC<CardModalProps> = ({ card, onClose, initialEdit
 
                       <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
                         <div>
-                          <label className="text-[10px] text-[#64748B] dark:text-gray-300 font-semibold uppercase">Waktu Mulai</label>
+                          <label className="text-[10px] text-[#64748B] dark:text-gray-300 font-semibold uppercase">{t('start')}</label>
                           <input
                             type="time"
                             value={editStartTime}
@@ -383,7 +385,7 @@ export const CardModal: React.FC<CardModalProps> = ({ card, onClose, initialEdit
                           />
                         </div>
                         <div>
-                          <label className="text-[10px] text-[#64748B] dark:text-gray-300 font-semibold uppercase">Waktu Selesai</label>
+                          <label className="text-[10px] text-[#64748B] dark:text-gray-300 font-semibold uppercase">{t('end')}</label>
                           <input
                             type="time"
                             value={editEndTime}
@@ -408,13 +410,13 @@ export const CardModal: React.FC<CardModalProps> = ({ card, onClose, initialEdit
                           }}
                           className="w-full md:w-auto px-4 py-3 md:py-1.5 rounded-xl md:rounded-lg bg-white dark:bg-[#243447] border border-[#E2E8F0] dark:border-gray-700 text-sm md:text-xs font-semibold text-slate-700 hover:bg-slate-50 dark:hover:bg-[#2D435E] transition cursor-pointer min-h-[48px] md:min-h-0"
                         >
-                          Batal
+                          {t('cancel')}
                         </button>
                         <button
                           type="submit"
                           className="w-full md:w-auto px-4 py-3 md:py-1.5 rounded-xl md:rounded-lg bg-[#2563EB] hover:bg-[#1D4ED8] text-sm md:text-xs font-semibold text-white transition shadow-sm cursor-pointer min-h-[48px] md:min-h-0"
                         >
-                          Simpan Perubahan
+                          {t('save')}
                         </button>
                       </div>
                     </form>
@@ -443,7 +445,7 @@ export const CardModal: React.FC<CardModalProps> = ({ card, onClose, initialEdit
                   <div className="flex justify-between items-center">
                     <h4 className="text-xs font-bold text-[#64748B] dark:text-gray-300 uppercase tracking-wider flex items-center gap-1.5">
                       <Paperclip size={14} className="text-[#2563EB]" />
-                      Berkas Lampiran ({card.attachments ? card.attachments.length : 0})
+                      {t('attachments')} ({card.attachments ? card.attachments.length : 0})
                     </h4>
                     {isStudent && (
                       <div className="relative">
@@ -475,7 +477,7 @@ export const CardModal: React.FC<CardModalProps> = ({ card, onClose, initialEdit
                   </div>
 
                   {(!card.attachments || card.attachments.length === 0) ? (
-                    <p className="text-xs text-slate-500 dark:text-gray-2000 italic">Belum ada file lampiran.</p>
+                    <p className="text-xs text-slate-500 dark:text-gray-2000 italic">{t('emptyAttachments')}</p>
                   ) : (
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-2.5">
                       {card.attachments.map((att, idx) => {
@@ -525,14 +527,14 @@ export const CardModal: React.FC<CardModalProps> = ({ card, onClose, initialEdit
                 <div className="bg-[#F1F5F9] dark:bg-gray-800/50 border border-[#E2E8F0] dark:border-gray-700 rounded-xl p-4 flex flex-col gap-4">
                   <h4 className="text-xs font-bold text-[#64748B] dark:text-gray-300 uppercase tracking-wider flex items-center gap-1.5">
                     <Award size={14} className="text-purple-600" />
-                    Penilaian Mentor (Pembimbing Eksternal)
+                    {t('mentorEvalTitle')}
                   </h4>
 
                   {card.scoreMentor !== undefined ? (
                     <div className="flex flex-col gap-3">
                       <div className="flex gap-4">
                         <div className="p-3 bg-purple-50 border border-purple-100 text-purple-700 rounded-xl h-fit flex flex-col items-center justify-center min-w-[75px] shadow-sm">
-                          <span className="text-[9px] uppercase font-bold text-purple-600">Mentor</span>
+                          <span className="text-[9px] uppercase font-bold text-purple-600">{t('mentor')}</span>
                           <span className="text-2xl font-black">{card.scoreMentor}</span>
                         </div>
                         <div className="flex-1 flex flex-col gap-1 text-xs">
@@ -553,12 +555,12 @@ export const CardModal: React.FC<CardModalProps> = ({ card, onClose, initialEdit
                         </div>
                       </div>
                       <div className="text-xs bg-white dark:bg-[#243447] p-2.5 rounded-lg border border-[#E2E8F0] dark:border-gray-700">
-                        <span className="text-[10px] text-purple-600 font-semibold block mb-0.5">Umpan Balik Mentor:</span>
-                        <p className="text-slate-600 italic">&ldquo;{card.feedbackMentor || 'Kegiatan disetujui tanpa catatan tambahan.'}&rdquo;</p>
+                        <span className="text-[10px] text-purple-600 font-semibold block mb-0.5">{t('mentorFeedbackTitle')}:</span>
+                        <p className="text-slate-600 italic">&ldquo;{card.feedbackMentor || t('emptyFeedback')}&rdquo;</p>
                       </div>
                     </div>
                   ) : (
-                    <p className="text-xs text-slate-500 dark:text-gray-2000 italic">Belum dinilai oleh Mentor Lapangan.</p>
+                    <p className="text-xs text-slate-500 dark:text-gray-2000 italic">{t('notEvaluatedMentor')}</p>
                   )}
                 </div>
 
@@ -566,14 +568,14 @@ export const CardModal: React.FC<CardModalProps> = ({ card, onClose, initialEdit
                 <div className="bg-[#F1F5F9] dark:bg-gray-800/50 border border-[#E2E8F0] dark:border-gray-700 rounded-xl p-4 flex flex-col gap-4">
                   <h4 className="text-xs font-bold text-[#64748B] dark:text-gray-300 uppercase tracking-wider flex items-center gap-1.5">
                     <Award size={14} className="text-yellow-600" />
-                    Penilaian Guru (Pembimbing Internal)
+                    {t('teacherEvalTitle')}
                   </h4>
 
                   {card.scoreAdvisor !== undefined ? (
                     <div className="flex flex-col gap-3">
                       <div className="flex gap-4">
                         <div className="p-3 bg-yellow-50 border border-yellow-100 text-yellow-700 rounded-xl h-fit flex flex-col items-center justify-center min-w-[75px] shadow-sm">
-                          <span className="text-[9px] uppercase font-bold text-yellow-600">Guru</span>
+                          <span className="text-[9px] uppercase font-bold text-yellow-600">{t('teacher')}</span>
                           <span className="text-2xl font-black">{card.scoreAdvisor}</span>
                         </div>
                         <div className="flex-1 flex flex-col gap-1 text-xs">
@@ -594,12 +596,12 @@ export const CardModal: React.FC<CardModalProps> = ({ card, onClose, initialEdit
                         </div>
                       </div>
                       <div className="text-xs bg-white dark:bg-[#243447] p-2.5 rounded-lg border border-[#E2E8F0] dark:border-gray-700">
-                        <span className="text-[10px] text-yellow-600 font-semibold block mb-0.5">Umpan Balik Guru:</span>
-                        <p className="text-slate-600 italic">&ldquo;{card.feedbackAdvisor || 'Belum ada catatan tambahan.'}&rdquo;</p>
+                        <span className="text-[10px] text-yellow-600 font-semibold block mb-0.5">{t('teacherFeedbackTitle')}:</span>
+                        <p className="text-slate-600 italic">&ldquo;{card.feedbackAdvisor || t('emptyFeedback')}&rdquo;</p>
                       </div>
                     </div>
                   ) : (
-                    <p className="text-xs text-slate-500 dark:text-gray-2000 italic">Belum dinilai oleh Guru Pembimbing.</p>
+                    <p className="text-xs text-slate-500 dark:text-gray-2000 italic">{t('notEvaluatedAdvisor')}</p>
                   )}
                 </div>
 
@@ -654,13 +656,13 @@ export const CardModal: React.FC<CardModalProps> = ({ card, onClose, initialEdit
                       </div>
                     </div>
                     <div>
-                      <label className="text-[10px] text-[#64748B] dark:text-gray-300 font-semibold block mb-1">Catatan / Umpan Balik Mentor</label>
+                      <label className="text-[10px] text-[#64748B] dark:text-gray-300 font-semibold block mb-1">{t('mentorFeedbackTitle')}</label>
                       <textarea
                         required
                         rows={2}
                         value={mentorFeedback}
                         onChange={(e) => setMentorFeedback(e.target.value)}
-                        placeholder="Berikan umpan balik atau instruksi revisi..."
+                        placeholder="..."
                         className="w-full bg-white dark:bg-[#243447] border border-[#E2E8F0] dark:border-gray-700 rounded-xl px-3.5 text-sm text-[#0F172A] dark:text-gray-200 focus:outline-none focus:border-[#2563EB] resize-none min-h-[80px] py-3 md:min-h-0 md:py-2.5 md:text-xs md:rounded-lg"
                       />
                     </div>
@@ -668,7 +670,7 @@ export const CardModal: React.FC<CardModalProps> = ({ card, onClose, initialEdit
                       type="submit"
                       className="py-3 bg-[#2563EB] hover:bg-[#1D4ED8] text-white text-sm font-semibold rounded-xl shadow-sm transition w-full cursor-pointer min-h-[48px] md:min-h-0 md:py-2 md:text-xs md:rounded-lg"
                     >
-                      Kirim Penilaian Mentor & Setujui
+                      {t('save')}
                     </button>
                   </form>
                 )}
@@ -683,7 +685,7 @@ export const CardModal: React.FC<CardModalProps> = ({ card, onClose, initialEdit
                     )}
                     <h4 className="text-xs font-bold text-yellow-600 uppercase tracking-wider flex items-center gap-1.5">
                       <CheckCircle size={14} />
-                      Form Penilaian Guru Pembimbing (Internal)
+                      {t('teacherEvalTitle')}
                     </h4>
                     <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
                       <div>
@@ -724,13 +726,13 @@ export const CardModal: React.FC<CardModalProps> = ({ card, onClose, initialEdit
                       </div>
                     </div>
                     <div>
-                      <label className="text-[10px] text-[#64748B] dark:text-gray-300 font-semibold block mb-1">Catatan / Umpan Balik Guru</label>
+                      <label className="text-[10px] text-[#64748B] dark:text-gray-300 font-semibold block mb-1">{t('teacherFeedbackTitle')}</label>
                       <textarea
                         required
                         rows={2}
                         value={advisorFeedback}
                         onChange={(e) => setAdvisorFeedback(e.target.value)}
-                        placeholder="Berikan umpan balik atau saran akademik..."
+                        placeholder="..."
                         className="w-full bg-white dark:bg-[#243447] border border-[#E2E8F0] dark:border-gray-700 rounded-xl px-3.5 text-sm text-[#0F172A] dark:text-gray-200 focus:outline-none focus:border-[#2563EB] resize-none min-h-[80px] py-3 md:min-h-0 md:py-2.5 md:text-xs md:rounded-lg"
                       />
                     </div>
@@ -738,7 +740,7 @@ export const CardModal: React.FC<CardModalProps> = ({ card, onClose, initialEdit
                       type="submit"
                       className="py-3 bg-[#2563EB] hover:bg-[#1D4ED8] text-white text-sm font-semibold rounded-xl shadow-sm transition w-full cursor-pointer min-h-[48px] md:min-h-0 md:py-2 md:text-xs md:rounded-lg"
                     >
-                      Kirim Penilaian Guru
+                      {t('save')}
                     </button>
                   </form>
                 )}
@@ -747,12 +749,12 @@ export const CardModal: React.FC<CardModalProps> = ({ card, onClose, initialEdit
                 <div className="flex flex-col gap-4 border-t border-[#E2E8F0] dark:border-gray-700 pt-6">
                   <h4 className="text-xs font-bold text-[#64748B] dark:text-gray-300 uppercase tracking-wider flex items-center gap-1.5">
                     <MessageSquare size={14} className="text-[#2563EB]" />
-                    Kolom Diskusi ({card.comments.length})
+                    {t('discussion')} ({card.comments.length})
                   </h4>
 
                   <div className="flex flex-col gap-3 max-h-[300px] overflow-y-auto pr-1">
                     {card.comments.length === 0 ? (
-                      <p className="text-xs text-slate-500 dark:text-gray-2000 italic py-4 text-center">Belum ada diskusi untuk tugas ini.</p>
+                      <p className="text-xs text-slate-500 dark:text-gray-2000 italic py-4 text-center">{t('emptyDiscussion')}</p>
                     ) : (
                       card.comments.map((comment) => (
                         <div key={comment.id} className="flex flex-col bg-white dark:bg-[#243447] rounded-xl p-3 border border-[#E2E8F0] dark:border-gray-700 shadow-sm">
@@ -798,52 +800,52 @@ export const CardModal: React.FC<CardModalProps> = ({ card, onClose, initialEdit
 
               {/* Right Column: Sidebar Metrics */}
               <div className="flex flex-col gap-4">
-                <h4 className="text-xs font-bold text-[#64748B] dark:text-gray-300 uppercase tracking-wider">Status & Metadata</h4>
+                <h4 className="text-xs font-bold text-[#64748B] dark:text-gray-300 uppercase tracking-wider">{t('statusMetadata')}</h4>
                 
                 <div className="bg-white dark:bg-[#243447] border border-[#E2E8F0] dark:border-gray-700 rounded-xl p-4 flex flex-col gap-3.5 text-xs text-slate-700 shadow-sm">
                   <div className="flex justify-between items-center py-1.5 border-b border-[#E2E8F0] dark:border-gray-700">
                     <span className="text-slate-500 dark:text-gray-300 flex items-center gap-1.5">
-                      <Calendar size={13} /> Due Date
+                      <Calendar size={13} /> {t('dueDate')}
                     </span>
                     <span className="font-semibold text-slate-800 dark:text-white">{card.dueDate}</span>
                   </div>
 
                   <div className="flex justify-between items-center py-1.5 border-b border-[#E2E8F0] dark:border-gray-700">
                     <span className="text-slate-500 dark:text-gray-300 flex items-center gap-1.5">
-                      <Clock size={13} /> Waktu Mulai
+                      <Clock size={13} /> {t('start')}
                     </span>
                     <span className="font-semibold text-slate-800 dark:text-white">{card.startTime || '-'}</span>
                   </div>
 
                   <div className="flex justify-between items-center py-1.5 border-b border-[#E2E8F0] dark:border-gray-700">
                     <span className="text-slate-500 dark:text-gray-300 flex items-center gap-1.5">
-                      <Clock size={13} /> Waktu Selesai
+                      <Clock size={13} /> {t('end')}
                     </span>
                     <span className="font-semibold text-slate-800 dark:text-white">{card.endTime || '-'}</span>
                   </div>
 
                   <div className="flex justify-between items-center py-1.5 border-b border-[#E2E8F0] dark:border-gray-700">
-                    <span className="text-slate-500 dark:text-gray-300">Dibuat</span>
+                    <span className="text-slate-500 dark:text-gray-300">{t('createdAt')}</span>
                     <span className="text-slate-600">
                       {new Date(card.createdAt).toLocaleDateString('id-ID')}
                     </span>
                   </div>
 
                   <div className="flex justify-between items-center py-1.5">
-                    <span className="text-slate-500 dark:text-gray-300">Pemilik</span>
+                    <span className="text-slate-500 dark:text-gray-300">{t('owner')}</span>
                     <span className="font-medium text-slate-700">{state.studentName}</span>
                   </div>
                 </div>
 
                 {/* Status Transitions panel */}
                 <div className="flex flex-col gap-2">
-                  <h4 className="text-xs font-bold text-[#64748B] dark:text-gray-300 uppercase tracking-wider">Pindahkan Status</h4>
+                  <h4 className="text-xs font-bold text-[#64748B] dark:text-gray-300 uppercase tracking-wider">{t('moveStatus')}</h4>
                   <div className="flex flex-col gap-1.5">
                     {[
-                      { id: 'rencana', label: 'Rencana Kegiatan' },
-                      { id: 'progres', label: 'Sedang Dikerjakan' },
-                      { id: 'review', label: 'Butuh Review' },
-                      { id: 'selesai', label: 'Selesai (Disetujui)' },
+                      { id: 'rencana', label: t('plan') },
+                      { id: 'progres', label: t('progress') },
+                      { id: 'review', label: t('review') },
+                      { id: 'selesai', label: t('done') },
                     ].map((col) => {
                       const isDisabled = card.columnId === col.id || (col.id === 'selesai' && isStudent);
                       return (
@@ -865,7 +867,7 @@ export const CardModal: React.FC<CardModalProps> = ({ card, onClose, initialEdit
                     })}
                     {isStudent && (
                       <span className="text-[10px] text-yellow-600/90 mt-1 italic leading-tight">
-                        * Status Selesai hanya dapat disetujui setelah kegiatan dinilai oleh Pembimbing.
+                        * {t('doneNote')}
                       </span>
                     )}
                   </div>
@@ -877,7 +879,7 @@ export const CardModal: React.FC<CardModalProps> = ({ card, onClose, initialEdit
                   className="mt-auto py-2.5 bg-red-50 hover:bg-red-100 border border-red-200 text-[#EF4444] rounded-xl text-xs font-semibold flex items-center justify-center gap-1.5 transition cursor-pointer"
                 >
                   <Trash2 size={13} />
-                  <span>Hapus Kegiatan</span>
+                  <span>{t('deleteActivity')}</span>
                 </button>
               </div>
 

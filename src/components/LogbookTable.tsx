@@ -4,6 +4,7 @@ import React from 'react';
 import { usePKL } from '../context/PKLContext';
 import { PKLCard } from '../types/pkl';
 import { Printer, Calendar, Award, Clock, Eye, Edit2, Trash2 } from 'lucide-react';
+import { useLanguage } from '../context/LanguageContext';
 
 interface LogbookTableProps {
   onOpenCard?: (card: PKLCard) => void;
@@ -11,6 +12,7 @@ interface LogbookTableProps {
 }
 
 export const LogbookTable: React.FC<LogbookTableProps> = ({ onOpenCard, onEditCard }) => {
+  const { t } = useLanguage();
   const { state, currentUser, deleteCard } = usePKL();
 
   const handlePrint = () => {
@@ -32,10 +34,10 @@ export const LogbookTable: React.FC<LogbookTableProps> = ({ onOpenCard, onEditCa
 
   const getStatusText = (status: string) => {
     switch (status) {
-      case 'selesai': return 'Disetujui (Selesai)';
-      case 'review': return 'Menunggu Review';
-      case 'progres': return 'Sedang Dikerjakan';
-      default: return 'Rencana';
+      case 'selesai': return t('statusDone');
+      case 'review': return t('statusReview');
+      case 'progres': return t('statusProgress');
+      default: return t('statusPlan');
     }
   };
 
@@ -46,14 +48,14 @@ export const LogbookTable: React.FC<LogbookTableProps> = ({ onOpenCard, onEditCa
       <div className="flex flex-col sm:flex-row gap-3 justify-between items-start sm:items-center bg-white dark:bg-[#243447] border border-[#E2E8F0] dark:border-gray-700 rounded-2xl p-4 shadow-sm print:hidden">
         <div className="flex items-center gap-2">
           <Printer size={18} className="text-[#2563EB]" />
-          <h3 className="font-semibold text-slate-800 dark:text-white text-sm">Cetak Laporan Logbook Jurnal PKL</h3>
+          <h3 className="font-semibold text-slate-800 dark:text-white text-sm">{t('printTitle')}</h3>
         </div>
         <button
           onClick={handlePrint}
           className="w-full sm:w-auto px-4 py-3 md:py-2 bg-[#2563EB] hover:bg-[#1D4ED8] text-white font-semibold text-sm md:text-xs rounded-xl shadow-sm flex items-center justify-center gap-1.5 transition cursor-pointer min-h-[48px] md:min-h-0"
         >
           <Printer size={14} />
-          <span>Cetak / Simpan PDF</span>
+          <span>{t('printBtn')}</span>
         </button>
       </div>
 
@@ -64,37 +66,37 @@ export const LogbookTable: React.FC<LogbookTableProps> = ({ onOpenCard, onEditCa
         <div className="flex flex-col gap-6 mb-8 border-b border-[#E2E8F0] dark:border-gray-700 pb-6 print:border-black/20">
           <div className="text-center">
             <h2 className="text-lg md:text-xl font-bold text-[#0F172A] dark:text-white uppercase tracking-wide print:text-black print:text-lg">
-              Jurnal Kegiatan Harian (Logbook) PKL
+              {t('logbookTitle')}
             </h2>
             <p className="text-xs text-[#64748B] dark:text-gray-300 mt-1 print:text-black/60">
-              Program Praktek Kerja Lapangan & Monitoring Akademik
+              {t('logbookSubtitle')}
             </p>
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-2 text-xs">
             <div className="flex flex-col gap-1.5 text-slate-700 print:text-black">
               <div className="flex">
-                <span className="w-28 sm:w-36 text-[#64748B] dark:text-gray-300 shrink-0 print:text-black/60">Nama Siswa</span>
+                <span className="w-28 sm:w-36 text-[#64748B] dark:text-gray-300 shrink-0 print:text-black/60">{t('studentName')}</span>
                 <span className="font-semibold">: {state.studentName}</span>
               </div>
               {state.nisn && (
                 <div className="flex">
-                  <span className="w-28 sm:w-36 text-[#64748B] dark:text-gray-300 shrink-0 print:text-black/60">NIS / NISN</span>
+                  <span className="w-28 sm:w-36 text-[#64748B] dark:text-gray-300 shrink-0 print:text-black/60">{t('nisn')}</span>
                   <span className="font-semibold">: {state.nisn}</span>
                 </div>
               )}
               <div className="flex">
-                <span className="w-28 sm:w-36 text-[#64748B] dark:text-gray-300 shrink-0 print:text-black/60">Tempat PKL</span>
+                <span className="w-28 sm:w-36 text-[#64748B] dark:text-gray-300 shrink-0 print:text-black/60">{t('companyName')}</span>
                 <span className="font-semibold">: {state.companyName}</span>
               </div>
             </div>
             <div className="flex flex-col gap-1.5 text-slate-700 print:text-black">
               <div className="flex">
-                <span className="w-28 sm:w-36 text-[#64748B] dark:text-gray-300 shrink-0 print:text-black/60">Pembimbing Lapangan</span>
+                <span className="w-28 sm:w-36 text-[#64748B] dark:text-gray-300 shrink-0 print:text-black/60">{t('mentorName')}</span>
                 <span className="font-semibold">: {state.mentorName}</span>
               </div>
               <div className="flex">
-                <span className="w-28 sm:w-36 text-[#64748B] dark:text-gray-300 shrink-0 print:text-black/60">Pembimbing Internal</span>
+                <span className="w-28 sm:w-36 text-[#64748B] dark:text-gray-300 shrink-0 print:text-black/60">{t('advisorName')}</span>
                 <span className="font-semibold">: {state.advisorName}</span>
               </div>
             </div>
@@ -106,21 +108,21 @@ export const LogbookTable: React.FC<LogbookTableProps> = ({ onOpenCard, onEditCa
           <table className="w-full text-left border-collapse text-xs border border-[#E2E8F0] dark:border-gray-700 rounded-xl overflow-hidden shadow-sm">
             <thead>
               <tr className="border-b border-[#E2E8F0] dark:border-gray-700 text-slate-500 dark:text-gray-300 font-semibold uppercase tracking-wider bg-[#F8FAFC] dark:bg-gray-900 print:border-black/30 print:text-black print:bg-transparent">
-                <th className="py-3 px-2 w-10 text-center">No</th>
-                <th className="py-3 px-3 w-28">Tanggal</th>
-                <th className="py-3 px-3 w-24">Kategori</th>
-                <th className="py-3 px-4">Rincian Kegiatan</th>
-                <th className="py-3 px-2 w-16 text-center">Mulai</th>
-                <th className="py-3 px-2 w-16 text-center">Selesai</th>
-                <th className="py-3 px-3 w-28 text-center print:w-24">Status</th>
-                <th className="py-3 px-4 w-48 print:w-36">Evaluasi Pembimbing</th>
+                <th className="py-3 px-2 w-10 text-center">{t('no')}</th>
+                <th className="py-3 px-3 w-28">{t('date')}</th>
+                <th className="py-3 px-3 w-24">{t('category')}</th>
+                <th className="py-3 px-4">{t('details')}</th>
+                <th className="py-3 px-2 w-16 text-center">{t('start')}</th>
+                <th className="py-3 px-2 w-16 text-center">{t('end')}</th>
+                <th className="py-3 px-3 w-28 text-center print:w-24">{t('status')}</th>
+                <th className="py-3 px-4 w-48 print:w-36">{t('eval')}</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-[#E2E8F0] print:divide-black/10 text-slate-700 print:text-black">
               {state.cards.length === 0 ? (
                 <tr>
                   <td colSpan={8} className="py-8 text-center text-slate-500 dark:text-gray-2000 italic">
-                    Belum ada catatan logbook harian.
+                    {t('emptyLogbook')}
                   </td>
                 </tr>
               ) : (
@@ -133,7 +135,7 @@ export const LogbookTable: React.FC<LogbookTableProps> = ({ onOpenCard, onEditCa
                     </td>
                     <td className="py-4 px-3">
                       <span className="px-2 py-0.5 rounded border border-[#E2E8F0] dark:border-gray-700 bg-slate-50 dark:bg-gray-800/50 print:border-black/20 print:bg-transparent text-[11px] text-slate-700">
-                        {card.category}
+                        {card.category === 'Laporan' ? t('report') : card.category === 'Lainnya' ? t('others') : card.category}
                       </span>
                     </td>
                     <td className="py-4 px-4 leading-relaxed font-medium">
@@ -160,7 +162,7 @@ export const LogbookTable: React.FC<LogbookTableProps> = ({ onOpenCard, onEditCa
                           <div className="flex flex-col gap-0.5 border-b border-[#E2E8F0] dark:border-gray-700 pb-1 last:border-0 last:pb-0 print:border-black/10">
                             <div className="flex items-center gap-1 text-purple-600 font-bold text-[10px] print:text-black">
                               <Award size={10} className="print:hidden" />
-                              Mentor: {card.scoreMentor}/100 (D:{card.scoreMentorDiscipline} K:{card.scoreMentorSkill} S:{card.scoreMentorAttitude})
+                              {t('mentor')}: {card.scoreMentor}/100 (D:{card.scoreMentorDiscipline} K:{card.scoreMentorSkill} S:{card.scoreMentorAttitude})
                             </div>
                             {card.feedbackMentor && (
                               <div className="text-[9px] text-[#64748B] dark:text-gray-300 italic leading-snug print:text-black/75">
@@ -169,7 +171,7 @@ export const LogbookTable: React.FC<LogbookTableProps> = ({ onOpenCard, onEditCa
                             )}
                           </div>
                         ) : (
-                          <span className="text-slate-500 dark:text-gray-2000 italic text-[9px] border-b border-[#E2E8F0] dark:border-gray-700 pb-1">Belum dinilai Mentor</span>
+                          <span className="text-slate-500 dark:text-gray-2000 italic text-[9px] border-b border-[#E2E8F0] dark:border-gray-700 pb-1">{t('notEvaluatedMentor')}</span>
                         )}
 
                         {/* Guru Evaluation */}
@@ -177,7 +179,7 @@ export const LogbookTable: React.FC<LogbookTableProps> = ({ onOpenCard, onEditCa
                           <div className="flex flex-col gap-0.5 pt-0.5">
                             <div className="flex items-center gap-1 text-yellow-600 font-bold text-[10px] print:text-black">
                               <Award size={10} className="print:hidden" />
-                              Guru: {card.scoreAdvisor}/100 (D:{card.scoreAdvisorDiscipline} L:{card.scoreAdvisorReport} K:{card.scoreAdvisorCommunication})
+                              {t('teacher')}: {card.scoreAdvisor}/100 (D:{card.scoreAdvisorDiscipline} L:{card.scoreAdvisorReport} K:{card.scoreAdvisorCommunication})
                             </div>
                             {card.feedbackAdvisor && (
                               <div className="text-[9px] text-[#64748B] dark:text-gray-300 italic leading-snug print:text-black/75">
@@ -186,7 +188,7 @@ export const LogbookTable: React.FC<LogbookTableProps> = ({ onOpenCard, onEditCa
                             )}
                           </div>
                         ) : (
-                          <span className="text-slate-500 dark:text-gray-2000 italic text-[9px] pt-0.5">Belum dinilai Guru</span>
+                          <span className="text-slate-500 dark:text-gray-2000 italic text-[9px] pt-0.5">{t('notEvaluatedAdvisor')}</span>
                         )}
                       </div>
                     </td>
@@ -198,10 +200,10 @@ export const LogbookTable: React.FC<LogbookTableProps> = ({ onOpenCard, onEditCa
         </div>
 
         {/* Mobile Timeline/Card List (Mobile-only) */}
-        <div className="md:hidden flex flex-col gap-6 mt-4 print:hidden relative pl-4 border-l-2 border-slate-200 dark:border-gray-700 ml-4">
+        <div className="md:hidden flex flex-col gap-8 mt-4 print:hidden relative pl-5 border-l border-slate-200 dark:border-gray-700 ml-3">
           {state.cards.length === 0 ? (
             <div className="flex flex-col items-center justify-center p-8 bg-white dark:bg-[#243447] border border-[#E2E8F0] dark:border-gray-700 rounded-2xl text-center text-slate-400 -ml-4">
-              <span className="italic text-sm">Belum ada catatan logbook harian.</span>
+              <span className="italic text-sm">{t('emptyLogbook')}</span>
             </div>
           ) : (
             state.cards.map((card) => {
@@ -218,15 +220,15 @@ export const LogbookTable: React.FC<LogbookTableProps> = ({ onOpenCard, onEditCa
               return (
                 <div key={card.id} className="relative">
                   {/* Timeline Dot */}
-                  <div className="absolute w-3.5 h-3.5 bg-[#2563EB] rounded-full -left-[23px] border-2 border-white top-6 shadow-sm z-10" />
+                  <div className="absolute w-2.5 h-2.5 bg-[#2563EB] rounded-full -left-[25.5px] border-[1.5px] border-white dark:border-gray-900 top-7 shadow-sm z-10" />
                   
-                  <div className="bg-white dark:bg-[#243447] border border-[#E2E8F0] dark:border-gray-700 rounded-2xl p-5 shadow-sm hover:shadow transition duration-200 flex flex-col gap-4">
+                  <div className="bg-white dark:bg-[#243447] border border-[#E2E8F0] dark:border-gray-700 rounded-2xl p-6 shadow-sm hover:shadow transition duration-200 flex flex-col gap-4">
                   {/* Header: Category & Status */}
                   <div className="flex items-center justify-between">
                     <span className="px-2.5 py-1 rounded-lg border border-[#E2E8F0] dark:border-gray-700 bg-slate-50 dark:bg-gray-800/50 text-[11px] font-bold text-slate-700 uppercase tracking-wider">
-                      {card.category}
+                      {card.category === 'Laporan' ? t('report') : card.category === 'Lainnya' ? t('others') : card.category}
                     </span>
-                    <span className={`px-2.5 py-1 rounded-lg border text-[10px] font-bold uppercase tracking-wider ${getStatusBadge(card.columnId)}`}>
+                    <span className={`px-2 py-0.5 rounded-md border text-[9px] font-bold uppercase tracking-wider ${getStatusBadge(card.columnId)}`}>
                       {getStatusText(card.columnId)}
                     </span>
                   </div>
@@ -238,7 +240,7 @@ export const LogbookTable: React.FC<LogbookTableProps> = ({ onOpenCard, onEditCa
                   </div>
 
                   {/* Date & Time */}
-                  <div className="flex flex-wrap gap-y-2 gap-x-4 text-xs text-slate-500 dark:text-gray-300 border-t border-slate-100 pt-3">
+                  <div className="flex flex-wrap gap-y-2 gap-x-4 text-xs font-medium text-slate-600 dark:text-gray-300 border-t border-slate-100 dark:border-gray-700 pt-4">
                     <div className="flex items-center gap-1.5">
                       <Calendar size={13} className="text-slate-400" />
                       <span>{formattedDate}</span>
@@ -293,7 +295,7 @@ export const LogbookTable: React.FC<LogbookTableProps> = ({ onOpenCard, onEditCa
                       <>
                         <button
                           onClick={() => onEditCard?.(card)}
-                          className="flex-1 flex items-center justify-center gap-1.5 border border-blue-100 bg-blue-50/50 hover:bg-blue-50 text-blue-700 rounded-xl font-bold text-xs min-h-[48px] transition cursor-pointer"
+                          className="flex-1 flex items-center justify-center gap-1.5 border border-blue-100 dark:border-blue-500/20 bg-blue-50/50 dark:bg-blue-500/10 hover:bg-blue-50 dark:hover:bg-blue-500/20 text-blue-700 dark:text-blue-400 rounded-xl font-bold text-xs min-h-[48px] transition cursor-pointer"
                         >
                           <Edit2 size={14} />
                           <span>Edit</span>
@@ -304,7 +306,7 @@ export const LogbookTable: React.FC<LogbookTableProps> = ({ onOpenCard, onEditCa
                               deleteCard(card.id);
                             }
                           }}
-                          className="flex items-center justify-center border border-red-100 bg-red-50/50 dark:bg-red-500/10 hover:bg-red-50 dark:hover:bg-red-500/20 text-red-600 dark:text-red-500 rounded-xl font-bold text-xs min-h-[48px] px-3.5 transition cursor-pointer"
+                          className="flex items-center justify-center w-[48px] border border-red-100 dark:border-red-500/20 bg-red-50/50 dark:bg-red-500/10 hover:bg-red-50 dark:hover:bg-red-500/20 text-red-600 dark:text-red-500 rounded-xl font-bold text-xs min-h-[48px] transition cursor-pointer shrink-0"
                         >
                           <Trash2 size={14} />
                         </button>

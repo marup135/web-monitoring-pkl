@@ -4,9 +4,11 @@ import React, { useState } from 'react';
 import { usePKL } from '../context/PKLContext';
 import { Clock, CheckSquare, Award, MessageSquare, Plus, FileText, Calendar } from 'lucide-react';
 import { calculateDuration } from '@/utils/time';
+import { useLanguage } from '../context/LanguageContext';
 
 export const DashboardStats: React.FC = () => {
   const { state, addAdvisorNote } = usePKL();
+  const { t } = useLanguage();
   const [newNoteText, setNewNoteText] = useState('');
 
   // Calculate statistics
@@ -55,8 +57,8 @@ export const DashboardStats: React.FC = () => {
             <Clock size={24} />
           </div>
           <div>
-            <span className="text-[10px] uppercase font-bold text-[#64748B] dark:text-gray-300 tracking-wider block">Total Jam Kerja</span>
-            <span className="text-2xl md:text-3xl font-black text-slate-800 dark:text-gray-200">{totalHours} <span className="text-xs md:text-sm font-normal text-[#64748B] dark:text-gray-300">jam</span></span>
+            <span className="text-[10px] uppercase font-bold text-[#64748B] dark:text-gray-300 tracking-wider block">{t('totalHours')}</span>
+            <span className="text-2xl md:text-3xl font-black text-slate-800 dark:text-gray-200">{totalHours} <span className="text-xs md:text-sm font-normal text-[#64748B] dark:text-gray-300">{t('hours')}</span></span>
           </div>
         </div>
 
@@ -67,12 +69,12 @@ export const DashboardStats: React.FC = () => {
             <CheckSquare size={24} />
           </div>
           <div className="flex-1">
-            <span className="text-[10px] uppercase font-bold text-[#64748B] dark:text-gray-300 tracking-wider block">Persentase Selesai</span>
+            <span className="text-[10px] uppercase font-bold text-[#64748B] dark:text-gray-300 tracking-wider block">{t('completionRate')}</span>
             <div className="flex items-baseline gap-2">
               <span className="text-2xl md:text-3xl font-black text-slate-800 dark:text-gray-200">
                 {totalCards > 0 ? Math.round((completedCards.length / totalCards) * 100) : 0}%
               </span>
-              <span className="text-[10px] md:text-xs text-[#64748B] dark:text-gray-300">({completedCards.length}/{totalCards} tugas)</span>
+              <span className="text-[10px] md:text-xs text-[#64748B] dark:text-gray-300">({completedCards.length}/{totalCards} {t('tasks')})</span>
             </div>
           </div>
         </div>
@@ -84,13 +86,13 @@ export const DashboardStats: React.FC = () => {
             <Award size={24} />
           </div>
           <div>
-            <span className="text-[10px] uppercase font-bold text-[#64748B] dark:text-gray-300 tracking-wider block mb-1">Rata-Rata Nilai</span>
+            <span className="text-[10px] uppercase font-bold text-[#64748B] dark:text-gray-300 tracking-wider block mb-1">{t('averageScore')}</span>
             <div className="flex flex-col gap-1 text-[11px] font-semibold text-slate-700">
               <div>
-                Eksternal: <span className="text-sm font-bold text-purple-600">{averageScoreMentor > 0 ? `${averageScoreMentor}/100` : '-'}</span>
+                {t('external')}: <span className="text-sm font-bold text-purple-600">{averageScoreMentor > 0 ? `${averageScoreMentor}/100` : '-'}</span>
               </div>
               <div>
-                Internal: <span className="text-sm font-bold text-yellow-600">{averageScoreAdvisor > 0 ? `${averageScoreAdvisor}/100` : '-'}</span>
+                {t('internal')}: <span className="text-sm font-bold text-yellow-600">{averageScoreAdvisor > 0 ? `${averageScoreAdvisor}/100` : '-'}</span>
               </div>
             </div>
           </div>
@@ -103,8 +105,8 @@ export const DashboardStats: React.FC = () => {
             <MessageSquare size={24} />
           </div>
           <div>
-            <span className="text-[10px] uppercase font-bold text-[#64748B] dark:text-gray-300 tracking-wider block">Menunggu Review</span>
-            <span className="text-2xl md:text-3xl font-black text-slate-800 dark:text-gray-200">{reviewCards.length} <span className="text-xs md:text-sm font-normal text-[#64748B] dark:text-gray-300">tugas</span></span>
+            <span className="text-[10px] uppercase font-bold text-[#64748B] dark:text-gray-300 tracking-wider block">{t('pendingReview')}</span>
+            <span className="text-2xl md:text-3xl font-black text-slate-800 dark:text-gray-200">{reviewCards.length} <span className="text-xs md:text-sm font-normal text-[#64748B] dark:text-gray-300">{t('tasks')}</span></span>
           </div>
         </div>
 
@@ -116,41 +118,41 @@ export const DashboardStats: React.FC = () => {
         {/* Left Side (2 cols): Charts / Detailed progress */}
         <div className="lg:col-span-2 flex flex-col gap-6">
           <div className="bg-white dark:bg-[#243447] border border-[#E2E8F0] dark:border-gray-700 rounded-2xl p-5 md:p-6 shadow-sm flex flex-col gap-6">
-            <h3 className="font-bold text-slate-800 dark:text-gray-200 text-base">Distribusi Status & Kategori Kegiatan</h3>
+            <h3 className="font-bold text-slate-800 dark:text-gray-200 text-base">{t('distributionTitle')}</h3>
             
             {/* Status Breakdown Bars */}
             <div className="flex flex-col gap-3">
-              <h4 className="text-xs font-semibold text-[#64748B] dark:text-gray-300 uppercase tracking-wider">Status Progres Kegiatan</h4>
+              <h4 className="text-xs font-semibold text-[#64748B] dark:text-gray-300 uppercase tracking-wider">{t('statusProgressTitle')}</h4>
               <div className="flex h-3 rounded-full overflow-hidden bg-[#F1F5F9] dark:bg-gray-800">
-                <div style={{ width: `${totalCards > 0 ? (completedCards.length / totalCards) * 100 : 0}%` }} className="bg-[#22C55E]" title="Selesai" />
-                <div style={{ width: `${totalCards > 0 ? (reviewCards.length / totalCards) * 100 : 0}%` }} className="bg-[#F59E0B]" title="Butuh Review" />
-                <div style={{ width: `${totalCards > 0 ? (progressCards.length / totalCards) * 100 : 0}%` }} className="bg-[#2563EB]" title="Sedang Dikerjakan" />
-                <div style={{ width: `${totalCards > 0 ? (plannedCards.length / totalCards) * 100 : 0}%` }} className="bg-slate-400" title="Rencana" />
+                <div style={{ width: `${totalCards > 0 ? (completedCards.length / totalCards) * 100 : 0}%` }} className="bg-[#22C55E]" title={t('done')} />
+                <div style={{ width: `${totalCards > 0 ? (reviewCards.length / totalCards) * 100 : 0}%` }} className="bg-[#F59E0B]" title={t('review')} />
+                <div style={{ width: `${totalCards > 0 ? (progressCards.length / totalCards) * 100 : 0}%` }} className="bg-[#2563EB]" title={t('progress')} />
+                <div style={{ width: `${totalCards > 0 ? (plannedCards.length / totalCards) * 100 : 0}%` }} className="bg-slate-400" title={t('plan')} />
               </div>
 
               <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mt-2">
                 <div className="flex items-center gap-2">
                   <div className="w-2.5 h-2.5 rounded-full bg-[#22C55E]" />
-                  <span className="text-xs text-slate-700">Selesai ({completedCards.length})</span>
+                  <span className="text-xs text-slate-700">{t('done')} ({completedCards.length})</span>
                 </div>
                 <div className="flex items-center gap-2">
                   <div className="w-2.5 h-2.5 rounded-full bg-[#F59E0B]" />
-                  <span className="text-xs text-slate-700">Review ({reviewCards.length})</span>
+                  <span className="text-xs text-slate-700">{t('review')} ({reviewCards.length})</span>
                 </div>
                 <div className="flex items-center gap-2">
                   <div className="w-2.5 h-2.5 rounded-full bg-[#2563EB]" />
-                  <span className="text-xs text-slate-700">Dikerjakan ({progressCards.length})</span>
+                  <span className="text-xs text-slate-700">{t('progress')} ({progressCards.length})</span>
                 </div>
                 <div className="flex items-center gap-2">
                   <div className="w-2.5 h-2.5 rounded-full bg-slate-400" />
-                  <span className="text-xs text-slate-700">Rencana ({plannedCards.length})</span>
+                  <span className="text-xs text-slate-700">{t('plan')} ({plannedCards.length})</span>
                 </div>
               </div>
             </div>
 
             {/* Category breakdown */}
             <div className="flex flex-col gap-4 border-t border-[#E2E8F0] dark:border-gray-700 pt-6">
-              <h4 className="text-xs font-semibold text-[#64748B] dark:text-gray-300 uppercase tracking-wider">Distribusi Kategori Pekerjaan</h4>
+              <h4 className="text-xs font-semibold text-[#64748B] dark:text-gray-300 uppercase tracking-wider">{t('categoryDistribution')}</h4>
               
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 {Array.from(new Set([...['Coding', 'Design', 'Laporan', 'Networking'], ...Object.keys(categoryCounts)])).map((cat) => {
@@ -159,8 +161,8 @@ export const DashboardStats: React.FC = () => {
                   return (
                     <div key={cat} className="bg-[#F8FAFC] dark:bg-gray-900 border border-[#E2E8F0] dark:border-gray-700 rounded-xl p-3 flex flex-col gap-1.5 shadow-sm">
                       <div className="flex justify-between items-center text-xs">
-                        <span className="font-semibold text-slate-800 dark:text-white">{cat}</span>
-                        <span className="text-[#64748B] dark:text-gray-300">{count} tugas ({percent}%)</span>
+                        <span className="font-semibold text-slate-800 dark:text-white">{cat === 'Laporan' ? t('report') : cat === 'Lainnya' ? t('others') : cat}</span>
+                        <span className="text-[#64748B] dark:text-gray-300">{count} {t('tasks')} ({percent}%)</span>
                       </div>
                       <div className="w-full h-1.5 bg-[#F1F5F9] dark:bg-gray-800 rounded-full overflow-hidden">
                         <div
@@ -188,13 +190,13 @@ export const DashboardStats: React.FC = () => {
           <div className="bg-white dark:bg-[#243447] border border-[#E2E8F0] dark:border-gray-700 rounded-2xl p-5 md:p-6 shadow-sm flex flex-col gap-6 h-full min-h-[400px]">
             <div className="flex items-center gap-2">
               <FileText size={18} className="text-[#2563EB]" />
-              <h3 className="font-bold text-slate-800 dark:text-gray-200 text-base">Catatan Pembimbing Internal</h3>
+              <h3 className="font-bold text-slate-800 dark:text-gray-200 text-base">{t('advisorNotesTitle')}</h3>
             </div>
 
             {/* Advisor form for student to document notes */}
             <form onSubmit={handleNoteSubmit} className="flex flex-col gap-3">
               <textarea
-                placeholder="Catat saran, masukan, atau arahan dari Pembimbing Internal Anda..."
+                placeholder={t('advisorNotesPlaceholder')}
                 required
                 rows={3}
                 value={newNoteText}
@@ -206,14 +208,14 @@ export const DashboardStats: React.FC = () => {
                 className="w-full py-3 md:py-2 bg-[#2563EB] hover:bg-[#1D4ED8] text-white font-semibold text-sm md:text-xs rounded-xl shadow-sm flex items-center justify-center gap-1.5 transition cursor-pointer min-h-[48px] md:min-h-0"
               >
                 <Plus size={14} />
-                <span>Simpan Catatan Bimbingan</span>
+                <span>{t('saveNote')}</span>
               </button>
             </form>
 
             {/* List of notes */}
             <div className="flex flex-col gap-4 overflow-y-auto max-h-[300px] flex-1 pr-1">
               {state.advisorNotes.length === 0 ? (
-                <p className="text-xs text-slate-500 dark:text-gray-2000 italic text-center py-8">Belum ada catatan bimbingan.</p>
+                <p className="text-xs text-slate-500 dark:text-gray-2000 italic text-center py-8">{t('emptyNotes')}</p>
               ) : (
                 state.advisorNotes.map((note) => (
                   <div key={note.id} className="bg-[#F8FAFC] dark:bg-gray-900 border-l-2 border-[#2563EB] border-y border-r border-[#E2E8F0] dark:border-gray-700 rounded-r-xl p-3 flex flex-col gap-2 shadow-sm">
