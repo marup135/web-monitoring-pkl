@@ -76,7 +76,7 @@ export async function registerAction(
 
     let resolvedCompanyId = null;
     let finalCompany = null;
-    if (role === 'siswa' && companyName) {
+    if ((role === 'siswa' || role === 'pembimbing_eksternal') && companyName) {
       finalCompany = companyName.trim();
       let dbCompany = await prisma.perusahaan.findUnique({ where: { name: finalCompany } });
       if (!dbCompany) {
@@ -94,7 +94,10 @@ export async function registerAction(
         company: finalCompany,
         nisn: role === 'siswa' ? (nisn?.trim() || null) : null,
         classId: resolvedClassId,
-        companyId: resolvedCompanyId,
+        companyId: role === 'siswa' ? resolvedCompanyId : null,
+        companies: role === 'pembimbing_eksternal' && resolvedCompanyId ? {
+          connect: { id: resolvedCompanyId }
+        } : undefined,
       }
     });
 

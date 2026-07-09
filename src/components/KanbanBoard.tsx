@@ -366,7 +366,20 @@ export const KanbanBoard: React.FC<KanbanBoardProps> = ({ onOpenCard }) => {
                 </div>
               )}
               
-              {/* Due Date (1. Tanggal) */}
+              {/* Judul (1. Judul Kegiatan) */}
+              <div className="flex flex-col gap-1.5">
+                <label className="text-[11px] text-[#64748B] dark:text-gray-300 font-semibold uppercase tracking-wider">{t('activityTitle')}</label>
+                <input
+                  type="text"
+                  placeholder="..."
+                  required
+                  value={newTitle}
+                  onChange={(e) => setNewTitle(e.target.value)}
+                  className="w-full bg-white dark:bg-[#243447] border border-[#E2E8F0] dark:border-gray-700 rounded-xl px-3 text-sm text-[#0F172A] dark:text-gray-200 focus:outline-none focus:border-[#2563EB] focus:ring-1 focus:ring-[#2563EB] min-h-[48px] py-3 md:min-h-0 md:py-2"
+                />
+              </div>
+
+              {/* Due Date (2. Tanggal) */}
               <div className="flex flex-col gap-1.5">
                 <label className="text-[11px] text-[#64748B] dark:text-gray-300 font-semibold uppercase tracking-wider">{t('dueDate')}</label>
                 <input
@@ -401,18 +414,6 @@ export const KanbanBoard: React.FC<KanbanBoardProps> = ({ onOpenCard }) => {
                 </div>
               </div>
 
-              {/* Judul (4) */}
-              <div className="flex flex-col gap-1.5">
-                <label className="text-[11px] text-[#64748B] dark:text-gray-300 font-semibold uppercase tracking-wider">{t('activityTitle')}</label>
-                <input
-                  type="text"
-                  placeholder="..."
-                  required
-                  value={newTitle}
-                  onChange={(e) => setNewTitle(e.target.value)}
-                  className="w-full bg-white dark:bg-[#243447] border border-[#E2E8F0] dark:border-gray-700 rounded-xl px-3 text-sm text-[#0F172A] dark:text-gray-200 focus:outline-none focus:border-[#2563EB] focus:ring-1 focus:ring-[#2563EB] min-h-[48px] py-3 md:min-h-0 md:py-2"
-                />
-              </div>
 
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 {/* Category Dropdown (5. Kategori) */}
