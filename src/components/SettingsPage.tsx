@@ -3,6 +3,7 @@
 import React, { useState } from 'react';
 import { usePKL } from '../context/PKLContext';
 import { Key, Moon, Globe, Info, LogOut, Check, ChevronRight, User } from 'lucide-react';
+import { useTheme } from 'next-themes';
 
 interface SettingsPageProps {
   onBackToBoard?: () => void;
@@ -18,8 +19,13 @@ export const SettingsPage: React.FC<SettingsPageProps> = ({
   const { currentUser, logout, updateCurrentUserName } = usePKL();
   
   // Local Settings States
-  const [isDarkMode, setIsDarkMode] = useState(false);
+  const { theme, setTheme } = useTheme();
+  const [mounted, setMounted] = useState(false);
   const [language, setLanguage] = useState('id'); // 'id' | 'en'
+
+  React.useEffect(() => {
+    setMounted(true);
+  }, []);
   
   // Edit Profile States
   const [name, setName] = useState(currentUser?.name || '');
@@ -91,20 +97,12 @@ export const SettingsPage: React.FC<SettingsPageProps> = ({
     setTimeout(() => setPasswordSuccessMsg(''), 3500);
   };
 
-  // Toggle Dark Mode cosmetically
-  const handleToggleDarkMode = () => {
-    setIsDarkMode(!isDarkMode);
-    if (!isDarkMode) {
-      document.documentElement.classList.add('dark');
-    } else {
-      document.documentElement.classList.remove('dark');
-    }
-  };
+  // Theme is handled by next-themes
 
   return (
-    <div className="flex flex-col gap-6 text-[#0F172A] font-sans pb-12">
-      <div className="flex items-center justify-between border-b border-[#E2E8F0] pb-4 print:hidden">
-        <h2 className="text-lg font-black text-[#0F172A] tracking-tight uppercase">
+    <div className="flex flex-col gap-6 text-[#0F172A] dark:text-white font-sans pb-12">
+      <div className="flex items-center justify-between border-b border-[#E2E8F0] dark:border-slate-700 pb-4 print:hidden">
+        <h2 className="text-lg font-black text-[#0F172A] dark:text-white tracking-tight uppercase">
           Pengaturan Aplikasi
         </h2>
         {onBackToBoard && (
@@ -117,31 +115,31 @@ export const SettingsPage: React.FC<SettingsPageProps> = ({
         )}
       </div>
 
-      <div className="bg-white border-y md:border border-[#E2E8F0] md:rounded-2xl shadow-sm divide-y divide-[#E2E8F0] -mx-4 md:mx-0">
+      <div className="bg-white dark:bg-slate-800 border-y md:border border-[#E2E8F0] dark:border-slate-700 md:rounded-2xl shadow-sm divide-y divide-[#E2E8F0] -mx-4 md:mx-0">
         {/* PROFILE SECTION TILE */}
         <div id="profile-section" className="flex flex-col">
           {isEditingProfile ? (
-            <div className="p-4 bg-slate-50">
+            <div className="p-4 bg-slate-50 dark:bg-slate-800/50">
               <form onSubmit={handleUpdateProfile} className="flex flex-col gap-4">
                 <div className="flex flex-col gap-1.5">
-                  <label className="text-xs text-[#64748B] font-bold">Nama Lengkap</label>
+                  <label className="text-xs text-[#64748B] dark:text-slate-400 font-bold">Nama Lengkap</label>
                   <input
                     type="text"
                     required
                     value={name}
                     onChange={(e) => setName(e.target.value)}
                     placeholder="Masukkan nama lengkap..."
-                    className="w-full bg-white border border-[#E2E8F0] rounded-xl px-4 text-sm focus:outline-none focus:border-[#2563EB] min-h-[48px]"
+                    className="w-full bg-white dark:bg-slate-800 border border-[#E2E8F0] dark:border-slate-700 rounded-xl px-4 text-sm focus:outline-none focus:border-[#2563EB] min-h-[48px]"
                   />
                 </div>
                 
-                <div className="flex flex-col gap-1.5 text-xs text-slate-500">
-                  <div className="flex justify-between py-1 border-b border-slate-200">
+                <div className="flex flex-col gap-1.5 text-xs text-slate-500 dark:text-slate-400">
+                  <div className="flex justify-between py-1 border-b border-slate-200 dark:border-slate-700">
                     <span>Username</span>
                     <span className="font-semibold text-slate-700">{currentUser?.username}</span>
                   </div>
                   {currentUser?.nisn && (
-                    <div className="flex justify-between py-1 border-b border-slate-200">
+                    <div className="flex justify-between py-1 border-b border-slate-200 dark:border-slate-700">
                       <span>NIS / NISN</span>
                       <span className="font-semibold text-slate-700">{currentUser.nisn}</span>
                     </div>
@@ -152,7 +150,7 @@ export const SettingsPage: React.FC<SettingsPageProps> = ({
                   <button
                     type="button"
                     onClick={() => setIsEditingProfile(false)}
-                    className="flex-1 px-4 py-3 bg-white border border-slate-300 text-slate-700 rounded-xl text-xs font-bold min-h-[48px]"
+                    className="flex-1 px-4 py-3 bg-white dark:bg-slate-800 border border-slate-300 dark:border-slate-600 text-slate-700 rounded-xl text-xs font-bold min-h-[48px]"
                   >
                     Batal
                   </button>
@@ -168,15 +166,15 @@ export const SettingsPage: React.FC<SettingsPageProps> = ({
           ) : (
             <button 
               onClick={() => setIsEditingProfile(true)}
-              className="flex items-center justify-between p-4 bg-white hover:bg-slate-50 transition min-h-[64px] cursor-pointer text-left"
+              className="flex items-center justify-between p-4 bg-white dark:bg-slate-800 hover:bg-slate-50 dark:bg-slate-800/50 transition min-h-[64px] cursor-pointer text-left"
             >
               <div className="flex items-center gap-4">
                 <div className="w-10 h-10 rounded-full bg-blue-100 flex items-center justify-center text-blue-600 font-bold shrink-0">
                   <User size={18} className="text-[#2563EB]" />
                 </div>
                 <div>
-                  <span className="text-sm font-semibold text-slate-800 block">Profil Saya</span>
-                  <span className="text-xs text-slate-500 line-clamp-1">{currentUser?.name} • {currentUser?.role.replace('_', ' ')}</span>
+                  <span className="text-sm font-semibold text-slate-800 dark:text-slate-100 block">Profil Saya</span>
+                  <span className="text-xs text-slate-500 dark:text-slate-400 line-clamp-1">{currentUser?.name} • {currentUser?.role.replace('_', ' ')}</span>
                 </div>
               </div>
               <ChevronRight size={18} className="text-slate-400 shrink-0" />
@@ -187,7 +185,7 @@ export const SettingsPage: React.FC<SettingsPageProps> = ({
         {/* SECURITY CARD (GANTI PASSWORD) */}
         <div id="password-section" className="flex flex-col">
           {activeSection === 'password' || passwordErrorMsg || passwordSuccessMsg ? (
-            <div className="p-4 bg-slate-50">
+            <div className="p-4 bg-slate-50 dark:bg-slate-800/50">
               {passwordSuccessMsg && (
                 <div className="p-3 mb-4 bg-green-50 border border-green-200 text-green-700 rounded-xl text-xs font-semibold flex items-center gap-2">
                   <Check size={14} className="shrink-0" />
@@ -201,33 +199,33 @@ export const SettingsPage: React.FC<SettingsPageProps> = ({
               )}
               <form onSubmit={handleChangePassword} className="flex flex-col gap-4">
                 <div className="flex flex-col gap-1">
-                  <label className="text-xs text-[#64748B] font-bold">Password Lama</label>
+                  <label className="text-xs text-[#64748B] dark:text-slate-400 font-bold">Password Lama</label>
                   <input
                     type="password"
                     required
                     value={currentPassword}
                     onChange={(e) => setCurrentPassword(e.target.value)}
-                    className="w-full bg-white border border-[#E2E8F0] rounded-xl px-4 text-sm focus:outline-none focus:border-[#2563EB] min-h-[48px]"
+                    className="w-full bg-white dark:bg-slate-800 border border-[#E2E8F0] dark:border-slate-700 rounded-xl px-4 text-sm focus:outline-none focus:border-[#2563EB] min-h-[48px]"
                   />
                 </div>
                 <div className="flex flex-col gap-1">
-                  <label className="text-xs text-[#64748B] font-bold">Password Baru</label>
+                  <label className="text-xs text-[#64748B] dark:text-slate-400 font-bold">Password Baru</label>
                   <input
                     type="password"
                     required
                     value={newPassword}
                     onChange={(e) => setNewPassword(e.target.value)}
-                    className="w-full bg-white border border-[#E2E8F0] rounded-xl px-4 text-sm focus:outline-none focus:border-[#2563EB] min-h-[48px]"
+                    className="w-full bg-white dark:bg-slate-800 border border-[#E2E8F0] dark:border-slate-700 rounded-xl px-4 text-sm focus:outline-none focus:border-[#2563EB] min-h-[48px]"
                   />
                 </div>
                 <div className="flex flex-col gap-1">
-                  <label className="text-xs text-[#64748B] font-bold">Konfirmasi Password Baru</label>
+                  <label className="text-xs text-[#64748B] dark:text-slate-400 font-bold">Konfirmasi Password Baru</label>
                   <input
                     type="password"
                     required
                     value={confirmPassword}
                     onChange={(e) => setConfirmPassword(e.target.value)}
-                    className="w-full bg-white border border-[#E2E8F0] rounded-xl px-4 text-sm focus:outline-none focus:border-[#2563EB] min-h-[48px]"
+                    className="w-full bg-white dark:bg-slate-800 border border-[#E2E8F0] dark:border-slate-700 rounded-xl px-4 text-sm focus:outline-none focus:border-[#2563EB] min-h-[48px]"
                   />
                 </div>
                 <button
@@ -254,13 +252,13 @@ export const SettingsPage: React.FC<SettingsPageProps> = ({
                 // If it's not open, we can force it open by rendering form
                 document.getElementById('password-section-form')?.classList.toggle('hidden');
               }}
-              className="flex items-center justify-between p-4 bg-white hover:bg-slate-50 transition min-h-[56px] cursor-pointer text-left"
+              className="flex items-center justify-between p-4 bg-white dark:bg-slate-800 hover:bg-slate-50 dark:bg-slate-800/50 transition min-h-[56px] cursor-pointer text-left"
             >
               <div className="flex items-center gap-4">
-                <div className="w-10 h-10 rounded-full bg-slate-100 flex items-center justify-center text-slate-600 shrink-0">
+                <div className="w-10 h-10 rounded-full bg-slate-100 dark:bg-slate-700 flex items-center justify-center text-slate-600 shrink-0">
                   <Key size={18} />
                 </div>
-                <span className="text-sm font-semibold text-slate-800">Ganti Password</span>
+                <span className="text-sm font-semibold text-slate-800 dark:text-slate-100">Ganti Password</span>
               </div>
               <ChevronRight size={18} className="text-slate-400 shrink-0" />
             </button>
@@ -268,33 +266,37 @@ export const SettingsPage: React.FC<SettingsPageProps> = ({
         </div>
 
         {/* DARK MODE TILE */}
-        <div className="flex items-center justify-between p-4 bg-white min-h-[56px]">
+        <div className="flex items-center justify-between p-4 bg-white dark:bg-slate-800 min-h-[56px]">
           <div className="flex items-center gap-4">
-            <div className="w-10 h-10 rounded-full bg-slate-100 flex items-center justify-center text-slate-600 shrink-0">
+            <div className="w-10 h-10 rounded-full bg-slate-100 dark:bg-slate-700 flex items-center justify-center text-slate-600 dark:text-slate-300 shrink-0">
               <Moon size={18} />
             </div>
             <div>
-              <span className="text-sm font-semibold text-slate-800 block">Dark Mode</span>
-              <span className="text-xs text-slate-500">Gunakan tema gelap</span>
+              <span className="text-sm font-semibold text-slate-800 dark:text-slate-100 block">Tema Tampilan</span>
+              <span className="text-xs text-slate-500 dark:text-slate-400">Pilih tema aplikasi</span>
             </div>
           </div>
-          <button
-            onClick={handleToggleDarkMode}
-            className={`w-12 h-6 flex items-center rounded-full p-1 cursor-pointer transition-colors duration-300 shrink-0 ${isDarkMode ? 'bg-[#2563EB]' : 'bg-slate-300'}`}
+          <select
+            value={mounted ? theme : 'system'}
+            onChange={(e) => setTheme(e.target.value)}
+            disabled={!mounted}
+            className="bg-transparent border-none text-sm text-slate-700 dark:text-slate-200 font-semibold focus:outline-none focus:ring-0 text-right cursor-pointer disabled:opacity-50"
           >
-            <div className={`bg-white w-4 h-4 rounded-full shadow-md transform transition-transform duration-300 ${isDarkMode ? 'translate-x-6' : 'translate-x-0'}`} />
-          </button>
+            <option value="light">☀️ Light</option>
+            <option value="dark">🌙 Dark</option>
+            <option value="system">📱 System</option>
+          </select>
         </div>
 
         {/* BAHASA TILE */}
-        <div className="flex items-center justify-between p-4 bg-white min-h-[56px]">
+        <div className="flex items-center justify-between p-4 bg-white dark:bg-slate-800 min-h-[56px]">
           <div className="flex items-center gap-4">
-            <div className="w-10 h-10 rounded-full bg-slate-100 flex items-center justify-center text-slate-600 shrink-0">
+            <div className="w-10 h-10 rounded-full bg-slate-100 dark:bg-slate-700 flex items-center justify-center text-slate-600 shrink-0">
               <Globe size={18} />
             </div>
             <div>
-              <span className="text-sm font-semibold text-slate-800 block">Bahasa</span>
-              <span className="text-xs text-slate-500">Antarmuka aplikasi</span>
+              <span className="text-sm font-semibold text-slate-800 dark:text-slate-100 block">Bahasa</span>
+              <span className="text-xs text-slate-500 dark:text-slate-400">Antarmuka aplikasi</span>
             </div>
           </div>
           <select
@@ -310,15 +312,15 @@ export const SettingsPage: React.FC<SettingsPageProps> = ({
         {/* TENTANG TILE */}
         <button 
           onClick={() => alert('NeboTrack v1.0.0 (Stable)\nAplikasi monitoring dan logbook jurnal harian.')}
-          className="flex items-center justify-between p-4 bg-white hover:bg-slate-50 transition min-h-[56px] cursor-pointer text-left w-full"
+          className="flex items-center justify-between p-4 bg-white dark:bg-slate-800 hover:bg-slate-50 dark:bg-slate-800/50 transition min-h-[56px] cursor-pointer text-left w-full"
         >
           <div className="flex items-center gap-4">
-            <div className="w-10 h-10 rounded-full bg-slate-100 flex items-center justify-center text-slate-600 shrink-0">
+            <div className="w-10 h-10 rounded-full bg-slate-100 dark:bg-slate-700 flex items-center justify-center text-slate-600 shrink-0">
               <Info size={18} />
             </div>
             <div>
-              <span className="text-sm font-semibold text-slate-800 block">Tentang</span>
-              <span className="text-xs text-slate-500">Versi & Informasi</span>
+              <span className="text-sm font-semibold text-slate-800 dark:text-slate-100 block">Tentang</span>
+              <span className="text-xs text-slate-500 dark:text-slate-400">Versi & Informasi</span>
             </div>
           </div>
           <ChevronRight size={18} className="text-slate-400 shrink-0" />
@@ -327,7 +329,7 @@ export const SettingsPage: React.FC<SettingsPageProps> = ({
         {/* LOGOUT TILE */}
         <button 
           onClick={logout}
-          className="flex items-center p-4 bg-white hover:bg-red-50 transition min-h-[56px] cursor-pointer text-left w-full gap-4 group"
+          className="flex items-center p-4 bg-white dark:bg-slate-800 hover:bg-red-50 transition min-h-[56px] cursor-pointer text-left w-full gap-4 group"
         >
           <div className="w-10 h-10 rounded-full bg-red-50 group-hover:bg-red-100 flex items-center justify-center text-red-500 shrink-0 transition">
             <LogOut size={18} />

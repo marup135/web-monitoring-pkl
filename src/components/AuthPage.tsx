@@ -229,21 +229,21 @@ export const AuthPage: React.FC = () => {
 
   // Dynamic input border class
   const inputClass = (hasError: boolean) =>
-    `w-full bg-white border rounded-xl pl-10 pr-4 text-sm text-[#0F172A] placeholder:text-[#94A3B8] focus:outline-none focus:ring-2 min-h-[48px] py-3 md:min-h-0 md:py-2.5 md:text-xs transition-all duration-200 ${
+    `w-full bg-white dark:bg-slate-800 border rounded-xl pl-10 pr-4 text-sm text-[#0F172A] dark:text-white placeholder:text-[#94A3B8] focus:outline-none focus:ring-2 min-h-[48px] py-3 md:min-h-0 md:py-2.5 md:text-xs transition-all duration-200 ${
       hasError
         ? 'border-red-400 focus:border-red-400 focus:ring-red-100 bg-red-50/30'
-        : 'border-[#E2E8F0] focus:border-[#2563EB] focus:ring-blue-100'
+        : 'border-[#E2E8F0] dark:border-slate-700 focus:border-[#2563EB] focus:ring-blue-100'
     }`;
 
   return (
-    <div className="min-h-screen flex items-center justify-center p-4 bg-gradient-to-br from-[#F0F4FF] via-[#F8FAFC] to-[#EFF6FF] text-[#0F172A] relative overflow-hidden font-sans">
+    <div className="min-h-screen flex items-center justify-center p-4 bg-gradient-to-br from-[#F0F4FF] via-[#F8FAFC] to-[#EFF6FF] text-[#0F172A] dark:text-white relative overflow-hidden font-sans">
       {/* Decorative blobs */}
       <div className="absolute top-0 left-0 w-[500px] h-[500px] bg-[#2563EB]/8 rounded-full blur-3xl pointer-events-none -translate-x-1/2 -translate-y-1/2" />
       <div className="absolute bottom-0 right-0 w-[400px] h-[400px] bg-[#7C3AED]/6 rounded-full blur-3xl pointer-events-none translate-x-1/3 translate-y-1/3" />
 
       <div className="w-full max-w-md relative z-10">
         {/* Main Card */}
-        <div className="bg-white/95 backdrop-blur-sm rounded-3xl p-7 sm:p-9 border border-white shadow-xl shadow-slate-200/60 animate-in fade-in zoom-in-95 duration-300">
+        <div className="bg-white/95 dark:bg-slate-800/95 backdrop-blur-sm rounded-3xl p-7 sm:p-9 border border-white shadow-xl shadow-slate-200/60 animate-in fade-in zoom-in-95 duration-300">
 
           {/* Logo & Header */}
           <div className="flex flex-col items-center mb-8">
@@ -252,26 +252,26 @@ export const AuthPage: React.FC = () => {
               <img
                 src="/logo.jpg"
                 alt="NeboTrack Logo"
-                className="relative w-[72px] h-[72px] md:w-[88px] md:h-[88px] object-contain rounded-2xl shadow-md border border-[#E2E8F0]"
+                className="relative w-[72px] h-[72px] md:w-[88px] md:h-[88px] object-contain rounded-2xl shadow-md border border-[#E2E8F0] dark:border-slate-700"
               />
             </div>
-            <h1 className="text-2xl md:text-[28px] font-black text-[#0F172A] tracking-tight">
+            <h1 className="text-2xl md:text-[28px] font-black text-[#0F172A] dark:text-white tracking-tight">
               NeboTrack
             </h1>
-            <p className="text-[11px] text-[#64748B] font-medium mt-1.5 text-center leading-relaxed max-w-[240px]">
+            <p className="text-[11px] text-[#64748B] dark:text-slate-400 font-medium mt-1.5 text-center leading-relaxed max-w-[240px]">
               SMKN 1 Bojong · Monitoring & Logbook PKL
             </p>
           </div>
 
           {/* Tab Toggle */}
-          <div className="flex bg-[#F1F5F9] p-1 rounded-2xl mb-6 border border-[#E2E8F0]">
+          <div className="flex bg-[#F1F5F9] dark:bg-slate-700 p-1 rounded-2xl mb-6 border border-[#E2E8F0] dark:border-slate-700">
             <button
               type="button"
               onClick={() => handleTabSwitch(true)}
               className={`flex-1 py-2.5 text-xs font-semibold rounded-xl transition-all duration-200 cursor-pointer ${
                 isLogin
-                  ? 'bg-white text-[#2563EB] shadow-sm border border-[#E2E8F0]'
-                  : 'text-[#64748B] hover:text-[#0F172A]'
+                  ? 'bg-white dark:bg-slate-800 text-[#2563EB] shadow-sm border border-[#E2E8F0] dark:border-slate-700'
+                  : 'text-[#64748B] dark:text-slate-400 hover:text-[#0F172A] dark:text-white'
               }`}
             >
               Masuk Akun
@@ -281,8 +281,8 @@ export const AuthPage: React.FC = () => {
               onClick={() => handleTabSwitch(false)}
               className={`flex-1 py-2.5 text-xs font-semibold rounded-xl transition-all duration-200 cursor-pointer ${
                 !isLogin
-                  ? 'bg-white text-[#2563EB] shadow-sm border border-[#E2E8F0]'
-                  : 'text-[#64748B] hover:text-[#0F172A]'
+                  ? 'bg-white dark:bg-slate-800 text-[#2563EB] shadow-sm border border-[#E2E8F0] dark:border-slate-700'
+                  : 'text-[#64748B] dark:text-slate-400 hover:text-[#0F172A] dark:text-white'
               }`}
             >
               Daftar Baru
@@ -324,7 +324,7 @@ export const AuthPage: React.FC = () => {
             {/* Full Name — Register Only */}
             {!isLogin && (
               <div className="flex flex-col gap-1.5 animate-in fade-in duration-200">
-                <label className="text-[10px] text-[#64748B] uppercase font-bold tracking-wider">
+                <label className="text-[10px] text-[#64748B] dark:text-slate-400 uppercase font-bold tracking-wider">
                   Nama Lengkap
                 </label>
                 <div className="relative">
@@ -342,7 +342,7 @@ export const AuthPage: React.FC = () => {
 
             {/* Username / Email */}
             <div className="flex flex-col gap-1.5">
-              <label className="text-[10px] text-[#64748B] uppercase font-bold tracking-wider">
+              <label className="text-[10px] text-[#64748B] dark:text-slate-400 uppercase font-bold tracking-wider">
                 Username
               </label>
               <div className="relative">
@@ -370,7 +370,7 @@ export const AuthPage: React.FC = () => {
 
             {/* Password */}
             <div className="flex flex-col gap-1.5">
-              <label className="text-[10px] text-[#64748B] uppercase font-bold tracking-wider">
+              <label className="text-[10px] text-[#64748B] dark:text-slate-400 uppercase font-bold tracking-wider">
                 Password
               </label>
               <div className="relative">
@@ -389,7 +389,7 @@ export const AuthPage: React.FC = () => {
                 <button
                   type="button"
                   onClick={() => setShowPassword((prev) => !prev)}
-                  className="absolute right-3 top-1/2 -translate-y-1/2 p-1.5 text-[#94A3B8] hover:text-[#64748B] focus:outline-none rounded-lg transition-colors cursor-pointer"
+                  className="absolute right-3 top-1/2 -translate-y-1/2 p-1.5 text-[#94A3B8] hover:text-[#64748B] dark:text-slate-400 focus:outline-none rounded-lg transition-colors cursor-pointer"
                   aria-label={showPassword ? 'Sembunyikan password' : 'Tampilkan password'}
                 >
                   {showPassword ? <EyeOff size={16} /> : <Eye size={16} />}
@@ -412,7 +412,7 @@ export const AuthPage: React.FC = () => {
                     id="rememberMe"
                     className="h-4 w-4 rounded border-[#CBD5E1] text-[#2563EB] focus:ring-[#2563EB] focus:ring-offset-0 cursor-pointer"
                   />
-                  <span className="text-[11px] text-[#64748B] font-medium group-hover:text-[#0F172A] transition-colors select-none">
+                  <span className="text-[11px] text-[#64748B] dark:text-slate-400 font-medium group-hover:text-[#0F172A] dark:text-white transition-colors select-none">
                     Ingat saya
                   </span>
                 </label>
@@ -430,13 +430,13 @@ export const AuthPage: React.FC = () => {
             {/* Role Dropdown — Register Only */}
             {!isLogin && (
               <div className="flex flex-col gap-1.5 relative animate-in fade-in duration-200" ref={roleDropdownRef}>
-                <label className="text-[10px] text-[#64748B] uppercase font-bold tracking-wider">
+                <label className="text-[10px] text-[#64748B] dark:text-slate-400 uppercase font-bold tracking-wider">
                   Peran (Role)
                 </label>
                 <button
                   type="button"
                   onClick={() => setIsRoleDropdownOpen((prev) => !prev)}
-                  className="w-full bg-white border border-[#E2E8F0] rounded-xl px-3.5 text-sm text-[#0F172A] text-left flex justify-between items-center focus:outline-none focus:border-[#2563EB] focus:ring-2 focus:ring-blue-100 cursor-pointer min-h-[48px] py-3 md:min-h-0 md:py-2.5 md:text-xs transition-all"
+                  className="w-full bg-white dark:bg-slate-800 border border-[#E2E8F0] dark:border-slate-700 rounded-xl px-3.5 text-sm text-[#0F172A] dark:text-white text-left flex justify-between items-center focus:outline-none focus:border-[#2563EB] focus:ring-2 focus:ring-blue-100 cursor-pointer min-h-[48px] py-3 md:min-h-0 md:py-2.5 md:text-xs transition-all"
                 >
                   <span>{currentRoleLabel}</span>
                   <ChevronDown
@@ -445,7 +445,7 @@ export const AuthPage: React.FC = () => {
                   />
                 </button>
                 {isRoleDropdownOpen && (
-                  <div className="absolute left-0 right-0 top-[calc(100%+4px)] bg-white border border-[#E2E8F0] rounded-xl shadow-xl z-50 animate-in fade-in slide-in-from-top-1 duration-150 overflow-hidden">
+                  <div className="absolute left-0 right-0 top-[calc(100%+4px)] bg-white dark:bg-slate-800 border border-[#E2E8F0] dark:border-slate-700 rounded-xl shadow-xl z-50 animate-in fade-in slide-in-from-top-1 duration-150 overflow-hidden">
                     {ROLES.map((r) => (
                       <button
                         key={r.value}
@@ -454,10 +454,10 @@ export const AuthPage: React.FC = () => {
                           setRole(r.value);
                           setIsRoleDropdownOpen(false);
                         }}
-                        className={`w-full text-left px-3.5 py-2.5 text-xs hover:bg-[#F1F5F9] transition duration-150 block cursor-pointer ${
+                        className={`w-full text-left px-3.5 py-2.5 text-xs hover:bg-[#F1F5F9] dark:bg-slate-700 transition duration-150 block cursor-pointer ${
                           role === r.value
                             ? 'bg-[#2563EB]/8 text-[#2563EB] font-semibold'
-                            : 'text-[#0F172A]'
+                            : 'text-[#0F172A] dark:text-white'
                         }`}
                       >
                         {r.label}
@@ -476,13 +476,13 @@ export const AuthPage: React.FC = () => {
                   className="flex flex-col gap-1.5 animate-in fade-in duration-200 relative"
                   ref={classDropdownRef}
                 >
-                  <label className="text-[10px] text-[#64748B] uppercase font-bold tracking-wider">
+                  <label className="text-[10px] text-[#64748B] dark:text-slate-400 uppercase font-bold tracking-wider">
                     Pilih Kelas
                   </label>
                   <button
                     type="button"
                     onClick={() => setIsClassDropdownOpen((prev) => !prev)}
-                    className="w-full bg-white border border-[#E2E8F0] rounded-xl px-3.5 text-sm text-[#0F172A] text-left flex justify-between items-center focus:outline-none focus:border-[#2563EB] focus:ring-2 focus:ring-blue-100 cursor-pointer min-h-[48px] py-3 md:min-h-0 md:py-2.5 md:text-xs transition-all"
+                    className="w-full bg-white dark:bg-slate-800 border border-[#E2E8F0] dark:border-slate-700 rounded-xl px-3.5 text-sm text-[#0F172A] dark:text-white text-left flex justify-between items-center focus:outline-none focus:border-[#2563EB] focus:ring-2 focus:ring-blue-100 cursor-pointer min-h-[48px] py-3 md:min-h-0 md:py-2.5 md:text-xs transition-all"
                   >
                     <span>{selectedClass || 'Pilih kelas...'}</span>
                     <ChevronDown
@@ -491,7 +491,7 @@ export const AuthPage: React.FC = () => {
                     />
                   </button>
                   {isClassDropdownOpen && (
-                    <div className="absolute left-0 right-0 top-[calc(100%+4px)] bg-white border border-[#E2E8F0] rounded-xl shadow-xl z-50 max-h-[160px] overflow-y-auto animate-in fade-in slide-in-from-top-1 duration-150">
+                    <div className="absolute left-0 right-0 top-[calc(100%+4px)] bg-white dark:bg-slate-800 border border-[#E2E8F0] dark:border-slate-700 rounded-xl shadow-xl z-50 max-h-[160px] overflow-y-auto animate-in fade-in slide-in-from-top-1 duration-150">
                       {PREDEFINED_CLASSES.map((c) => (
                         <button
                           key={c}
@@ -500,10 +500,10 @@ export const AuthPage: React.FC = () => {
                             setSelectedClass(c);
                             setIsClassDropdownOpen(false);
                           }}
-                          className={`w-full text-left px-3.5 py-2.5 text-xs hover:bg-[#F1F5F9] transition duration-150 block cursor-pointer ${
+                          className={`w-full text-left px-3.5 py-2.5 text-xs hover:bg-[#F1F5F9] dark:bg-slate-700 transition duration-150 block cursor-pointer ${
                             selectedClass === c
                               ? 'bg-[#2563EB]/8 text-[#2563EB] font-semibold'
-                              : 'text-[#0F172A]'
+                              : 'text-[#0F172A] dark:text-white'
                           }`}
                         >
                           {c}
@@ -515,7 +515,7 @@ export const AuthPage: React.FC = () => {
 
                 {/* NIS / NISN */}
                 <div className="flex flex-col gap-1.5 animate-in fade-in duration-200">
-                  <label className="text-[10px] text-[#64748B] uppercase font-bold tracking-wider">
+                  <label className="text-[10px] text-[#64748B] dark:text-slate-400 uppercase font-bold tracking-wider">
                     NIS / NISN
                   </label>
                   <div className="relative">
@@ -532,7 +532,7 @@ export const AuthPage: React.FC = () => {
 
                 {/* Perusahaan PKL */}
                 <div className="flex flex-col gap-1.5 animate-in fade-in duration-200">
-                  <label className="text-[10px] text-[#64748B] uppercase font-bold tracking-wider">
+                  <label className="text-[10px] text-[#64748B] dark:text-slate-400 uppercase font-bold tracking-wider">
                     Perusahaan PKL
                   </label>
                   <div className="relative">
@@ -576,7 +576,7 @@ export const AuthPage: React.FC = () => {
                 <ShieldCheck size={12} />
                 Akun Demo (Simulasi)
               </h4>
-              <ul className="flex flex-col gap-1.5 bg-[#F8FAFC] p-3.5 rounded-xl border border-[#F1F5F9] font-mono text-[10px] text-[#64748B]">
+              <ul className="flex flex-col gap-1.5 bg-[#F8FAFC] dark:bg-slate-900 p-3.5 rounded-xl border border-[#F1F5F9] font-mono text-[10px] text-[#64748B] dark:text-slate-400">
                 {[
                   { role: 'Siswa', user: 'marup', pass: 'pppppp' },
                   { role: 'Pem. Eksternal', user: 'manajer', pass: 'pppppp' },
