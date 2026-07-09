@@ -171,21 +171,28 @@ export const SettingsPage: React.FC<SettingsPageProps> = ({
         {/* BAHASA TILE */}
         <div className="flex items-center justify-between p-4 bg-white dark:bg-[#243447] min-h-[56px]">
           <div className="flex items-center gap-4">
-            <div className="w-10 h-10 rounded-full bg-slate-100 dark:bg-gray-800 flex items-center justify-center text-slate-600 shrink-0">
+            <div className="w-10 h-10 rounded-full bg-slate-100 dark:bg-gray-800 flex items-center justify-center text-slate-600 dark:text-gray-300 shrink-0">
               <Globe size={18} />
             </div>
-            <div>
-              <span className="text-sm font-semibold text-slate-800 dark:text-white block">Bahasa</span>
-              <span className="text-xs text-slate-500 dark:text-gray-300">Antarmuka aplikasi</span>
+            <div className="flex flex-col">
+              <div className="flex items-center gap-2">
+                <span className="text-sm font-semibold text-slate-800 dark:text-white">Bahasa</span>
+                <span className="text-[10px] font-bold px-1.5 py-0.5 bg-amber-100 text-amber-700 dark:bg-amber-500/10 dark:text-amber-500 rounded-md">
+                  🚧 Coming Soon
+                </span>
+              </div>
+              <span className="text-xs text-slate-500 dark:text-gray-400 mt-0.5 max-w-[200px] leading-tight">
+                Fitur multi-bahasa akan tersedia pada versi berikutnya.
+              </span>
             </div>
           </div>
           <select
             value={language}
             onChange={(e) => setLanguage(e.target.value)}
-            className="bg-transparent border-none text-sm text-slate-700 font-semibold focus:outline-none focus:ring-0 text-right cursor-pointer"
+            className="bg-transparent border-none text-sm text-slate-500 dark:text-gray-400 font-semibold focus:outline-none focus:ring-0 text-right cursor-pointer shrink-0"
           >
-            <option value="id">Indonesia</option>
-            <option value="en">English</option>
+            <option value="id" disabled>🇮🇩 Indonesia</option>
+            <option value="en" disabled>🇺🇸 English</option>
           </select>
         </div>
 
