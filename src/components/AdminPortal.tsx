@@ -151,7 +151,7 @@ export const AdminPortal: React.FC = () => {
   };
 
   return (
-    <div className="flex flex-col gap-6 text-[#0F172A] dark:text-white">
+    <div className="flex flex-col gap-6 text-[#0F172A] dark:text-slate-50">
       {/* Header and Sync Actions */}
       <div className="flex flex-col sm:flex-row gap-3 justify-between items-start sm:items-center bg-white dark:bg-slate-800 border border-[#E2E8F0] dark:border-slate-700 rounded-2xl p-4 shadow-sm">
         <div>
@@ -192,7 +192,7 @@ export const AdminPortal: React.FC = () => {
             className={`pb-2.5 px-1 text-sm md:text-xs font-bold transition-all border-b-2 cursor-pointer ${
               activeTab === tab.key
                 ? 'border-[#2563EB] text-[#2563EB]'
-                : 'border-transparent text-[#64748B] dark:text-slate-400 hover:text-[#0F172A] dark:text-white'
+                : 'border-transparent text-[#64748B] dark:text-slate-400 hover:text-[#0F172A] dark:text-slate-50'
             }`}
           >
             {tab.label}
@@ -256,7 +256,7 @@ export const AdminPortal: React.FC = () => {
                   })}
                 </div>
               ) : (
-                <p className="text-xs text-slate-400 italic">Memuat grafik...</p>
+                <p className="text-xs text-slate-500 dark:text-slate-400 italic">Memuat grafik...</p>
               )}
             </div>
           </div>
@@ -272,7 +272,7 @@ export const AdminPortal: React.FC = () => {
                 placeholder="Tambah nama kelas baru (Contoh: XII PPLG 3)"
                 value={newClassName}
                 onChange={(e) => setNewClassName(e.target.value)}
-                className="bg-white dark:bg-slate-800 border border-[#E2E8F0] dark:border-slate-700 rounded-xl px-3 py-2.5 text-sm flex-1 text-[#0F172A] dark:text-white focus:outline-none focus:border-[#2563EB] min-h-[48px] md:min-h-0 md:py-2 md:text-xs"
+                className="bg-white dark:bg-slate-800 border border-[#E2E8F0] dark:border-slate-700 rounded-xl px-3 py-2.5 text-sm flex-1 text-[#0F172A] dark:text-slate-50 focus:outline-none focus:border-[#2563EB] min-h-[48px] md:min-h-0 md:py-2 md:text-xs"
               />
               <button 
                 type="submit"
@@ -301,7 +301,7 @@ export const AdminPortal: React.FC = () => {
                             type="text"
                             value={editText}
                             onChange={(e) => setEditText(e.target.value)}
-                            className="bg-white dark:bg-slate-800 border border-[#E2E8F0] dark:border-slate-700 rounded-xl px-3 text-sm text-[#0F172A] dark:text-white focus:outline-none focus:border-[#2563EB] min-h-[44px] py-2"
+                            className="bg-white dark:bg-slate-800 border border-[#E2E8F0] dark:border-slate-700 rounded-xl px-3 text-sm text-[#0F172A] dark:text-slate-50 focus:outline-none focus:border-[#2563EB] min-h-[44px] py-2"
                           />
                         ) : (
                           c.name
@@ -358,7 +358,7 @@ export const AdminPortal: React.FC = () => {
                 placeholder="Tambah nama perusahaan baru (Contoh: GoTo)"
                 value={newCompanyName}
                 onChange={(e) => setNewCompanyName(e.target.value)}
-                className="bg-white dark:bg-slate-800 border border-[#E2E8F0] dark:border-slate-700 rounded-xl px-3 py-2.5 text-sm flex-1 text-[#0F172A] dark:text-white focus:outline-none focus:border-[#2563EB] min-h-[48px] md:min-h-0 md:py-2 md:text-xs"
+                className="bg-white dark:bg-slate-800 border border-[#E2E8F0] dark:border-slate-700 rounded-xl px-3 py-2.5 text-sm flex-1 text-[#0F172A] dark:text-slate-50 focus:outline-none focus:border-[#2563EB] min-h-[48px] md:min-h-0 md:py-2 md:text-xs"
               />
               <button 
                 type="submit"
@@ -387,7 +387,7 @@ export const AdminPortal: React.FC = () => {
                             type="text"
                             value={editText}
                             onChange={(e) => setEditText(e.target.value)}
-                            className="bg-white dark:bg-slate-800 border border-[#E2E8F0] dark:border-slate-700 rounded-xl px-3 text-sm text-[#0F172A] dark:text-white focus:outline-none focus:border-[#2563EB] min-h-[44px] py-2"
+                            className="bg-white dark:bg-slate-800 border border-[#E2E8F0] dark:border-slate-700 rounded-xl px-3 text-sm text-[#0F172A] dark:text-slate-50 focus:outline-none focus:border-[#2563EB] min-h-[44px] py-2"
                           />
                         ) : (
                           co.name
@@ -446,7 +446,7 @@ export const AdminPortal: React.FC = () => {
                 </h4>
                 <div className="flex flex-col gap-3">
                   {allUsersList.filter(u => u.role === 'pembimbing_internal').length === 0 ? (
-                    <p className="text-xs text-slate-400 italic py-2">Belum ada Pembimbing Internal terdaftar.</p>
+                    <p className="text-xs text-slate-500 dark:text-slate-400 italic py-2">Belum ada Pembimbing Internal terdaftar.</p>
                   ) : allUsersList.filter(u => u.role === 'pembimbing_internal').map((guru: any) => {
                     const currentClassIds = guru.classes?.map((c: any) => c.id) || [];
                     return (
@@ -487,7 +487,7 @@ export const AdminPortal: React.FC = () => {
                 </h4>
                 <div className="flex flex-col gap-3">
                   {allUsersList.filter(u => u.role === 'pembimbing_eksternal').length === 0 ? (
-                    <p className="text-xs text-slate-400 italic py-2">Belum ada Pembimbing Eksternal terdaftar.</p>
+                    <p className="text-xs text-slate-500 dark:text-slate-400 italic py-2">Belum ada Pembimbing Eksternal terdaftar.</p>
                   ) : allUsersList.filter(u => u.role === 'pembimbing_eksternal').map((mentor: any) => {
                     const currentCompIds = mentor.companies?.map((c: any) => c.id) || [];
                     return (
@@ -528,7 +528,7 @@ export const AdminPortal: React.FC = () => {
                 </h4>
                 <div className="flex flex-col gap-3">
                   {allUsersList.filter(u => u.role === 'siswa').length === 0 ? (
-                    <p className="text-xs text-slate-400 italic py-2">Belum ada Siswa terdaftar.</p>
+                    <p className="text-xs text-slate-500 dark:text-slate-400 italic py-2">Belum ada Siswa terdaftar.</p>
                   ) : allUsersList.filter(u => u.role === 'siswa').map((siswa: any) => {
                     return (
                       <div key={siswa.id} className="bg-white dark:bg-slate-800 border border-[#E2E8F0] dark:border-slate-700 p-3 rounded-lg flex flex-col gap-3">

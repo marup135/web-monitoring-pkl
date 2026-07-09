@@ -51,7 +51,7 @@ function DashboardContent() {
   // Render Student List/Portal for Admin, Guru, and Mentor
   if (isPembimbing && viewMode === 'list') {
     return (
-      <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4 md:py-8 flex-1 w-full relative font-sans text-[#0F172A] dark:text-white">
+      <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4 md:py-8 flex-1 w-full relative font-sans text-[#0F172A] dark:text-slate-50">
         {/* Header */}
         <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 mb-6 md:mb-8 border-b border-[#E2E8F0] dark:border-slate-700 pb-4 md:pb-6">
           <div>
@@ -62,7 +62,7 @@ function DashboardContent() {
                 className="w-10 h-10 object-contain rounded-xl shadow-sm border border-[#E2E8F0] dark:border-slate-700"
               />
               <div>
-                <h1 className="text-xl md:text-2xl font-black text-[#0F172A] dark:text-white tracking-tight">
+                <h1 className="text-xl md:text-2xl font-black text-[#0F172A] dark:text-slate-50 tracking-tight">
                   PORTAL PEMBIMBING - NEBOTRACK
                 </h1>
                 <p className="text-[10px] md:text-xs text-[#64748B] dark:text-slate-400 font-medium mt-0.5">
@@ -81,7 +81,7 @@ function DashboardContent() {
           <div className="flex items-center gap-3 w-full md:w-auto">
             <button
               onClick={logout}
-              className="w-full md:w-auto px-4 py-3 md:py-2.5 bg-[#EF4444] hover:bg-[#DC2626] text-white font-semibold text-xs rounded-xl shadow-sm transition cursor-pointer min-h-[48px] md:min-h-0"
+              className="w-full md:w-auto px-4 py-3 md:py-2.5 bg-[#EF4444] hover:bg-[#DC2626] dark:bg-red-500/20 dark:hover:bg-red-500/30 dark:text-red-400 text-white font-semibold text-xs rounded-xl shadow-sm transition cursor-pointer min-h-[48px] md:min-h-0"
             >
               Keluar (Logout)
             </button>
@@ -102,7 +102,7 @@ function DashboardContent() {
 
   // Monitoring student logbook OR Normal student view
   return (
-    <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4 md:py-8 flex-1 w-full relative text-[#0F172A] dark:text-white pb-28 md:pb-8">
+    <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4 md:py-8 flex-1 w-full relative text-[#0F172A] dark:text-slate-50 pb-28 md:pb-8">
       {/* Mobile Sticky Navbar */}
       <div className="sticky top-0 z-40 bg-white/95 dark:bg-slate-800/95 backdrop-blur-sm border-b border-slate-200 dark:border-slate-700 flex md:hidden items-center justify-between px-4 h-14 -mx-4 sm:-mx-6 mb-4 print:hidden shadow-sm">
         <button
@@ -266,7 +266,7 @@ function DashboardContent() {
             />
             <div>
               <div className="flex items-center gap-2">
-                <h1 className="text-2xl font-black text-[#0F172A] dark:text-white tracking-tight">
+                <h1 className="text-2xl font-black text-[#0F172A] dark:text-slate-50 tracking-tight">
                   NeboTrack
                 </h1>
                 {loading && (
@@ -296,7 +296,7 @@ function DashboardContent() {
 
           <div className="flex items-center gap-2">
             <Building2 size={16} className="text-[#2563EB]" />
-            <span className="text-xs font-semibold text-[#0F172A] dark:text-white">
+            <span className="text-xs font-semibold text-[#0F172A] dark:text-slate-50">
               Siswa: <span className="text-[#2563EB] font-bold">{state.studentName}</span> {state.nisn ? `(NIS/NISN: ${state.nisn})` : ''} - {state.companyName}
             </span>
           </div>
@@ -319,7 +319,7 @@ function DashboardContent() {
                 }
               }}
               title="Reset Database"
-              className="p-1.5 rounded-lg bg-white dark:bg-slate-800 border border-[#E2E8F0] dark:border-slate-700 hover:bg-[#F8FAFC] dark:bg-slate-900 text-[#64748B] dark:text-slate-400 hover:text-[#0F172A] dark:text-white transition cursor-pointer"
+              className="p-1.5 rounded-lg bg-white dark:bg-slate-800 border border-[#E2E8F0] dark:border-slate-700 hover:bg-[#F8FAFC] dark:bg-slate-900 text-[#64748B] dark:text-slate-400 hover:text-[#0F172A] dark:text-slate-50 transition cursor-pointer"
             >
               <RefreshCw size={13} />
             </button>
@@ -353,7 +353,7 @@ function DashboardContent() {
           className={`flex items-center gap-2 px-4 py-2.5 rounded-xl border text-xs font-semibold whitespace-nowrap transition duration-200 cursor-pointer ${
             activeTab === 'board'
               ? 'bg-blue-50 border-[#2563EB]/30 text-[#2563EB]'
-              : 'bg-white dark:bg-slate-800 border-[#E2E8F0] dark:border-slate-700 text-[#64748B] dark:text-slate-400 hover:bg-[#F8FAFC] dark:bg-slate-900 hover:text-[#0F172A] dark:text-white'
+              : 'bg-white dark:bg-slate-800 border-[#E2E8F0] dark:border-slate-700 text-[#64748B] dark:text-slate-400 hover:bg-[#F8FAFC] dark:bg-slate-900 hover:text-[#0F172A] dark:text-slate-50'
           }`}
         >
           <LayoutDashboard size={14} />
@@ -365,7 +365,7 @@ function DashboardContent() {
           className={`flex items-center gap-2 px-4 py-2.5 rounded-xl border text-xs font-semibold whitespace-nowrap transition duration-200 cursor-pointer ${
             activeTab === 'logbook'
               ? 'bg-blue-50 border-[#2563EB]/30 text-[#2563EB]'
-              : 'bg-white dark:bg-slate-800 border-[#E2E8F0] dark:border-slate-700 text-[#64748B] dark:text-slate-400 hover:bg-[#F8FAFC] dark:bg-slate-900 hover:text-[#0F172A] dark:text-white'
+              : 'bg-white dark:bg-slate-800 border-[#E2E8F0] dark:border-slate-700 text-[#64748B] dark:text-slate-400 hover:bg-[#F8FAFC] dark:bg-slate-900 hover:text-[#0F172A] dark:text-slate-50'
           }`}
         >
           <FileSpreadsheet size={14} />
@@ -377,7 +377,7 @@ function DashboardContent() {
           className={`flex items-center gap-2 px-4 py-2.5 rounded-xl border text-xs font-semibold whitespace-nowrap transition duration-200 cursor-pointer ${
             activeTab === 'stats'
               ? 'bg-blue-50 border-[#2563EB]/30 text-[#2563EB]'
-              : 'bg-white dark:bg-slate-800 border-[#E2E8F0] dark:border-slate-700 text-[#64748B] dark:text-slate-400 hover:bg-[#F8FAFC] dark:bg-slate-900 hover:text-[#0F172A] dark:text-white'
+              : 'bg-white dark:bg-slate-800 border-[#E2E8F0] dark:border-slate-700 text-[#64748B] dark:text-slate-400 hover:bg-[#F8FAFC] dark:bg-slate-900 hover:text-[#0F172A] dark:text-slate-50'
           }`}
         >
           <BarChart3 size={14} />
@@ -434,7 +434,7 @@ function DashboardContent() {
             onClick={() => setIsUserMenuOpen(false)}
             className="fixed inset-0 bg-slate-900/40 backdrop-blur-sm"
           />
-          <div className="relative w-full max-w-lg bg-white dark:bg-slate-800 rounded-t-3xl shadow-2xl p-6 flex flex-col gap-5 z-10 animate-in slide-in-from-bottom duration-300 max-h-[85vh] overflow-y-auto pb-safe">
+          <div className="relative w-full max-w-lg bg-white dark:bg-slate-800 rounded-t-3xl shadow-2xl dark:shadow-none dark:border-t dark:border-slate-700 p-6 flex flex-col gap-5 z-10 animate-in slide-in-from-bottom duration-300 max-h-[85vh] overflow-y-auto pb-safe">
             <div className="w-12 h-1.5 bg-slate-200 rounded-full mx-auto mb-2" />
             
             <div className="flex items-center gap-4">
@@ -444,7 +444,7 @@ function DashboardContent() {
               <div className="overflow-hidden">
                 <h3 className="font-extrabold text-slate-800 dark:text-slate-100 text-base leading-snug truncate">{currentUser?.name}</h3>
                 <div className="flex flex-wrap gap-1.5 items-center mt-1">
-                  <span className="inline-block px-2.5 py-0.5 rounded bg-blue-50 border border-blue-100 text-[#2563EB] font-bold text-[9px] uppercase tracking-wider">
+                  <span className="inline-block px-2.5 py-0.5 rounded bg-blue-50 dark:bg-blue-500/10 border border-blue-100 dark:border-blue-500/20 text-[#2563EB] dark:text-blue-400 font-bold text-[9px] uppercase tracking-wider">
                     {currentUser?.role?.replace('_', ' ')}
                   </span>
                 </div>
@@ -490,9 +490,9 @@ function DashboardContent() {
                   setIsUserMenuOpen(false);
                   logout();
                 }}
-                className="flex items-center gap-3 px-4 py-3 bg-red-50/50 hover:bg-red-50 rounded-2xl text-[#EF4444] border border-red-100/50 font-bold text-xs text-left transition min-h-[48px] cursor-pointer"
+                className="flex items-center gap-3 px-4 py-3 bg-red-50/50 dark:bg-red-500/10 hover:bg-red-50 dark:hover:bg-red-500/20 rounded-2xl text-[#EF4444] dark:text-red-400 border border-red-100/50 dark:border-red-500/20 font-bold text-xs text-left transition min-h-[48px] cursor-pointer"
               >
-                <div className="w-8 h-8 rounded-xl bg-red-50 flex items-center justify-center text-[#EF4444] shrink-0">
+                <div className="w-8 h-8 rounded-xl bg-red-50 dark:bg-red-500/20 flex items-center justify-center text-[#EF4444] dark:text-red-400 shrink-0">
                   <LogOut size={16} />
                 </div>
                 <span>Keluar (Logout)</span>
@@ -509,14 +509,14 @@ function LoginSuccessToast({ visible }: { visible: boolean }) {
   if (!visible) return null;
   return (
     <div className="fixed top-4 right-4 z-[9999] animate-in slide-in-from-top-3 fade-in duration-300">
-      <div className="flex items-center gap-3 bg-white dark:bg-slate-800 border border-green-200 text-[#0F172A] dark:text-white pl-4 pr-5 py-3 rounded-2xl shadow-xl shadow-green-100/60">
+      <div className="flex items-center gap-3 bg-white dark:bg-slate-800 border border-green-200 text-[#0F172A] dark:text-slate-50 pl-4 pr-5 py-3 rounded-2xl shadow-xl shadow-green-100/60">
         <div className="w-7 h-7 rounded-xl bg-[#22C55E] flex items-center justify-center shrink-0">
           <svg className="w-4 h-4 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
             <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
           </svg>
         </div>
         <div>
-          <p className="text-[13px] font-bold text-[#0F172A] dark:text-white">Login berhasil!</p>
+          <p className="text-[13px] font-bold text-[#0F172A] dark:text-slate-50">Login berhasil!</p>
           <p className="text-[11px] text-[#64748B] dark:text-slate-400">Selamat datang kembali.</p>
         </div>
       </div>
@@ -573,7 +573,7 @@ function HomeWrapper() {
 export default function Home() {
   return (
     <PKLProvider>
-      <div className="min-h-screen flex flex-col font-sans bg-[#F8FAFC] dark:bg-slate-900 text-[#0F172A] dark:text-white">
+      <div className="min-h-screen flex flex-col font-sans bg-[#F8FAFC] dark:bg-slate-900 text-[#0F172A] dark:text-slate-50">
         <HomeWrapper />
       </div>
     </PKLProvider>

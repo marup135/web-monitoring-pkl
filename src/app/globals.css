@@ -19,11 +19,12 @@
   --foreground: #f8fafc;
   --card-bg: #1e293b;
   --card-border: #334155;
-  --primary: #3b82f6;
-  --primary-hover: #60a5fa;
-  --secondary-bg: #334155;
+  --primary: #2563eb;
+  --primary-hover: #1d4ed8;
+  --secondary-bg: #1e293b;
   --text-primary: #f8fafc;
-  --text-secondary: #94a3b8;
+  --text-secondary: #cbd5e1;
+  --text-muted: #94a3b8;
   --border: #334155;
 }
 

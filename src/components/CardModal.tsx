@@ -222,7 +222,7 @@ export const CardModal: React.FC<CardModalProps> = ({ card, onClose, initialEdit
 
   return (
     <div className="fixed inset-0 z-50 flex items-end md:items-center justify-center p-0 md:p-4 bg-slate-900/40 backdrop-blur-sm">
-      <div className="bg-white dark:bg-slate-800 rounded-t-3xl md:rounded-2xl w-full max-w-3xl max-h-[92vh] md:max-h-[90vh] flex flex-col border border-[#E2E8F0] dark:border-slate-700 shadow-xl relative animate-in fade-in slide-in-from-bottom-10 md:zoom-in-95 duration-300 text-[#0F172A] dark:text-white">
+      <div className="bg-white dark:bg-slate-800 rounded-t-3xl md:rounded-2xl w-full max-w-3xl max-h-[92vh] md:max-h-[90vh] flex flex-col border border-[#E2E8F0] dark:border-slate-700 shadow-xl relative animate-in fade-in slide-in-from-bottom-10 md:zoom-in-95 duration-300 text-[#0F172A] dark:text-slate-50">
         
         {/* Modal Header */}
         <div className="flex items-center justify-between p-6 border-b border-[#E2E8F0] dark:border-slate-700">
@@ -254,7 +254,7 @@ export const CardModal: React.FC<CardModalProps> = ({ card, onClose, initialEdit
           <button
             onClick={() => setActiveTab('details')}
             className={`py-3 px-4 text-xs font-semibold border-b-2 transition-all flex items-center gap-2 cursor-pointer ${
-              activeTab === 'details' ? 'border-[#2563EB] text-[#2563EB]' : 'border-transparent text-[#64748B] dark:text-slate-400 hover:text-[#0F172A] dark:text-white'
+              activeTab === 'details' ? 'border-[#2563EB] text-[#2563EB]' : 'border-transparent text-[#64748B] dark:text-slate-400 hover:text-[#0F172A] dark:text-slate-50'
             }`}
           >
             <MessageSquare size={14} />
@@ -263,7 +263,7 @@ export const CardModal: React.FC<CardModalProps> = ({ card, onClose, initialEdit
           <button
             onClick={() => setActiveTab('history')}
             className={`py-3 px-4 text-xs font-semibold border-b-2 transition-all flex items-center gap-2 cursor-pointer ${
-              activeTab === 'history' ? 'border-[#2563EB] text-[#2563EB]' : 'border-transparent text-[#64748B] dark:text-slate-400 hover:text-[#0F172A] dark:text-white'
+              activeTab === 'history' ? 'border-[#2563EB] text-[#2563EB]' : 'border-transparent text-[#64748B] dark:text-slate-400 hover:text-[#0F172A] dark:text-slate-50'
             }`}
           >
             <History size={14} />
@@ -282,12 +282,12 @@ export const CardModal: React.FC<CardModalProps> = ({ card, onClose, initialEdit
                 {validationError && !isEditing && (
                   <div className="p-3.5 bg-red-50 border border-red-200 text-[#EF4444] rounded-xl text-xs font-semibold flex items-center justify-between animate-in fade-in duration-200">
                     <span>{validationError}</span>
-                    <button onClick={() => setValidationError(null)} className="text-red-400 hover:text-red-600 font-bold ml-2 text-sm cursor-pointer">×</button>
+                    <button onClick={() => setValidationError(null)} className="text-red-400 hover:text-red-600 dark:text-red-400 font-bold ml-2 text-sm cursor-pointer">×</button>
                   </div>
                 )}
 
                 {/* Description Box */}
-                <div className="bg-[#F1F5F9] dark:bg-slate-700/50 border border-[#E2E8F0] dark:border-slate-700 rounded-xl p-4">
+                <div className="bg-[#F1F5F9] dark:bg-slate-800/50 border border-[#E2E8F0] dark:border-slate-700 rounded-xl p-4">
                   {isEditing ? (
                     <form onSubmit={handleSaveDetails} className="flex flex-col gap-4">
                       {validationError && (
@@ -302,7 +302,7 @@ export const CardModal: React.FC<CardModalProps> = ({ card, onClose, initialEdit
                           required
                           value={editTitle}
                           onChange={(e) => setEditTitle(e.target.value)}
-                          className="bg-white dark:bg-slate-800 border border-[#E2E8F0] dark:border-slate-700 rounded-xl px-3 text-sm text-[#0F172A] dark:text-white focus:outline-none focus:border-[#2563EB] min-h-[48px] py-3 md:min-h-0 md:py-2 md:text-xs md:rounded-lg"
+                          className="bg-white dark:bg-slate-800 border border-[#E2E8F0] dark:border-slate-700 rounded-xl px-3 text-sm text-[#0F172A] dark:text-slate-50 focus:outline-none focus:border-[#2563EB] min-h-[48px] py-3 md:min-h-0 md:py-2 md:text-xs md:rounded-lg"
                         />
                       </div>
                       
@@ -313,7 +313,7 @@ export const CardModal: React.FC<CardModalProps> = ({ card, onClose, initialEdit
                           rows={4}
                           value={editDesc}
                           onChange={(e) => setEditDesc(e.target.value)}
-                          className="bg-white dark:bg-slate-800 border border-[#E2E8F0] dark:border-slate-700 rounded-xl px-3 text-sm text-[#0F172A] dark:text-white focus:outline-none focus:border-[#2563EB] resize-none min-h-[80px] py-3 md:min-h-0 md:py-2 md:text-xs md:rounded-lg"
+                          className="bg-white dark:bg-slate-800 border border-[#E2E8F0] dark:border-slate-700 rounded-xl px-3 text-sm text-[#0F172A] dark:text-slate-50 focus:outline-none focus:border-[#2563EB] resize-none min-h-[80px] py-3 md:min-h-0 md:py-2 md:text-xs md:rounded-lg"
                         />
                       </div>
 
@@ -323,7 +323,7 @@ export const CardModal: React.FC<CardModalProps> = ({ card, onClose, initialEdit
                           <button
                             type="button"
                             onClick={() => setIsCategoryDropdownOpen(!isCategoryDropdownOpen)}
-                            className="w-full bg-white dark:bg-slate-800 border border-[#E2E8F0] dark:border-slate-700 rounded-xl px-3 text-left text-sm text-[#0F172A] dark:text-white focus:outline-none flex justify-between items-center hover:bg-slate-50 dark:bg-slate-800/50 transition cursor-pointer min-h-[48px] py-3 md:min-h-0 md:py-2 md:rounded-lg md:text-xs"
+                            className="w-full bg-white dark:bg-slate-800 border border-[#E2E8F0] dark:border-slate-700 rounded-xl px-3 text-left text-sm text-[#0F172A] dark:text-slate-50 focus:outline-none flex justify-between items-center hover:bg-slate-50 dark:bg-slate-800/50 transition cursor-pointer min-h-[48px] py-3 md:min-h-0 md:py-2 md:rounded-lg md:text-xs"
                           >
                             <span>{selectCategory}</span>
                             <ChevronDown size={12} className={`text-slate-400 transition-transform ${isCategoryDropdownOpen ? 'rotate-180' : ''}`} />
@@ -353,7 +353,7 @@ export const CardModal: React.FC<CardModalProps> = ({ card, onClose, initialEdit
                             type="date"
                             value={editDueDate}
                             onChange={(e) => setEditDueDate(e.target.value)}
-                            className="w-full bg-white dark:bg-slate-800 border border-[#E2E8F0] dark:border-slate-700 rounded-xl px-3 text-sm text-[#0F172A] dark:text-white focus:outline-none min-h-[48px] py-3 md:min-h-0 md:py-2 md:rounded-lg md:text-xs"
+                            className="w-full bg-white dark:bg-slate-800 border border-[#E2E8F0] dark:border-slate-700 rounded-xl px-3 text-sm text-[#0F172A] dark:text-slate-50 focus:outline-none min-h-[48px] py-3 md:min-h-0 md:py-2 md:rounded-lg md:text-xs"
                           />
                         </div>
                       </div>
@@ -367,7 +367,7 @@ export const CardModal: React.FC<CardModalProps> = ({ card, onClose, initialEdit
                             placeholder="Kategori kustom..."
                             value={customCategory}
                             onChange={(e) => setCustomCategory(e.target.value)}
-                            className="bg-white dark:bg-slate-800 border border-[#E2E8F0] dark:border-slate-700 rounded-xl px-3 text-sm text-[#0F172A] dark:text-white focus:outline-none focus:border-[#2563EB] min-h-[48px] py-3 md:min-h-0 md:py-2 md:rounded-lg"
+                            className="bg-white dark:bg-slate-800 border border-[#E2E8F0] dark:border-slate-700 rounded-xl px-3 text-sm text-[#0F172A] dark:text-slate-50 focus:outline-none focus:border-[#2563EB] min-h-[48px] py-3 md:min-h-0 md:py-2 md:rounded-lg"
                           />
                         </div>
                       )}
@@ -379,7 +379,7 @@ export const CardModal: React.FC<CardModalProps> = ({ card, onClose, initialEdit
                             type="time"
                             value={editStartTime}
                             onChange={(e) => setEditStartTime(e.target.value)}
-                            className="w-full bg-white dark:bg-slate-800 border border-[#E2E8F0] dark:border-slate-700 rounded-xl px-3 text-sm text-[#0F172A] dark:text-white focus:outline-none focus:border-[#2563EB] min-h-[48px] py-3 md:min-h-0 md:py-2 md:rounded-lg md:text-xs"
+                            className="w-full bg-white dark:bg-slate-800 border border-[#E2E8F0] dark:border-slate-700 rounded-xl px-3 text-sm text-[#0F172A] dark:text-slate-50 focus:outline-none focus:border-[#2563EB] min-h-[48px] py-3 md:min-h-0 md:py-2 md:rounded-lg md:text-xs"
                           />
                         </div>
                         <div>
@@ -388,7 +388,7 @@ export const CardModal: React.FC<CardModalProps> = ({ card, onClose, initialEdit
                             type="time"
                             value={editEndTime}
                             onChange={(e) => setEditEndTime(e.target.value)}
-                            className="w-full bg-white dark:bg-slate-800 border border-[#E2E8F0] dark:border-slate-700 rounded-xl px-3 text-sm text-[#0F172A] dark:text-white focus:outline-none focus:border-[#2563EB] min-h-[48px] py-3 md:min-h-0 md:py-2 md:rounded-lg md:text-xs"
+                            className="w-full bg-white dark:bg-slate-800 border border-[#E2E8F0] dark:border-slate-700 rounded-xl px-3 text-sm text-[#0F172A] dark:text-slate-50 focus:outline-none focus:border-[#2563EB] min-h-[48px] py-3 md:min-h-0 md:py-2 md:rounded-lg md:text-xs"
                           />
                         </div>
                       </div>
@@ -439,7 +439,7 @@ export const CardModal: React.FC<CardModalProps> = ({ card, onClose, initialEdit
                 </div>
 
                 {/* Attachments Section */}
-                <div className="bg-[#F1F5F9] dark:bg-slate-700/50 border border-[#E2E8F0] dark:border-slate-700 rounded-xl p-4 flex flex-col gap-4">
+                <div className="bg-[#F1F5F9] dark:bg-slate-800/50 border border-[#E2E8F0] dark:border-slate-700 rounded-xl p-4 flex flex-col gap-4">
                   <div className="flex justify-between items-center">
                     <h4 className="text-xs font-bold text-[#64748B] dark:text-slate-400 uppercase tracking-wider flex items-center gap-1.5">
                       <Paperclip size={14} className="text-[#2563EB]" />
@@ -475,7 +475,7 @@ export const CardModal: React.FC<CardModalProps> = ({ card, onClose, initialEdit
                   </div>
 
                   {(!card.attachments || card.attachments.length === 0) ? (
-                    <p className="text-xs text-gray-400 italic">Belum ada file lampiran.</p>
+                    <p className="text-xs text-slate-500 dark:text-slate-500 dark:text-slate-400 italic">Belum ada file lampiran.</p>
                   ) : (
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-2.5">
                       {card.attachments.map((att, idx) => {
@@ -522,7 +522,7 @@ export const CardModal: React.FC<CardModalProps> = ({ card, onClose, initialEdit
                 </div>
 
                 {/* Score & Feedback Panel for Mentor */}
-                <div className="bg-[#F1F5F9] dark:bg-slate-700/50 border border-[#E2E8F0] dark:border-slate-700 rounded-xl p-4 flex flex-col gap-4">
+                <div className="bg-[#F1F5F9] dark:bg-slate-800/50 border border-[#E2E8F0] dark:border-slate-700 rounded-xl p-4 flex flex-col gap-4">
                   <h4 className="text-xs font-bold text-[#64748B] dark:text-slate-400 uppercase tracking-wider flex items-center gap-1.5">
                     <Award size={14} className="text-purple-600" />
                     Penilaian Mentor (Pembimbing Eksternal)
@@ -558,12 +558,12 @@ export const CardModal: React.FC<CardModalProps> = ({ card, onClose, initialEdit
                       </div>
                     </div>
                   ) : (
-                    <p className="text-xs text-slate-400 italic">Belum dinilai oleh Mentor Lapangan.</p>
+                    <p className="text-xs text-slate-500 dark:text-slate-400 italic">Belum dinilai oleh Mentor Lapangan.</p>
                   )}
                 </div>
 
                 {/* Score & Feedback Panel for Guru */}
-                <div className="bg-[#F1F5F9] dark:bg-slate-700/50 border border-[#E2E8F0] dark:border-slate-700 rounded-xl p-4 flex flex-col gap-4">
+                <div className="bg-[#F1F5F9] dark:bg-slate-800/50 border border-[#E2E8F0] dark:border-slate-700 rounded-xl p-4 flex flex-col gap-4">
                   <h4 className="text-xs font-bold text-[#64748B] dark:text-slate-400 uppercase tracking-wider flex items-center gap-1.5">
                     <Award size={14} className="text-yellow-600" />
                     Penilaian Guru (Pembimbing Internal)
@@ -599,7 +599,7 @@ export const CardModal: React.FC<CardModalProps> = ({ card, onClose, initialEdit
                       </div>
                     </div>
                   ) : (
-                    <p className="text-xs text-slate-400 italic">Belum dinilai oleh Guru Pembimbing.</p>
+                    <p className="text-xs text-slate-500 dark:text-slate-400 italic">Belum dinilai oleh Guru Pembimbing.</p>
                   )}
                 </div>
 
@@ -625,7 +625,7 @@ export const CardModal: React.FC<CardModalProps> = ({ card, onClose, initialEdit
                           max="100"
                           value={mentorDiscipline}
                           onChange={(e) => setMentorDiscipline(e.target.value !== '' ? Number(e.target.value) : '')}
-                          className="w-full bg-white dark:bg-slate-800 border border-[#E2E8F0] dark:border-slate-700 rounded-xl px-3 text-sm text-[#0F172A] dark:text-white focus:outline-none focus:border-[#2563EB] min-h-[48px] py-3 md:min-h-0 md:py-2 md:text-xs md:rounded-lg"
+                          className="w-full bg-white dark:bg-slate-800 border border-[#E2E8F0] dark:border-slate-700 rounded-xl px-3 text-sm text-[#0F172A] dark:text-slate-50 focus:outline-none focus:border-[#2563EB] min-h-[48px] py-3 md:min-h-0 md:py-2 md:text-xs md:rounded-lg"
                         />
                       </div>
                       <div>
@@ -637,7 +637,7 @@ export const CardModal: React.FC<CardModalProps> = ({ card, onClose, initialEdit
                           max="100"
                           value={mentorSkill}
                           onChange={(e) => setMentorSkill(e.target.value !== '' ? Number(e.target.value) : '')}
-                          className="w-full bg-white dark:bg-slate-800 border border-[#E2E8F0] dark:border-slate-700 rounded-xl px-3 text-sm text-[#0F172A] dark:text-white focus:outline-none focus:border-[#2563EB] min-h-[48px] py-3 md:min-h-0 md:py-2 md:text-xs md:rounded-lg"
+                          className="w-full bg-white dark:bg-slate-800 border border-[#E2E8F0] dark:border-slate-700 rounded-xl px-3 text-sm text-[#0F172A] dark:text-slate-50 focus:outline-none focus:border-[#2563EB] min-h-[48px] py-3 md:min-h-0 md:py-2 md:text-xs md:rounded-lg"
                         />
                       </div>
                       <div>
@@ -649,7 +649,7 @@ export const CardModal: React.FC<CardModalProps> = ({ card, onClose, initialEdit
                           max="100"
                           value={mentorAttitude}
                           onChange={(e) => setMentorAttitude(e.target.value !== '' ? Number(e.target.value) : '')}
-                          className="w-full bg-white dark:bg-slate-800 border border-[#E2E8F0] dark:border-slate-700 rounded-xl px-3 text-sm text-[#0F172A] dark:text-white focus:outline-none focus:border-[#2563EB] min-h-[48px] py-3 md:min-h-0 md:py-2 md:text-xs md:rounded-lg"
+                          className="w-full bg-white dark:bg-slate-800 border border-[#E2E8F0] dark:border-slate-700 rounded-xl px-3 text-sm text-[#0F172A] dark:text-slate-50 focus:outline-none focus:border-[#2563EB] min-h-[48px] py-3 md:min-h-0 md:py-2 md:text-xs md:rounded-lg"
                         />
                       </div>
                     </div>
@@ -661,7 +661,7 @@ export const CardModal: React.FC<CardModalProps> = ({ card, onClose, initialEdit
                         value={mentorFeedback}
                         onChange={(e) => setMentorFeedback(e.target.value)}
                         placeholder="Berikan umpan balik atau instruksi revisi..."
-                        className="w-full bg-white dark:bg-slate-800 border border-[#E2E8F0] dark:border-slate-700 rounded-xl px-3.5 text-sm text-[#0F172A] dark:text-white focus:outline-none focus:border-[#2563EB] resize-none min-h-[80px] py-3 md:min-h-0 md:py-2.5 md:text-xs md:rounded-lg"
+                        className="w-full bg-white dark:bg-slate-800 border border-[#E2E8F0] dark:border-slate-700 rounded-xl px-3.5 text-sm text-[#0F172A] dark:text-slate-50 focus:outline-none focus:border-[#2563EB] resize-none min-h-[80px] py-3 md:min-h-0 md:py-2.5 md:text-xs md:rounded-lg"
                       />
                     </div>
                     <button
@@ -695,7 +695,7 @@ export const CardModal: React.FC<CardModalProps> = ({ card, onClose, initialEdit
                           max="100"
                           value={advisorDiscipline}
                           onChange={(e) => setAdvisorDiscipline(e.target.value !== '' ? Number(e.target.value) : '')}
-                          className="w-full bg-white dark:bg-slate-800 border border-[#E2E8F0] dark:border-slate-700 rounded-xl px-3 text-sm text-[#0F172A] dark:text-white focus:outline-none focus:border-[#2563EB] min-h-[48px] py-3 md:min-h-0 md:py-2 md:text-xs md:rounded-lg"
+                          className="w-full bg-white dark:bg-slate-800 border border-[#E2E8F0] dark:border-slate-700 rounded-xl px-3 text-sm text-[#0F172A] dark:text-slate-50 focus:outline-none focus:border-[#2563EB] min-h-[48px] py-3 md:min-h-0 md:py-2 md:text-xs md:rounded-lg"
                         />
                       </div>
                       <div>
@@ -707,7 +707,7 @@ export const CardModal: React.FC<CardModalProps> = ({ card, onClose, initialEdit
                           max="100"
                           value={advisorReport}
                           onChange={(e) => setAdvisorReport(e.target.value !== '' ? Number(e.target.value) : '')}
-                          className="w-full bg-white dark:bg-slate-800 border border-[#E2E8F0] dark:border-slate-700 rounded-xl px-3 text-sm text-[#0F172A] dark:text-white focus:outline-none focus:border-[#2563EB] min-h-[48px] py-3 md:min-h-0 md:py-2 md:text-xs md:rounded-lg"
+                          className="w-full bg-white dark:bg-slate-800 border border-[#E2E8F0] dark:border-slate-700 rounded-xl px-3 text-sm text-[#0F172A] dark:text-slate-50 focus:outline-none focus:border-[#2563EB] min-h-[48px] py-3 md:min-h-0 md:py-2 md:text-xs md:rounded-lg"
                         />
                       </div>
                       <div>
@@ -719,7 +719,7 @@ export const CardModal: React.FC<CardModalProps> = ({ card, onClose, initialEdit
                           max="100"
                           value={advisorCommunication}
                           onChange={(e) => setAdvisorCommunication(e.target.value !== '' ? Number(e.target.value) : '')}
-                          className="w-full bg-white dark:bg-slate-800 border border-[#E2E8F0] dark:border-slate-700 rounded-xl px-3 text-sm text-[#0F172A] dark:text-white focus:outline-none focus:border-[#2563EB] min-h-[48px] py-3 md:min-h-0 md:py-2 md:text-xs md:rounded-lg"
+                          className="w-full bg-white dark:bg-slate-800 border border-[#E2E8F0] dark:border-slate-700 rounded-xl px-3 text-sm text-[#0F172A] dark:text-slate-50 focus:outline-none focus:border-[#2563EB] min-h-[48px] py-3 md:min-h-0 md:py-2 md:text-xs md:rounded-lg"
                         />
                       </div>
                     </div>
@@ -731,7 +731,7 @@ export const CardModal: React.FC<CardModalProps> = ({ card, onClose, initialEdit
                         value={advisorFeedback}
                         onChange={(e) => setAdvisorFeedback(e.target.value)}
                         placeholder="Berikan umpan balik atau saran akademik..."
-                        className="w-full bg-white dark:bg-slate-800 border border-[#E2E8F0] dark:border-slate-700 rounded-xl px-3.5 text-sm text-[#0F172A] dark:text-white focus:outline-none focus:border-[#2563EB] resize-none min-h-[80px] py-3 md:min-h-0 md:py-2.5 md:text-xs md:rounded-lg"
+                        className="w-full bg-white dark:bg-slate-800 border border-[#E2E8F0] dark:border-slate-700 rounded-xl px-3.5 text-sm text-[#0F172A] dark:text-slate-50 focus:outline-none focus:border-[#2563EB] resize-none min-h-[80px] py-3 md:min-h-0 md:py-2.5 md:text-xs md:rounded-lg"
                       />
                     </div>
                     <button
@@ -752,7 +752,7 @@ export const CardModal: React.FC<CardModalProps> = ({ card, onClose, initialEdit
 
                   <div className="flex flex-col gap-3 max-h-[300px] overflow-y-auto pr-1">
                     {card.comments.length === 0 ? (
-                      <p className="text-xs text-gray-400 italic py-4 text-center">Belum ada diskusi untuk tugas ini.</p>
+                      <p className="text-xs text-slate-500 dark:text-slate-500 dark:text-slate-400 italic py-4 text-center">Belum ada diskusi untuk tugas ini.</p>
                     ) : (
                       card.comments.map((comment) => (
                         <div key={comment.id} className="flex flex-col bg-white dark:bg-slate-800 rounded-xl p-3 border border-[#E2E8F0] dark:border-slate-700 shadow-sm">
@@ -783,7 +783,7 @@ export const CardModal: React.FC<CardModalProps> = ({ card, onClose, initialEdit
                       placeholder="Tulis tanggapan atau saran..."
                       value={commentText}
                       onChange={(e) => setCommentText(e.target.value)}
-                      className="flex-1 bg-white dark:bg-slate-800 border border-[#E2E8F0] dark:border-slate-700 rounded-xl px-4 text-sm text-[#0F172A] dark:text-white focus:outline-none focus:border-[#2563EB] focus:ring-1 focus:ring-[#2563EB] min-h-[48px] py-3 md:min-h-0 md:py-2 md:text-xs"
+                      className="flex-1 bg-white dark:bg-slate-800 border border-[#E2E8F0] dark:border-slate-700 rounded-xl px-4 text-sm text-[#0F172A] dark:text-slate-50 focus:outline-none focus:border-[#2563EB] focus:ring-1 focus:ring-[#2563EB] min-h-[48px] py-3 md:min-h-0 md:py-2 md:text-xs"
                     />
                     <button
                       type="submit"

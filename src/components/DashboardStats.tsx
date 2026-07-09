@@ -44,14 +44,14 @@ export const DashboardStats: React.FC = () => {
   };
 
   return (
-    <div className="flex flex-col gap-6 md:gap-8 text-[#0F172A] dark:text-white font-sans">
+    <div className="flex flex-col gap-6 md:gap-8 text-[#0F172A] dark:text-slate-50 font-sans">
       {/* Metrics Row */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 md:gap-6">
         
         {/* Metric 1: Total Hours */}
         <div className="bg-white dark:bg-slate-800 border border-[#E2E8F0] dark:border-slate-700 rounded-2xl p-5 md:p-6 flex items-center gap-4 relative overflow-hidden shadow-sm">
           <div className="absolute top-0 right-0 w-32 h-32 bg-[#2563EB]/2 rounded-full blur-2xl pointer-events-none" />
-          <div className="p-3.5 bg-blue-50 border border-blue-100 text-[#2563EB] rounded-xl">
+          <div className="p-3.5 bg-blue-50 dark:bg-blue-500/10 border border-blue-100 dark:border-blue-500/20 text-[#2563EB] dark:text-blue-400 rounded-xl">
             <Clock size={24} />
           </div>
           <div>
@@ -121,7 +121,7 @@ export const DashboardStats: React.FC = () => {
             {/* Status Breakdown Bars */}
             <div className="flex flex-col gap-3">
               <h4 className="text-xs font-semibold text-[#64748B] dark:text-slate-400 uppercase tracking-wider">Status Progres Kegiatan</h4>
-              <div className="flex h-3 rounded-full overflow-hidden bg-[#F1F5F9] dark:bg-slate-700">
+              <div className="flex h-3 rounded-full overflow-hidden bg-[#F1F5F9] dark:bg-slate-800">
                 <div style={{ width: `${totalCards > 0 ? (completedCards.length / totalCards) * 100 : 0}%` }} className="bg-[#22C55E]" title="Selesai" />
                 <div style={{ width: `${totalCards > 0 ? (reviewCards.length / totalCards) * 100 : 0}%` }} className="bg-[#F59E0B]" title="Butuh Review" />
                 <div style={{ width: `${totalCards > 0 ? (progressCards.length / totalCards) * 100 : 0}%` }} className="bg-[#2563EB]" title="Sedang Dikerjakan" />
@@ -162,7 +162,7 @@ export const DashboardStats: React.FC = () => {
                         <span className="font-semibold text-slate-800 dark:text-slate-100">{cat}</span>
                         <span className="text-[#64748B] dark:text-slate-400">{count} tugas ({percent}%)</span>
                       </div>
-                      <div className="w-full h-1.5 bg-[#F1F5F9] dark:bg-slate-700 rounded-full overflow-hidden">
+                      <div className="w-full h-1.5 bg-[#F1F5F9] dark:bg-slate-800 rounded-full overflow-hidden">
                         <div
                           style={{ width: `${percent}%` }}
                           className={`h-full rounded-full ${
@@ -213,7 +213,7 @@ export const DashboardStats: React.FC = () => {
             {/* List of notes */}
             <div className="flex flex-col gap-4 overflow-y-auto max-h-[300px] flex-1 pr-1">
               {state.advisorNotes.length === 0 ? (
-                <p className="text-xs text-gray-400 italic text-center py-8">Belum ada catatan bimbingan.</p>
+                <p className="text-xs text-slate-500 dark:text-slate-500 dark:text-slate-400 italic text-center py-8">Belum ada catatan bimbingan.</p>
               ) : (
                 state.advisorNotes.map((note) => (
                   <div key={note.id} className="bg-[#F8FAFC] dark:bg-slate-900 border-l-2 border-[#2563EB] border-y border-r border-[#E2E8F0] dark:border-slate-700 rounded-r-xl p-3 flex flex-col gap-2 shadow-sm">

@@ -100,9 +100,9 @@ export const SettingsPage: React.FC<SettingsPageProps> = ({
   // Theme is handled by next-themes
 
   return (
-    <div className="flex flex-col gap-6 text-[#0F172A] dark:text-white font-sans pb-12">
+    <div className="flex flex-col gap-6 text-[#0F172A] dark:text-slate-50 font-sans pb-12">
       <div className="flex items-center justify-between border-b border-[#E2E8F0] dark:border-slate-700 pb-4 print:hidden">
-        <h2 className="text-lg font-black text-[#0F172A] dark:text-white tracking-tight uppercase">
+        <h2 className="text-lg font-black text-[#0F172A] dark:text-slate-50 tracking-tight uppercase">
           Pengaturan Aplikasi
         </h2>
         {onBackToBoard && (
@@ -329,12 +329,12 @@ export const SettingsPage: React.FC<SettingsPageProps> = ({
         {/* LOGOUT TILE */}
         <button 
           onClick={logout}
-          className="flex items-center p-4 bg-white dark:bg-slate-800 hover:bg-red-50 transition min-h-[56px] cursor-pointer text-left w-full gap-4 group"
+          className="flex items-center p-4 bg-white dark:bg-slate-800 hover:bg-red-50 dark:hover:bg-red-500/10 transition min-h-[56px] cursor-pointer text-left w-full gap-4 group"
         >
-          <div className="w-10 h-10 rounded-full bg-red-50 group-hover:bg-red-100 flex items-center justify-center text-red-500 shrink-0 transition">
+          <div className="w-10 h-10 rounded-full bg-red-50 dark:bg-red-500/10 group-hover:bg-red-100 dark:group-hover:bg-red-500/20 flex items-center justify-center text-red-500 dark:text-red-400 shrink-0 transition">
             <LogOut size={18} />
           </div>
-          <span className="text-sm font-semibold text-red-600">Logout</span>
+          <span className="text-sm font-semibold text-red-600 dark:text-red-400">Logout</span>
         </button>
       </div>
     </div>

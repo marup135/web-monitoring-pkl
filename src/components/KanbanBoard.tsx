@@ -115,12 +115,12 @@ export const KanbanBoard: React.FC<KanbanBoardProps> = ({ onOpenCard }) => {
 
   const getCategoryFilterStyle = (cat: string, isSelected: boolean) => {
     if (!isSelected) {
-      return 'bg-white dark:bg-slate-800 text-[#64748B] dark:text-slate-400 border-[#E2E8F0] dark:border-slate-700 hover:bg-slate-50 dark:bg-slate-800/50 hover:text-[#0F172A] dark:text-white hover:border-slate-300 dark:border-slate-600';
+      return 'bg-white dark:bg-slate-800 text-[#64748B] dark:text-slate-400 border-[#E2E8F0] dark:border-slate-700 hover:bg-slate-50 dark:bg-slate-800/50 hover:text-[#0F172A] dark:text-slate-50 hover:border-slate-300 dark:border-slate-600';
     }
     switch (cat) {
       case 'Coding':
       case 'Semua':
-        return 'bg-blue-50 text-blue-700 border-blue-200';
+        return 'bg-blue-50 dark:bg-blue-500/10 text-blue-700 dark:text-blue-400 border-blue-200 dark:border-blue-500/20';
       case 'Design':
         return 'bg-purple-50 text-purple-700 border-purple-200';
       case 'Laporan':
@@ -137,7 +137,7 @@ export const KanbanBoard: React.FC<KanbanBoardProps> = ({ onOpenCard }) => {
   const filterCategories = ['Semua', ...Array.from(new Set([...standardCategories, ...existingCategories]))];
 
   return (
-    <div className="flex flex-col gap-6 text-[#0F172A] dark:text-white font-sans">
+    <div className="flex flex-col gap-6 text-[#0F172A] dark:text-slate-50 font-sans">
       {/* Filtering and Search Controls */}
       <div className="sticky top-[56px] md:static z-30 flex flex-col lg:flex-row gap-4 items-center justify-between bg-white dark:bg-slate-800 border-b md:border border-[#E2E8F0] dark:border-slate-700 md:rounded-2xl p-4 md:shadow-sm -mx-4 md:mx-0">
         <div className="flex flex-col md:flex-row gap-4 items-center w-full lg:w-auto flex-1">
@@ -148,7 +148,7 @@ export const KanbanBoard: React.FC<KanbanBoardProps> = ({ onOpenCard }) => {
               placeholder="Cari tugas atau deskripsi..."
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              className="w-full bg-slate-50 dark:bg-slate-800/50 md:bg-white dark:bg-slate-800 border border-[#E2E8F0] dark:border-slate-700 rounded-full md:rounded-xl pl-11 md:pl-10 pr-4 text-sm text-[#0F172A] dark:text-white focus:outline-none focus:border-[#2563EB] focus:ring-1 focus:ring-[#2563EB] min-h-[48px] py-3 md:min-h-0 md:py-2 transition-all"
+              className="w-full bg-slate-50 dark:bg-slate-800/50 md:bg-white dark:bg-slate-800 border border-[#E2E8F0] dark:border-slate-700 rounded-full md:rounded-xl pl-11 md:pl-10 pr-4 text-sm text-[#0F172A] dark:text-slate-50 focus:outline-none focus:border-[#2563EB] focus:ring-1 focus:ring-[#2563EB] min-h-[48px] py-3 md:min-h-0 md:py-2 transition-all"
             />
           </div>
 
@@ -190,14 +190,14 @@ export const KanbanBoard: React.FC<KanbanBoardProps> = ({ onOpenCard }) => {
               onDragOver={(e) => handleDragOver(e, col.id)}
               onDragLeave={handleDragLeave}
               onDrop={(e) => handleDrop(e, col.id)}
-              className={`flex flex-col bg-transparent md:bg-[#F1F5F9] dark:bg-slate-700 md:border border-[#E2E8F0] dark:border-slate-700 md:border-t-[4px] md:${col.color} md:p-4 md:rounded-2xl md:shadow-sm transition-all w-full md:min-h-[500px] h-fit md:shrink-1 ${
+              className={`flex flex-col bg-transparent md:bg-[#F1F5F9] dark:bg-slate-800 md:border border-[#E2E8F0] dark:border-slate-700 md:border-t-[4px] md:${col.color} md:p-4 md:rounded-2xl md:shadow-sm transition-all w-full md:min-h-[500px] h-fit md:shrink-1 ${
                 isOver ? 'md:bg-slate-200/60 ring-2 ring-[#2563EB]/15 scale-[1.01]' : ''
               }`}
             >
               {/* Column Header */}
               <div className="flex items-center gap-3 pb-3 mb-3 border-b border-slate-200 dark:border-slate-700/50 px-2 md:px-0">
                 <div className={`w-3 h-3 rounded-full md:hidden ${col.bgBadge.split(' ')[0]} border ${col.bgBadge.split(' ')[2]}`} />
-                <h3 className="font-bold text-[#0F172A] dark:text-white text-base md:text-sm tracking-wide md:font-semibold flex-1">{col.title}</h3>
+                <h3 className="font-bold text-[#0F172A] dark:text-slate-50 text-base md:text-sm tracking-wide md:font-semibold flex-1">{col.title}</h3>
                 <span className={`text-xs font-bold px-2.5 py-1 md:px-2 md:py-0.5 rounded-full ${col.bgBadge}`}>
                   {colCards.length} Task
                 </span>
@@ -226,7 +226,7 @@ export const KanbanBoard: React.FC<KanbanBoardProps> = ({ onOpenCard }) => {
                             {card.category}
                           </span>
                           {isOverdue && (
-                            <span className="text-[9px] uppercase font-bold px-1.5 py-0.2 rounded bg-red-50 text-red-600 border border-red-100">
+                            <span className="text-[9px] uppercase font-bold px-1.5 py-0.2 rounded bg-red-50 text-red-600 dark:text-red-400 border border-red-100">
                               Terlambat
                             </span>
                           )}
@@ -311,7 +311,7 @@ export const KanbanBoard: React.FC<KanbanBoardProps> = ({ onOpenCard }) => {
             
             {/* Modal Header */}
             <div className="flex items-center justify-between p-6 border-b border-[#E2E8F0] dark:border-slate-700">
-              <h3 className="text-base font-bold text-[#0F172A] dark:text-white flex items-center gap-2">
+              <h3 className="text-base font-bold text-[#0F172A] dark:text-slate-50 flex items-center gap-2">
                 <Plus size={18} className="text-[#2563EB]" />
                 Tambah Kegiatan Baru
               </h3>
@@ -334,7 +334,7 @@ export const KanbanBoard: React.FC<KanbanBoardProps> = ({ onOpenCard }) => {
                   required
                   value={newTitle}
                   onChange={(e) => setNewTitle(e.target.value)}
-                  className="w-full bg-white dark:bg-slate-800 border border-[#E2E8F0] dark:border-slate-700 rounded-xl px-3 text-sm text-[#0F172A] dark:text-white focus:outline-none focus:border-[#2563EB] focus:ring-1 focus:ring-[#2563EB] min-h-[48px] py-3 md:min-h-0 md:py-2"
+                  className="w-full bg-white dark:bg-slate-800 border border-[#E2E8F0] dark:border-slate-700 rounded-xl px-3 text-sm text-[#0F172A] dark:text-slate-50 focus:outline-none focus:border-[#2563EB] focus:ring-1 focus:ring-[#2563EB] min-h-[48px] py-3 md:min-h-0 md:py-2"
                 />
               </div>
 
@@ -345,7 +345,7 @@ export const KanbanBoard: React.FC<KanbanBoardProps> = ({ onOpenCard }) => {
                   value={newDesc}
                   onChange={(e) => setNewDesc(e.target.value)}
                   rows={3}
-                  className="w-full bg-white dark:bg-slate-800 border border-[#E2E8F0] dark:border-slate-700 rounded-xl px-3 text-sm text-[#0F172A] dark:text-white focus:outline-none focus:border-[#2563EB] focus:ring-1 focus:ring-[#2563EB] resize-none min-h-[80px] py-3 md:min-h-0 md:py-2"
+                  className="w-full bg-white dark:bg-slate-800 border border-[#E2E8F0] dark:border-slate-700 rounded-xl px-3 text-sm text-[#0F172A] dark:text-slate-50 focus:outline-none focus:border-[#2563EB] focus:ring-1 focus:ring-[#2563EB] resize-none min-h-[80px] py-3 md:min-h-0 md:py-2"
                 />
               </div>
 
@@ -359,7 +359,7 @@ export const KanbanBoard: React.FC<KanbanBoardProps> = ({ onOpenCard }) => {
                       setIsCategoryDropdownOpen(!isCategoryDropdownOpen);
                       setIsColumnDropdownOpen(false);
                     }}
-                    className="w-full bg-white dark:bg-slate-800 border border-[#E2E8F0] dark:border-slate-700 rounded-xl px-3 text-left text-sm text-[#0F172A] dark:text-white focus:outline-none flex justify-between items-center hover:bg-slate-50 dark:bg-slate-800/50 transition cursor-pointer min-h-[48px] py-3 md:min-h-0 md:py-2"
+                    className="w-full bg-white dark:bg-slate-800 border border-[#E2E8F0] dark:border-slate-700 rounded-xl px-3 text-left text-sm text-[#0F172A] dark:text-slate-50 focus:outline-none flex justify-between items-center hover:bg-slate-50 dark:bg-slate-800/50 transition cursor-pointer min-h-[48px] py-3 md:min-h-0 md:py-2"
                   >
                     <span>{newCategory}</span>
                     <ChevronDown size={14} className={`text-slate-400 transition-transform ${isCategoryDropdownOpen ? 'rotate-180' : ''}`} />
@@ -393,7 +393,7 @@ export const KanbanBoard: React.FC<KanbanBoardProps> = ({ onOpenCard }) => {
                       setIsColumnDropdownOpen(!isColumnDropdownOpen);
                       setIsCategoryDropdownOpen(false);
                     }}
-                    className="w-full bg-white dark:bg-slate-800 border border-[#E2E8F0] dark:border-slate-700 rounded-xl px-3 text-left text-sm text-[#0F172A] dark:text-white focus:outline-none flex justify-between items-center hover:bg-slate-50 dark:bg-slate-800/50 transition cursor-pointer min-h-[48px] py-3 md:min-h-0 md:py-2"
+                    className="w-full bg-white dark:bg-slate-800 border border-[#E2E8F0] dark:border-slate-700 rounded-xl px-3 text-left text-sm text-[#0F172A] dark:text-slate-50 focus:outline-none flex justify-between items-center hover:bg-slate-50 dark:bg-slate-800/50 transition cursor-pointer min-h-[48px] py-3 md:min-h-0 md:py-2"
                   >
                     <span>{getColumnTitle(newColumnId)}</span>
                     <ChevronDown size={14} className={`text-slate-400 transition-transform ${isColumnDropdownOpen ? 'rotate-180' : ''}`} />
@@ -433,7 +433,7 @@ export const KanbanBoard: React.FC<KanbanBoardProps> = ({ onOpenCard }) => {
                     placeholder="Nama kategori baru..."
                     value={customCategory}
                     onChange={(e) => setCustomCategory(e.target.value)}
-                    className="w-full bg-white dark:bg-slate-800 border border-[#E2E8F0] dark:border-slate-700 rounded-xl px-3 text-sm text-[#0F172A] dark:text-white focus:outline-none focus:border-[#2563EB] focus:ring-1 focus:ring-[#2563EB] min-h-[48px] py-3 md:min-h-0 md:py-2"
+                    className="w-full bg-white dark:bg-slate-800 border border-[#E2E8F0] dark:border-slate-700 rounded-xl px-3 text-sm text-[#0F172A] dark:text-slate-50 focus:outline-none focus:border-[#2563EB] focus:ring-1 focus:ring-[#2563EB] min-h-[48px] py-3 md:min-h-0 md:py-2"
                   />
                 </div>
               )}
@@ -445,7 +445,7 @@ export const KanbanBoard: React.FC<KanbanBoardProps> = ({ onOpenCard }) => {
                   type="date"
                   value={newDueDate}
                   onChange={(e) => setNewDueDate(e.target.value)}
-                  className="w-full bg-white dark:bg-slate-800 border border-[#E2E8F0] dark:border-slate-700 rounded-xl px-3 text-sm text-[#0F172A] dark:text-white focus:outline-none focus:border-[#2563EB] focus:ring-1 focus:ring-[#2563EB] min-h-[48px] py-3 md:min-h-0 md:py-2"
+                  className="w-full bg-white dark:bg-slate-800 border border-[#E2E8F0] dark:border-slate-700 rounded-xl px-3 text-sm text-[#0F172A] dark:text-slate-50 focus:outline-none focus:border-[#2563EB] focus:ring-1 focus:ring-[#2563EB] min-h-[48px] py-3 md:min-h-0 md:py-2"
                 />
               </div>
 
