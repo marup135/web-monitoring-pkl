@@ -354,9 +354,9 @@ function DashboardContent() {
       {/* Main Tab Controls */}
       <div className="hidden md:flex border-b border-[#E2E8F0] dark:border-gray-700 mb-6 gap-2 print:hidden overflow-x-auto py-1">
         <button
-          onClick={() => setActiveTab('board')}
+          onClick={() => { setActiveTab('board'); setIsSettingsActive(false); }}
           className={`flex items-center gap-2 px-4 py-2.5 rounded-xl border text-xs font-semibold whitespace-nowrap transition duration-200 cursor-pointer ${
-            activeTab === 'board'
+            !isSettingsActive && activeTab === 'board'
               ? 'bg-blue-50 border-[#2563EB]/30 text-[#2563EB]'
               : 'bg-white dark:bg-[#243447] border-[#E2E8F0] dark:border-gray-700 text-[#64748B] dark:text-gray-300 hover:bg-[#F8FAFC] dark:bg-gray-900 hover:text-[#0F172A] dark:text-gray-200'
           }`}
@@ -366,9 +366,9 @@ function DashboardContent() {
         </button>
 
         <button
-          onClick={() => setActiveTab('logbook')}
+          onClick={() => { setActiveTab('logbook'); setIsSettingsActive(false); }}
           className={`flex items-center gap-2 px-4 py-2.5 rounded-xl border text-xs font-semibold whitespace-nowrap transition duration-200 cursor-pointer ${
-            activeTab === 'logbook'
+            !isSettingsActive && activeTab === 'logbook'
               ? 'bg-blue-50 border-[#2563EB]/30 text-[#2563EB]'
               : 'bg-white dark:bg-[#243447] border-[#E2E8F0] dark:border-gray-700 text-[#64748B] dark:text-gray-300 hover:bg-[#F8FAFC] dark:bg-gray-900 hover:text-[#0F172A] dark:text-gray-200'
           }`}
@@ -378,15 +378,27 @@ function DashboardContent() {
         </button>
 
         <button
-          onClick={() => setActiveTab('stats')}
+          onClick={() => { setActiveTab('stats'); setIsSettingsActive(false); }}
           className={`flex items-center gap-2 px-4 py-2.5 rounded-xl border text-xs font-semibold whitespace-nowrap transition duration-200 cursor-pointer ${
-            activeTab === 'stats'
+            !isSettingsActive && activeTab === 'stats'
               ? 'bg-blue-50 border-[#2563EB]/30 text-[#2563EB]'
               : 'bg-white dark:bg-[#243447] border-[#E2E8F0] dark:border-gray-700 text-[#64748B] dark:text-gray-300 hover:bg-[#F8FAFC] dark:bg-gray-900 hover:text-[#0F172A] dark:text-gray-200'
           }`}
         >
           <BarChart3 size={14} />
           Statistik Monitoring
+        </button>
+
+        <button
+          onClick={() => setIsSettingsActive(true)}
+          className={`flex items-center gap-2 px-4 py-2.5 rounded-xl border text-xs font-semibold whitespace-nowrap transition duration-200 cursor-pointer ml-auto ${
+            isSettingsActive
+              ? 'bg-blue-50 border-[#2563EB]/30 text-[#2563EB]'
+              : 'bg-white dark:bg-[#243447] border-[#E2E8F0] dark:border-gray-700 text-[#64748B] dark:text-gray-300 hover:bg-[#F8FAFC] dark:bg-gray-900 hover:text-[#0F172A] dark:text-gray-200'
+          }`}
+        >
+          <Settings size={14} />
+          {t('settings')}
         </button>
       </div>
 
