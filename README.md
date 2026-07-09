@@ -1,209 +1,183 @@
 <div align="center">
-  <img src="public/logo.jpg" alt="NeboTrack Logo" width="120" />
-  <h1>NeboTrack</h1>
-  <p><strong>Aplikasi Monitoring & Logbook Jurnal Harian PKL SMKN 1 Bojong</strong></p>
+  <img src="public/logo.jpg" alt="NeboTrack Logo" width="160" style="border-radius: 20px; margin-bottom: 20px;" />
+  <h1>🚀 NeboTrack</h1>
+  <p align="center">
+    <strong>Sistem Monitoring & Logbook Jurnal Harian PKL Digital SMKN 1 Bojong</strong>
+    <br />
+    <em>Solusi modern untuk transparansi dan efisiensi kegiatan Praktek Kerja Lapangan.</em>
+  </p>
 
-  [![Next.js](https://img.shields.io/badge/Next.js-16.2-black?logo=next.js)](https://nextjs.org/)
-  [![React](https://img.shields.io/badge/React-19.2-blue?logo=react)](https://reactjs.org/)
-  [![TailwindCSS](https://img.shields.io/badge/TailwindCSS-v4-38B2AC?logo=tailwind-css)](https://tailwindcss.com/)
-  [![Prisma](https://img.shields.io/badge/Prisma-7.8-2D3748?logo=prisma)](https://prisma.io/)
-  [![License](https://img.shields.io/badge/License-MIT-green.svg)](https://opensource.org/licenses/MIT)
+  <p align="center">
+    <img src="https://img.shields.io/badge/Next.js-15.1.4-black?style=for-the-badge&logo=next.js" alt="Next.js" />
+    <img src="https://img.shields.io/badge/React-19.0.0-blue?style=for-the-badge&logo=react" alt="React" />
+    <img src="https://img.shields.io/badge/TailwindCSS-v4-38B2AC?style=for-the-badge&logo=tailwind-css" alt="TailwindCSS" />
+    <img src="https://img.shields.io/badge/Prisma-6.2.1-2D3748?style=for-the-badge&logo=prisma" alt="Prisma" />
+  </p>
+
+  <p align="center">
+    <a href="#-fitur-utama">Fitur</a> •
+    <a href="#-teknologi-yang-digunakan">Teknologi</a> •
+    <a href="#-cara-instalasi">Instalasi</a> •
+    <a href="#-struktur-folder">Struktur</a> •
+    <a href="#-kontributor">Kontribusi</a>
+  </p>
 </div>
 
-<hr />
+---
 
 ## 📖 Deskripsi Aplikasi
 
-**NeboTrack** adalah platform monitoring terpadu yang dirancang khusus untuk memfasilitasi program Praktek Kerja Lapangan (PKL) bagi siswa SMKN 1 Bojong. Aplikasi ini menjembatani komunikasi, pelaporan, dan evaluasi berkala antara tiga pihak utama: **Siswa**, **Guru Pembimbing (Internal)**, dan **Mentor Perusahaan (Eksternal)**.
+**NeboTrack** adalah platform monitoring terpadu yang dirancang khusus untuk memfasilitasi program **Praktek Kerja Lapangan (PKL)** bagi siswa SMKN 1 Bojong. Aplikasi ini menjembatani komunikasi, pelaporan, dan evaluasi berkala antara tiga pihak utama:
 
-Dengan antarmuka yang modern—mendukung *Kanban Board* di Desktop dan *Mobile Timeline* di *Smartphone*—NeboTrack membuat proses dokumentasi kegiatan PKL menjadi transparan, efisien, dan mudah dipantau secara *real-time*.
+*   👤 **Siswa**: Mencatat aktivitas harian dan memantau progres.
+*   👨‍🏫 **Guru Pembimbing (Internal)**: Memantau dan mengevaluasi perkembangan siswa di lapangan.
+*   🏢 **Mentor Perusahaan (Eksternal)**: Memberikan feedback dan verifikasi langsung atas pekerjaan siswa.
+
+Dengan antarmuka yang modern, NeboTrack mendukung **Kanban Board** di Desktop untuk manajemen tugas yang terorganisir dan **Mobile Timeline** di Smartphone untuk kemudahan pengisian jurnal di mana saja.
 
 ---
 
 ## ✨ Fitur Utama
 
-- 📊 **Dashboard & Statistik**: Pantau progress harian, jam kerja, dan nilai rata-rata siswa secara langsung.
-- 📋 **Kanban Board**: Manajemen tugas bergaya Trello yang intuitif (Rencana Kegiatan, Menunggu Review, Sedang Dikerjakan, Selesai).
-- 📱 **Mobile-First Design**: Tampilan logbook bergaya *timeline* dan interaksi gestur (bottom sheet) khusus perangkat *mobile*.
-- 📝 **Logbook Harian**: Fitur pencatatan jurnal kegiatan beserta evaluasi dan *feedback* langsung dari Mentor dan Guru.
-- 🌙 **Dark Mode & Multilingual**: Dukungan mode gelap (*Dark Mode*) dan pergantian bahasa (Indonesia/English).
-- 👥 **Multi-Role Access**: Hak akses yang dibedakan secara aman untuk Admin, Guru Pembimbing, Mentor, dan Siswa.
+- 📊 **Dashboard & Statistik**: Pantau progress harian, jam kerja, dan nilai rata-rata siswa secara real-time.
+- 📋 **Kanban Board**: Manajemen tugas bergaya Trello yang intuitif (Rencana, Sedang Dikerjakan, Review, Selesai).
+- 📱 **Mobile-First Design**: Tampilan logbook bergaya *timeline* dengan interaksi gestur (bottom sheet).
+- 📝 **Logbook Harian**: Pencatatan jurnal kegiatan beserta evaluasi dan feedback langsung.
+- 🌙 **Dark Mode**: Dukungan tema gelap untuk kenyamanan mata.
+- 👥 **Multi-Role Access**: Hak akses aman berbasis role untuk Admin, Guru, Mentor, dan Siswa.
 
 ---
 
 ## 🛠 Teknologi yang Digunakan
 
-- **Framework**: [Next.js 16 (App Router)](https://nextjs.org/)
-- **Library UI**: [React 19](https://reactjs.org/) & [Lucide Icons](https://lucide.dev/)
-- **Styling**: [Tailwind CSS v4](https://tailwindcss.com/)
-- **ORM & Database**: [Prisma](https://prisma.io/) (Adapter MariaDB) & MariaDB
-- **Deployment**: [Vercel](https://vercel.com/) (Frontend/Backend) & [Railway](https://railway.app/) (Database)
+| Komponen | Teknologi |
+| :--- | :--- |
+| **Framework** | [Next.js 15+ (App Router)](https://nextjs.org/) |
+| **UI Library** | [React 19](https://reactjs.org/) & [Lucide Icons](https://lucide.dev/) |
+| **Styling** | [Tailwind CSS v4](https://tailwindcss.com/) |
+| **Database ORM** | [Prisma](https://prisma.io/) (Adapter MariaDB) |
+| **Database** | [MariaDB](https://mariadb.org/) |
+| **Deployment** | [Vercel](https://vercel.com/) & [Railway](https://railway.app/) |
 
 ---
 
-## 📸 Screenshot
+## 📸 Tampilan Aplikasi
 
-| Desktop (Kanban Board) | Mobile (Timeline Logbook) |
-| :---: | :---: |
-| ![Desktop Board Placeholder](src/hasil-desktop.png) | ![Mobile Logbook Placeholder](src/hasil-hp.jpg) |
-
-> *(Ganti URL gambar di atas dengan screenshot asli saat project siap dipublikasikan).*
+<div align="center">
+  <table>
+    <tr>
+      <td align="center"><b>Desktop (Kanban)</b></td>
+      <td align="center"><b>Mobile (Timeline)</b></td>
+    </tr>
+    <tr>
+      <td><img src="src/hasil-desktop.png" width="500px" alt="Desktop View" /></td>
+      <td><img src="src/hasil-hp.jpg" width="220px" alt="Mobile View" /></td>
+    </tr>
+  </table>
+</div>
 
 ---
 
 ## ⚙️ Cara Instalasi
 
-Pastikan Anda telah menginstal **Node.js** (v18+) dan **Git** di komputer Anda.
+Ikuti langkah-langkah berikut untuk menjalankan project di lingkungan lokal:
 
-1. Clone repositori ini:
-   ```bash
-   git clone https://github.com/username/nebotrack.git
-   cd nebotrack
-   ```
-2. Instal dependensi:
-   ```bash
-   npm install
-   ```
-3. Salin file environment:
-   ```bash
-   cp .env.example .env
-   ```
-   *(Sesuaikan nilai di dalam `.env` dengan kredensial database Anda).*
+### 1. Persyaratan
+- Node.js (v18 ke atas)
+- npm / yarn / pnpm
+
+### 2. Clone & Install
+```bash
+# Clone repositori
+git clone https://github.com/username/nebotrack.git
+
+# Masuk ke folder
+cd nebotrack
+
+# Instal dependensi
+npm install
+```
+
+### 3. Konfigurasi Environment
+Salin file `.env.example` menjadi `.env` dan sesuaikan konfigurasinya:
+```bash
+cp .env.example .env
+```
+Isi variabel berikut:
+```env
+DATABASE_URL="mysql://USER:PASSWORD@HOST:PORT/DATABASE_NAME"
+NEXTAUTH_SECRET="buat_secret_key_yang_aman"
+```
+
+### 4. Setup Database
+```bash
+# Generate client prisma
+npx prisma generate
+
+# Jalankan migrasi
+npx prisma migrate dev --name init
+
+# Isi data awal (optional)
+npx prisma db seed
+```
 
 ---
 
-## 🚀 Cara Menjalankan Project
-
-Jalankan *development server* menggunakan perintah berikut:
+## 🚀 Menjalankan Project
 
 ```bash
 npm run dev
 ```
-
-Buka [http://localhost:3000](http://localhost:3000) di browser untuk melihat hasilnya.
-
----
-
-## 🔐 Environment Variables
-
-Aplikasi membutuhkan konfigurasi environment berikut. Buat file `.env` di *root directory*:
-
-```env
-# Koneksi Database
-DATABASE_URL="mysql://USER:PASSWORD@HOST:PORT/DATABASE_NAME"
-
-# Secret Key (Contoh untuk JWT/Session)
-NEXTAUTH_SECRET="your_secret_key_here"
-NEXTAUTH_URL="http://localhost:3000"
-```
-
----
-
-## 🗄 Prisma Migration
-
-Untuk melakukan sinkronisasi skema database:
-
-1. Buat migrasi baru setelah mengubah skema:
-   ```bash
-   npx prisma migrate dev --name init
-   ```
-2. Generate Prisma Client:
-   ```bash
-   npx prisma generate
-   ```
-
----
-
-## 🌱 Seeder (Data Awal)
-
-Untuk mengisi database dengan data awal (Siswa, Mentor, Admin), jalankan seeder:
-
-```bash
-npx prisma db seed
-```
-*(Pastikan file `prisma/seed.ts` sudah dikonfigurasi di `package.json`).*
+Buka [http://localhost:3000](http://localhost:3000) di browser Anda.
 
 ---
 
 ## 📂 Struktur Folder
 
-```text
+```bash
 nebotrack/
-├── prisma/             # Schema database dan file seeder
-├── public/             # Aset statis (Logo, Font, Gambar)
-├── src/
-│   ├── app/            # Next.js App Router (Halaman & API Routes)
-│   ├── components/     # Komponen React Reusable (KanbanBoard, Settings, dll)
-│   ├── context/        # React Context (State Management Global)
-│   ├── lib/            # Utility & Prisma Client Config
-│   └── types/          # Definisi Tipe TypeScript
-├── .env                # Variabel Lingkungan Lokal
-├── package.json        # Konfigurasi Dependensi
-└── tailwind.config.js  # Konfigurasi Styling
+├── 📁 prisma/          # Schema database & seeder
+├── 📁 public/          # Aset statis (Logo, Icon)
+├── 📁 src/
+│   ├── 📁 app/         # Next.js App Router (Pages & API)
+│   ├── 📁 components/  # Komponen UI Reusable
+│   ├── 📁 context/     # State Management
+│   ├── 📁 lib/         # Utilitas & Konfigurasi Prisma
+│   └── 📁 types/        # Definisi TypeScript
+├── 📄 .env             # Variabel Lingkungan
+├── 📄 package.json     # Dependensi Project
+└── 📄 tailwind.config  # Konfigurasi Styling
 ```
 
 ---
 
-## 🎭 Role User
+## 🎭 Peran Pengguna (Roles)
 
-Terdapat 4 *role* utama di dalam NeboTrack:
-
-1. **Admin (`admin`)**: Mengelola data *master* seluruh pengguna, jurusan, dan perusahaan.
-2. **Guru Pembimbing (`pembimbing`)**: Memantau progress beberapa siswa sekaligus, memberikan evaluasi internal.
-3. **Mentor (`mentor`)**: Pihak perusahaan tempat PKL, berhak menyetujui logbook harian dan memberikan nilai performa pekerjaan.
-4. **Siswa (`siswa`)**: Mengisi jurnal kegiatan harian, memperbarui status pekerjaan, dan melihat evaluasi.
-
----
-
-## 🔑 Cara Login
-
-Silakan login menggunakan *username* atau *NIS/NIP* yang telah terdaftar melalui halaman utama aplikasi:
-
-- **Siswa**: Gunakan **NISN** dan *password* default (atau yang diberikan Admin).
-- **Guru/Mentor/Admin**: Gunakan **Username** dan *password* masing-masing.
-
----
-
-## ☁️ Database Railway
-
-Database utama direkomendasikan untuk di-hosting di [Railway](https://railway.app/).
-1. Buat proyek baru di Railway dan tambahkan layanan **MySQL/MariaDB**.
-2. Salin *Connection URL* yang diberikan oleh Railway.
-3. Masukkan ke dalam `DATABASE_URL` di Vercel atau di lokal `.env`.
-
----
-
-## 🚀 Deploy ke Vercel
-
-Aplikasi ini dioptimalkan untuk di-deploy di Vercel:
-
-1. Push kode ke repositori GitHub.
-2. Impor project di Vercel Dashboard.
-3. Tambahkan environment variables (`DATABASE_URL`, dll).
-4. Di bagian Build Command, pastikan sudah terdapat `prisma generate`:
-   ```bash
-   npm run postinstall && npm run build
-   ```
-5. Klik **Deploy**!
+| Role | Deskripsi |
+| :--- | :--- |
+| **Admin** | Manajemen data master, user, jurusan, dan perusahaan. |
+| **Pembimbing** | Memantau perkembangan dan memberikan nilai internal. |
+| **Mentor** | Verifikasi harian dan penilaian kinerja di industri. |
+| **Siswa** | Mengisi jurnal dan melaporkan progress tugas. |
 
 ---
 
 ## 🤝 Kontributor
 
-Kami menyambut kontribusi dari siapa saja! Jika Anda ingin berkontribusi:
-1. *Fork* repository ini.
-2. Buat *branch* fitur Anda (`git checkout -b feature/AmazingFeature`).
-3. *Commit* perubahan Anda (`git commit -m 'Add some AmazingFeature'`).
-4. *Push* ke branch (`git push origin feature/AmazingFeature`).
-5. Buka sebuah *Pull Request*.
+Kontribusi selalu terbuka! Jika Anda ingin meningkatkan aplikasi ini:
+1. Fork Repositori.
+2. Buat Branch Fitur (`git checkout -b feature/FiturKeren`).
+3. Commit Perubahan (`git commit -m 'Menambah Fitur Keren'`).
+4. Push ke Branch (`git push origin feature/FiturKeren`).
+5. Buka Pull Request.
 
 ---
 
-## 📄 Lisensi
-
-Didistribusikan di bawah **MIT License**. Lihat file `LICENSE` untuk informasi lebih lanjut.
-
----
 <div align="center">
-  Dibuat dengan ❤️ untuk kemajuan pendidikan Vokasi Indonesia.
+  <p>Dibuat dengan ❤️ oleh <b>Tim Pengembang SMKN 1 Bojong</b></p>
+  <p>
+    <img src="https://img.shields.io/badge/Status-Active-brightgreen" alt="Status Active" />
+    <img src="https://img.shields.io/badge/License-MIT-yellow" alt="License MIT" />
+  </p>
 </div>
+

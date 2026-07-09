@@ -40,7 +40,7 @@ export const LogbookTable: React.FC<LogbookTableProps> = ({ onOpenCard, onEditCa
   };
 
   return (
-    <div className="flex flex-col gap-6 text-[#0F172A] dark:text-slate-50 font-sans">
+    <div className="flex flex-col gap-6 text-[#0F172A] dark:text-white font-sans">
       
       {/* Table Action Header (non-printable) */}
       <div className="flex flex-col sm:flex-row gap-3 justify-between items-start sm:items-center bg-white dark:bg-slate-800 border border-[#E2E8F0] dark:border-slate-700 rounded-2xl p-4 shadow-sm print:hidden">
@@ -63,7 +63,7 @@ export const LogbookTable: React.FC<LogbookTableProps> = ({ onOpenCard, onEditCa
         {/* Printable Header Info */}
         <div className="flex flex-col gap-6 mb-8 border-b border-[#E2E8F0] dark:border-slate-700 pb-6 print:border-black/20">
           <div className="text-center">
-            <h2 className="text-lg md:text-xl font-bold text-[#0F172A] dark:text-slate-50 uppercase tracking-wide print:text-black print:text-lg">
+            <h2 className="text-lg md:text-xl font-bold text-[#0F172A] dark:text-white uppercase tracking-wide print:text-black print:text-lg">
               Jurnal Kegiatan Harian (Logbook) PKL
             </h2>
             <p className="text-xs text-[#64748B] dark:text-slate-400 mt-1 print:text-black/60">
@@ -119,7 +119,7 @@ export const LogbookTable: React.FC<LogbookTableProps> = ({ onOpenCard, onEditCa
             <tbody className="divide-y divide-[#E2E8F0] print:divide-black/10 text-slate-700 print:text-black">
               {state.cards.length === 0 ? (
                 <tr>
-                  <td colSpan={8} className="py-8 text-center text-slate-500 dark:text-slate-400 italic">
+                  <td colSpan={8} className="py-8 text-center text-slate-400 italic">
                     Belum ada catatan logbook harian.
                   </td>
                 </tr>
@@ -163,13 +163,13 @@ export const LogbookTable: React.FC<LogbookTableProps> = ({ onOpenCard, onEditCa
                               Mentor: {card.scoreMentor}/100 (D:{card.scoreMentorDiscipline} K:{card.scoreMentorSkill} S:{card.scoreMentorAttitude})
                             </div>
                             {card.feedbackMentor && (
-                              <div className="text-[9px] text-[#64748B] dark:text-slate-500 dark:text-slate-400 italic leading-snug print:text-black/75">
+                              <div className="text-[9px] text-[#64748B] dark:text-slate-400 italic leading-snug print:text-black/75">
                                 &ldquo;{card.feedbackMentor}&rdquo;
                               </div>
                             )}
                           </div>
                         ) : (
-                          <span className="text-slate-500 dark:text-slate-400 italic text-[9px] border-b border-[#E2E8F0] dark:border-slate-700 pb-1">Belum dinilai Mentor</span>
+                          <span className="text-slate-400 italic text-[9px] border-b border-[#E2E8F0] dark:border-slate-700 pb-1">Belum dinilai Mentor</span>
                         )}
 
                         {/* Guru Evaluation */}
@@ -180,13 +180,13 @@ export const LogbookTable: React.FC<LogbookTableProps> = ({ onOpenCard, onEditCa
                               Guru: {card.scoreAdvisor}/100 (D:{card.scoreAdvisorDiscipline} L:{card.scoreAdvisorReport} K:{card.scoreAdvisorCommunication})
                             </div>
                             {card.feedbackAdvisor && (
-                              <div className="text-[9px] text-[#64748B] dark:text-slate-500 dark:text-slate-400 italic leading-snug print:text-black/75">
+                              <div className="text-[9px] text-[#64748B] dark:text-slate-400 italic leading-snug print:text-black/75">
                                 &ldquo;{card.feedbackAdvisor}&rdquo;
                               </div>
                             )}
                           </div>
                         ) : (
-                          <span className="text-slate-500 dark:text-slate-400 italic text-[9px] pt-0.5">Belum dinilai Guru</span>
+                          <span className="text-slate-400 italic text-[9px] pt-0.5">Belum dinilai Guru</span>
                         )}
                       </div>
                     </td>
@@ -261,7 +261,7 @@ export const LogbookTable: React.FC<LogbookTableProps> = ({ onOpenCard, onEditCa
                             <span>Mentor: {card.scoreMentor}/100</span>
                           </div>
                           {card.feedbackMentor && (
-                            <p className="text-slate-500 dark:text-slate-500 dark:text-slate-400 italic pl-4">&ldquo;{card.feedbackMentor}&rdquo;</p>
+                            <p className="text-slate-500 dark:text-slate-400 italic pl-4">&ldquo;{card.feedbackMentor}&rdquo;</p>
                           )}
                         </div>
                       )}
@@ -272,7 +272,7 @@ export const LogbookTable: React.FC<LogbookTableProps> = ({ onOpenCard, onEditCa
                             <span>Guru: {card.scoreAdvisor}/100</span>
                           </div>
                           {card.feedbackAdvisor && (
-                            <p className="text-slate-500 dark:text-slate-500 dark:text-slate-400 italic pl-4">&ldquo;{card.feedbackAdvisor}&rdquo;</p>
+                            <p className="text-slate-500 dark:text-slate-400 italic pl-4">&ldquo;{card.feedbackAdvisor}&rdquo;</p>
                           )}
                         </div>
                       )}
@@ -304,7 +304,7 @@ export const LogbookTable: React.FC<LogbookTableProps> = ({ onOpenCard, onEditCa
                               deleteCard(card.id);
                             }
                           }}
-                          className="flex items-center justify-center border border-red-100 bg-red-50/50 hover:bg-red-50 text-red-600 dark:text-red-400 rounded-xl font-bold text-xs min-h-[48px] px-3.5 transition cursor-pointer"
+                          className="flex items-center justify-center border border-red-100 bg-red-50/50 hover:bg-red-50 text-red-600 rounded-xl font-bold text-xs min-h-[48px] px-3.5 transition cursor-pointer"
                         >
                           <Trash2 size={14} />
                         </button>

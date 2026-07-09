@@ -229,14 +229,14 @@ export const AuthPage: React.FC = () => {
 
   // Dynamic input border class
   const inputClass = (hasError: boolean) =>
-    `w-full bg-white dark:bg-slate-800 border rounded-xl pl-10 pr-4 text-sm text-[#0F172A] dark:text-slate-50 placeholder:text-[#94A3B8] focus:outline-none focus:ring-2 min-h-[48px] py-3 md:min-h-0 md:py-2.5 md:text-xs transition-all duration-200 ${
+    `w-full bg-white dark:bg-slate-800 border rounded-xl pl-10 pr-4 text-sm text-[#0F172A] dark:text-white placeholder:text-[#94A3B8] focus:outline-none focus:ring-2 min-h-[48px] py-3 md:min-h-0 md:py-2.5 md:text-xs transition-all duration-200 ${
       hasError
         ? 'border-red-400 focus:border-red-400 focus:ring-red-100 bg-red-50/30'
         : 'border-[#E2E8F0] dark:border-slate-700 focus:border-[#2563EB] focus:ring-blue-100'
     }`;
 
   return (
-    <div className="min-h-screen flex items-center justify-center p-4 bg-gradient-to-br from-[#F0F4FF] via-[#F8FAFC] to-[#EFF6FF] text-[#0F172A] dark:text-slate-50 relative overflow-hidden font-sans">
+    <div className="min-h-screen flex items-center justify-center p-4 bg-gradient-to-br from-[#F0F4FF] via-[#F8FAFC] to-[#EFF6FF] text-[#0F172A] dark:text-white relative overflow-hidden font-sans">
       {/* Decorative blobs */}
       <div className="absolute top-0 left-0 w-[500px] h-[500px] bg-[#2563EB]/8 rounded-full blur-3xl pointer-events-none -translate-x-1/2 -translate-y-1/2" />
       <div className="absolute bottom-0 right-0 w-[400px] h-[400px] bg-[#7C3AED]/6 rounded-full blur-3xl pointer-events-none translate-x-1/3 translate-y-1/3" />
@@ -255,7 +255,7 @@ export const AuthPage: React.FC = () => {
                 className="relative w-[72px] h-[72px] md:w-[88px] md:h-[88px] object-contain rounded-2xl shadow-md border border-[#E2E8F0] dark:border-slate-700"
               />
             </div>
-            <h1 className="text-2xl md:text-[28px] font-black text-[#0F172A] dark:text-slate-50 tracking-tight">
+            <h1 className="text-2xl md:text-[28px] font-black text-[#0F172A] dark:text-white tracking-tight">
               NeboTrack
             </h1>
             <p className="text-[11px] text-[#64748B] dark:text-slate-400 font-medium mt-1.5 text-center leading-relaxed max-w-[240px]">
@@ -264,14 +264,14 @@ export const AuthPage: React.FC = () => {
           </div>
 
           {/* Tab Toggle */}
-          <div className="flex bg-[#F1F5F9] dark:bg-slate-800 p-1 rounded-2xl mb-6 border border-[#E2E8F0] dark:border-slate-700">
+          <div className="flex bg-[#F1F5F9] dark:bg-slate-700 p-1 rounded-2xl mb-6 border border-[#E2E8F0] dark:border-slate-700">
             <button
               type="button"
               onClick={() => handleTabSwitch(true)}
               className={`flex-1 py-2.5 text-xs font-semibold rounded-xl transition-all duration-200 cursor-pointer ${
                 isLogin
                   ? 'bg-white dark:bg-slate-800 text-[#2563EB] shadow-sm border border-[#E2E8F0] dark:border-slate-700'
-                  : 'text-[#64748B] dark:text-slate-400 hover:text-[#0F172A] dark:text-slate-50'
+                  : 'text-[#64748B] dark:text-slate-400 hover:text-[#0F172A] dark:text-white'
               }`}
             >
               Masuk Akun
@@ -282,7 +282,7 @@ export const AuthPage: React.FC = () => {
               className={`flex-1 py-2.5 text-xs font-semibold rounded-xl transition-all duration-200 cursor-pointer ${
                 !isLogin
                   ? 'bg-white dark:bg-slate-800 text-[#2563EB] shadow-sm border border-[#E2E8F0] dark:border-slate-700'
-                  : 'text-[#64748B] dark:text-slate-400 hover:text-[#0F172A] dark:text-slate-50'
+                  : 'text-[#64748B] dark:text-slate-400 hover:text-[#0F172A] dark:text-white'
               }`}
             >
               Daftar Baru
@@ -412,7 +412,7 @@ export const AuthPage: React.FC = () => {
                     id="rememberMe"
                     className="h-4 w-4 rounded border-[#CBD5E1] text-[#2563EB] focus:ring-[#2563EB] focus:ring-offset-0 cursor-pointer"
                   />
-                  <span className="text-[11px] text-[#64748B] dark:text-slate-400 font-medium group-hover:text-[#0F172A] dark:text-slate-50 transition-colors select-none">
+                  <span className="text-[11px] text-[#64748B] dark:text-slate-400 font-medium group-hover:text-[#0F172A] dark:text-white transition-colors select-none">
                     Ingat saya
                   </span>
                 </label>
@@ -436,7 +436,7 @@ export const AuthPage: React.FC = () => {
                 <button
                   type="button"
                   onClick={() => setIsRoleDropdownOpen((prev) => !prev)}
-                  className="w-full bg-white dark:bg-slate-800 border border-[#E2E8F0] dark:border-slate-700 rounded-xl px-3.5 text-sm text-[#0F172A] dark:text-slate-50 text-left flex justify-between items-center focus:outline-none focus:border-[#2563EB] focus:ring-2 focus:ring-blue-100 cursor-pointer min-h-[48px] py-3 md:min-h-0 md:py-2.5 md:text-xs transition-all"
+                  className="w-full bg-white dark:bg-slate-800 border border-[#E2E8F0] dark:border-slate-700 rounded-xl px-3.5 text-sm text-[#0F172A] dark:text-white text-left flex justify-between items-center focus:outline-none focus:border-[#2563EB] focus:ring-2 focus:ring-blue-100 cursor-pointer min-h-[48px] py-3 md:min-h-0 md:py-2.5 md:text-xs transition-all"
                 >
                   <span>{currentRoleLabel}</span>
                   <ChevronDown
@@ -445,7 +445,7 @@ export const AuthPage: React.FC = () => {
                   />
                 </button>
                 {isRoleDropdownOpen && (
-                  <div className="absolute left-0 right-0 top-[calc(100%+4px)] bg-white dark:bg-slate-800 border border-[#E2E8F0] dark:border-slate-700 rounded-xl shadow-xl dark:shadow-none dark:border dark:border-slate-700 z-50 animate-in fade-in slide-in-from-top-1 duration-150 overflow-hidden">
+                  <div className="absolute left-0 right-0 top-[calc(100%+4px)] bg-white dark:bg-slate-800 border border-[#E2E8F0] dark:border-slate-700 rounded-xl shadow-xl z-50 animate-in fade-in slide-in-from-top-1 duration-150 overflow-hidden">
                     {ROLES.map((r) => (
                       <button
                         key={r.value}
@@ -454,10 +454,10 @@ export const AuthPage: React.FC = () => {
                           setRole(r.value);
                           setIsRoleDropdownOpen(false);
                         }}
-                        className={`w-full text-left px-3.5 py-2.5 text-xs hover:bg-[#F1F5F9] dark:bg-slate-800 transition duration-150 block cursor-pointer ${
+                        className={`w-full text-left px-3.5 py-2.5 text-xs hover:bg-[#F1F5F9] dark:bg-slate-700 transition duration-150 block cursor-pointer ${
                           role === r.value
                             ? 'bg-[#2563EB]/8 text-[#2563EB] font-semibold'
-                            : 'text-[#0F172A] dark:text-slate-50'
+                            : 'text-[#0F172A] dark:text-white'
                         }`}
                       >
                         {r.label}
@@ -482,7 +482,7 @@ export const AuthPage: React.FC = () => {
                   <button
                     type="button"
                     onClick={() => setIsClassDropdownOpen((prev) => !prev)}
-                    className="w-full bg-white dark:bg-slate-800 border border-[#E2E8F0] dark:border-slate-700 rounded-xl px-3.5 text-sm text-[#0F172A] dark:text-slate-50 text-left flex justify-between items-center focus:outline-none focus:border-[#2563EB] focus:ring-2 focus:ring-blue-100 cursor-pointer min-h-[48px] py-3 md:min-h-0 md:py-2.5 md:text-xs transition-all"
+                    className="w-full bg-white dark:bg-slate-800 border border-[#E2E8F0] dark:border-slate-700 rounded-xl px-3.5 text-sm text-[#0F172A] dark:text-white text-left flex justify-between items-center focus:outline-none focus:border-[#2563EB] focus:ring-2 focus:ring-blue-100 cursor-pointer min-h-[48px] py-3 md:min-h-0 md:py-2.5 md:text-xs transition-all"
                   >
                     <span>{selectedClass || 'Pilih kelas...'}</span>
                     <ChevronDown
@@ -500,10 +500,10 @@ export const AuthPage: React.FC = () => {
                             setSelectedClass(c);
                             setIsClassDropdownOpen(false);
                           }}
-                          className={`w-full text-left px-3.5 py-2.5 text-xs hover:bg-[#F1F5F9] dark:bg-slate-800 transition duration-150 block cursor-pointer ${
+                          className={`w-full text-left px-3.5 py-2.5 text-xs hover:bg-[#F1F5F9] dark:bg-slate-700 transition duration-150 block cursor-pointer ${
                             selectedClass === c
                               ? 'bg-[#2563EB]/8 text-[#2563EB] font-semibold'
-                              : 'text-[#0F172A] dark:text-slate-50'
+                              : 'text-[#0F172A] dark:text-white'
                           }`}
                         >
                           {c}
