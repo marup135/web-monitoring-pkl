@@ -161,6 +161,10 @@ export const SettingsPage: React.FC<SettingsPageProps> = ({
                 
                 <div className="flex flex-col gap-1.5 text-xs text-slate-500 dark:text-gray-300">
                   <div className="flex justify-between py-1 border-b border-slate-200 dark:border-gray-700">
+                    <span>Email</span>
+                    <span className="font-semibold text-slate-700">{currentUser?.email || 'Belum diatur'}</span>
+                  </div>
+                  <div className="flex justify-between py-1 border-b border-slate-200 dark:border-gray-700">
                     <span>{t('username')}</span>
                     <span className="font-semibold text-slate-700">{currentUser?.username}</span>
                   </div>

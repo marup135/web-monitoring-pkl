@@ -40,6 +40,7 @@ import {
 export interface UserProfile {
   id: string;
   username: string;
+  email?: string | null;
   name: string;
   role: string;
   company?: string | null;
@@ -152,7 +153,7 @@ interface PKLContextProps {
   deleteCard: (cardId: string) => Promise<void>;
   resetState: () => Promise<void>;
   login: (username: string, password: string) => Promise<{ success: boolean; error?: string }>;
-  register: (username: string, password: string, name: string, role: string, companyName?: string, className?: string, nisn?: string) => Promise<{ success: boolean; error?: string }>;
+  register: (username: string, email: string, password: string, name: string, role: string, companyName?: string, className?: string, nisn?: string) => Promise<{ success: boolean; error?: string }>;
   logout: () => Promise<void>;
   updateCurrentUserName?: (name: string) => void;
   updateCurrentUserBackground: (url: string | null) => void;
@@ -329,17 +330,10 @@ export const PKLProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     }
   };
 
-  const register = async (
-    username: string,
-    password: string,
-    name: string,
-    role: string,
-    companyName?: string,
-    className?: string,
-    nisn?: string
-  ) => {
+  const register = async (username: string, email: string, password: string, name: string, role: string, companyName?: string, className?: string, nisn?: string) => {
+    setLoading(true);
     try {
-      const res = await registerAction(username, password, name, role, companyName, className, nisn);
+      const res = await registerAction(username, email, password, name, role, companyName, className, nisn);
       if (res.success && res.user) {
         setCurrentUser(res.user as UserProfile);
         setSelectedStudentIdState(null);

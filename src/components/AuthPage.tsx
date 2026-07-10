@@ -3,6 +3,7 @@
 
 import React, { useState, useRef, useEffect } from 'react';
 import { usePKL } from '../context/PKLContext';
+import { forgotPasswordAction } from '../app/actions/auth';
 import {
   Building2,
   User,
@@ -45,14 +46,20 @@ interface ErrorState {
 export const AuthPage: React.FC = () => {
   const { login, register, currentUser } = usePKL();
 
-  const [isLogin, setIsLogin] = useState(true);
+  const [view, setView] = useState<'login' | 'register' | 'forgot-password'>('login');
+  const isLogin = view === 'login';
+  const isRegister = view === 'register';
+  const isForgotPassword = view === 'forgot-password';
+
   const [errorState, setErrorState] = useState<ErrorState | null>(null);
+  const [successMessage, setSuccessMessage] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
 
   // Form states
   const [username, setUsername] = useState('');
+  const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
   const [name, setName] = useState('');
@@ -93,10 +100,13 @@ export const AuthPage: React.FC = () => {
     setErrorState({ message, type, field });
   };
 
-  const clearError = () => setErrorState(null);
+  const clearError = () => {
+    setErrorState(null);
+    setSuccessMessage(null);
+  };
 
-  const handleTabSwitch = (loginMode: boolean) => {
-    setIsLogin(loginMode);
+  const handleTabSwitch = (newView: 'login' | 'register' | 'forgot-password') => {
+    setView(newView);
     clearError();
     setShowPassword(false);
     setShowConfirmPassword(false);
@@ -108,10 +118,40 @@ export const AuthPage: React.FC = () => {
 
     const cleanUsername = username.trim().toLowerCase();
 
+    // --- Forgot Password handling ---
+    if (isForgotPassword) {
+      const cleanEmail = email.trim().toLowerCase();
+      if (!cleanEmail) {
+        setError('Email wajib diisi.', 'field');
+        return;
+      }
+      const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+      if (!emailRegex.test(cleanEmail)) {
+        setError('Format email tidak valid.', 'field');
+        return;
+      }
+      setLoading(true);
+      try {
+        const origin = window.location.origin;
+        const res = await forgotPasswordAction(cleanEmail, origin);
+        if (res.success) {
+          clearError();
+          setSuccessMessage('Jika email terdaftar, kami telah mengirimkan tautan untuk mengatur ulang password.');
+        } else {
+          setError(res.error || 'Gagal mengirim email reset password.', 'server');
+        }
+      } catch {
+        setError('Terjadi kesalahan pada server. Silakan coba beberapa saat lagi.', 'server');
+      } finally {
+        setLoading(false);
+      }
+      return;
+    }
+
     // --- Login validations ---
     if (isLogin) {
       if (!cleanUsername) {
-        setError('Email wajib diisi.', 'field', 'username');
+        setError('Username atau Email wajib diisi.', 'field', 'username');
         return;
       }
       if (!password) {
@@ -120,8 +160,22 @@ export const AuthPage: React.FC = () => {
       }
     } else {
       // --- Register validations ---
+      if (!name.trim()) {
+        setError('Nama lengkap wajib diisi.', 'field');
+        return;
+      }
+      const cleanEmail = email.trim().toLowerCase();
+      if (!cleanEmail) {
+        setError('Email wajib diisi.', 'field');
+        return;
+      }
+      const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+      if (!emailRegex.test(cleanEmail)) {
+        setError('Format email tidak valid.', 'field');
+        return;
+      }
       if (!cleanUsername) {
-        setError('Email wajib diisi.', 'field', 'username');
+        setError('Username wajib diisi.', 'field', 'username');
         return;
       }
       if (cleanUsername.length < 3) {
@@ -217,6 +271,7 @@ export const AuthPage: React.FC = () => {
       } else {
         const res = await register(
           cleanUsername,
+          email.trim().toLowerCase(),
           password,
           name.trim(),
           role,
@@ -282,37 +337,45 @@ export const AuthPage: React.FC = () => {
           </div>
 
           {/* Tab Toggle */}
-          <div className="flex bg-[#F1F5F9] dark:bg-gray-800 p-1 rounded-2xl mb-6 border border-[#E2E8F0] dark:border-gray-700">
-            <button
-              type="button"
-              onClick={() => handleTabSwitch(true)}
-              className={`flex-1 py-2.5 text-xs font-semibold rounded-xl transition-all duration-200 cursor-pointer ${
-                isLogin
-                  ? 'bg-white dark:bg-[#243447] text-primary shadow-sm border border-[#E2E8F0] dark:border-gray-700'
-                  : 'text-[#64748B] dark:text-gray-300 hover:text-[#0F172A] dark:text-gray-200'
-              }`}
-            >
-              Masuk Akun
-            </button>
-            <button
-              type="button"
-              onClick={() => handleTabSwitch(false)}
-              className={`flex-1 py-2.5 text-xs font-semibold rounded-xl transition-all duration-200 cursor-pointer ${
-                !isLogin
-                  ? 'bg-white dark:bg-[#243447] text-primary shadow-sm border border-[#E2E8F0] dark:border-gray-700'
-                  : 'text-[#64748B] dark:text-gray-300 hover:text-[#0F172A] dark:text-gray-200'
-              }`}
-            >
-              Daftar Baru
-            </button>
-          </div>
+          {!isForgotPassword && (
+            <div className="flex bg-[#F1F5F9] dark:bg-gray-800 p-1 rounded-2xl mb-6 border border-[#E2E8F0] dark:border-gray-700">
+              <button
+                type="button"
+                onClick={() => handleTabSwitch('login')}
+                className={`flex-1 py-2.5 text-xs font-semibold rounded-xl transition-all duration-200 cursor-pointer ${
+                  isLogin
+                    ? 'bg-white dark:bg-[#243447] text-primary shadow-sm border border-[#E2E8F0] dark:border-gray-700'
+                    : 'text-[#64748B] dark:text-gray-300 hover:text-[#0F172A] dark:text-gray-200'
+                }`}
+              >
+                Masuk Akun
+              </button>
+              <button
+                type="button"
+                onClick={() => handleTabSwitch('register')}
+                className={`flex-1 py-2.5 text-xs font-semibold rounded-xl transition-all duration-200 cursor-pointer ${
+                  !isLogin
+                    ? 'bg-white dark:bg-[#243447] text-primary shadow-sm border border-[#E2E8F0] dark:border-gray-700'
+                    : 'text-[#64748B] dark:text-gray-300 hover:text-[#0F172A] dark:text-gray-200'
+                }`}
+              >
+                Daftar Baru
+              </button>
+            </div>
+          )}
 
+          {isForgotPassword && (
+            <div className="mb-6 text-center animate-in fade-in zoom-in-95 duration-200">
+              <h2 className="text-sm font-bold text-[#0F172A] dark:text-white">Lupa Password?</h2>
+              <p className="text-xs text-[#64748B] dark:text-gray-300 mt-1">Masukkan email Anda untuk menerima tautan reset password.</p>
+            </div>
+          )}
 
           {/* Form */}
           <form onSubmit={handleSubmit} className="flex flex-col gap-4" noValidate>
 
             {/* If Register: wrap fields in a grid */}
-            {!isLogin && (
+            {isRegister && (
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4 animate-in fade-in duration-200">
                 {/* Full Name */}
                 <div className="flex flex-col gap-1.5">
@@ -326,6 +389,26 @@ export const AuthPage: React.FC = () => {
                       placeholder="Masukkan nama lengkap..."
                       value={name}
                       onChange={(e) => setName(e.target.value)}
+                      className={inputClass(false)}
+                    />
+                  </div>
+                </div>
+
+                {/* Email */}
+                <div className="flex flex-col gap-1.5">
+                  <label className="text-[10px] text-[#64748B] dark:text-gray-300 uppercase font-bold tracking-wider">
+                    Email
+                  </label>
+                  <div className="relative">
+                    <User size={15} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-[#94A3B8]" />
+                    <input
+                      type="email"
+                      placeholder="Masukkan alamat email..."
+                      value={email}
+                      onChange={(e) => {
+                        setEmail(e.target.value.toLowerCase().replace(/\s+/g, ''));
+                        if (errorState) clearError();
+                      }}
                       className={inputClass(false)}
                     />
                   </div>
@@ -465,7 +548,7 @@ export const AuthPage: React.FC = () => {
                 </div>
 
             {/* Siswa-specific fields — Register Only */}
-            {!isLogin && role === 'siswa' && (
+            {isRegister && role === 'siswa' && (
               <>
                 {/* Kelas Dropdown */}
                 <div
@@ -546,7 +629,7 @@ export const AuthPage: React.FC = () => {
             )}
 
             {/* Eksternal-specific fields — Register Only */}
-            {!isLogin && role === 'pembimbing_eksternal' && (
+            {isRegister && role === 'pembimbing_eksternal' && (
               <div className="flex flex-col gap-1.5 relative md:col-span-2">
                 <label className="text-[10px] text-[#64748B] dark:text-gray-300 uppercase font-bold tracking-wider">
                   Nama Perusahaan
@@ -571,16 +654,16 @@ export const AuthPage: React.FC = () => {
             {/* If Login: fields are rendered in a simple flex column */}
             {isLogin && (
               <>
-                {/* Username */}
+                {/* Username or Email */}
                 <div className="flex flex-col gap-1.5">
                   <label className="text-[10px] text-[#64748B] dark:text-gray-300 uppercase font-bold tracking-wider">
-                    Username
+                    Username atau Email
                   </label>
                   <div className="relative">
                     <User size={15} className={`absolute left-3.5 top-1/2 -translate-y-1/2 ${usernameHasError ? 'text-red-400' : 'text-[#94A3B8]'}`} />
                     <input
                       type="text"
-                      placeholder="Masukkan username..."
+                      placeholder="Masukkan username atau email..."
                       value={username}
                       onChange={(e) => {
                         setUsername(e.target.value.toLowerCase().replace(/\s+/g, ''));
@@ -631,8 +714,8 @@ export const AuthPage: React.FC = () => {
                   )}
                 </div>
 
-                {/* Remember Me */}
-                <div className="flex justify-between items-center">
+                {/* Remember Me & Forgot Password */}
+                <div className="flex justify-between items-center mt-1">
                   <label className="flex items-center gap-2 cursor-pointer group">
                     <input
                       type="checkbox"
@@ -643,8 +726,39 @@ export const AuthPage: React.FC = () => {
                       Ingat saya
                     </span>
                   </label>
+                  
+                  <button
+                    type="button"
+                    onClick={() => handleTabSwitch('forgot-password')}
+                    className="text-[11px] font-bold text-primary hover:text-primary-hover dark:hover:text-blue-400 transition-colors cursor-pointer"
+                  >
+                    Lupa Password?
+                  </button>
                 </div>
               </>
+            )}
+
+            {isForgotPassword && (
+              <div className="flex flex-col gap-4 animate-in fade-in duration-200">
+                <div className="flex flex-col gap-1.5">
+                  <label className="text-[10px] text-[#64748B] dark:text-gray-300 uppercase font-bold tracking-wider">
+                    Email
+                  </label>
+                  <div className="relative">
+                    <User size={15} className={`absolute left-3.5 top-1/2 -translate-y-1/2 ${errorState?.type === 'field' ? 'text-red-400' : 'text-[#94A3B8]'}`} />
+                    <input
+                      type="email"
+                      placeholder="Masukkan alamat email..."
+                      value={email}
+                      onChange={(e) => {
+                        setEmail(e.target.value.toLowerCase().replace(/\s+/g, ''));
+                        if (errorState) clearError();
+                      }}
+                      className={inputClass(errorState?.type === 'field')}
+                    />
+                  </div>
+                </div>
+              </div>
             )}
 
             {/* Submit Button */}
@@ -656,18 +770,45 @@ export const AuthPage: React.FC = () => {
               {loading ? (
                 <>
                   <Loader2 size={16} className="animate-spin" />
-                  <span>{isLogin ? 'Signing in...' : 'Mendaftar...'}</span>
+                  <span>{isLogin ? 'Signing in...' : isRegister ? 'Mendaftar...' : 'Memproses...'}</span>
                 </>
               ) : (
                 <>
-                  <span>{isLogin ? 'Masuk' : 'Daftar Sekarang'}</span>
+                  <span>{isLogin ? 'Masuk' : isRegister ? 'Daftar Sekarang' : 'Kirim Tautan Reset'}</span>
                   <ArrowRight size={15} />
                 </>
               )}
             </button>
+
+            {isForgotPassword && (
+              <button
+                type="button"
+                onClick={() => handleTabSwitch('login')}
+                className="w-full mt-2 min-h-[48px] bg-transparent hover:bg-slate-50 dark:hover:bg-gray-800 text-[#64748B] dark:text-gray-300 font-semibold text-sm rounded-2xl border border-transparent hover:border-slate-200 dark:hover:border-gray-700 transition-all duration-200 flex items-center justify-center cursor-pointer"
+              >
+                Kembali ke Login
+              </button>
+            )}
           </form>
 
-          {/* Error Alert — moved below the form! */}
+          {/* Success Message */}
+          {successMessage && (
+            <div className="mt-5 p-4 rounded-2xl border text-xs leading-relaxed animate-in fade-in slide-in-from-top-2 duration-200 flex items-start gap-3 bg-green-50 border-green-200">
+              <span className="shrink-0 text-green-500 mt-0.5">
+                <ShieldCheck size={18} />
+              </span>
+              <div className="flex-1 min-w-0">
+                <p className="font-bold text-[13px] text-green-800 mt-0.5">
+                  Berhasil
+                </p>
+                <p className="mt-1 leading-snug text-green-700">
+                  {successMessage}
+                </p>
+              </div>
+            </div>
+          )}
+
+          {/* Error Alert */}
           {errorState && errorState.type !== 'field' && (
             <div
               className={`mt-5 p-4 rounded-2xl border text-xs leading-relaxed animate-in fade-in slide-in-from-top-2 duration-200 flex items-start gap-3 ${

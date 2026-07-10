@@ -3,9 +3,11 @@
 import prisma from '@/lib/prisma';
 import { cookies } from 'next/headers';
 import { hashPassword, signSession, verifySession } from '@/lib/auth';
+import { createClient } from '@supabase/supabase-js';
 
 export async function registerAction(
   username: string,
+  email: string,
   password: string,
   name: string,
   role: string,
@@ -55,12 +57,26 @@ export async function registerAction(
       }
     }
 
-    const existing = await prisma.user.findUnique({
-      where: { username: cleanUsername }
+    const cleanEmail = email.trim().toLowerCase();
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRegex.test(cleanEmail)) {
+      return { success: false, error: 'Format email tidak valid.' };
+    }
+
+    const existingUser = await prisma.user.findFirst({
+      where: {
+        OR: [
+          { username: cleanUsername },
+          { email: cleanEmail }
+        ]
+      }
     });
 
-    if (existing) {
-      return { success: false, error: 'Username sudah digunakan' };
+    if (existingUser) {
+      if (existingUser.email === cleanEmail) {
+        return { success: false, error: 'Email sudah terdaftar.' };
+      }
+      return { success: false, error: 'Username sudah digunakan.' };
     }
 
     const hashedPassword = hashPassword(password);
@@ -88,6 +104,7 @@ export async function registerAction(
     const user = await prisma.user.create({
       data: {
         username: cleanUsername,
+        email: cleanEmail,
         password: hashedPassword,
         name: cleanName,
         role,
@@ -115,6 +132,7 @@ export async function registerAction(
       select: {
         id: true,
         username: true,
+        email: true,
         name: true,
         role: true,
         company: true,
@@ -138,10 +156,13 @@ export async function registerAction(
   }
 }
 
-export async function loginAction(username: string, password: string) {
+export async function loginAction(identifier: string, password: string) {
   try {
-    const user = await prisma.user.findUnique({
-      where: { username }
+    const cleanIdentifier = identifier.trim().toLowerCase();
+    const isEmail = cleanIdentifier.includes('@');
+
+    const user = await prisma.user.findFirst({
+      where: isEmail ? { email: cleanIdentifier } : { username: cleanIdentifier }
     });
 
     if (!user) {
@@ -167,6 +188,7 @@ export async function loginAction(username: string, password: string) {
       select: {
         id: true,
         username: true,
+        email: true,
         name: true,
         role: true,
         company: true,
@@ -215,6 +237,7 @@ export async function getCurrentUserAction() {
       select: {
         id: true,
         username: true,
+        email: true,
         name: true,
         role: true,
         company: true,
@@ -241,5 +264,94 @@ export async function getCurrentUserAction() {
   } catch (error) {
     console.error('Failed to get current user', error);
     return null;
+  }
+}
+
+export async function forgotPasswordAction(email: string, origin: string) {
+  try {
+    const cleanEmail = email.trim().toLowerCase();
+    
+    // Check if user exists in our local Prisma DB
+    const user = await prisma.user.findFirst({
+      where: { email: cleanEmail }
+    });
+
+    if (!user) {
+      // Return success anyway to prevent email enumeration
+      return { success: true };
+    }
+
+    const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL || process.env.SUPABASE_URL;
+    const supabaseKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
+    if (!supabaseUrl || !supabaseKey) {
+      console.error('Missing Supabase Config');
+      return { success: false, error: 'Konfigurasi server bermasalah.' };
+    }
+
+    const supabase = createClient(supabaseUrl, supabaseKey);
+
+    // Ensure user exists in Supabase Auth (create if missing)
+    const { data: listData, error: listError } = await supabase.auth.admin.listUsers();
+    if (!listError && listData?.users) {
+      const authUser = listData.users.find(u => u.email === cleanEmail);
+      if (!authUser) {
+        // Create user in Supabase Auth
+        await supabase.auth.admin.createUser({
+          email: cleanEmail,
+          password: 'temp_random_password_' + Date.now(),
+          email_confirm: true,
+        });
+      }
+    }
+
+    // Send reset password email using Supabase
+    const { error } = await supabase.auth.resetPasswordForEmail(cleanEmail, {
+      redirectTo: `${origin}/reset-password`,
+    });
+
+    if (error) {
+      console.error('Supabase Reset Password Error:', error);
+      return { success: false, error: 'Gagal mengirim email reset password.' };
+    }
+
+    return { success: true };
+  } catch (error) {
+    console.error('Failed to process forgot password:', error);
+    return { success: false, error: 'Terjadi kesalahan sistem.' };
+  }
+}
+
+export async function updatePasswordAction(accessToken: string, newPassword: string) {
+  try {
+    const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL || process.env.SUPABASE_URL;
+    const supabaseKey = process.env.SUPABASE_SERVICE_ROLE_KEY || process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || process.env.SUPABASE_ANON_KEY;
+    if (!supabaseUrl || !supabaseKey) {
+      return { success: false, error: 'Konfigurasi server bermasalah.' };
+    }
+
+    const supabase = createClient(supabaseUrl, supabaseKey);
+    
+    // Verify token
+    const { data: { user }, error } = await supabase.auth.getUser(accessToken);
+    if (error || !user || !user.email) {
+      return { success: false, error: 'Tautan reset tidak valid atau sudah kadaluarsa.' };
+    }
+
+    // Update password in Supabase Auth
+    await supabase.auth.admin.updateUserById(user.id, {
+      password: newPassword
+    });
+
+    // Hash and Update password in Prisma DB
+    const hashedPassword = hashPassword(newPassword);
+    await prisma.user.updateMany({
+      where: { email: user.email },
+      data: { password: hashedPassword }
+    });
+
+    return { success: true };
+  } catch (error) {
+    console.error('Failed to update password:', error);
+    return { success: false, error: 'Terjadi kesalahan saat menyimpan password baru.' };
   }
 }
