@@ -130,7 +130,19 @@ export const translations = {
     username: "Username",
     nisNisn: "NIS / NISN",
     myProfile: "Profil Saya",
-    profile: "Profil"
+    profile: "Profil",
+    accountSecurity: "Keamanan Akun",
+    changePassword: "Ubah Password",
+    oldPassword: "Password Lama",
+    newPassword: "Password Baru",
+    confirmNewPassword: "Konfirmasi Password Baru",
+    passwordChangedSuccess: "Password berhasil diubah.",
+    resetPasswordEmail: "Kirim Email Reset Password",
+    resetEmailSent: "Kami telah mengirim tautan reset password ke email Anda.",
+    rateLimitError: "Terlalu banyak permintaan. Silakan coba lagi beberapa menit lagi.",
+    school: "Sekolah",
+    company: "Perusahaan",
+    role: "Role"
   },
   en: {
     // Navigation
@@ -263,7 +275,19 @@ export const translations = {
     username: "Username",
     nisNisn: "Student ID",
     myProfile: "My Profile",
-    profile: "Profile"
+    profile: "Profile",
+    accountSecurity: "Account Security",
+    changePassword: "Change Password",
+    oldPassword: "Old Password",
+    newPassword: "New Password",
+    confirmNewPassword: "Confirm New Password",
+    passwordChangedSuccess: "Password successfully changed.",
+    resetPasswordEmail: "Send Reset Password Email",
+    resetEmailSent: "We have sent a reset password link to your email.",
+    rateLimitError: "Too many requests. Please try again in a few minutes.",
+    school: "School",
+    company: "Company",
+    role: "Role"
   }
 };
 

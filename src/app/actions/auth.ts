@@ -329,9 +329,10 @@ export async function forgotPasswordAction(email: string, origin: string) {
     }
 
     return { success: true };
-  } catch (error: any) {
+  } catch (error: unknown) {
     console.error('Failed to process forgot password. Original Error:', error);
-    return { success: false, error: error.message ? `Terjadi kesalahan: ${error.message}` : 'Terjadi kesalahan sistem.' };
+    const err = error as Error;
+    return { success: false, error: err.message ? `Terjadi kesalahan: ${err.message}` : 'Terjadi kesalahan sistem.' };
   }
 }
 
@@ -380,8 +381,67 @@ export async function updatePasswordAction(accessToken: string, newPassword: str
     });
 
     return { success: true };
-  } catch (error: any) {
+  } catch (error: unknown) {
     console.error('Failed to update password. Original Error:', error);
-    return { success: false, error: error.message ? `Kesalahan: ${error.message}` : 'Terjadi kesalahan saat menyimpan password baru.' };
+    const err = error as Error;
+    return { success: false, error: err.message ? `Kesalahan: ${err.message}` : 'Terjadi kesalahan saat menyimpan password baru.' };
+  }
+}
+
+export async function changePasswordAction(oldPassword: string, newPassword: string) {
+  try {
+    const cookieStore = await cookies();
+    const sessionCookie = cookieStore.get('session');
+    if (!sessionCookie) return { success: false, error: 'Sesi tidak valid.' };
+
+    const userId = verifySession(sessionCookie.value);
+    if (!userId) return { success: false, error: 'Sesi tidak valid.' };
+
+    const user = await prisma.user.findUnique({
+      where: { id: userId }
+    });
+
+    if (!user) return { success: false, error: 'Pengguna tidak ditemukan.' };
+
+    const hashedOldPassword = hashPassword(oldPassword);
+    if (user.password !== hashedOldPassword) {
+      return { success: false, error: 'Password Lama salah.' };
+    }
+
+    if (newPassword.length < 6) {
+      return { success: false, error: 'Password Baru harus terdiri dari minimal 6 karakter.' };
+    }
+
+    const hashedNewPassword = hashPassword(newPassword);
+    if (user.password === hashedNewPassword) {
+      return { success: false, error: 'Password lama tidak boleh digunakan lagi.' };
+    }
+
+    // Attempt to update Supabase as well
+    const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL || process.env.SUPABASE_URL;
+    const supabaseKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
+    if (supabaseUrl && supabaseKey) {
+      const supabase = createClient(supabaseUrl, supabaseKey);
+      const { data: listData, error: listError } = await supabase.auth.admin.listUsers();
+      if (!listError && listData?.users) {
+        const authUser = listData.users.find(u => u.email === user.email);
+        if (authUser) {
+          await supabase.auth.admin.updateUserById(authUser.id, {
+            password: newPassword
+          });
+        }
+      }
+    }
+
+    await prisma.user.update({
+      where: { id: userId },
+      data: { password: hashedNewPassword }
+    });
+
+    return { success: true };
+  } catch (error: unknown) {
+    console.error('Failed to change password:', error);
+    const err = error as Error;
+    return { success: false, error: err.message ? `Terjadi kesalahan: ${err.message}` : 'Terjadi kesalahan saat mengubah password.' };
   }
 }

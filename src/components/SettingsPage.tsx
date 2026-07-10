@@ -5,6 +5,8 @@ import { usePKL } from '../context/PKLContext';
 import { Moon, Globe, Info, LogOut, ChevronRight, User, Image as ImageIcon, Upload, Trash2, Loader2 } from 'lucide-react';
 import { useTheme } from 'next-themes';
 import { uploadBoardBackgroundAction, updateBoardBackgroundAction } from '../app/actions/pkl';
+import { changePasswordAction, forgotPasswordAction } from '../app/actions/auth';
+import { Key } from 'lucide-react';
 import { useLanguage } from '../context/LanguageContext';
 import { Language } from '../i18n/translations';
 import { Check, Palette } from 'lucide-react';
@@ -95,6 +97,56 @@ export const SettingsPage: React.FC<SettingsPageProps> = ({
   const [name, setName] = useState(currentUser?.name || '');
   const [isEditingProfile, setIsEditingProfile] = useState(activeSection === 'profile');
 
+  // Security States
+  const [oldPassword, setOldPassword] = useState('');
+  const [newPassword, setNewPassword] = useState('');
+  const [confirmPassword, setConfirmPassword] = useState('');
+  const [isChangingPassword, setIsChangingPassword] = useState(false);
+  const [passwordMessage, setPasswordMessage] = useState<{type: 'success' | 'error', text: string} | null>(null);
+
+  const handleChangePassword = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (newPassword !== confirmPassword) {
+      setPasswordMessage({ type: 'error', text: t('confirmNewPassword') + ' harus sama.' });
+      return;
+    }
+    setIsChangingPassword(true);
+    setPasswordMessage(null);
+    const result = await changePasswordAction(oldPassword, newPassword);
+    setIsChangingPassword(false);
+    
+    if (result.success) {
+      setPasswordMessage({ type: 'success', text: t('passwordChangedSuccess') });
+      setOldPassword('');
+      setNewPassword('');
+      setConfirmPassword('');
+    } else {
+      setPasswordMessage({ type: 'error', text: result.error || 'Terjadi kesalahan.' });
+    }
+  };
+
+  const [isResetting, setIsResetting] = useState(false);
+  const [resetMessage, setResetMessage] = useState<{type: 'success' | 'error', text: string} | null>(null);
+
+  const handleResetPassword = async () => {
+    if (!currentUser?.email) return;
+    setIsResetting(true);
+    setResetMessage(null);
+    
+    const result = await forgotPasswordAction(currentUser.email, window.location.origin);
+    setIsResetting(false);
+    
+    if (result.success) {
+      setResetMessage({ type: 'success', text: t('resetEmailSent') });
+    } else {
+      if (result.error && result.error.toLowerCase().includes('rate limit')) {
+        setResetMessage({ type: 'error', text: t('rateLimitError') });
+      } else {
+        setResetMessage({ type: 'error', text: result.error || 'Gagal mengirim email reset.' });
+      }
+    }
+  };
+
   // Scroll to active section if specified
   React.useEffect(() => {
     let timer: NodeJS.Timeout;
@@ -174,6 +226,22 @@ export const SettingsPage: React.FC<SettingsPageProps> = ({
                       <span className="font-semibold text-slate-700">{currentUser.nisn}</span>
                     </div>
                   )}
+                  <div className="flex justify-between py-1 border-b border-slate-200 dark:border-gray-700">
+                    <span>{t('role')}</span>
+                    <span className="font-semibold text-slate-700 capitalize">{currentUser?.role?.replace('_', ' ')}</span>
+                  </div>
+                  {currentUser?.school && (
+                    <div className="flex justify-between py-1 border-b border-slate-200 dark:border-gray-700">
+                      <span>{t('school')}</span>
+                      <span className="font-semibold text-slate-700">{currentUser.school}</span>
+                    </div>
+                  )}
+                  {currentUser?.company && (
+                    <div className="flex justify-between py-1 border-b border-slate-200 dark:border-gray-700">
+                      <span>{t('company')}</span>
+                      <span className="font-semibold text-slate-700">{currentUser.company}</span>
+                    </div>
+                  )}
                 </div>
 
                 <div className="flex gap-3 mt-2">
@@ -192,6 +260,80 @@ export const SettingsPage: React.FC<SettingsPageProps> = ({
                   </button>
                 </div>
               </form>
+
+              {/* KEAMANAN AKUN SECTION */}
+              <div className="mt-8 pt-6 border-t border-slate-200 dark:border-gray-700">
+                <div className="flex items-center gap-2 mb-4">
+                  <Key size={18} className="text-primary" />
+                  <h3 className="text-sm font-bold text-slate-800 dark:text-white uppercase tracking-tight">{t('accountSecurity')}</h3>
+                </div>
+
+                {/* Ubah Password Form */}
+                <form onSubmit={handleChangePassword} className="flex flex-col gap-3 mb-6 bg-white dark:bg-[#243447] p-4 rounded-xl border border-slate-200 dark:border-gray-700">
+                  <h4 className="text-xs font-bold text-slate-700 dark:text-gray-200 mb-1">{t('changePassword')}</h4>
+                  
+                  {passwordMessage && (
+                    <div className={`p-3 rounded-lg text-xs font-medium ${passwordMessage.type === 'success' ? 'bg-green-50 text-green-700 border border-green-200' : 'bg-red-50 text-red-700 border border-red-200'}`}>
+                      {passwordMessage.text}
+                    </div>
+                  )}
+
+                  <input
+                    type="password"
+                    required
+                    value={oldPassword}
+                    onChange={(e) => setOldPassword(e.target.value)}
+                    placeholder={t('oldPassword')}
+                    className="w-full bg-slate-50 dark:bg-gray-800 border border-slate-200 dark:border-gray-700 rounded-lg px-3 py-2.5 text-xs focus:outline-none focus:border-primary"
+                  />
+                  <input
+                    type="password"
+                    required
+                    value={newPassword}
+                    onChange={(e) => setNewPassword(e.target.value)}
+                    placeholder={t('newPassword')}
+                    className="w-full bg-slate-50 dark:bg-gray-800 border border-slate-200 dark:border-gray-700 rounded-lg px-3 py-2.5 text-xs focus:outline-none focus:border-primary"
+                  />
+                  <input
+                    type="password"
+                    required
+                    value={confirmPassword}
+                    onChange={(e) => setConfirmPassword(e.target.value)}
+                    placeholder={t('confirmNewPassword')}
+                    className="w-full bg-slate-50 dark:bg-gray-800 border border-slate-200 dark:border-gray-700 rounded-lg px-3 py-2.5 text-xs focus:outline-none focus:border-primary"
+                  />
+                  <button
+                    type="submit"
+                    disabled={isChangingPassword}
+                    className="mt-2 w-full px-4 py-2.5 bg-slate-800 hover:bg-slate-700 dark:bg-blue-600 dark:hover:bg-blue-700 text-white rounded-lg text-xs font-bold shadow-sm disabled:opacity-50"
+                  >
+                    {isChangingPassword ? 'Memproses...' : t('changePassword')}
+                  </button>
+                </form>
+
+                {/* Reset Password Button */}
+                <div className="flex flex-col gap-3 bg-white dark:bg-[#243447] p-4 rounded-xl border border-slate-200 dark:border-gray-700">
+                  <div>
+                    <h4 className="text-xs font-bold text-slate-700 dark:text-gray-200 mb-1">{t('resetPasswordEmail')}</h4>
+                    <p className="text-[10px] text-slate-500 dark:text-gray-400">Kirim tautan reset password ke email Anda yang terdaftar.</p>
+                  </div>
+                  
+                  {resetMessage && (
+                    <div className={`p-3 rounded-lg text-xs font-medium ${resetMessage.type === 'success' ? 'bg-green-50 text-green-700 border border-green-200' : 'bg-red-50 text-red-700 border border-red-200'}`}>
+                      {resetMessage.text}
+                    </div>
+                  )}
+
+                  <button
+                    type="button"
+                    onClick={handleResetPassword}
+                    disabled={isResetting}
+                    className="w-full px-4 py-2.5 bg-white dark:bg-gray-800 border border-slate-300 dark:border-gray-600 hover:bg-slate-50 dark:hover:bg-gray-700 text-slate-700 dark:text-gray-200 rounded-lg text-xs font-bold disabled:opacity-50"
+                  >
+                    {isResetting ? 'Mengirim...' : t('resetPasswordEmail')}
+                  </button>
+                </div>
+              </div>
             </div>
           ) : (
             <button 
