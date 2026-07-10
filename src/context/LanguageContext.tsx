@@ -16,7 +16,7 @@ export const LanguageProvider: React.FC<{ children: React.ReactNode }> = ({ chil
   const [mounted, setMounted] = useState(false);
 
   useEffect(() => {
-    const savedLang = localStorage.getItem('nebotrack_lang') as Language;
+    const savedLang = localStorage.getItem('interntrack_lang') as Language;
     if (savedLang && (savedLang === 'id' || savedLang === 'en')) {
       // eslint-disable-next-line react-hooks/set-state-in-effect
       setLanguageState(savedLang);
@@ -26,7 +26,7 @@ export const LanguageProvider: React.FC<{ children: React.ReactNode }> = ({ chil
 
   const setLanguage = (lang: Language) => {
     setLanguageState(lang);
-    localStorage.setItem('nebotrack_lang', lang);
+    localStorage.setItem('interntrack_lang', lang);
   };
 
   const t = (key: TranslationKey): string => {

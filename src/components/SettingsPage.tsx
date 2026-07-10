@@ -196,7 +196,7 @@ export const SettingsPage: React.FC<SettingsPageProps> = ({
 
         {/* TENTANG TILE */}
         <button 
-          onClick={() => alert(`NeboTrack v1.0.0 (Stable)\n${t('aboutDesc')}`)}
+          onClick={() => alert(`InternTrack v1.0.0 (Stable)\n${t('aboutDesc')}`)}
           className="flex items-center justify-between p-4 bg-white dark:bg-[#243447] hover:bg-slate-50 dark:hover:bg-[#2D435E] transition min-h-[56px] cursor-pointer text-left w-full"
         >
           <div className="flex items-center gap-4">

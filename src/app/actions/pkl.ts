@@ -791,6 +791,7 @@ export async function uploadFileAction(formData: FormData) {
       return { success: false, error: 'Environment Variable untuk Supabase Storage belum dikonfigurasi (SUPABASE_URL, SUPABASE_ANON_KEY).' };
     }
 
+    // eslint-disable-next-line @typescript-eslint/no-require-imports
     const { createClient } = require('@supabase/supabase-js');
     const supabase = createClient(supabaseUrl, supabaseKey);
 

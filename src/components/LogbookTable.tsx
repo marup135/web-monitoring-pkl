@@ -65,7 +65,7 @@ export const LogbookTable: React.FC<LogbookTableProps> = ({ onOpenCard, onEditCa
         {/* Printable Cover Page */}
         <div className="hidden print:flex flex-col items-center justify-center min-h-[24cm] w-full" style={{ pageBreakAfter: 'always' }}>
           {/* eslint-disable-next-line @next/next/no-img-element */}
-          <img src="/logo.jpg" alt="Logo" className="w-32 h-32 object-contain mb-8" />
+          <img src="/interntrack.jpg" alt="Logo" className="w-32 h-32 object-contain mb-8" />
           <h1 className="text-2xl font-bold uppercase text-black mb-2 text-center">LAPORAN JURNAL KEGIATAN</h1>
           <h2 className="text-xl font-bold uppercase text-black mb-12 text-center">PRAKTIK KERJA LAPANGAN (PKL)</h2>
           

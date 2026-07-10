@@ -15,8 +15,8 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "NeboTrack",
-  description: "Sistem Monitoring dan Logbook Harian PKL SMKN 1 Bojong",
+  title: "InternTrack",
+  description: "Track Your Progress, Shape Your Future.",
 };
 
 export default function RootLayout({

@@ -63,10 +63,8 @@ export const AuthPage: React.FC = () => {
 
   const [isRoleDropdownOpen, setIsRoleDropdownOpen] = useState(false);
   const [isClassDropdownOpen, setIsClassDropdownOpen] = useState(false);
-  const [isCompanyDropdownOpen, setIsCompanyDropdownOpen] = useState(false);
   const roleDropdownRef = useRef<HTMLDivElement>(null);
   const classDropdownRef = useRef<HTMLDivElement>(null);
-  const companyDropdownRef = useRef<HTMLDivElement>(null);
 
   // If user is already logged in, the parent HomeWrapper will redirect automatically.
   // We guard here too as extra safety.
@@ -85,9 +83,6 @@ export const AuthPage: React.FC = () => {
       }
       if (classDropdownRef.current && !classDropdownRef.current.contains(event.target as Node)) {
         setIsClassDropdownOpen(false);
-      }
-      if (companyDropdownRef.current && !companyDropdownRef.current.contains(event.target as Node)) {
-        setIsCompanyDropdownOpen(false);
       }
     };
     document.addEventListener('mousedown', handleClickOutside);
@@ -273,16 +268,16 @@ export const AuthPage: React.FC = () => {
             <div className="relative mb-4">
               <div className="absolute inset-0 rounded-2xl bg-[#2563EB]/10 blur-md scale-110" />
               <img
-                src="/logo.jpg"
-                alt="NeboTrack Logo"
+                src="/interntrack.jpg"
+                alt="InternTrack Logo"
                 className="relative w-[72px] h-[72px] md:w-[88px] md:h-[88px] object-contain rounded-2xl shadow-md border border-[#E2E8F0] dark:border-gray-700"
               />
             </div>
             <h1 className="text-2xl md:text-[28px] font-black text-[#0F172A] dark:text-white tracking-tight">
-              NeboTrack
+              InternTrack
             </h1>
             <p className="text-[11px] text-[#64748B] dark:text-gray-300 font-medium mt-1.5 text-center leading-relaxed max-w-[240px]">
-              SMKN 1 Bojong · Monitoring & Logbook PKL
+              Track Your Progress, Shape Your Future.
             </p>
           </div>
 
@@ -748,7 +743,7 @@ export const AuthPage: React.FC = () => {
 
         {/* Footer */}
         <p className="text-center text-[10px] text-[#94A3B8] mt-5 font-medium">
-          © 2026 NeboTrack · SMKN 1 Bojong
+          © 2026 InternTrack · SMKN 1 Bojong
         </p>
       </div>
     </div>
