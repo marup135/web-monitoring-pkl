@@ -282,26 +282,40 @@ export async function forgotPasswordAction(email: string, origin: string) {
     }
 
     const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL || process.env.SUPABASE_URL;
-    const supabaseKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
+    const supabaseKey = process.env.SUPABASE_SERVICE_ROLE_KEY || process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || process.env.SUPABASE_ANON_KEY;
+    
     if (!supabaseUrl || !supabaseKey) {
-      console.error('Missing Supabase Config');
-      return { success: false, error: 'Konfigurasi server bermasalah.' };
+      console.error('Missing Supabase Config', {
+        hasUrl: !!supabaseUrl,
+        hasServiceKey: !!process.env.SUPABASE_SERVICE_ROLE_KEY,
+        hasAnonKey: !!(process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || process.env.SUPABASE_ANON_KEY)
+      });
+      return { success: false, error: 'Konfigurasi server bermasalah: Variabel environment Supabase tidak ditemukan.' };
     }
 
     const supabase = createClient(supabaseUrl, supabaseKey);
 
     // Ensure user exists in Supabase Auth (create if missing)
-    const { data: listData, error: listError } = await supabase.auth.admin.listUsers();
-    if (!listError && listData?.users) {
-      const authUser = listData.users.find(u => u.email === cleanEmail);
-      if (!authUser) {
-        // Create user in Supabase Auth
-        await supabase.auth.admin.createUser({
-          email: cleanEmail,
-          password: 'temp_random_password_' + Date.now(),
-          email_confirm: true,
-        });
+    if (process.env.SUPABASE_SERVICE_ROLE_KEY) {
+      const { data: listData, error: listError } = await supabase.auth.admin.listUsers();
+      if (!listError && listData?.users) {
+        const authUser = listData.users.find(u => u.email === cleanEmail);
+        if (!authUser) {
+          // Create user in Supabase Auth
+          const { error: createError } = await supabase.auth.admin.createUser({
+            email: cleanEmail,
+            password: 'temp_random_password_' + Date.now(),
+            email_confirm: true,
+          });
+          if (createError) {
+            console.error('Supabase createUser Error:', createError);
+          }
+        }
+      } else if (listError) {
+        console.error('Supabase listUsers Error:', listError);
       }
+    } else {
+      console.warn('SUPABASE_SERVICE_ROLE_KEY is missing. Skipping auth.admin checks.');
     }
 
     // Send reset password email using Supabase
@@ -310,14 +324,14 @@ export async function forgotPasswordAction(email: string, origin: string) {
     });
 
     if (error) {
-      console.error('Supabase Reset Password Error:', error);
-      return { success: false, error: 'Gagal mengirim email reset password.' };
+      console.error('Supabase Reset Password Error:', error.message || error);
+      return { success: false, error: `Gagal mengirim email reset: ${error.message}` };
     }
 
     return { success: true };
-  } catch (error) {
-    console.error('Failed to process forgot password:', error);
-    return { success: false, error: 'Terjadi kesalahan sistem.' };
+  } catch (error: any) {
+    console.error('Failed to process forgot password. Original Error:', error);
+    return { success: false, error: error.message ? `Terjadi kesalahan: ${error.message}` : 'Terjadi kesalahan sistem.' };
   }
 }
 
@@ -325,7 +339,9 @@ export async function updatePasswordAction(accessToken: string, newPassword: str
   try {
     const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL || process.env.SUPABASE_URL;
     const supabaseKey = process.env.SUPABASE_SERVICE_ROLE_KEY || process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || process.env.SUPABASE_ANON_KEY;
+    
     if (!supabaseUrl || !supabaseKey) {
+      console.error('Missing Supabase Config in updatePassword');
       return { success: false, error: 'Konfigurasi server bermasalah.' };
     }
 
@@ -337,10 +353,24 @@ export async function updatePasswordAction(accessToken: string, newPassword: str
       return { success: false, error: 'Tautan reset tidak valid atau sudah kadaluarsa.' };
     }
 
-    // Update password in Supabase Auth
-    await supabase.auth.admin.updateUserById(user.id, {
-      password: newPassword
-    });
+    // Try to update using admin API if service key is available, else use client API
+    if (process.env.SUPABASE_SERVICE_ROLE_KEY) {
+      const { error: updateError } = await supabase.auth.admin.updateUserById(user.id, {
+        password: newPassword
+      });
+      if (updateError) {
+        console.error('Supabase admin updateUser Error:', updateError);
+        return { success: false, error: `Gagal memperbarui di Supabase: ${updateError.message}` };
+      }
+    } else {
+      const { error: updateError } = await supabase.auth.updateUser({
+        password: newPassword
+      });
+      if (updateError) {
+        console.error('Supabase updateUser Error:', updateError);
+        return { success: false, error: `Gagal memperbarui di Supabase: ${updateError.message}` };
+      }
+    }
 
     // Hash and Update password in Prisma DB
     const hashedPassword = hashPassword(newPassword);
@@ -350,8 +380,8 @@ export async function updatePasswordAction(accessToken: string, newPassword: str
     });
 
     return { success: true };
-  } catch (error) {
-    console.error('Failed to update password:', error);
-    return { success: false, error: 'Terjadi kesalahan saat menyimpan password baru.' };
+  } catch (error: any) {
+    console.error('Failed to update password. Original Error:', error);
+    return { success: false, error: error.message ? `Kesalahan: ${error.message}` : 'Terjadi kesalahan saat menyimpan password baru.' };
   }
 }
