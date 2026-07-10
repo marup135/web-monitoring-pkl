@@ -52,8 +52,8 @@ export const DashboardStats: React.FC = () => {
         
         {/* Metric 1: Total Hours */}
         <div className="bg-white dark:bg-[#243447] border border-[#E2E8F0] dark:border-gray-700 rounded-2xl p-5 md:p-6 flex items-center gap-4 relative overflow-hidden shadow-sm">
-          <div className="absolute top-0 right-0 w-32 h-32 bg-[#2563EB]/2 rounded-full blur-2xl pointer-events-none" />
-          <div className="p-3.5 bg-blue-50 dark:bg-blue-500/10 border border-blue-100 dark:border-blue-500/20 text-[#2563EB] dark:text-blue-500 rounded-xl">
+          <div className="absolute top-0 right-0 w-32 h-32 bg-primary/2 rounded-full blur-2xl pointer-events-none" />
+          <div className="p-3.5 bg-primary/10 dark:bg-primary/100/10 border border-blue-100 dark:border-blue-500/20 text-primary dark:text-blue-500 rounded-xl">
             <Clock size={24} />
           </div>
           <div>
@@ -126,7 +126,7 @@ export const DashboardStats: React.FC = () => {
               <div className="flex h-3 rounded-full overflow-hidden bg-[#F1F5F9] dark:bg-gray-800">
                 <div style={{ width: `${totalCards > 0 ? (completedCards.length / totalCards) * 100 : 0}%` }} className="bg-[#22C55E]" title={t('done')} />
                 <div style={{ width: `${totalCards > 0 ? (reviewCards.length / totalCards) * 100 : 0}%` }} className="bg-[#F59E0B]" title={t('review')} />
-                <div style={{ width: `${totalCards > 0 ? (progressCards.length / totalCards) * 100 : 0}%` }} className="bg-[#2563EB]" title={t('progress')} />
+                <div style={{ width: `${totalCards > 0 ? (progressCards.length / totalCards) * 100 : 0}%` }} className="bg-primary" title={t('progress')} />
                 <div style={{ width: `${totalCards > 0 ? (plannedCards.length / totalCards) * 100 : 0}%` }} className="bg-slate-400" title={t('plan')} />
               </div>
 
@@ -140,7 +140,7 @@ export const DashboardStats: React.FC = () => {
                   <span className="text-xs text-slate-700">{t('review')} ({reviewCards.length})</span>
                 </div>
                 <div className="flex items-center gap-2">
-                  <div className="w-2.5 h-2.5 rounded-full bg-[#2563EB]" />
+                  <div className="w-2.5 h-2.5 rounded-full bg-primary" />
                   <span className="text-xs text-slate-700">{t('progress')} ({progressCards.length})</span>
                 </div>
                 <div className="flex items-center gap-2">
@@ -168,7 +168,7 @@ export const DashboardStats: React.FC = () => {
                         <div
                           style={{ width: `${percent}%` }}
                           className={`h-full rounded-full ${
-                            cat === 'Coding' ? 'bg-[#2563EB]' :
+                            cat === 'Coding' ? 'bg-primary' :
                             cat === 'Design' ? 'bg-purple-600' :
                             cat === 'Laporan' ? 'bg-[#22C55E]' :
                             cat === 'Networking' ? 'bg-sky-500' :
@@ -189,7 +189,7 @@ export const DashboardStats: React.FC = () => {
         <div className="flex flex-col gap-6">
           <div className="bg-white dark:bg-[#243447] border border-[#E2E8F0] dark:border-gray-700 rounded-2xl p-5 md:p-6 shadow-sm flex flex-col gap-6 h-full min-h-[400px]">
             <div className="flex items-center gap-2">
-              <FileText size={18} className="text-[#2563EB]" />
+              <FileText size={18} className="text-primary" />
               <h3 className="font-bold text-slate-800 dark:text-gray-200 text-base">{t('advisorNotesTitle')}</h3>
             </div>
 
@@ -201,11 +201,11 @@ export const DashboardStats: React.FC = () => {
                 rows={3}
                 value={newNoteText}
                 onChange={(e) => setNewNoteText(e.target.value)}
-                className="w-full bg-white dark:bg-[#243447] border border-[#E2E8F0] dark:border-gray-700 rounded-xl p-3.5 text-sm md:text-xs focus:outline-none focus:border-[#2563EB] focus:ring-1 focus:ring-[#2563EB] resize-none shadow-sm min-h-[80px] md:min-h-0 md:p-3"
+                className="w-full bg-white dark:bg-[#243447] border border-[#E2E8F0] dark:border-gray-700 rounded-xl p-3.5 text-sm md:text-xs focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary resize-none shadow-sm min-h-[80px] md:min-h-0 md:p-3"
               />
               <button
                 type="submit"
-                className="w-full py-3 md:py-2 bg-[#2563EB] hover:bg-[#1D4ED8] text-white font-semibold text-sm md:text-xs rounded-xl shadow-sm flex items-center justify-center gap-1.5 transition cursor-pointer min-h-[48px] md:min-h-0"
+                className="w-full py-3 md:py-2 bg-primary hover:bg-primary-hover text-white font-semibold text-sm md:text-xs rounded-xl shadow-sm flex items-center justify-center gap-1.5 transition cursor-pointer min-h-[48px] md:min-h-0"
               >
                 <Plus size={14} />
                 <span>{t('saveNote')}</span>
@@ -218,7 +218,7 @@ export const DashboardStats: React.FC = () => {
                 <p className="text-xs text-slate-500 dark:text-gray-2000 italic text-center py-8">{t('emptyNotes')}</p>
               ) : (
                 state.advisorNotes.map((note) => (
-                  <div key={note.id} className="bg-[#F8FAFC] dark:bg-gray-900 border-l-2 border-[#2563EB] border-y border-r border-[#E2E8F0] dark:border-gray-700 rounded-r-xl p-3 flex flex-col gap-2 shadow-sm">
+                  <div key={note.id} className="bg-[#F8FAFC] dark:bg-gray-900 border-l-2 border-primary border-y border-r border-[#E2E8F0] dark:border-gray-700 rounded-r-xl p-3 flex flex-col gap-2 shadow-sm">
                     <p className="text-xs text-slate-700 leading-relaxed font-medium">
                       &ldquo;{note.text}&rdquo;
                     </p>

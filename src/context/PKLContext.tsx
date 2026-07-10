@@ -49,6 +49,7 @@ export interface UserProfile {
   classes?: { id: string; name: string }[];
   companies?: { id: string; name: string }[];
   nisn?: string | null;
+  boardBackground?: string | null;
 }
 
 export interface ClassItem {
@@ -154,6 +155,7 @@ interface PKLContextProps {
   register: (username: string, password: string, name: string, role: string, companyName?: string, className?: string, nisn?: string) => Promise<{ success: boolean; error?: string }>;
   logout: () => Promise<void>;
   updateCurrentUserName?: (name: string) => void;
+  updateCurrentUserBackground: (url: string | null) => void;
 }
 
 const PKLContext = createContext<PKLContextProps | undefined>(undefined);
@@ -801,6 +803,12 @@ export const PKLProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     }
   };
 
+  const updateCurrentUserBackground = (url: string | null) => {
+    if (currentUser) {
+      setCurrentUser({ ...currentUser, boardBackground: url });
+    }
+  };
+
   const resetState = async () => {
     setLoading(true);
     try {
@@ -858,6 +866,7 @@ export const PKLProvider: React.FC<{ children: React.ReactNode }> = ({ children 
         register,
         logout,
         updateCurrentUserName,
+        updateCurrentUserBackground,
       }}
     >
       {children}

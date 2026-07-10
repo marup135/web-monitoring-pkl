@@ -250,13 +250,13 @@ export const AuthPage: React.FC = () => {
     `w-full bg-white dark:bg-[#243447] border rounded-xl pl-10 pr-4 text-sm text-[#0F172A] dark:text-gray-200 placeholder:text-[#94A3B8] focus:outline-none focus:ring-2 min-h-[48px] py-3 md:min-h-0 md:py-2.5 md:text-xs transition-all duration-200 ${
       hasError
         ? 'border-red-400 focus:border-red-400 focus:ring-red-100 bg-red-50/30'
-        : 'border-[#E2E8F0] dark:border-gray-700 focus:border-[#2563EB] focus:ring-blue-100'
+        : 'border-[#E2E8F0] dark:border-gray-700 focus:border-primary focus:ring-blue-100'
     }`;
 
   return (
     <div className="min-h-screen flex items-center justify-center p-4 bg-gradient-to-br from-[#F0F4FF] via-[#F8FAFC] to-[#EFF6FF] text-[#0F172A] dark:text-gray-200 relative overflow-hidden font-sans">
       {/* Decorative blobs */}
-      <div className="absolute top-0 left-0 w-[500px] h-[500px] bg-[#2563EB]/8 rounded-full blur-3xl pointer-events-none -translate-x-1/2 -translate-y-1/2" />
+      <div className="absolute top-0 left-0 w-[500px] h-[500px] bg-primary/8 rounded-full blur-3xl pointer-events-none -translate-x-1/2 -translate-y-1/2" />
       <div className="absolute bottom-0 right-0 w-[400px] h-[400px] bg-[#7C3AED]/6 rounded-full blur-3xl pointer-events-none translate-x-1/3 translate-y-1/3" />
 
       <div className="w-full max-w-md relative z-10">
@@ -266,7 +266,7 @@ export const AuthPage: React.FC = () => {
           {/* Logo & Header */}
           <div className="flex flex-col items-center mb-8">
             <div className="relative mb-4">
-              <div className="absolute inset-0 rounded-2xl bg-[#2563EB]/10 blur-md scale-110" />
+              <div className="absolute inset-0 rounded-2xl bg-primary/10 blur-md scale-110" />
               <img
                 src="/interntrack.jpg"
                 alt="InternTrack Logo"
@@ -288,7 +288,7 @@ export const AuthPage: React.FC = () => {
               onClick={() => handleTabSwitch(true)}
               className={`flex-1 py-2.5 text-xs font-semibold rounded-xl transition-all duration-200 cursor-pointer ${
                 isLogin
-                  ? 'bg-white dark:bg-[#243447] text-[#2563EB] shadow-sm border border-[#E2E8F0] dark:border-gray-700'
+                  ? 'bg-white dark:bg-[#243447] text-primary shadow-sm border border-[#E2E8F0] dark:border-gray-700'
                   : 'text-[#64748B] dark:text-gray-300 hover:text-[#0F172A] dark:text-gray-200'
               }`}
             >
@@ -299,7 +299,7 @@ export const AuthPage: React.FC = () => {
               onClick={() => handleTabSwitch(false)}
               className={`flex-1 py-2.5 text-xs font-semibold rounded-xl transition-all duration-200 cursor-pointer ${
                 !isLogin
-                  ? 'bg-white dark:bg-[#243447] text-[#2563EB] shadow-sm border border-[#E2E8F0] dark:border-gray-700'
+                  ? 'bg-white dark:bg-[#243447] text-primary shadow-sm border border-[#E2E8F0] dark:border-gray-700'
                   : 'text-[#64748B] dark:text-gray-300 hover:text-[#0F172A] dark:text-gray-200'
               }`}
             >
@@ -433,7 +433,7 @@ export const AuthPage: React.FC = () => {
                   <button
                     type="button"
                     onClick={() => setIsRoleDropdownOpen((prev) => !prev)}
-                    className="w-full bg-white dark:bg-[#243447] border border-[#E2E8F0] dark:border-gray-700 rounded-xl px-3.5 text-sm text-[#0F172A] dark:text-gray-200 text-left flex justify-between items-center focus:outline-none focus:border-[#2563EB] focus:ring-2 focus:ring-blue-100 cursor-pointer min-h-[48px] py-3 md:min-h-0 md:py-2.5 md:text-xs transition-all"
+                    className="w-full bg-white dark:bg-[#243447] border border-[#E2E8F0] dark:border-gray-700 rounded-xl px-3.5 text-sm text-[#0F172A] dark:text-gray-200 text-left flex justify-between items-center focus:outline-none focus:border-primary focus:ring-2 focus:ring-blue-100 cursor-pointer min-h-[48px] py-3 md:min-h-0 md:py-2.5 md:text-xs transition-all"
                   >
                     <span>{currentRoleLabel}</span>
                     <ChevronDown
@@ -453,7 +453,7 @@ export const AuthPage: React.FC = () => {
                           }}
                           className={`w-full text-left px-3.5 py-2.5 text-xs hover:bg-[#F1F5F9] dark:bg-gray-800 transition duration-150 block cursor-pointer ${
                             role === r.value
-                              ? 'bg-[#2563EB]/8 text-[#2563EB] font-semibold'
+                              ? 'bg-primary/8 text-primary font-semibold'
                               : 'text-[#0F172A] dark:text-gray-200'
                           }`}
                         >
@@ -478,7 +478,7 @@ export const AuthPage: React.FC = () => {
                   <button
                     type="button"
                     onClick={() => setIsClassDropdownOpen((prev) => !prev)}
-                    className="w-full bg-white dark:bg-[#243447] border border-[#E2E8F0] dark:border-gray-700 rounded-xl px-3.5 text-sm text-[#0F172A] dark:text-gray-200 text-left flex justify-between items-center focus:outline-none focus:border-[#2563EB] focus:ring-2 focus:ring-blue-100 cursor-pointer min-h-[48px] py-3 md:min-h-0 md:py-2.5 md:text-xs transition-all"
+                    className="w-full bg-white dark:bg-[#243447] border border-[#E2E8F0] dark:border-gray-700 rounded-xl px-3.5 text-sm text-[#0F172A] dark:text-gray-200 text-left flex justify-between items-center focus:outline-none focus:border-primary focus:ring-2 focus:ring-blue-100 cursor-pointer min-h-[48px] py-3 md:min-h-0 md:py-2.5 md:text-xs transition-all"
                   >
                     <span>{selectedClass || 'Pilih kelas...'}</span>
                     <ChevronDown
@@ -498,7 +498,7 @@ export const AuthPage: React.FC = () => {
                           }}
                           className={`w-full text-left px-3.5 py-2.5 text-xs hover:bg-[#F1F5F9] dark:bg-gray-800 transition duration-150 block cursor-pointer ${
                             selectedClass === c
-                              ? 'bg-[#2563EB]/8 text-[#2563EB] font-semibold'
+                              ? 'bg-primary/8 text-primary font-semibold'
                               : 'text-[#0F172A] dark:text-gray-200'
                           }`}
                         >
@@ -637,7 +637,7 @@ export const AuthPage: React.FC = () => {
                     <input
                       type="checkbox"
                       id="rememberMe"
-                      className="h-4 w-4 rounded border-[#CBD5E1] text-[#2563EB] focus:ring-[#2563EB] focus:ring-offset-0 cursor-pointer"
+                      className="h-4 w-4 rounded border-[#CBD5E1] text-primary focus:ring-primary focus:ring-offset-0 cursor-pointer"
                     />
                     <span className="text-[11px] text-[#64748B] dark:text-gray-300 font-medium group-hover:text-[#0F172A] dark:text-gray-200 transition-colors select-none">
                       Ingat saya
@@ -651,7 +651,7 @@ export const AuthPage: React.FC = () => {
             <button
               type="submit"
               disabled={loading}
-              className="w-full mt-1 min-h-[48px] bg-[#2563EB] hover:bg-[#1D4ED8] active:bg-[#1E40AF] disabled:opacity-70 disabled:cursor-not-allowed text-white font-semibold text-sm rounded-2xl shadow-md shadow-blue-200 transition-all duration-200 flex items-center justify-center gap-2.5 cursor-pointer"
+              className="w-full mt-1 min-h-[48px] bg-primary hover:bg-primary-hover active:bg-[#1E40AF] disabled:opacity-70 disabled:cursor-not-allowed text-white font-semibold text-sm rounded-2xl shadow-md shadow-blue-200 transition-all duration-200 flex items-center justify-center gap-2.5 cursor-pointer"
             >
               {loading ? (
                 <>
@@ -707,7 +707,7 @@ export const AuthPage: React.FC = () => {
           {/* Demo Credentials Panel */}
           {isLogin && (
             <div className="mt-7 border-t border-[#F1F5F9] pt-6">
-              <h4 className="text-[10px] font-bold text-[#2563EB] mb-2.5 flex items-center gap-1.5 uppercase tracking-wider">
+              <h4 className="text-[10px] font-bold text-primary mb-2.5 flex items-center gap-1.5 uppercase tracking-wider">
                 <ShieldCheck size={12} />
                 Akun Demo (Simulasi)
               </h4>
@@ -721,7 +721,7 @@ export const AuthPage: React.FC = () => {
                   <li key={acc.user} className="flex items-center gap-1">
                     <span className="text-[#94A3B8] font-bold">{acc.role}:</span>
                     <span
-                      className="cursor-pointer hover:text-[#2563EB] transition-colors"
+                      className="cursor-pointer hover:text-primary transition-colors"
                       onClick={() => {
                         setUsername(acc.user);
                         setPassword(acc.pass);

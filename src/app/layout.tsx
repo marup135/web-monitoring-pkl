@@ -31,6 +31,18 @@ export default function RootLayout({
       suppressHydrationWarning
     >
       <body className="min-h-full flex flex-col bg-[#F8FAFC] dark:bg-gray-900 text-[#0F172A] dark:text-gray-200 transition-colors duration-200">
+        <script
+          dangerouslySetInnerHTML={{
+            __html: `
+              (function() {
+                try {
+                  var theme = localStorage.getItem('workspace_theme') || 'ocean';
+                  document.documentElement.setAttribute('data-workspace-theme', theme);
+                } catch (e) {}
+              })();
+            `,
+          }}
+        />
         <ThemeProvider
           attribute="class"
           defaultTheme="system"

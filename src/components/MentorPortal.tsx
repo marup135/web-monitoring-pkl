@@ -59,13 +59,13 @@ export const MentorPortal: React.FC<MentorPortalProps> = ({ onPantau }) => {
     return (
       <div className="flex flex-col gap-6 text-[#0F172A] dark:text-gray-200">
         <div className="flex flex-col items-center justify-center bg-white dark:bg-[#243447] border border-[#E2E8F0] dark:border-gray-700 rounded-2xl p-12 shadow-sm text-center">
-          <div className="w-20 h-20 bg-blue-50 rounded-2xl flex items-center justify-center mb-6">
-            <Building2 size={36} className="text-[#2563EB]" />
+          <div className="w-20 h-20 bg-primary/10 rounded-2xl flex items-center justify-center mb-6">
+            <Building2 size={36} className="text-primary" />
           </div>
           <h2 className="text-lg font-bold text-[#0F172A] dark:text-white mb-2">Belum Ada Assignment</h2>
           <p className="text-sm text-[#64748B] dark:text-gray-300 max-w-md leading-relaxed mb-4">
             Anda belum ditugaskan untuk membimbing perusahaan mana pun.
-            Silakan hubungi <span className="font-semibold text-[#2563EB]">Administrator</span> untuk mendapatkan assignment perusahaan bimbingan.
+            Silakan hubungi <span className="font-semibold text-primary">Administrator</span> untuk mendapatkan assignment perusahaan bimbingan.
           </p>
           <div className="flex items-center gap-2 text-xs text-[#64748B] dark:text-gray-300 bg-[#F8FAFC] dark:bg-gray-900 border border-[#E2E8F0] dark:border-gray-700 rounded-xl px-4 py-2.5">
             <AlertCircle size={14} className="text-amber-500" />
@@ -82,8 +82,8 @@ export const MentorPortal: React.FC<MentorPortalProps> = ({ onPantau }) => {
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 bg-white dark:bg-[#243447] border border-[#E2E8F0] dark:border-gray-700 rounded-2xl p-4 shadow-sm">
         <div>
           <h2 className="text-sm font-bold uppercase tracking-wider text-[#64748B] dark:text-gray-300 flex items-center gap-2">
-            <Building2 size={16} className="text-[#2563EB]" />
-            Dashboard Mentor Perusahaan: <span className="text-[#2563EB]">{activeCompanyName}</span>
+            <Building2 size={16} className="text-primary" />
+            Dashboard Mentor Perusahaan: <span className="text-primary">{activeCompanyName}</span>
           </h2>
           <p className="text-[11px] text-[#64748B] dark:text-gray-300">Pantau perkembangan kompetensi industri siswa PKL di instansi Anda.</p>
         </div>
@@ -94,7 +94,7 @@ export const MentorPortal: React.FC<MentorPortalProps> = ({ onPantau }) => {
             <select
               value={selectedCompanyId || ''}
               onChange={(e) => setSelectedCompanyId(e.target.value)}
-              className="bg-white dark:bg-[#243447] border border-[#E2E8F0] dark:border-gray-700 rounded-xl px-3 py-1.5 text-xs text-[#0F172A] dark:text-gray-200 focus:outline-none focus:border-[#2563EB]"
+              className="bg-white dark:bg-[#243447] border border-[#E2E8F0] dark:border-gray-700 rounded-xl px-3 py-1.5 text-xs text-[#0F172A] dark:text-gray-200 focus:outline-none focus:border-primary"
             >
               {currentUser.companies.map((c: { id: string; name: string }) => (
                 <option key={c.id} value={c.id}>{c.name}</option>
@@ -108,7 +108,7 @@ export const MentorPortal: React.FC<MentorPortalProps> = ({ onPantau }) => {
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4">
         {/* Card 1: Jumlah Siswa PKL */}
         <div className="bg-white dark:bg-[#243447] border border-[#E2E8F0] dark:border-gray-700 rounded-2xl p-5 shadow-sm flex items-center gap-3">
-          <div className="p-3 bg-blue-50 text-[#2563EB] rounded-xl">
+          <div className="p-3 bg-primary/10 text-primary rounded-xl">
             <Users size={20} />
           </div>
           <div>
@@ -169,7 +169,7 @@ export const MentorPortal: React.FC<MentorPortalProps> = ({ onPantau }) => {
         <div className="bg-white dark:bg-[#243447] border border-[#E2E8F0] dark:border-gray-700 rounded-2xl p-5 shadow-sm flex flex-col justify-between">
           <div>
             <h3 className="text-xs font-bold text-[#64748B] dark:text-gray-300 uppercase tracking-wider mb-4 flex items-center gap-1.5">
-              <BarChart3 size={15} className="text-[#2563EB]" />
+              <BarChart3 size={15} className="text-primary" />
               Aktivitas Jurnal Magang
             </h3>
             
@@ -212,7 +212,7 @@ export const MentorPortal: React.FC<MentorPortalProps> = ({ onPantau }) => {
         {/* Right 2 Columns: Student Table */}
         <div className="lg:col-span-2 bg-white dark:bg-[#243447] border border-[#E2E8F0] dark:border-gray-700 rounded-2xl p-5 shadow-sm relative overflow-hidden">
           <h3 className="text-xs font-bold text-[#64748B] dark:text-gray-300 uppercase tracking-wider mb-4 flex items-center gap-1.5">
-            <Users size={15} className="text-[#2563EB]" />
+            <Users size={15} className="text-primary" />
             Daftar Siswa Magang di {activeCompanyName}
           </h3>
 
@@ -251,7 +251,7 @@ export const MentorPortal: React.FC<MentorPortalProps> = ({ onPantau }) => {
                       <td className="py-3 px-2 text-center">
                         <button
                           onClick={() => onPantau(student.id)}
-                          className="min-h-[44px] px-3.5 py-2 text-xs md:min-h-0 md:px-2.5 md:py-1 md:text-[10px] bg-[#2563EB] hover:bg-[#1D4ED8] text-white font-bold rounded-lg transition shadow-sm cursor-pointer w-full md:w-auto flex items-center justify-center"
+                          className="min-h-[44px] px-3.5 py-2 text-xs md:min-h-0 md:px-2.5 md:py-1 md:text-[10px] bg-primary hover:bg-primary-hover text-white font-bold rounded-lg transition shadow-sm cursor-pointer w-full md:w-auto flex items-center justify-center"
                         >
                           Pantau
                         </button>

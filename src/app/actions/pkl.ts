@@ -1762,3 +1762,87 @@ export async function getDashboardMetricsAction(classId?: string, companyId?: st
     return null;
   }
 }
+
+export async function uploadBoardBackgroundAction(formData: FormData) {
+  try {
+    const user = await getAuthenticatedUser();
+    if (!user) {
+      return { success: false, error: 'Unauthorized' };
+    }
+
+    const file = formData.get('file') as File;
+    if (!file) {
+      return { success: false, error: 'File tidak ditemukan' };
+    }
+
+    if (file.size > 10 * 1024 * 1024) {
+      return { success: false, error: 'Ukuran file maksimal 10 MB' };
+    }
+
+    const allowedTypes = ['image/jpeg', 'image/png', 'image/webp'];
+    if (!allowedTypes.includes(file.type)) {
+      return { success: false, error: 'Format file tidak didukung (harus JPG/PNG/WEBP)' };
+    }
+
+    const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL || process.env.SUPABASE_URL;
+    const supabaseKey = process.env.SUPABASE_SERVICE_ROLE_KEY || process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || process.env.SUPABASE_ANON_KEY;
+    if (!supabaseUrl || !supabaseKey) {
+      return { success: false, error: 'Konfigurasi Supabase belum diatur.' };
+    }
+
+    // eslint-disable-next-line @typescript-eslint/no-require-imports
+    const { createClient } = require('@supabase/supabase-js');
+    const supabase = createClient(supabaseUrl, supabaseKey);
+
+    const bucketName = 'board-backgrounds';
+
+    // Ensure bucket exists
+    const { data: buckets } = await supabase.storage.listBuckets();
+    if (!buckets?.find((b: any) => b.name === bucketName)) {
+      await supabase.storage.createBucket(bucketName, { public: true });
+    }
+
+    const ext = file.name.split('.').pop() || 'jpg';
+    const fileName = `${user.id}/${Date.now()}-${Math.floor(Math.random() * 1000)}.${ext}`;
+    
+    const arrayBuffer = await file.arrayBuffer();
+    const buffer = Buffer.from(arrayBuffer);
+
+    const { error: uploadError } = await supabase.storage
+      .from(bucketName)
+      .upload(fileName, buffer, { contentType: file.type, upsert: true });
+
+    if (uploadError) {
+      console.error('Supabase upload error:', uploadError);
+      return { success: false, error: `Gagal mengunggah background: ${uploadError.message}` };
+    }
+
+    const { data: publicUrlData } = supabase.storage
+      .from(bucketName)
+      .getPublicUrl(fileName);
+
+    return { success: true, url: publicUrlData.publicUrl };
+  } catch (error: any) {
+    console.error('Failed to upload background:', error);
+    return { success: false, error: error.message || 'Terjadi kesalahan saat mengunggah background.' };
+  }
+}
+
+export async function updateBoardBackgroundAction(url: string | null) {
+  try {
+    const user = await getAuthenticatedUser();
+    if (!user) {
+      return { success: false, error: 'Unauthorized' };
+    }
+
+    await prisma.user.update({
+      where: { id: user.id },
+      data: { boardBackground: url },
+    });
+
+    return { success: true };
+  } catch (error: any) {
+    console.error('Failed to update background URL:', error);
+    return { success: false, error: error.message || 'Terjadi kesalahan saat menyimpan background.' };
+  }
+}

@@ -16,6 +16,7 @@ model User {
   company   String?  @db.VarChar(255) // Optional: Nama Perusahaan
   nisn      String?  @db.VarChar(50)  // Optional: NIS/NISN
   school    String   @default("SMKN 1 BOJONG") @db.VarChar(255)
+  boardBackground String? @db.Text
   createdAt DateTime @default(now())
 
   // Relations for Siswa

@@ -52,6 +52,26 @@
   --border: #4B5563;
 }
 
+/* Workspace Themes (Light) */
+:root[data-workspace-theme="ocean"] { --primary: #2563EB; --primary-hover: #1D4ED8; }
+:root[data-workspace-theme="emerald"] { --primary: #10B981; --primary-hover: #059669; }
+:root[data-workspace-theme="purple"] { --primary: #8B5CF6; --primary-hover: #7C3AED; }
+:root[data-workspace-theme="orange"] { --primary: #F97316; --primary-hover: #EA580C; }
+:root[data-workspace-theme="red"] { --primary: #EF4444; --primary-hover: #DC2626; }
+:root[data-workspace-theme="graphite"] { --primary: #475569; --primary-hover: #334155; }
+:root[data-workspace-theme="midnight"] { --primary: #1E3A8A; --primary-hover: #1E40AF; }
+:root[data-workspace-theme="forest"] { --primary: #047857; --primary-hover: #065F46; }
+
+/* Workspace Themes (Dark) */
+.dark[data-workspace-theme="ocean"] { --primary: #3B82F6; --primary-hover: #60A5FA; }
+.dark[data-workspace-theme="emerald"] { --primary: #34D399; --primary-hover: #10B981; }
+.dark[data-workspace-theme="purple"] { --primary: #A78BFA; --primary-hover: #8B5CF6; }
+.dark[data-workspace-theme="orange"] { --primary: #FB923C; --primary-hover: #F97316; }
+.dark[data-workspace-theme="red"] { --primary: #F87171; --primary-hover: #EF4444; }
+.dark[data-workspace-theme="graphite"] { --primary: #94A3B8; --primary-hover: #64748B; }
+.dark[data-workspace-theme="midnight"] { --primary: #60A5FA; --primary-hover: #3B82F6; }
+.dark[data-workspace-theme="forest"] { --primary: #34D399; --primary-hover: #10B981; }
+
 body {
   background-color: var(--background);
   color: var(--foreground);

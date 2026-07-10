@@ -2,10 +2,14 @@
 
 import React, { useState } from 'react';
 import { usePKL } from '../context/PKLContext';
-import { Moon, Globe, Info, LogOut, ChevronRight, User } from 'lucide-react';
+import { Moon, Globe, Info, LogOut, ChevronRight, User, Image as ImageIcon, Upload, Trash2, Loader2 } from 'lucide-react';
 import { useTheme } from 'next-themes';
+import { uploadBoardBackgroundAction, updateBoardBackgroundAction } from '../app/actions/pkl';
 import { useLanguage } from '../context/LanguageContext';
 import { Language } from '../i18n/translations';
+import { Check, Palette } from 'lucide-react';
+
+type WorkspaceTheme = 'ocean' | 'emerald' | 'purple' | 'orange' | 'red' | 'graphite' | 'midnight' | 'forest';
 
 interface SettingsPageProps {
   onBackToBoard?: () => void;
@@ -18,18 +22,75 @@ export const SettingsPage: React.FC<SettingsPageProps> = ({
   activeSection,
   onClearActiveSection
 }) => {
-  const { currentUser, logout, updateCurrentUserName } = usePKL();
+  const { currentUser, logout, updateCurrentUserName, updateCurrentUserBackground } = usePKL();
   
-  // Local Settings States
   const { theme, setTheme } = useTheme();
+  const [workspaceTheme, setWorkspaceThemeState] = useState<WorkspaceTheme>('ocean');
   const { language, setLanguage, t } = useLanguage();
   const [mounted, setMounted] = useState(false);
 
   React.useEffect(() => {
     // eslint-disable-next-line react-hooks/set-state-in-effect
     setMounted(true);
+    const saved = localStorage.getItem('workspace_theme') as WorkspaceTheme;
+    if (saved) {
+      setWorkspaceThemeState(saved);
+    }
   }, []);
+
+  const setWorkspaceTheme = (newTheme: WorkspaceTheme) => {
+    setWorkspaceThemeState(newTheme);
+    localStorage.setItem('workspace_theme', newTheme);
+    document.documentElement.setAttribute('data-workspace-theme', newTheme);
+  };
   
+  // Board Background States
+  const [isUploadingBackground, setIsUploadingBackground] = useState(false);
+  const [uploadError, setUploadError] = useState('');
+
+  const handleBackgroundUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    setIsUploadingBackground(true);
+    setUploadError('');
+
+    const formData = new FormData();
+    formData.append('file', file);
+
+    try {
+      const result = await uploadBoardBackgroundAction(formData);
+      if (result.success && result.url) {
+        await updateBoardBackgroundAction(result.url);
+        updateCurrentUserBackground(result.url);
+      } else {
+        setUploadError(result.error || 'Gagal mengunggah background.');
+      }
+    } catch (err: unknown) {
+      setUploadError(err instanceof Error ? err.message : 'Terjadi kesalahan jaringan.');
+    } finally {
+      setIsUploadingBackground(false);
+      e.target.value = '';
+    }
+  };
+
+  const handleSetBuiltinBackground = async (url: string | null) => {
+    setIsUploadingBackground(true);
+    setUploadError('');
+    try {
+      const result = await updateBoardBackgroundAction(url);
+      if (result.success) {
+        updateCurrentUserBackground(url);
+      } else {
+        setUploadError(result.error || 'Gagal mengatur background.');
+      }
+    } catch (err: unknown) {
+      setUploadError(err instanceof Error ? err.message : 'Terjadi kesalahan jaringan.');
+    } finally {
+      setIsUploadingBackground(false);
+    }
+  };
+
   // Edit Profile States
   const [name, setName] = useState(currentUser?.name || '');
   const [isEditingProfile, setIsEditingProfile] = useState(activeSection === 'profile');
@@ -73,7 +134,7 @@ export const SettingsPage: React.FC<SettingsPageProps> = ({
         {onBackToBoard && (
           <button
             onClick={onBackToBoard}
-            className="text-xs font-bold text-[#2563EB] hover:underline cursor-pointer min-h-[44px] px-2 flex items-center justify-center"
+            className="text-xs font-bold text-primary hover:underline cursor-pointer min-h-[44px] px-2 flex items-center justify-center"
           >
             {t('backToBoard')}
           </button>
@@ -94,7 +155,7 @@ export const SettingsPage: React.FC<SettingsPageProps> = ({
                     value={name}
                     onChange={(e) => setName(e.target.value)}
                     placeholder={t('enterFullName')}
-                    className="w-full bg-white dark:bg-[#243447] border border-[#E2E8F0] dark:border-gray-700 rounded-xl px-4 text-sm focus:outline-none focus:border-[#2563EB] dark:focus:border-blue-500 min-h-[48px]"
+                    className="w-full bg-white dark:bg-[#243447] border border-[#E2E8F0] dark:border-gray-700 rounded-xl px-4 text-sm focus:outline-none focus:border-primary dark:focus:border-blue-500 min-h-[48px]"
                   />
                 </div>
                 
@@ -121,7 +182,7 @@ export const SettingsPage: React.FC<SettingsPageProps> = ({
                   </button>
                   <button
                     type="submit"
-                    className="flex-1 px-4 py-3 bg-[#2563EB] hover:bg-[#1D4ED8] text-white rounded-xl text-xs font-bold min-h-[48px] shadow-sm"
+                    className="flex-1 px-4 py-3 bg-primary hover:bg-primary-hover text-white rounded-xl text-xs font-bold min-h-[48px] shadow-sm"
                   >
                     {t('save')}
                   </button>
@@ -135,7 +196,7 @@ export const SettingsPage: React.FC<SettingsPageProps> = ({
             >
               <div className="flex items-center gap-4">
                 <div className="w-10 h-10 rounded-full bg-blue-100 flex items-center justify-center text-blue-600 font-bold shrink-0">
-                  <User size={18} className="text-[#2563EB]" />
+                  <User size={18} className="text-primary" />
                 </div>
                 <div>
                   <span className="text-sm font-semibold text-slate-800 dark:text-white block">{t('myProfile')}</span>
@@ -145,6 +206,171 @@ export const SettingsPage: React.FC<SettingsPageProps> = ({
               <ChevronRight size={18} className="text-slate-400 shrink-0" />
             </button>
           )}
+        </div>
+
+        {/* WORKSPACE THEME TILE */}
+        <div className="flex flex-col p-4 bg-white dark:bg-[#243447] min-h-[56px]">
+          <div className="flex items-center gap-4 mb-3">
+            <div className="w-10 h-10 rounded-full bg-slate-100 dark:bg-gray-800 flex items-center justify-center text-slate-600 dark:text-gray-300 shrink-0">
+              <Palette size={18} />
+            </div>
+            <div>
+              <span className="text-sm font-semibold text-slate-800 dark:text-white block">Workspace Theme</span>
+              <span className="text-xs text-slate-500 dark:text-gray-300">Customize your primary accent color</span>
+            </div>
+          </div>
+          <div className="flex items-center gap-2 flex-wrap pl-14">
+            {(
+              [
+                { id: 'ocean', color: '#2563EB', name: 'Ocean Blue' },
+                { id: 'emerald', color: '#10B981', name: 'Emerald Green' },
+                { id: 'purple', color: '#8B5CF6', name: 'Royal Purple' },
+                { id: 'orange', color: '#F97316', name: 'Sunset Orange' },
+                { id: 'red', color: '#EF4444', name: 'Ruby Red' },
+                { id: 'graphite', color: '#475569', name: 'Graphite' },
+                { id: 'midnight', color: '#1E3A8A', name: 'Midnight Blue' },
+                { id: 'forest', color: '#047857', name: 'Forest Green' },
+              ] as const
+            ).map((t) => (
+              <button
+                key={t.id}
+                onClick={() => setWorkspaceTheme(t.id as WorkspaceTheme)}
+                className="w-8 h-8 rounded-full flex items-center justify-center transition-transform hover:scale-110 focus:outline-none ring-2 ring-transparent ring-offset-2 dark:ring-offset-[#243447] focus-visible:ring-primary"
+                style={{ backgroundColor: t.color }}
+                title={t.name}
+              >
+                {workspaceTheme === t.id && <Check size={16} className="text-white drop-shadow-md" />}
+              </button>
+            ))}
+          </div>
+        </div>
+
+        {/* BOARD BACKGROUND TILE */}
+        <div className="flex flex-col p-4 bg-white dark:bg-[#243447] min-h-[56px] relative">
+          {isUploadingBackground && (
+            <div className="absolute inset-0 bg-white/50 dark:bg-[#243447]/50 flex items-center justify-center z-10">
+              <Loader2 className="animate-spin text-primary w-8 h-8" />
+            </div>
+          )}
+          <div className="flex items-center gap-4 mb-3">
+            <div className="w-10 h-10 rounded-full bg-slate-100 dark:bg-gray-800 flex items-center justify-center text-slate-600 dark:text-gray-300 shrink-0">
+              <ImageIcon size={18} />
+            </div>
+            <div className="flex-1">
+              <span className="text-sm font-semibold text-slate-800 dark:text-white block">Board Background</span>
+              <span className="text-xs text-slate-500 dark:text-gray-300">Customize your Kanban board background</span>
+            </div>
+            {currentUser?.boardBackground && (
+              <div 
+                className="w-12 h-8 rounded shadow-sm border border-slate-200 dark:border-gray-700 bg-cover bg-center"
+                style={{ 
+                  background: currentUser.boardBackground.startsWith('http') || currentUser.boardBackground.startsWith('/') 
+                    ? `url(${currentUser.boardBackground})` 
+                    : currentUser.boardBackground
+                }}
+              />
+            )}
+          </div>
+          
+          {uploadError && (
+            <div className="mb-3 pl-14 text-xs text-red-500 font-medium">
+              {uploadError}
+            </div>
+          )}
+
+          <div className="pl-14 flex flex-col gap-4">
+            {/* Colors */}
+            <div>
+              <span className="text-xs font-semibold text-slate-500 dark:text-gray-400 mb-2 block">Solid Colors</span>
+              <div className="flex flex-wrap gap-2">
+                <button
+                  onClick={() => handleSetBuiltinBackground(null)}
+                  className={`w-8 h-8 rounded border-2 ${!currentUser?.boardBackground ? 'border-primary' : 'border-transparent'} bg-slate-100 dark:bg-gray-800 flex items-center justify-center hover:opacity-80 transition`}
+                  title="Default"
+                >
+                  {!currentUser?.boardBackground && <Check size={16} className="text-slate-600 dark:text-gray-300" />}
+                </button>
+                {(
+                  [
+                    { color: '#2563EB', name: 'Ocean Blue' },
+                    { color: '#10B981', name: 'Emerald' },
+                    { color: '#8B5CF6', name: 'Purple' },
+                    { color: '#F97316', name: 'Sunset' },
+                    { color: '#047857', name: 'Forest' },
+                    { color: '#1E3A8A', name: 'Midnight' },
+                    { color: '#475569', name: 'Slate' },
+                  ] as const
+                ).map(t => (
+                  <button
+                    key={t.color}
+                    onClick={() => handleSetBuiltinBackground(t.color)}
+                    className={`w-8 h-8 rounded border-2 ${currentUser?.boardBackground === t.color ? 'border-white ring-2 ring-primary' : 'border-transparent'} hover:opacity-80 transition flex items-center justify-center`}
+                    style={{ backgroundColor: t.color }}
+                    title={t.name}
+                  >
+                    {currentUser?.boardBackground === t.color && <Check size={16} className="text-white drop-shadow-md" />}
+                  </button>
+                ))}
+              </div>
+            </div>
+
+            {/* Gradients */}
+            <div>
+              <span className="text-xs font-semibold text-slate-500 dark:text-gray-400 mb-2 block">Gradients</span>
+              <div className="flex flex-wrap gap-2">
+                {(
+                  [
+                    { bg: 'linear-gradient(to right, #3b82f6, #2dd4bf)', name: 'Blue Gradient' },
+                    { bg: 'linear-gradient(to right, #8b5cf6, #d946ef)', name: 'Purple Gradient' },
+                    { bg: 'linear-gradient(to right, #f97316, #eab308)', name: 'Sunset Gradient' },
+                    { bg: 'linear-gradient(to right, #047857, #10b981)', name: 'Forest Gradient' },
+                    { bg: 'linear-gradient(to right, #1e3a8a, #8b5cf6)', name: 'Aurora Gradient' },
+                  ] as const
+                ).map(t => (
+                  <button
+                    key={t.bg}
+                    onClick={() => handleSetBuiltinBackground(t.bg)}
+                    className={`w-12 h-8 rounded border-2 ${currentUser?.boardBackground === t.bg ? 'border-white ring-2 ring-primary' : 'border-transparent'} hover:opacity-80 transition flex items-center justify-center`}
+                    style={{ background: t.bg }}
+                    title={t.name}
+                  >
+                    {currentUser?.boardBackground === t.bg && <Check size={16} className="text-white drop-shadow-md" />}
+                  </button>
+                ))}
+              </div>
+            </div>
+
+            {/* Custom Upload */}
+            <div>
+              <span className="text-xs font-semibold text-slate-500 dark:text-gray-400 mb-2 block">Custom Upload</span>
+              <div className="flex gap-2">
+                <label className="flex items-center justify-center gap-2 px-3 py-2 bg-slate-100 hover:bg-slate-200 dark:bg-gray-800 dark:hover:bg-gray-700 text-slate-700 dark:text-gray-300 rounded cursor-pointer transition text-xs font-medium border border-slate-200 dark:border-gray-700">
+                  <Upload size={14} />
+                  Upload Background
+                  <input
+                    type="file"
+                    accept="image/jpeg,image/png,image/webp"
+                    className="hidden"
+                    onChange={handleBackgroundUpload}
+                    disabled={isUploadingBackground}
+                  />
+                </label>
+                {currentUser?.boardBackground && (
+                  <button
+                    onClick={() => handleSetBuiltinBackground(null)}
+                    disabled={isUploadingBackground}
+                    className="flex items-center justify-center gap-2 px-3 py-2 text-red-600 hover:bg-red-50 dark:hover:bg-red-900/20 rounded transition text-xs font-medium border border-transparent hover:border-red-200 dark:hover:border-red-900/30"
+                  >
+                    <Trash2 size={14} />
+                    Hapus
+                  </button>
+                )}
+              </div>
+              <span className="text-[10px] text-slate-400 dark:text-gray-500 mt-1 block">
+                JPG, PNG, WEBP (Max 10 MB)
+              </span>
+            </div>
+          </div>
         </div>
 
         {/* DARK MODE TILE */}

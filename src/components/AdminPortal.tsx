@@ -191,7 +191,7 @@ export const AdminPortal: React.FC = () => {
             onClick={() => setActiveTab(tab.key as any)}
             className={`pb-2.5 px-1 text-sm md:text-xs font-bold transition-all border-b-2 cursor-pointer ${
               activeTab === tab.key
-                ? 'border-[#2563EB] text-[#2563EB]'
+                ? 'border-primary text-primary'
                 : 'border-transparent text-[#64748B] dark:text-gray-300 hover:text-[#0F172A] dark:text-gray-200'
             }`}
           >
@@ -272,11 +272,11 @@ export const AdminPortal: React.FC = () => {
                 placeholder="Tambah nama kelas baru (Contoh: XII PPLG 3)"
                 value={newClassName}
                 onChange={(e) => setNewClassName(e.target.value)}
-                className="bg-white dark:bg-[#243447] border border-[#E2E8F0] dark:border-gray-700 rounded-xl px-3 py-2.5 text-sm flex-1 text-[#0F172A] dark:text-gray-200 focus:outline-none focus:border-[#2563EB] dark:focus:border-blue-500 min-h-[48px] md:min-h-0 md:py-2 md:text-xs"
+                className="bg-white dark:bg-[#243447] border border-[#E2E8F0] dark:border-gray-700 rounded-xl px-3 py-2.5 text-sm flex-1 text-[#0F172A] dark:text-gray-200 focus:outline-none focus:border-primary dark:focus:border-blue-500 min-h-[48px] md:min-h-0 md:py-2 md:text-xs"
               />
               <button 
                 type="submit"
-                className="px-4 py-2.5 bg-[#2563EB] hover:bg-[#1D4ED8] text-white font-bold text-sm md:text-xs rounded-xl flex items-center justify-center gap-1 transition cursor-pointer shadow-sm min-h-[48px] md:min-h-0 w-full sm:w-auto"
+                className="px-4 py-2.5 bg-primary hover:bg-primary-hover text-white font-bold text-sm md:text-xs rounded-xl flex items-center justify-center gap-1 transition cursor-pointer shadow-sm min-h-[48px] md:min-h-0 w-full sm:w-auto"
               >
                 <Plus size={14} />
                 Tambah Kelas
@@ -301,7 +301,7 @@ export const AdminPortal: React.FC = () => {
                             type="text"
                             value={editText}
                             onChange={(e) => setEditText(e.target.value)}
-                            className="bg-white dark:bg-[#243447] border border-[#E2E8F0] dark:border-gray-700 rounded-xl px-3 text-sm text-[#0F172A] dark:text-gray-200 focus:outline-none focus:border-[#2563EB] min-h-[44px] py-2"
+                            className="bg-white dark:bg-[#243447] border border-[#E2E8F0] dark:border-gray-700 rounded-xl px-3 text-sm text-[#0F172A] dark:text-gray-200 focus:outline-none focus:border-primary min-h-[44px] py-2"
                           />
                         ) : (
                           c.name
@@ -327,7 +327,7 @@ export const AdminPortal: React.FC = () => {
                           <div className="flex gap-2 justify-end text-slate-500 dark:text-gray-300">
                             <button
                               onClick={() => { setEditingId(c.id); setEditText(c.name); }}
-                              className="p-2.5 hover:text-[#2563EB] hover:bg-blue-50 rounded transition cursor-pointer min-h-[40px] min-w-[40px] flex items-center justify-center"
+                              className="p-2.5 hover:text-primary hover:bg-primary/10 rounded transition cursor-pointer min-h-[40px] min-w-[40px] flex items-center justify-center"
                             >
                               <Plus size={14} className="rotate-45" /> {/* Use custom rotation for edit icon mock */}
                             </button>
@@ -358,11 +358,11 @@ export const AdminPortal: React.FC = () => {
                 placeholder="Tambah nama perusahaan baru (Contoh: GoTo)"
                 value={newCompanyName}
                 onChange={(e) => setNewCompanyName(e.target.value)}
-                className="bg-white dark:bg-[#243447] border border-[#E2E8F0] dark:border-gray-700 rounded-xl px-3 py-2.5 text-sm flex-1 text-[#0F172A] dark:text-gray-200 focus:outline-none focus:border-[#2563EB] dark:focus:border-blue-500 min-h-[48px] md:min-h-0 md:py-2 md:text-xs"
+                className="bg-white dark:bg-[#243447] border border-[#E2E8F0] dark:border-gray-700 rounded-xl px-3 py-2.5 text-sm flex-1 text-[#0F172A] dark:text-gray-200 focus:outline-none focus:border-primary dark:focus:border-blue-500 min-h-[48px] md:min-h-0 md:py-2 md:text-xs"
               />
               <button 
                 type="submit"
-                className="px-4 py-2.5 bg-[#2563EB] hover:bg-[#1D4ED8] text-white font-bold text-sm md:text-xs rounded-xl flex items-center justify-center gap-1 transition cursor-pointer shadow-sm min-h-[48px] md:min-h-0 w-full sm:w-auto"
+                className="px-4 py-2.5 bg-primary hover:bg-primary-hover text-white font-bold text-sm md:text-xs rounded-xl flex items-center justify-center gap-1 transition cursor-pointer shadow-sm min-h-[48px] md:min-h-0 w-full sm:w-auto"
               >
                 <Plus size={14} />
                 Tambah Perusahaan
@@ -387,7 +387,7 @@ export const AdminPortal: React.FC = () => {
                             type="text"
                             value={editText}
                             onChange={(e) => setEditText(e.target.value)}
-                            className="bg-white dark:bg-[#243447] border border-[#E2E8F0] dark:border-gray-700 rounded-xl px-3 text-sm text-[#0F172A] dark:text-gray-200 focus:outline-none focus:border-[#2563EB] min-h-[44px] py-2"
+                            className="bg-white dark:bg-[#243447] border border-[#E2E8F0] dark:border-gray-700 rounded-xl px-3 text-sm text-[#0F172A] dark:text-gray-200 focus:outline-none focus:border-primary min-h-[44px] py-2"
                           />
                         ) : (
                           co.name
@@ -413,7 +413,7 @@ export const AdminPortal: React.FC = () => {
                           <div className="flex gap-2 justify-end text-slate-500 dark:text-gray-300">
                             <button
                               onClick={() => { setEditingId(co.id); setEditText(co.name); }}
-                              className="p-2.5 hover:text-[#2563EB] hover:bg-blue-50 rounded transition cursor-pointer min-h-[40px] min-w-[40px] flex items-center justify-center"
+                              className="p-2.5 hover:text-primary hover:bg-primary/10 rounded transition cursor-pointer min-h-[40px] min-w-[40px] flex items-center justify-center"
                             >
                               <Edit2 size={14} />
                             </button>
@@ -441,7 +441,7 @@ export const AdminPortal: React.FC = () => {
             <div className="flex flex-col gap-6">
               {/* Guru Section */}
               <div className="border border-[#E2E8F0] dark:border-gray-700 rounded-xl p-4 bg-slate-50 dark:bg-gray-800/40">
-                <h4 className="font-bold text-[#2563EB] text-xs uppercase mb-3 flex items-center gap-1.5">
+                <h4 className="font-bold text-primary text-xs uppercase mb-3 flex items-center gap-1.5">
                   Pembimbing Internal (Guru ↔ Kelas)
                 </h4>
                 <div className="flex flex-col gap-3">
@@ -464,7 +464,7 @@ export const AdminPortal: React.FC = () => {
                                 onClick={() => handleGuruClassToggle(guru.id, currentClassIds, c.id)}
                                 className={`flex items-center gap-1.5 px-3 py-2 md:px-2.5 md:py-1 rounded-xl md:rounded-lg transition cursor-pointer font-semibold min-h-[44px] md:min-h-0 text-xs md:text-[11px] ${
                                   isAssigned 
-                                    ? 'bg-blue-50 border border-blue-200 text-[#2563EB]' 
+                                    ? 'bg-primary/10 border border-blue-200 text-primary' 
                                     : 'bg-white dark:bg-[#243447] border border-slate-200 dark:border-gray-700 text-slate-500 dark:text-gray-300'
                                 }`}
                               >

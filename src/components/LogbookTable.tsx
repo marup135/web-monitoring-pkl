@@ -26,7 +26,7 @@ export const LogbookTable: React.FC<LogbookTableProps> = ({ onOpenCard, onEditCa
       case 'review':
         return 'text-yellow-700 bg-yellow-50 border-yellow-200';
       case 'progres':
-        return 'text-blue-700 bg-blue-50 border-blue-200';
+        return 'text-blue-700 bg-primary/10 border-blue-200';
       default:
         return 'text-slate-600 bg-slate-50 dark:bg-gray-800/50 border-slate-200 dark:border-gray-700';
     }
@@ -47,12 +47,12 @@ export const LogbookTable: React.FC<LogbookTableProps> = ({ onOpenCard, onEditCa
       {/* Table Action Header (non-printable) */}
       <div className="flex flex-col sm:flex-row gap-3 justify-between items-start sm:items-center bg-white dark:bg-[#243447] border border-[#E2E8F0] dark:border-gray-700 rounded-2xl p-4 shadow-sm print:hidden">
         <div className="flex items-center gap-2">
-          <Printer size={18} className="text-[#2563EB]" />
+          <Printer size={18} className="text-primary" />
           <h3 className="font-semibold text-slate-800 dark:text-white text-sm">{t('printTitle')}</h3>
         </div>
         <button
           onClick={handlePrint}
-          className="w-full sm:w-auto px-4 py-3 md:py-2 bg-[#2563EB] hover:bg-[#1D4ED8] text-white font-semibold text-sm md:text-xs rounded-xl shadow-sm flex items-center justify-center gap-1.5 transition cursor-pointer min-h-[48px] md:min-h-0"
+          className="w-full sm:w-auto px-4 py-3 md:py-2 bg-primary hover:bg-primary-hover text-white font-semibold text-sm md:text-xs rounded-xl shadow-sm flex items-center justify-center gap-1.5 transition cursor-pointer min-h-[48px] md:min-h-0"
         >
           <Printer size={14} />
           <span>{t('printBtn')}</span>
@@ -152,7 +152,7 @@ export const LogbookTable: React.FC<LogbookTableProps> = ({ onOpenCard, onEditCa
                         </div>
                         {(card.startTime || card.endTime) && (
                           <div className="flex items-center gap-1.5 text-[10px] text-slate-500 font-semibold print:hidden">
-                            <Clock size={11} className="text-[#2563EB]" />
+                            <Clock size={11} className="text-primary" />
                             <span>{card.startTime || '-'} - {card.endTime || '-'}</span>
                           </div>
                         )}
@@ -242,7 +242,7 @@ export const LogbookTable: React.FC<LogbookTableProps> = ({ onOpenCard, onEditCa
               return (
                 <div key={card.id} className="relative">
                   {/* Timeline Dot */}
-                  <div className="absolute w-2.5 h-2.5 bg-[#2563EB] rounded-full -left-[25.5px] border-[1.5px] border-white dark:border-gray-900 top-7 shadow-sm z-10" />
+                  <div className="absolute w-2.5 h-2.5 bg-primary rounded-full -left-[25.5px] border-[1.5px] border-white dark:border-gray-900 top-7 shadow-sm z-10" />
                   
                   <div className="bg-white dark:bg-[#243447] border border-[#E2E8F0] dark:border-gray-700 rounded-2xl p-6 shadow-sm hover:shadow transition duration-200 flex flex-col gap-4">
                   {/* Header: Category & Status */}
@@ -269,7 +269,7 @@ export const LogbookTable: React.FC<LogbookTableProps> = ({ onOpenCard, onEditCa
                     </div>
                     {(card.startTime || card.endTime) && (
                       <div className="flex items-center gap-1.5">
-                        <Clock size={13} className="text-[#2563EB]" />
+                        <Clock size={13} className="text-primary" />
                         <span>{card.startTime || '-'} - {card.endTime || '-'}</span>
                       </div>
                     )}
@@ -317,7 +317,7 @@ export const LogbookTable: React.FC<LogbookTableProps> = ({ onOpenCard, onEditCa
                       <>
                         <button
                           onClick={() => onEditCard?.(card)}
-                          className="flex-1 flex items-center justify-center gap-1.5 border border-blue-100 dark:border-blue-500/20 bg-blue-50/50 dark:bg-blue-500/10 hover:bg-blue-50 dark:hover:bg-blue-500/20 text-blue-700 dark:text-blue-400 rounded-xl font-bold text-xs min-h-[48px] transition cursor-pointer"
+                          className="flex-1 flex items-center justify-center gap-1.5 border border-blue-100 dark:border-blue-500/20 bg-primary/10/50 dark:bg-primary/100/10 hover:bg-primary/10 dark:hover:bg-primary/100/20 text-blue-700 dark:text-blue-400 rounded-xl font-bold text-xs min-h-[48px] transition cursor-pointer"
                         >
                           <Edit2 size={14} />
                           <span>Edit</span>

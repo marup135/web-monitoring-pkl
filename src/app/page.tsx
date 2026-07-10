@@ -68,7 +68,7 @@ function DashboardContent() {
                   PORTAL PEMBIMBING - INTERNTRACK
                 </h1>
                 <p className="text-[10px] md:text-xs text-[#64748B] dark:text-gray-300 font-medium mt-0.5">
-                  Selamat datang, <span className="text-[#2563EB] font-bold">{currentUser.name}</span> (Peran:{' '}
+                  Selamat datang, <span className="text-primary font-bold">{currentUser.name}</span> (Peran:{' '}
                   {currentUser.role === 'admin'
                     ? 'Administrator'
                     : currentUser.role === 'pembimbing_internal'
@@ -152,7 +152,7 @@ function DashboardContent() {
               <button
                 onClick={() => { setActiveTab('stats'); setIsSettingsActive(false); setIsDrawerOpen(false); }}
                 className={`flex items-center gap-3 px-4 py-3.5 rounded-2xl text-sm font-bold transition duration-200 w-full text-left cursor-pointer min-h-[52px] ${
-                  !isSettingsActive && activeTab === 'stats' ? 'bg-blue-50 dark:bg-blue-500/10 text-blue-600 dark:text-blue-400' : 'text-slate-500 dark:text-gray-400 hover:bg-slate-50 dark:hover:bg-gray-800'
+                  !isSettingsActive && activeTab === 'stats' ? 'bg-primary/10 dark:bg-primary/100/10 text-blue-600 dark:text-blue-400' : 'text-slate-500 dark:text-gray-400 hover:bg-slate-50 dark:hover:bg-gray-800'
                 }`}
               >
                 <BarChart3 size={20} />
@@ -161,7 +161,7 @@ function DashboardContent() {
               <button
                 onClick={() => { setActiveTab('board'); setIsSettingsActive(false); setIsDrawerOpen(false); }}
                 className={`flex items-center gap-3 px-4 py-3.5 rounded-2xl text-sm font-bold transition duration-200 w-full text-left cursor-pointer min-h-[52px] ${
-                  !isSettingsActive && activeTab === 'board' ? 'bg-blue-50 dark:bg-blue-500/10 text-blue-600 dark:text-blue-400' : 'text-slate-500 dark:text-gray-400 hover:bg-slate-50 dark:hover:bg-gray-800'
+                  !isSettingsActive && activeTab === 'board' ? 'bg-primary/10 dark:bg-primary/100/10 text-blue-600 dark:text-blue-400' : 'text-slate-500 dark:text-gray-400 hover:bg-slate-50 dark:hover:bg-gray-800'
                 }`}
               >
                 <LayoutDashboard size={20} />
@@ -170,7 +170,7 @@ function DashboardContent() {
               <button
                 onClick={() => { setActiveTab('logbook'); setIsSettingsActive(false); setIsDrawerOpen(false); }}
                 className={`flex items-center gap-3 px-4 py-3.5 rounded-2xl text-sm font-bold transition duration-200 w-full text-left cursor-pointer min-h-[52px] ${
-                  !isSettingsActive && activeTab === 'logbook' ? 'bg-blue-50 dark:bg-blue-500/10 text-blue-600 dark:text-blue-400' : 'text-slate-500 dark:text-gray-400 hover:bg-slate-50 dark:hover:bg-gray-800'
+                  !isSettingsActive && activeTab === 'logbook' ? 'bg-primary/10 dark:bg-primary/100/10 text-blue-600 dark:text-blue-400' : 'text-slate-500 dark:text-gray-400 hover:bg-slate-50 dark:hover:bg-gray-800'
                 }`}
               >
                 <FileSpreadsheet size={20} />
@@ -179,7 +179,7 @@ function DashboardContent() {
               <button
                 onClick={() => { setIsSettingsActive(true); setIsDrawerOpen(false); }}
                 className={`flex items-center gap-3 px-4 py-3.5 rounded-2xl text-sm font-bold transition duration-200 w-full text-left cursor-pointer min-h-[52px] ${
-                  isSettingsActive ? 'bg-blue-50 dark:bg-blue-500/10 text-blue-600 dark:text-blue-400' : 'text-slate-500 dark:text-gray-400 hover:bg-slate-50 dark:hover:bg-gray-800'
+                  isSettingsActive ? 'bg-primary/10 dark:bg-primary/100/10 text-blue-600 dark:text-blue-400' : 'text-slate-500 dark:text-gray-400 hover:bg-slate-50 dark:hover:bg-gray-800'
                 }`}
               >
                 <Settings size={20} />
@@ -216,7 +216,7 @@ function DashboardContent() {
         <button
           onClick={() => { setActiveTab('stats'); setIsSettingsActive(false); }}
           className={`flex flex-col items-center justify-center flex-1 h-full cursor-pointer transition-colors ${
-            !isSettingsActive && activeTab === 'stats' ? 'text-[#2563EB]' : 'text-slate-400'
+            !isSettingsActive && activeTab === 'stats' ? 'text-primary' : 'text-slate-400'
           }`}
         >
           <BarChart3 size={20} />
@@ -225,7 +225,7 @@ function DashboardContent() {
         <button
           onClick={() => { setActiveTab('board'); setIsSettingsActive(false); }}
           className={`flex flex-col items-center justify-center flex-1 h-full cursor-pointer transition-colors ${
-            !isSettingsActive && activeTab === 'board' ? 'text-[#2563EB]' : 'text-slate-400'
+            !isSettingsActive && activeTab === 'board' ? 'text-primary' : 'text-slate-400'
           }`}
         >
           <LayoutDashboard size={20} />
@@ -234,7 +234,7 @@ function DashboardContent() {
         <button
           onClick={() => { setActiveTab('logbook'); setIsSettingsActive(false); }}
           className={`flex flex-col items-center justify-center flex-1 h-full cursor-pointer transition-colors ${
-            !isSettingsActive && activeTab === 'logbook' ? 'text-[#2563EB]' : 'text-slate-400'
+            !isSettingsActive && activeTab === 'logbook' ? 'text-primary' : 'text-slate-400'
           }`}
         >
           <FileSpreadsheet size={20} />
@@ -243,7 +243,7 @@ function DashboardContent() {
         <button
           onClick={() => setIsUserMenuOpen(true)}
           className={`flex flex-col items-center justify-center flex-1 h-full cursor-pointer transition-colors ${
-            isUserMenuOpen && !isSettingsActive ? 'text-[#2563EB]' : 'text-slate-400'
+            isUserMenuOpen && !isSettingsActive ? 'text-primary' : 'text-slate-400'
           }`}
         >
           <User size={20} />
@@ -252,7 +252,7 @@ function DashboardContent() {
         <button
           onClick={() => setIsSettingsActive(true)}
           className={`flex flex-col items-center justify-center flex-1 h-full cursor-pointer transition-colors ${
-            isSettingsActive ? 'text-[#2563EB]' : 'text-slate-400'
+            isSettingsActive ? 'text-primary' : 'text-slate-400'
           }`}
         >
           <Settings size={20} />
@@ -275,8 +275,8 @@ function DashboardContent() {
                   InternTrack
                 </h1>
                 {loading && (
-                  <div className="flex items-center gap-1.5 px-2 py-0.5 rounded-md bg-[#2563EB]/10 border border-[#2563EB]/20 text-[10px] text-[#2563EB] font-semibold uppercase animate-pulse">
-                    <span className="w-1.5 h-1.5 rounded-full bg-[#2563EB] animate-ping" />
+                  <div className="flex items-center gap-1.5 px-2 py-0.5 rounded-md bg-primary/10 border border-primary/20 text-[10px] text-primary font-semibold uppercase animate-pulse">
+                    <span className="w-1.5 h-1.5 rounded-full bg-primary animate-ping" />
                     Syncing
                   </div>
                 )}
@@ -293,16 +293,16 @@ function DashboardContent() {
           {isPembimbing && (
             <button
               onClick={() => setViewMode('list')}
-              className="px-3 py-1.5 bg-[#2563EB] hover:bg-[#1D4ED8] text-white font-bold text-xs rounded-xl shadow-sm transition cursor-pointer"
+              className="px-3 py-1.5 bg-primary hover:bg-primary-hover text-white font-bold text-xs rounded-xl shadow-sm transition cursor-pointer"
             >
               ← Kembali ke Daftar Siswa
             </button>
           )}
 
           <div className="flex items-center gap-2">
-            <Building2 size={16} className="text-[#2563EB]" />
+            <Building2 size={16} className="text-primary" />
             <span className="text-xs font-semibold text-[#0F172A] dark:text-gray-200">
-              Siswa: <span className="text-[#2563EB] font-bold">{state.studentName}</span> {state.nisn ? `(NIS/NISN: ${state.nisn})` : ''} - {state.companyName}
+              Siswa: <span className="text-primary font-bold">{state.studentName}</span> {state.nisn ? `(NIS/NISN: ${state.nisn})` : ''} - {state.companyName}
             </span>
           </div>
           
@@ -310,7 +310,7 @@ function DashboardContent() {
           
           <div className="flex items-center gap-2">
             <span className="text-xs text-[#64748B] dark:text-gray-300">
-              Pengguna: <span className="font-semibold text-[#2563EB]">{currentUser?.name}</span>
+              Pengguna: <span className="font-semibold text-primary">{currentUser?.name}</span>
             </span>
           </div>
 
@@ -344,7 +344,7 @@ function DashboardContent() {
         <div className="flex md:hidden mb-4 print:hidden">
           <button
             onClick={() => setViewMode('list')}
-            className="w-full px-4 py-3 bg-[#2563EB] hover:bg-[#1D4ED8] text-white font-bold text-sm rounded-xl shadow-sm transition cursor-pointer min-h-[48px] flex items-center justify-center gap-2"
+            className="w-full px-4 py-3 bg-primary hover:bg-primary-hover text-white font-bold text-sm rounded-xl shadow-sm transition cursor-pointer min-h-[48px] flex items-center justify-center gap-2"
           >
             ← Kembali ke Daftar Siswa
           </button>
@@ -357,7 +357,7 @@ function DashboardContent() {
           onClick={() => { setActiveTab('board'); setIsSettingsActive(false); }}
           className={`flex items-center gap-2 px-4 py-2.5 rounded-xl border text-xs font-semibold whitespace-nowrap transition duration-200 cursor-pointer ${
             !isSettingsActive && activeTab === 'board'
-              ? 'bg-blue-50 border-[#2563EB]/30 text-[#2563EB]'
+              ? 'bg-primary/10 border-primary/30 text-primary'
               : 'bg-white dark:bg-[#243447] border-[#E2E8F0] dark:border-gray-700 text-[#64748B] dark:text-gray-300 hover:bg-[#F8FAFC] dark:bg-gray-900 hover:text-[#0F172A] dark:text-gray-200'
           }`}
         >
@@ -369,7 +369,7 @@ function DashboardContent() {
           onClick={() => { setActiveTab('logbook'); setIsSettingsActive(false); }}
           className={`flex items-center gap-2 px-4 py-2.5 rounded-xl border text-xs font-semibold whitespace-nowrap transition duration-200 cursor-pointer ${
             !isSettingsActive && activeTab === 'logbook'
-              ? 'bg-blue-50 border-[#2563EB]/30 text-[#2563EB]'
+              ? 'bg-primary/10 border-primary/30 text-primary'
               : 'bg-white dark:bg-[#243447] border-[#E2E8F0] dark:border-gray-700 text-[#64748B] dark:text-gray-300 hover:bg-[#F8FAFC] dark:bg-gray-900 hover:text-[#0F172A] dark:text-gray-200'
           }`}
         >
@@ -381,7 +381,7 @@ function DashboardContent() {
           onClick={() => { setActiveTab('stats'); setIsSettingsActive(false); }}
           className={`flex items-center gap-2 px-4 py-2.5 rounded-xl border text-xs font-semibold whitespace-nowrap transition duration-200 cursor-pointer ${
             !isSettingsActive && activeTab === 'stats'
-              ? 'bg-blue-50 border-[#2563EB]/30 text-[#2563EB]'
+              ? 'bg-primary/10 border-primary/30 text-primary'
               : 'bg-white dark:bg-[#243447] border-[#E2E8F0] dark:border-gray-700 text-[#64748B] dark:text-gray-300 hover:bg-[#F8FAFC] dark:bg-gray-900 hover:text-[#0F172A] dark:text-gray-200'
           }`}
         >
@@ -393,7 +393,7 @@ function DashboardContent() {
           onClick={() => setIsSettingsActive(true)}
           className={`flex items-center gap-2 px-4 py-2.5 rounded-xl border text-xs font-semibold whitespace-nowrap transition duration-200 cursor-pointer ml-auto ${
             isSettingsActive
-              ? 'bg-blue-50 border-[#2563EB]/30 text-[#2563EB]'
+              ? 'bg-primary/10 border-primary/30 text-primary'
               : 'bg-white dark:bg-[#243447] border-[#E2E8F0] dark:border-gray-700 text-[#64748B] dark:text-gray-300 hover:bg-[#F8FAFC] dark:bg-gray-900 hover:text-[#0F172A] dark:text-gray-200'
           }`}
         >
@@ -461,7 +461,7 @@ function DashboardContent() {
               <div className="overflow-hidden">
                 <h3 className="font-extrabold text-slate-800 dark:text-gray-200 text-base leading-snug truncate">{currentUser?.name}</h3>
                 <div className="flex flex-wrap gap-1.5 items-center mt-1">
-                  <span className="inline-block px-2.5 py-0.5 rounded bg-blue-50 dark:bg-blue-500/10 border border-blue-100 dark:border-blue-500/20 text-[#2563EB] dark:text-blue-500 font-bold text-[9px] uppercase tracking-wider">
+                  <span className="inline-block px-2.5 py-0.5 rounded bg-primary/10 dark:bg-primary/100/10 border border-blue-100 dark:border-blue-500/20 text-primary dark:text-blue-500 font-bold text-[9px] uppercase tracking-wider">
                     {currentUser?.role?.replace('_', ' ')}
                   </span>
                 </div>
