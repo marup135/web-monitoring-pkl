@@ -39,7 +39,7 @@ type AlertType = 'field' | 'credentials' | 'server';
 interface ErrorState {
   message: string;
   type: AlertType;
-  field?: 'username' | 'password';
+  field?: 'username' | 'password' | 'confirmPassword';
 }
 
 export const AuthPage: React.FC = () => {
@@ -49,10 +49,12 @@ export const AuthPage: React.FC = () => {
   const [errorState, setErrorState] = useState<ErrorState | null>(null);
   const [loading, setLoading] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
 
   // Form states
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
+  const [confirmPassword, setConfirmPassword] = useState('');
   const [name, setName] = useState('');
   const [role, setRole] = useState('siswa');
   const [company, setCompany] = useState('');
@@ -61,8 +63,10 @@ export const AuthPage: React.FC = () => {
 
   const [isRoleDropdownOpen, setIsRoleDropdownOpen] = useState(false);
   const [isClassDropdownOpen, setIsClassDropdownOpen] = useState(false);
+  const [isCompanyDropdownOpen, setIsCompanyDropdownOpen] = useState(false);
   const roleDropdownRef = useRef<HTMLDivElement>(null);
   const classDropdownRef = useRef<HTMLDivElement>(null);
+  const companyDropdownRef = useRef<HTMLDivElement>(null);
 
   // If user is already logged in, the parent HomeWrapper will redirect automatically.
   // We guard here too as extra safety.
@@ -90,7 +94,7 @@ export const AuthPage: React.FC = () => {
     return () => document.removeEventListener('mousedown', handleClickOutside);
   }, []);
 
-  const setError = (message: string, type: AlertType = 'field', field?: 'username' | 'password') => {
+  const setError = (message: string, type: AlertType = 'field', field?: 'username' | 'password' | 'confirmPassword') => {
     setErrorState({ message, type, field });
   };
 
@@ -100,6 +104,7 @@ export const AuthPage: React.FC = () => {
     setIsLogin(loginMode);
     clearError();
     setShowPassword(false);
+    setShowConfirmPassword(false);
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -138,6 +143,14 @@ export const AuthPage: React.FC = () => {
       }
       if (password.length < 5) {
         setError('Password harus terdiri dari minimal 5 karakter.', 'field', 'password');
+        return;
+      }
+      if (!confirmPassword) {
+        setError('Konfirmasi Password wajib diisi.', 'field', 'confirmPassword');
+        return;
+      }
+      if (password !== confirmPassword) {
+        setError('Password dan Konfirmasi Password tidak sama.', 'field', 'confirmPassword');
         return;
       }
       const cleanName = name.trim();
@@ -203,7 +216,7 @@ export const AuthPage: React.FC = () => {
           ) {
             setError('Terjadi kesalahan pada server. Silakan coba beberapa saat lagi.', 'server');
           } else {
-            setError('Username atau password salah.', 'credentials');
+            setError('Email atau password salah.', 'credentials');
           }
         }
       } else {
@@ -234,6 +247,8 @@ export const AuthPage: React.FC = () => {
     errorState?.field === 'username' || errorState?.type === 'credentials';
   const passwordHasError =
     errorState?.field === 'password' || errorState?.type === 'credentials';
+  const confirmPasswordHasError =
+    errorState?.field === 'confirmPassword';
 
   // Dynamic input border class
   const inputClass = (hasError: boolean) =>
@@ -374,6 +389,40 @@ export const AuthPage: React.FC = () => {
                     </button>
                   </div>
                   {passwordHasError && errorState?.type === 'field' && (
+                    <p className="text-[11px] text-red-500 font-medium flex items-center gap-1">
+                      <AlertCircle size={11} />
+                      {errorState?.message}
+                    </p>
+                  )}
+                </div>
+
+                {/* Confirm Password */}
+                <div className="flex flex-col gap-1.5">
+                  <label className="text-[10px] text-[#64748B] dark:text-gray-300 uppercase font-bold tracking-wider">
+                    Konfirmasi Password
+                  </label>
+                  <div className="relative">
+                    <Key size={15} className={`absolute left-3.5 top-1/2 -translate-y-1/2 ${confirmPasswordHasError ? 'text-red-400' : 'text-[#94A3B8]'}`} />
+                    <input
+                      type={showConfirmPassword ? 'text' : 'password'}
+                      placeholder="Ulangi password..."
+                      value={confirmPassword}
+                      onChange={(e) => {
+                        setConfirmPassword(e.target.value);
+                        if (errorState) clearError();
+                      }}
+                      className={`${inputClass(confirmPasswordHasError)} pr-11`}
+                    />
+                    <button
+                      type="button"
+                      onClick={() => setShowConfirmPassword((prev) => !prev)}
+                      className="absolute right-3 top-1/2 -translate-y-1/2 p-1.5 text-[#94A3B8] hover:text-[#64748B] dark:text-gray-300 focus:outline-none rounded-lg transition-colors cursor-pointer"
+                      aria-label={showConfirmPassword ? 'Sembunyikan password' : 'Tampilkan password'}
+                    >
+                      {showConfirmPassword ? <EyeOff size={16} /> : <Eye size={16} />}
+                    </button>
+                  </div>
+                  {confirmPasswordHasError && errorState?.type === 'field' && (
                     <p className="text-[11px] text-red-500 font-medium flex items-center gap-1">
                       <AlertCircle size={11} />
                       {errorState?.message}
@@ -642,12 +691,20 @@ export const AuthPage: React.FC = () => {
                 </span>
               )}
               <div className="flex-1 min-w-0">
-                <p className={`font-bold text-[13px] ${errorState.type === 'server' ? 'text-orange-800' : 'text-red-800'}`}>
-                  {errorState.type === 'server' ? 'Kesalahan Server' : 'Username / Password Salah'}
-                </p>
-                <p className={`mt-1 leading-snug ${errorState.type === 'server' ? 'text-orange-700' : 'text-red-700'}`}>
-                  {errorState.message}
-                </p>
+                {errorState.type === 'server' ? (
+                  <>
+                    <p className="font-bold text-[13px] text-orange-800">
+                      Kesalahan Server
+                    </p>
+                    <p className="mt-1 leading-snug text-orange-700">
+                      {errorState.message}
+                    </p>
+                  </>
+                ) : (
+                  <p className="font-bold text-[13px] text-red-800 mt-0.5">
+                    {errorState.message}
+                  </p>
+                )}
               </div>
             </div>
           )}

@@ -292,7 +292,6 @@ export const PKLProvider: React.FC<{ children: React.ReactNode }> = ({ children 
   }, []);
 
   const login = async (username: string, password: string) => {
-    setLoading(true);
     try {
       const res = await loginAction(username, password);
       if (res.success && res.user) {
@@ -325,8 +324,6 @@ export const PKLProvider: React.FC<{ children: React.ReactNode }> = ({ children 
       return { success: false, error: res.error };
     } catch {
       return { success: false, error: 'Terjadi kesalahan sistem' };
-    } finally {
-      setLoading(false);
     }
   };
 
@@ -339,7 +336,6 @@ export const PKLProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     className?: string,
     nisn?: string
   ) => {
-    setLoading(true);
     try {
       const res = await registerAction(username, password, name, role, companyName, className, nisn);
       if (res.success && res.user) {
@@ -373,8 +369,6 @@ export const PKLProvider: React.FC<{ children: React.ReactNode }> = ({ children 
       return { success: false, error: res.error };
     } catch {
       return { success: false, error: 'Terjadi kesalahan sistem' };
-    } finally {
-      setLoading(false);
     }
   };
 

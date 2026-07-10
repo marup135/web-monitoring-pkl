@@ -783,11 +783,36 @@ export async function uploadFileAction(formData: FormData) {
     else if (mime === 'application/pdf') type = 'pdf';
     else if (mime.includes('word') || mime.includes('officedocument') || ext === '.doc' || ext === '.docx') type = 'doc';
 
-    // Instead of writing to disk (which fails on Vercel), we convert to Base64
-    const base64 = buffer.toString('base64');
-    const fileUrl = `data:${mime};base64,${base64}`;
+    // Environment Variable Check
+    const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL || process.env.SUPABASE_URL;
+    const supabaseKey = process.env.SUPABASE_SERVICE_ROLE_KEY || process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || process.env.SUPABASE_ANON_KEY;
 
-    return { success: true, fileUrl, name: file.name, type };
+    if (!supabaseUrl || !supabaseKey) {
+      return { success: false, error: 'Environment Variable untuk Supabase Storage belum dikonfigurasi (SUPABASE_URL, SUPABASE_ANON_KEY).' };
+    }
+
+    const { createClient } = require('@supabase/supabase-js');
+    const supabase = createClient(supabaseUrl, supabaseKey);
+
+    // Upload to Supabase Storage (bucket: 'attachments')
+    const fileName = `${Date.now()}-${file.name.replace(/\s+/g, '_')}`;
+    const { error: uploadError } = await supabase.storage
+      .from('attachments')
+      .upload(fileName, buffer, {
+        contentType: mime,
+        upsert: false
+      });
+
+    if (uploadError) {
+      console.error('Supabase upload error:', uploadError);
+      return { success: false, error: `Gagal mengunggah ke Supabase Storage: ${uploadError.message}` };
+    }
+
+    const { data: publicUrlData } = supabase.storage
+      .from('attachments')
+      .getPublicUrl(fileName);
+
+    return { success: true, fileUrl: publicUrlData.publicUrl, name: file.name, type };
   } catch (error) {
     console.error('File upload failed', error);
     return { success: false, error: 'Gagal mengunggah berkas.' };
@@ -1348,6 +1373,16 @@ export async function deleteClassAction(id: string) {
 // --- Perusahaan Actions ---
 export async function getCompaniesAction() {
   try {
+    const currentUser = await getAuthenticatedUser();
+    
+    if (currentUser?.role === 'pembimbing_eksternal') {
+      const mentorCompanyIds = currentUser.companies.map((c: { id: string }) => c.id);
+      return prisma.perusahaan.findMany({
+        where: { id: { in: mentorCompanyIds } },
+        orderBy: { name: 'asc' },
+      });
+    }
+
     return prisma.perusahaan.findMany({
       orderBy: { name: 'asc' },
     });
