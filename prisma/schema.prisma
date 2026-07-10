@@ -43,6 +43,7 @@ model User {
   cards         Card[]        @relation("StudentCards")
   advisorNotes  AdvisorNote[] @relation("StudentNotes")
   writtenNotes  AdvisorNote[] @relation("AdvisorNotes")
+  attendances   Attendance[]  @relation("UserAttendances")
 }
 
 model Card {
@@ -139,4 +140,19 @@ model Perusahaan {
   // Relations
   students  User[]   @relation("StudentCompany")
   mentors   User[]   @relation("MentorCompanies")
+}
+
+model Attendance {
+  id        String   @id @default(uuid())
+  userId    String
+  user      User     @relation("UserAttendances", fields: [userId], references: [id], onDelete: Cascade)
+  date      String   // format "YYYY-MM-DD"
+  checkIn   String?  // format "HH:mm"
+  checkOut  String?  // format "HH:mm"
+  status    String   @default("NOT_CHECKED_IN") @db.VarChar(50) // NOT_CHECKED_IN, CHECKED_IN, COMPLETED, ABSENT
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([userId])
+  @@unique([userId, date])
 }

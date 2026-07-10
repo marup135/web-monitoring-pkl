@@ -7,6 +7,7 @@ export const translations = {
     users: "Users",
     settings: "Pengaturan Aplikasi",
     logout: "Logout",
+    attendance: "Absensi",
     
     // Board
     searchActivity: "Cari tugas atau deskripsi...",
@@ -152,6 +153,7 @@ export const translations = {
     users: "Users",
     settings: "App Settings",
     logout: "Logout",
+    attendance: "Attendance",
     
     // Board
     searchActivity: "Search task or description...",

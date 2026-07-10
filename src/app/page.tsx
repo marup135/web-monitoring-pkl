@@ -12,9 +12,10 @@ import { GuruPortal } from '../components/GuruPortal';
 import { MentorPortal } from '../components/MentorPortal';
 import { AdminPortal } from '../components/AdminPortal';
 import { PKLCard } from '../types/pkl';
-import { LayoutDashboard, FileSpreadsheet, BarChart3, Building2, UserCheck, RefreshCw, Menu, X, User, Settings, Key, LogOut } from 'lucide-react';
+import { LayoutDashboard, FileSpreadsheet, BarChart3, Building2, UserCheck, RefreshCw, Menu, X, User, Settings, Key, LogOut, Clock } from 'lucide-react';
 import { SettingsPage } from '../components/SettingsPage';
 import { useLanguage } from '../context/LanguageContext';
+import { AttendancePage } from '../components/AttendancePage';
 
 function DashboardContent() {
   const { t } = useLanguage();
@@ -175,6 +176,15 @@ function DashboardContent() {
               >
                 <FileSpreadsheet size={20} />
                 {t('logbook')}
+              </button>
+              <button
+                onClick={() => { setActiveTab('attendance'); setIsSettingsActive(false); setIsDrawerOpen(false); }}
+                className={`flex items-center gap-3 px-4 py-3.5 rounded-2xl text-sm font-bold transition duration-200 w-full text-left cursor-pointer min-h-[52px] ${
+                  !isSettingsActive && activeTab === 'attendance' ? 'bg-primary/10 dark:bg-primary/100/10 text-blue-600 dark:text-blue-400' : 'text-slate-500 dark:text-gray-400 hover:bg-slate-50 dark:hover:bg-gray-800'
+                }`}
+              >
+                <Clock size={20} />
+                {t('attendance')}
               </button>
               <button
                 onClick={() => { setIsSettingsActive(true); setIsDrawerOpen(false); }}
@@ -390,6 +400,18 @@ function DashboardContent() {
         </button>
 
         <button
+          onClick={() => { setActiveTab('attendance'); setIsSettingsActive(false); }}
+          className={`flex items-center gap-2 px-4 py-2.5 rounded-xl border text-xs font-semibold whitespace-nowrap transition duration-200 cursor-pointer ${
+            !isSettingsActive && activeTab === 'attendance'
+              ? 'bg-primary/10 border-primary/30 text-primary'
+              : 'bg-white dark:bg-[#243447] border-[#E2E8F0] dark:border-gray-700 text-[#64748B] dark:text-gray-300 hover:bg-[#F8FAFC] dark:bg-gray-900 hover:text-[#0F172A] dark:text-gray-200'
+          }`}
+        >
+          <Clock size={14} />
+          {t('attendance')}
+        </button>
+
+        <button
           onClick={() => setIsSettingsActive(true)}
           className={`flex items-center gap-2 px-4 py-2.5 rounded-xl border text-xs font-semibold whitespace-nowrap transition duration-200 cursor-pointer ml-auto ${
             isSettingsActive
@@ -428,6 +450,7 @@ function DashboardContent() {
               />
             )}
             {activeTab === 'stats' && <DashboardStats />}
+            {activeTab === 'attendance' && <AttendancePage />}
           </>
         )}
       </div>

@@ -100,7 +100,7 @@ export interface StudentMetric {
 interface PKLContextProps {
   state: PKLState;
   activeRole: PKLRole;
-  activeTab: 'board' | 'logbook' | 'stats';
+  activeTab: 'board' | 'logbook' | 'stats' | 'attendance';
   loading: boolean;
   currentUser: UserProfile | null;
   studentsList: StudentMetric[];
@@ -110,7 +110,7 @@ interface PKLContextProps {
   classesList: ClassItem[];
   companiesList: CompanyItem[];
   allUsersList: UserItem[];
-  setActiveTab: (tab: 'board' | 'logbook' | 'stats') => void;
+  setActiveTab: (tab: 'board' | 'logbook' | 'stats' | 'attendance') => void;
   setSelectedStudentId: (studentId: string | null) => Promise<void>;
   setSelectedClassId: (classId: string | null) => Promise<void>;
   setSelectedCompanyId: (companyId: string | null) => Promise<void>;
@@ -174,7 +174,7 @@ export const PKLProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     cards: [],
     advisorNotes: [],
   });
-  const [activeTab, setActiveTab] = useState<'board' | 'logbook' | 'stats'>('board');
+  const [activeTab, setActiveTab] = useState<'board' | 'logbook' | 'stats' | 'attendance'>('board');
   const [loading, setLoading] = useState<boolean>(true);
   const [currentUser, setCurrentUser] = useState<UserProfile | null>(null);
   const [studentsList, setStudentsList] = useState<StudentMetric[]>([]);
