@@ -25,10 +25,12 @@ export const AdminPortal: React.FC = () => {
     assignMentorToCompany,
     assignSiswa,
     resetState,
-    loading
+    loading,
+    getPendingUsers,
+    verifyUser
   } = usePKL();
 
-  const [activeTab, setActiveTab] = useState<'overview' | 'kelas' | 'perusahaan' | 'users'>('overview');
+  const [activeTab, setActiveTab] = useState<'overview' | 'kelas' | 'perusahaan' | 'users' | 'verifikasi'>('overview');
 
   // Input states
   const [newClassName, setNewClassName] = useState('');
@@ -40,11 +42,18 @@ export const AdminPortal: React.FC = () => {
 
   // Overview metrics state
   const [overallMetrics, setOverallMetrics] = useState<any>(null);
+  const [pendingUsersList, setPendingUsersList] = useState<any[]>([]);
 
   const reloadAll = async () => {
     await fetchAdminData();
     const m = await getDashboardMetricsAction(undefined, undefined);
     setOverallMetrics(m);
+    if (getPendingUsers) {
+      const pu = await getPendingUsers();
+      if (pu.success && pu.data) {
+        setPendingUsersList(pu.data);
+      }
+    }
   };
 
   useEffect(() => {
@@ -182,6 +191,7 @@ export const AdminPortal: React.FC = () => {
       <div className="flex border-b border-[#E2E8F0] dark:border-gray-700 gap-4 overflow-x-auto py-1 whitespace-nowrap -mx-4 px-4 sm:mx-0 sm:px-0 scrollbar-none">
         {[
           { key: 'overview', label: 'Ringkasan' },
+          { key: 'verifikasi', label: 'Verifikasi Akun' },
           { key: 'kelas', label: 'Data Kelas' },
           { key: 'perusahaan', label: 'Data Perusahaan' },
           { key: 'users', label: 'Penugasan (Assignment)' }
@@ -202,6 +212,89 @@ export const AdminPortal: React.FC = () => {
 
       {/* Tab Content */}
       <div className="bg-white dark:bg-[#243447] border border-[#E2E8F0] dark:border-gray-700 rounded-2xl p-4 md:p-6 shadow-sm min-h-[300px]">
+        {activeTab === 'verifikasi' && (
+          <div className="flex flex-col gap-4">
+            <h3 className="text-sm font-bold text-slate-700 dark:text-gray-200 uppercase tracking-wider mb-2">Daftar Akun Menunggu Verifikasi</h3>
+            {pendingUsersList.length === 0 ? (
+              <p className="text-xs text-slate-500 dark:text-gray-400">Tidak ada akun yang menunggu verifikasi saat ini.</p>
+            ) : (
+              <div className="overflow-x-auto rounded-xl border border-slate-200 dark:border-gray-700">
+                <table className="w-full text-left border-collapse">
+                  <thead>
+                    <tr className="bg-slate-50 dark:bg-gray-800/50 border-b border-slate-200 dark:border-gray-700">
+                      <th className="p-3 text-[10px] font-bold text-slate-500 dark:text-gray-400 uppercase tracking-wider">Nama & Email</th>
+                      <th className="p-3 text-[10px] font-bold text-slate-500 dark:text-gray-400 uppercase tracking-wider">Role</th>
+                      <th className="p-3 text-[10px] font-bold text-slate-500 dark:text-gray-400 uppercase tracking-wider">Info Tambahan</th>
+                      <th className="p-3 text-[10px] font-bold text-slate-500 dark:text-gray-400 uppercase tracking-wider">Status</th>
+                      <th className="p-3 text-[10px] font-bold text-slate-500 dark:text-gray-400 uppercase tracking-wider text-right">Aksi</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {pendingUsersList.map(user => (
+                      <tr key={user.id} className="border-b border-slate-100 dark:border-gray-700 hover:bg-slate-50/50 dark:hover:bg-gray-800/30">
+                        <td className="p-3">
+                          <p className="text-xs font-bold text-slate-800 dark:text-gray-200">{user.name}</p>
+                          <p className="text-[10px] text-slate-500">{user.email}</p>
+                        </td>
+                        <td className="p-3">
+                          <span className="inline-block px-2 py-1 bg-blue-100 dark:bg-blue-500/20 text-blue-600 dark:text-blue-400 text-[10px] font-bold rounded-md uppercase">
+                            {user.role.replace('_', ' ')}
+                          </span>
+                        </td>
+                        <td className="p-3 text-[10px] text-slate-600 dark:text-gray-300">
+                          {user.role === 'pembimbing_eksternal' ? (
+                            <div className="flex flex-col gap-0.5">
+                              <span><strong>Perusahaan:</strong> {user.companyName || user.company || '-'}</span>
+                              <span><strong>Jabatan:</strong> {user.jobTitle || user.jabatan || '-'}</span>
+                              <span><strong>ID Karyawan:</strong> {user.employeeId || '-'}</span>
+                              <span><strong>Email Corp:</strong> {user.companyEmail || '-'}</span>
+                            </div>
+                          ) : (
+                            <span>{user.school || '-'}</span>
+                          )}
+                        </td>
+                        <td className="p-3">
+                          <span className="inline-block px-2 py-1 bg-yellow-100 dark:bg-yellow-500/20 text-yellow-600 dark:text-yellow-400 text-[10px] font-bold rounded-md">
+                            {user.status}
+                          </span>
+                        </td>
+                        <td className="p-3 text-right">
+                          <div className="flex justify-end gap-2">
+                            <button
+                              onClick={async () => {
+                                if (verifyUser) {
+                                  const res = await verifyUser(user.id, 'ACTIVE');
+                                  if (res.success) reloadAll();
+                                  else alert(res.error);
+                                }
+                              }}
+                              className="px-3 py-1.5 bg-green-500 hover:bg-green-600 text-white text-[10px] font-bold rounded-lg transition"
+                            >
+                              Setujui
+                            </button>
+                            <button
+                              onClick={async () => {
+                                if (verifyUser) {
+                                  const res = await verifyUser(user.id, 'REJECTED');
+                                  if (res.success) reloadAll();
+                                  else alert(res.error);
+                                }
+                              }}
+                              className="px-3 py-1.5 bg-red-500 hover:bg-red-600 text-white text-[10px] font-bold rounded-lg transition"
+                            >
+                              Tolak
+                            </button>
+                          </div>
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            )}
+          </div>
+        )}
+
         {activeTab === 'overview' && (
           <div className="flex flex-col gap-6">
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">

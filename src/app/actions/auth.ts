@@ -13,7 +13,12 @@ export async function registerAction(
   role: string,
   companyName?: string,
   className?: string,
-  nisn?: string
+  nisn?: string,
+  nip?: string,
+  school?: string,
+  jabatan?: string,
+  employeeId?: string,
+  companyEmail?: string
 ) {
   try {
     // Admin cannot register via the form
@@ -38,22 +43,36 @@ export async function registerAction(
       return { success: false, error: 'Nama lengkap harus terdiri dari minimal 3 karakter.' };
     }
 
+    let status = 'PENDING';
+
     if (role === 'siswa') {
-      if (!className) {
-        return { success: false, error: 'Kelas wajib dipilih.' };
+      status = 'ACTIVE';
+      if (!className || !className.trim()) {
+        return { success: false, error: 'Kelas / Program Studi wajib diisi.' };
       }
-      if (!nisn || !nisn.trim()) {
-        return { success: false, error: 'NIS/NISN wajib diisi.' };
+      if (!school || !school.trim()) {
+        return { success: false, error: 'Asal Sekolah / Kampus wajib diisi.' };
       }
+    } else if (role === 'pembimbing_internal') {
+      if (!nip || !nip.trim()) {
+        return { success: false, error: 'NIP / Nomor Identitas wajib diisi.' };
+      }
+      if (!school || !school.trim()) {
+        return { success: false, error: 'Asal Sekolah / Kampus wajib diisi.' };
+      }
+    } else if (role === 'pembimbing_eksternal') {
       const cleanCompany = companyName?.trim();
       if (!cleanCompany) {
-        return { success: false, error: 'Nama perusahaan tidak boleh kosong.' };
+        return { success: false, error: 'Nama Perusahaan wajib diisi.' };
       }
       if (cleanCompany.length < 3) {
         return { success: false, error: 'Nama perusahaan harus terdiri dari minimal 3 karakter.' };
       }
-      if (cleanCompany.length > 100) {
-        return { success: false, error: 'Nama perusahaan maksimal 100 karakter.' };
+      if (!employeeId || !employeeId.trim()) {
+        return { success: false, error: 'Nomor Identitas Karyawan wajib diisi.' };
+      }
+      if (!jabatan || !jabatan.trim()) {
+        return { success: false, error: 'Jabatan wajib diisi.' };
       }
     }
 
@@ -83,9 +102,10 @@ export async function registerAction(
 
     let resolvedClassId = null;
     if (role === 'siswa' && className) {
-      let dbClass = await prisma.kelas.findUnique({ where: { name: className } });
+      const trimmedClass = className.trim();
+      let dbClass = await prisma.kelas.findUnique({ where: { name: trimmedClass } });
       if (!dbClass) {
-        dbClass = await prisma.kelas.create({ data: { name: className } });
+        dbClass = await prisma.kelas.create({ data: { name: trimmedClass } });
       }
       resolvedClassId = dbClass.id;
     }
@@ -110,6 +130,14 @@ export async function registerAction(
         role,
         company: finalCompany,
         nisn: role === 'siswa' ? (nisn?.trim() || null) : null,
+        nip: role === 'pembimbing_internal' ? (nip?.trim() || null) : null,
+        jabatan: role === 'pembimbing_eksternal' ? (jabatan?.trim() || null) : null,
+        school: (role === 'siswa' || role === 'pembimbing_internal') && school ? school.trim() : "SMKN 1 BOJONG",
+        status,
+        companyName: finalCompany,
+        jobTitle: role === 'pembimbing_eksternal' ? (jabatan?.trim() || null) : null,
+        employeeId: role === 'pembimbing_eksternal' ? (employeeId?.trim() || null) : null,
+        companyEmail: role === 'pembimbing_eksternal' ? (companyEmail?.trim() || null) : null,
         classId: resolvedClassId,
         companyId: role === 'siswa' ? resolvedCompanyId : null,
         companies: role === 'pembimbing_eksternal' && resolvedCompanyId ? {
@@ -118,40 +146,47 @@ export async function registerAction(
       }
     });
 
-    // Set cookie session
-    const cookieStore = await cookies();
-    cookieStore.set('session', signSession(user.id), {
-      httpOnly: true,
-      secure: process.env.NODE_ENV === 'production',
-      maxAge: 60 * 60 * 24 * 7, // 1 week
-      path: '/'
-    });
+    console.log("Role:", role);
+    console.log("Status yang disimpan:", status);
 
-    const userWithRelations = await prisma.user.findUnique({
-      where: { id: user.id },
-      select: {
-        id: true,
-        username: true,
-        email: true,
-        name: true,
-        role: true,
-        company: true,
-        school: true,
-        classId: true,
-        companyId: true,
-        nisn: true,
-        classes: {
-          select: { id: true, name: true }
-        },
-        companies: {
-          select: { id: true, name: true }
+    // Set cookie session ONLY IF ACTIVE
+    if (status === 'ACTIVE') {
+      const cookieStore = await cookies();
+      cookieStore.set('session', signSession(user.id), {
+        httpOnly: true,
+        secure: process.env.NODE_ENV === 'production',
+        maxAge: 60 * 60 * 24 * 7, // 1 week
+        path: '/'
+      });
+      
+      const userWithRelations = await prisma.user.findUnique({
+        where: { id: user.id },
+        select: {
+          id: true,
+          username: true,
+          email: true,
+          name: true,
+          role: true,
+          company: true,
+          school: true,
+          classId: true,
+          companyId: true,
+          nisn: true,
+          classes: {
+            select: { id: true, name: true }
+          },
+          companies: {
+            select: { id: true, name: true }
+          }
         }
-      }
-    });
+      });
+      return { success: true, user: userWithRelations, pending: false };
+    }
 
-    return { success: true, user: userWithRelations };
+    // If PENDING, don't set cookie, just return success with pending flag
+    return { success: true, pending: true, message: 'Akun Anda sedang menunggu verifikasi Admin. Silakan tunggu hingga akun disetujui.' };
   } catch (error) {
-    console.error('Failed to register user', error);
+    console.error(error);
     return { success: false, error: 'Gagal melakukan pendaftaran' };
   }
 }
@@ -172,6 +207,10 @@ export async function loginAction(identifier: string, password: string) {
     const hashedPassword = hashPassword(password);
     if (user.password !== hashedPassword) {
       return { success: false, error: 'Username atau password salah' };
+    }
+
+    if (user.status !== 'ACTIVE') {
+      return { success: false, error: 'Akun Anda sedang menunggu verifikasi Admin. Silakan tunggu hingga akun disetujui.' };
     }
 
     // Set cookie session

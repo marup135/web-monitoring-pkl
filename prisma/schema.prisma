@@ -16,8 +16,15 @@ model User {
   role      String   @db.VarChar(50) // "siswa" | "pembimbing_internal" | "pembimbing_eksternal"
   company   String?  @db.VarChar(255) // Optional: Nama Perusahaan
   nisn      String?  @db.VarChar(50)  // Optional: NIS/NISN
+  nip       String?  @db.VarChar(50)
+  status    String   @default("ACTIVE") @db.VarChar(20)
+  jabatan   String?  @db.VarChar(100)
   school    String   @default("SMKN 1 BOJONG") @db.VarChar(255)
   boardBackground String? @db.Text
+  companyName String?  @db.VarChar(255)
+  jobTitle    String?  @db.VarChar(100)
+  employeeId  String?  @db.VarChar(50)
+  companyEmail String? @db.VarChar(255)
   createdAt DateTime @default(now())
 
   // Relations for Siswa

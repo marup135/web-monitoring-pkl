@@ -17,16 +17,7 @@ import {
   Loader2,
 } from 'lucide-react';
 
-const PREDEFINED_CLASSES = [
-  'XII PPLG 1', 'XII PPLG 2', 'XII PPLG 3',
-  'XII TO 1', 'XII TO 2', 'XII TO 3',
-  'XII TM 1', 'XII TM 2', 'XII TM 3',
-  'XII KULINER 1', 'XII KULINER 2',
-  'XII DB 1', 'XII DB 2',
-  'XII MPLB 1', 'XII MPLB 2', 'XII MPLB 3',
-  'XII APART', 'XII UPT',
-  'XII AKL 1', 'XII AKL 2',
-];
+
 
 const ROLES = [
   { value: 'siswa', label: 'Siswa PKL' },
@@ -56,6 +47,7 @@ export const AuthPage: React.FC = () => {
   const [loading, setLoading] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
+  const [isPendingSuccess, setIsPendingSuccess] = useState(false);
 
   // Form states
   const [username, setUsername] = useState('');
@@ -65,8 +57,13 @@ export const AuthPage: React.FC = () => {
   const [name, setName] = useState('');
   const [role, setRole] = useState('siswa');
   const [company, setCompany] = useState('');
-  const [selectedClass, setSelectedClass] = useState('XII PPLG 1');
+  const [selectedClass, setSelectedClass] = useState('');
+  const [school, setSchool] = useState('');
+  const [nip, setNip] = useState('');
+  const [jabatan, setJabatan] = useState('');
   const [nisn, setNisn] = useState('');
+  const [employeeId, setEmployeeId] = useState('');
+  const [companyEmail, setCompanyEmail] = useState('');
 
   const [isRoleDropdownOpen, setIsRoleDropdownOpen] = useState(false);
   const [isClassDropdownOpen, setIsClassDropdownOpen] = useState(false);
@@ -110,6 +107,7 @@ export const AuthPage: React.FC = () => {
     clearError();
     setShowPassword(false);
     setShowConfirmPassword(false);
+    setIsPendingSuccess(false);
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -212,31 +210,35 @@ export const AuthPage: React.FC = () => {
         return;
       }
       if (role === 'siswa') {
-        if (!selectedClass) {
-          setError('Kelas wajib dipilih.', 'field');
+        if (!selectedClass.trim()) {
+          setError('Kelas / Program Studi wajib diisi.', 'field');
           return;
         }
-        if (!nisn.trim()) {
-          setError('NIS/NISN wajib diisi.', 'field');
+        if (!school.trim()) {
+          setError('Asal Sekolah / Kampus wajib diisi.', 'field');
           return;
         }
-        const cleanCompany = company.trim();
-        if (!cleanCompany) {
-          setError('Nama perusahaan tidak boleh kosong.', 'field');
+      } else if (role === 'pembimbing_internal') {
+        if (!nip.trim()) {
+          setError('NIP / Nomor Identitas wajib diisi.', 'field');
           return;
         }
-        if (cleanCompany.length < 3) {
-          setError('Nama perusahaan harus terdiri dari minimal 3 karakter.', 'field');
-          return;
-        }
-        if (cleanCompany.length > 100) {
-          setError('Nama perusahaan maksimal 100 karakter.', 'field');
+        if (!school.trim()) {
+          setError('Asal Sekolah / Kampus wajib diisi.', 'field');
           return;
         }
       } else if (role === 'pembimbing_eksternal') {
         const cleanCompany = company.trim();
         if (!cleanCompany) {
           setError('Nama perusahaan wajib diisi.', 'field');
+          return;
+        }
+        if (!jabatan.trim()) {
+          setError('Jabatan wajib diisi.', 'field');
+          return;
+        }
+        if (!employeeId.trim()) {
+          setError('Nomor Identitas Karyawan wajib diisi.', 'field');
           return;
         }
       }
@@ -264,8 +266,10 @@ export const AuthPage: React.FC = () => {
             errMsg.toLowerCase().includes('sistem')
           ) {
             setError('Terjadi kesalahan pada server. Silakan coba beberapa saat lagi.', 'server');
+          } else if (errMsg.includes('menunggu verifikasi') || errMsg.includes('disetujui')) {
+            setError(errMsg, 'server');
           } else {
-            setError('Email atau password salah.', 'credentials');
+            setError(errMsg || 'Email atau password salah.', 'credentials');
           }
         }
       } else {
@@ -276,10 +280,29 @@ export const AuthPage: React.FC = () => {
           name.trim(),
           role,
           (role === 'siswa' || role === 'pembimbing_eksternal') ? company.trim() : undefined,
-          role === 'siswa' ? selectedClass : undefined,
-          role === 'siswa' ? nisn.trim() : undefined
+          role === 'siswa' ? selectedClass.trim() : undefined,
+          role === 'siswa' ? nisn.trim() : undefined,
+          role === 'pembimbing_internal' ? nip.trim() : undefined,
+          (role === 'siswa' || role === 'pembimbing_internal') ? school.trim() : undefined,
+          role === 'pembimbing_eksternal' ? jabatan.trim() : undefined,
+          role === 'pembimbing_eksternal' ? employeeId.trim() : undefined,
+          role === 'pembimbing_eksternal' ? companyEmail.trim() : undefined
         );
-        if (!res.success) {
+        if (res.success && res.pending) {
+          clearError();
+          setIsPendingSuccess(true);
+          setUsername('');
+          setEmail('');
+          setPassword('');
+          setConfirmPassword('');
+          setName('');
+          setCompany('');
+          setJabatan('');
+          setEmployeeId('');
+          setCompanyEmail('');
+          setNisn('');
+          setNip('');
+        } else if (!res.success) {
           setError(res.error ?? 'Gagal melakukan pendaftaran.', 'server');
         }
       }
@@ -336,8 +359,28 @@ export const AuthPage: React.FC = () => {
             </p>
           </div>
 
-          {/* Tab Toggle */}
-          {!isForgotPassword && (
+          {isPendingSuccess ? (
+            <div className="flex flex-col items-center justify-center text-center animate-in zoom-in-95 duration-300 gap-4 mt-2">
+              <div className="w-16 h-16 rounded-full bg-green-100 flex items-center justify-center text-green-500 mb-2">
+                <ShieldCheck size={32} />
+              </div>
+              <h2 className="text-xl font-bold text-[#0F172A] dark:text-white">Pendaftaran Berhasil</h2>
+              <p className="text-sm text-[#64748B] dark:text-gray-300">
+                Akun Anda sedang menunggu verifikasi Admin. Silakan tunggu hingga akun disetujui sebelum melakukan login.
+              </p>
+              <button
+                type="button"
+                onClick={() => handleTabSwitch('login')}
+                className="mt-6 w-full py-3 px-4 bg-primary hover:bg-primary/90 text-white font-bold rounded-2xl shadow-lg shadow-blue-500/30 transition-all active:scale-[0.98] flex items-center justify-center gap-2"
+              >
+                Kembali ke Login
+                <ArrowRight size={18} />
+              </button>
+            </div>
+          ) : (
+            <>
+              {/* Tab Toggle */}
+              {!isForgotPassword && (
             <div className="flex bg-[#F1F5F9] dark:bg-gray-800 p-1 rounded-2xl mb-6 border border-[#E2E8F0] dark:border-gray-700">
               <button
                 type="button"
@@ -550,77 +593,72 @@ export const AuthPage: React.FC = () => {
             {/* Siswa-specific fields — Register Only */}
             {isRegister && role === 'siswa' && (
               <>
-                {/* Kelas Dropdown */}
-                <div
-                  className="flex flex-col gap-1.5 relative"
-                  ref={classDropdownRef}
-                >
+                {/* Asal Sekolah */}
+                <div className="flex flex-col gap-1.5 relative md:col-span-2">
                   <label className="text-[10px] text-[#64748B] dark:text-gray-300 uppercase font-bold tracking-wider">
-                    Pilih Kelas
-                  </label>
-                  <button
-                    type="button"
-                    onClick={() => setIsClassDropdownOpen((prev) => !prev)}
-                    className="w-full bg-white dark:bg-[#243447] border border-[#E2E8F0] dark:border-gray-700 rounded-xl px-3.5 text-sm text-[#0F172A] dark:text-gray-200 text-left flex justify-between items-center focus:outline-none focus:border-primary focus:ring-2 focus:ring-blue-100 cursor-pointer min-h-[48px] py-3 md:min-h-0 md:py-2.5 md:text-xs transition-all"
-                  >
-                    <span>{selectedClass || 'Pilih kelas...'}</span>
-                    <ChevronDown
-                      size={14}
-                      className={`text-[#94A3B8] transition-transform duration-200 ${isClassDropdownOpen ? 'rotate-180' : ''}`}
-                    />
-                  </button>
-                  {isClassDropdownOpen && (
-                    <div className="absolute left-0 right-0 top-[calc(100%+4px)] bg-white dark:bg-[#243447] border border-[#E2E8F0] dark:border-gray-700 rounded-xl shadow-xl z-50 max-h-[160px] overflow-y-auto">
-                      {PREDEFINED_CLASSES.map((c) => (
-                        <button
-                          key={c}
-                          type="button"
-                          onClick={() => {
-                            setSelectedClass(c);
-                            setIsClassDropdownOpen(false);
-                          }}
-                          className={`w-full text-left px-3.5 py-2.5 text-xs hover:bg-[#F1F5F9] dark:bg-gray-800 transition duration-150 block cursor-pointer ${
-                            selectedClass === c
-                              ? 'bg-primary/8 text-primary font-semibold'
-                              : 'text-[#0F172A] dark:text-gray-200'
-                          }`}
-                        >
-                          {c}
-                        </button>
-                      ))}
-                    </div>
-                  )}
-                </div>
-
-                {/* NIS / NISN */}
-                <div className="flex flex-col gap-1.5">
-                  <label className="text-[10px] text-[#64748B] dark:text-gray-300 uppercase font-bold tracking-wider">
-                    NIS / NISN
-                  </label>
-                  <div className="relative">
-                    <User size={15} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-[#94A3B8]" />
-                    <input
-                      type="text"
-                      placeholder="Contoh: 222310123"
-                      value={nisn}
-                      onChange={(e) => setNisn(e.target.value)}
-                      className={inputClass(false)}
-                    />
-                  </div>
-                </div>
-
-                {/* Perusahaan PKL (Text) */}
-                <div className="flex flex-col gap-1.5 md:col-span-2">
-                  <label className="text-[10px] text-[#64748B] dark:text-gray-300 uppercase font-bold tracking-wider">
-                    Perusahaan PKL
+                    Asal Sekolah / Kampus / Institusi
                   </label>
                   <div className="relative">
                     <Building2 size={15} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-[#94A3B8]" />
                     <input
                       type="text"
-                      placeholder="Contoh: PT Telkom Indonesia..."
-                      value={company}
-                      onChange={(e) => setCompany(e.target.value)}
+                      placeholder="Masukkan asal institusi..."
+                      value={school}
+                      onChange={(e) => setSchool(e.target.value)}
+                      className={inputClass(false)}
+                    />
+                  </div>
+                </div>
+
+                {/* Kelas / Program Studi (Text) */}
+                <div className="flex flex-col gap-1.5 relative md:col-span-2">
+                  <label className="text-[10px] text-[#64748B] dark:text-gray-300 uppercase font-bold tracking-wider">
+                    Kelas / Program Studi / Jurusan
+                  </label>
+                  <div className="relative">
+                    <input
+                      type="text"
+                      placeholder="Contoh: XII PPLG 1 / S1 Informatika..."
+                      value={selectedClass}
+                      onChange={(e) => setSelectedClass(e.target.value)}
+                      className={inputClass(false)}
+                    />
+                  </div>
+                </div>
+              </>
+            )}
+
+            {/* Pembimbing Internal fields — Register Only */}
+            {isRegister && role === 'pembimbing_internal' && (
+              <>
+                {/* Asal Sekolah */}
+                <div className="flex flex-col gap-1.5 relative md:col-span-2">
+                  <label className="text-[10px] text-[#64748B] dark:text-gray-300 uppercase font-bold tracking-wider">
+                    Asal Sekolah / Kampus / Institusi
+                  </label>
+                  <div className="relative">
+                    <Building2 size={15} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-[#94A3B8]" />
+                    <input
+                      type="text"
+                      placeholder="Masukkan asal institusi..."
+                      value={school}
+                      onChange={(e) => setSchool(e.target.value)}
+                      className={inputClass(false)}
+                    />
+                  </div>
+                </div>
+
+                {/* NIP / NIDN */}
+                <div className="flex flex-col gap-1.5 relative md:col-span-2">
+                  <label className="text-[10px] text-[#64748B] dark:text-gray-300 uppercase font-bold tracking-wider">
+                    NIP / NIDN / NUPTK / Nomor Identitas
+                  </label>
+                  <div className="relative">
+                    <input
+                      type="text"
+                      placeholder="Masukkan nomor identitas..."
+                      value={nip}
+                      onChange={(e) => setNip(e.target.value)}
                       className={inputClass(false)}
                     />
                   </div>
@@ -630,23 +668,71 @@ export const AuthPage: React.FC = () => {
 
             {/* Eksternal-specific fields — Register Only */}
             {isRegister && role === 'pembimbing_eksternal' && (
-              <div className="flex flex-col gap-1.5 relative md:col-span-2">
-                <label className="text-[10px] text-[#64748B] dark:text-gray-300 uppercase font-bold tracking-wider">
-                  Nama Perusahaan
-                </label>
-                <div className="relative">
-                  <input
-                    type="text"
-                    placeholder="Masukkan nama perusahaan"
-                    value={company}
-                    onChange={(e) => {
-                      setCompany(e.target.value);
-                      if (errorState) clearError();
-                    }}
-                    className={inputClass(false)}
-                  />
+              <>
+                <div className="flex flex-col gap-1.5 relative md:col-span-2">
+                  <label className="text-[10px] text-[#64748B] dark:text-gray-300 uppercase font-bold tracking-wider">
+                    Nama Perusahaan
+                  </label>
+                  <div className="relative">
+                    <Building2 size={15} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-[#94A3B8]" />
+                    <input
+                      type="text"
+                      placeholder="Masukkan nama perusahaan..."
+                      value={company}
+                      onChange={(e) => {
+                        setCompany(e.target.value);
+                        if (errorState) clearError();
+                      }}
+                      className={inputClass(false)}
+                    />
+                  </div>
                 </div>
-              </div>
+
+                <div className="flex flex-col gap-1.5 relative md:col-span-2">
+                  <label className="text-[10px] text-[#64748B] dark:text-gray-300 uppercase font-bold tracking-wider">
+                    Jabatan (Wajib)
+                  </label>
+                  <div className="relative">
+                    <input
+                      type="text"
+                      placeholder="Contoh: Manager / Software Engineer..."
+                      value={jabatan}
+                      onChange={(e) => setJabatan(e.target.value)}
+                      className={inputClass(false)}
+                    />
+                  </div>
+                </div>
+
+                <div className="flex flex-col gap-1.5 relative md:col-span-2">
+                  <label className="text-[10px] text-[#64748B] dark:text-gray-300 uppercase font-bold tracking-wider">
+                    Nomor Identitas Karyawan (Employee ID)
+                  </label>
+                  <div className="relative">
+                    <input
+                      type="text"
+                      placeholder="Masukkan Nomor Identitas Karyawan..."
+                      value={employeeId}
+                      onChange={(e) => setEmployeeId(e.target.value)}
+                      className={inputClass(false)}
+                    />
+                  </div>
+                </div>
+
+                <div className="flex flex-col gap-1.5 relative md:col-span-2">
+                  <label className="text-[10px] text-[#64748B] dark:text-gray-300 uppercase font-bold tracking-wider">
+                    Email Perusahaan (Opsional)
+                  </label>
+                  <div className="relative">
+                    <input
+                      type="email"
+                      placeholder="Masukkan email perusahaan..."
+                      value={companyEmail}
+                      onChange={(e) => setCompanyEmail(e.target.value)}
+                      className={inputClass(false)}
+                    />
+                  </div>
+                </div>
+              </>
             )}
               </div>
             )}
@@ -880,6 +966,8 @@ export const AuthPage: React.FC = () => {
               </p>
             </div>
           )}
+          </>
+        )}
         </div>
 
         {/* Footer */}

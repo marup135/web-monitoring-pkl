@@ -29,6 +29,8 @@ import {
   assignGuruToClassAction,
   assignMentorToCompanyAction,
   assignSiswaAction,
+  getPendingUsersAction,
+  verifyUserAction,
 } from '@/app/actions/pkl';
 import {
   registerAction,
@@ -153,10 +155,12 @@ interface PKLContextProps {
   deleteCard: (cardId: string) => Promise<void>;
   resetState: () => Promise<void>;
   login: (username: string, password: string) => Promise<{ success: boolean; error?: string }>;
-  register: (username: string, email: string, password: string, name: string, role: string, companyName?: string, className?: string, nisn?: string) => Promise<{ success: boolean; error?: string }>;
+  register: (username: string, email: string, password: string, name: string, role: string, companyName?: string, className?: string, nisn?: string, nip?: string, school?: string, jabatan?: string, employeeId?: string, companyEmail?: string) => Promise<{ success: boolean; error?: string; pending?: boolean; message?: string }>;
   logout: () => Promise<void>;
   updateCurrentUserName?: (name: string) => void;
   updateCurrentUserBackground: (url: string | null) => void;
+  getPendingUsers?: () => Promise<{ success: boolean; error?: string; data: any[] }>;
+  verifyUser?: (userId: string, status: string) => Promise<{ success: boolean; error?: string }>;
 }
 
 const PKLContext = createContext<PKLContextProps | undefined>(undefined);
@@ -330,10 +334,10 @@ export const PKLProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     }
   };
 
-  const register = async (username: string, email: string, password: string, name: string, role: string, companyName?: string, className?: string, nisn?: string) => {
+  const register = async (username: string, email: string, password: string, name: string, role: string, companyName?: string, className?: string, nisn?: string, nip?: string, school?: string, jabatan?: string, employeeId?: string, companyEmail?: string) => {
     setLoading(true);
     try {
-      const res = await registerAction(username, email, password, name, role, companyName, className, nisn);
+      const res = await registerAction(username, email, password, name, role, companyName, className, nisn, nip, school, jabatan, employeeId, companyEmail);
       if (res.success && res.user) {
         setCurrentUser(res.user as UserProfile);
         setSelectedStudentIdState(null);
@@ -362,10 +366,24 @@ export const PKLProvider: React.FC<{ children: React.ReactNode }> = ({ children 
         }
         return { success: true };
       }
+      if (res.success && res.pending) {
+        return { success: true, pending: true, message: res.message };
+      }
       return { success: false, error: res.error };
-    } catch {
+    } catch (error) {
+      console.error(error);
       return { success: false, error: 'Terjadi kesalahan sistem' };
+    } finally {
+      setLoading(false);
     }
+  };
+
+  const getPendingUsers = async () => {
+    return await getPendingUsersAction();
+  };
+
+  const verifyUser = async (userId: string, status: string) => {
+    return await verifyUserAction(userId, status);
   };
 
   const logout = async () => {
@@ -861,6 +879,8 @@ export const PKLProvider: React.FC<{ children: React.ReactNode }> = ({ children 
         logout,
         updateCurrentUserName,
         updateCurrentUserBackground,
+        getPendingUsers,
+        verifyUser,
       }}
     >
       {children}

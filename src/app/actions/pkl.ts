@@ -1846,3 +1846,62 @@ export async function updateBoardBackgroundAction(url: string | null) {
     return { success: false, error: error.message || 'Terjadi kesalahan saat menyimpan background.' };
   }
 }
+
+export async function getPendingUsersAction() {
+  try {
+    const currentUser = await getAuthenticatedUser();
+    if (!currentUser || currentUser.role !== 'admin') {
+      return { success: false, error: 'Unauthorized', data: [] };
+    }
+
+    const pendingUsers = await prisma.user.findMany({
+      where: {
+        status: 'PENDING'
+      },
+      select: {
+        id: true,
+        name: true,
+        email: true,
+        username: true,
+        role: true,
+        companyName: true,
+        company: true,
+        jobTitle: true,
+        jabatan: true,
+        employeeId: true,
+        companyEmail: true,
+        createdAt: true,
+        status: true
+      },
+      orderBy: { createdAt: 'desc' }
+    });
+
+    return { success: true, data: pendingUsers };
+  } catch (error) {
+    console.error('Failed to get pending users:', error);
+    return { success: false, error: 'Terjadi kesalahan pada server', data: [] };
+  }
+}
+
+export async function verifyUserAction(userId: string, status: string) {
+  try {
+    const currentUser = await getAuthenticatedUser();
+    if (!currentUser || currentUser.role !== 'admin') {
+      return { success: false, error: 'Unauthorized' };
+    }
+
+    if (status !== 'ACTIVE' && status !== 'REJECTED') {
+      return { success: false, error: 'Invalid status' };
+    }
+
+    await prisma.user.update({
+      where: { id: userId },
+      data: { status }
+    });
+
+    return { success: true };
+  } catch (error) {
+    console.error('Failed to verify user:', error);
+    return { success: false, error: 'Terjadi kesalahan saat memverifikasi pengguna' };
+  }
+}
