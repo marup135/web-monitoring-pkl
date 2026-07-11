@@ -1,68 +1,8 @@
-'use client';
+const fs = require('fs');
 
-import React from 'react';
-import { usePKL } from '../context/PKLContext';
-import { PKLCard } from '../types/pkl';
-import { Printer, Calendar, Award, Clock, Eye, Edit2, Trash2 } from 'lucide-react';
-import { useLanguage } from '../context/LanguageContext';
+let content = fs.readFileSync('src/components/LogbookTable.tsx', 'utf8');
 
-interface LogbookTableProps {
-  onOpenCard?: (card: PKLCard) => void;
-  onEditCard?: (card: PKLCard) => void;
-}
-
-export const LogbookTable: React.FC<LogbookTableProps> = ({ onOpenCard, onEditCard }) => {
-  const { t } = useLanguage();
-  const { state, currentUser, deleteCard } = usePKL();
-
-  const handlePrint = () => {
-    window.print();
-  };
-
-  const getStatusBadge = (status: string) => {
-    switch (status) {
-      case 'selesai':
-        return 'text-green-700 bg-green-50 border-green-200';
-      case 'review':
-        return 'text-yellow-700 bg-yellow-50 border-yellow-200';
-      case 'progres':
-        return 'text-blue-700 bg-primary/10 border-blue-200';
-      default:
-        return 'text-slate-600 bg-slate-50 dark:bg-gray-800/50 border-slate-200 dark:border-gray-700';
-    }
-  };
-
-  const getStatusText = (status: string) => {
-    switch (status) {
-      case 'selesai': return t('statusDone');
-      case 'review': return t('statusReview');
-      case 'progres': return t('statusProgress');
-      default: return t('statusPlan');
-    }
-  };
-
-  return (
-    <div className="flex flex-col gap-6 text-[#0F172A] dark:text-gray-200 font-sans">
-      
-      {/* Table Action Header (non-printable) */}
-      <div className="flex flex-col sm:flex-row gap-3 justify-between items-start sm:items-center bg-white dark:bg-[#243447] border border-[#E2E8F0] dark:border-gray-700 rounded-2xl p-4 shadow-sm print:hidden">
-        <div className="flex items-center gap-2">
-          <Printer size={18} className="text-primary" />
-          <h3 className="font-semibold text-slate-800 dark:text-white text-sm">{t('printTitle')}</h3>
-        </div>
-        <button
-          onClick={handlePrint}
-          className="w-full sm:w-auto px-4 py-3 md:py-2 bg-primary hover:bg-primary-hover text-white font-semibold text-sm md:text-xs rounded-xl shadow-sm flex items-center justify-center gap-1.5 transition cursor-pointer min-h-[48px] md:min-h-0"
-        >
-          <Printer size={14} />
-          <span>{t('printBtn')}</span>
-        </button>
-      </div>
-
-      {/* Main Printable Logbook Container */}
-      <div className="bg-white dark:bg-[#243447] rounded-2xl p-5 md:p-8 border border-[#E2E8F0] dark:border-gray-700 shadow-sm relative overflow-hidden print:overflow-visible print:bg-white dark:bg-[#243447] print:text-black print:p-0 print:border-none print:shadow-none print:rounded-none">
-        
-        
+const coverReplacement = `
         {/* Printable Cover Page */}
         <div className="hidden print:flex flex-col items-center justify-center min-h-[26cm] w-full" style={{ pageBreakAfter: 'always' }}>
           {/* eslint-disable-next-line @next/next/no-img-element */}
@@ -93,7 +33,9 @@ export const LogbookTable: React.FC<LogbookTableProps> = ({ onOpenCard, onEditCa
             </p>
           </div>
         </div>
+`;
 
+const tableReplacement = `
         {/* Table representation (Desktop) */}
         <div className="hidden md:block print:block overflow-x-auto print:overflow-visible w-full">
           <table className="w-full text-left border-collapse text-xs border border-[#E2E8F0] dark:border-gray-700 rounded-xl overflow-hidden print:overflow-visible shadow-sm print:border-black print:rounded-none">
@@ -150,7 +92,7 @@ export const LogbookTable: React.FC<LogbookTableProps> = ({ onOpenCard, onEditCa
                       {card.startTime || '-'} - {card.endTime || '-'}
                     </td>
                     <td className="py-4 px-3 text-center whitespace-nowrap print:border print:border-black print:py-2 align-top">
-                      <span className={`px-2 py-0.5 rounded border text-[10px] font-bold ${getStatusBadge(card.columnId)} print:border-none print:text-black print:bg-transparent print:px-0 print:py-0 print:text-xs`}>
+                      <span className={\`px-2 py-0.5 rounded border text-[10px] font-bold \${getStatusBadge(card.columnId)} print:border-none print:text-black print:bg-transparent print:px-0 print:py-0 print:text-xs\`}>
                         {getStatusText(card.columnId)}
                       </span>
                     </td>
@@ -221,128 +163,9 @@ export const LogbookTable: React.FC<LogbookTableProps> = ({ onOpenCard, onEditCa
             </tbody>
           </table>
         </div>
-{/* Mobile Timeline/Card List (Mobile-only) */}
-        <div className="md:hidden flex flex-col gap-8 mt-4 print:hidden relative pl-5 border-l border-slate-200 dark:border-gray-700 ml-3">
-          {state.cards.length === 0 ? (
-            <div className="flex flex-col items-center justify-center p-8 bg-white dark:bg-[#243447] border border-[#E2E8F0] dark:border-gray-700 rounded-2xl text-center text-slate-400 -ml-4">
-              <span className="italic text-sm">{t('emptyLogbook')}</span>
-            </div>
-          ) : (
-            state.cards.map((card) => {
-              const formattedDate = new Date(card.createdAt).toLocaleDateString('id-ID', {
-                weekday: 'long',
-                day: 'numeric',
-                month: 'long',
-                year: 'numeric',
-              });
-              const hasMentorScore = card.scoreMentor !== undefined && card.scoreMentor !== null;
-              const hasAdvisorScore = card.scoreAdvisor !== undefined && card.scoreAdvisor !== null;
-              const isSiswa = currentUser?.role === 'siswa';
+`;
 
-              return (
-                <div key={card.id} className="relative">
-                  {/* Timeline Dot */}
-                  <div className="absolute w-2.5 h-2.5 bg-primary rounded-full -left-[25.5px] border-[1.5px] border-white dark:border-gray-900 top-7 shadow-sm z-10" />
-                  
-                  <div className="bg-white dark:bg-[#243447] border border-[#E2E8F0] dark:border-gray-700 rounded-2xl p-6 shadow-sm hover:shadow transition duration-200 flex flex-col gap-4">
-                  {/* Header: Category & Status */}
-                  <div className="flex items-center justify-between">
-                    <span className="px-2.5 py-1 rounded-lg border border-[#E2E8F0] dark:border-gray-700 bg-slate-50 dark:bg-gray-800/50 text-[11px] font-bold text-slate-700 uppercase tracking-wider">
-                      {card.category === 'Laporan' ? t('report') : card.category === 'Lainnya' ? t('others') : card.category}
-                    </span>
-                    <span className={`px-2 py-0.5 rounded-md border text-[9px] font-bold uppercase tracking-wider ${getStatusBadge(card.columnId)}`}>
-                      {getStatusText(card.columnId)}
-                    </span>
-                  </div>
-
-                  {/* Title & Description */}
-                  <div>
-                    <h4 className="text-sm font-bold text-slate-800 dark:text-gray-200 mb-1 leading-snug">{card.title}</h4>
-                    <p className="text-xs text-slate-500 dark:text-gray-300 leading-relaxed line-clamp-2">{card.description}</p>
-                  </div>
-
-                  {/* Date & Time */}
-                  <div className="flex flex-wrap gap-y-2 gap-x-4 text-xs font-medium text-slate-600 dark:text-gray-300 border-t border-slate-100 dark:border-gray-700 pt-4">
-                    <div className="flex items-center gap-1.5">
-                      <Calendar size={13} className="text-slate-400" />
-                      <span>{formattedDate}</span>
-                    </div>
-                    {(card.startTime || card.endTime) && (
-                      <div className="flex items-center gap-1.5">
-                        <Clock size={13} className="text-primary" />
-                        <span>{card.startTime || '-'} - {card.endTime || '-'}</span>
-                      </div>
-                    )}
-                  </div>
-
-                  {/* Evaluations info */}
-                  {(hasMentorScore || hasAdvisorScore) && (
-                    <div className="bg-slate-50 dark:bg-gray-800/50 rounded-xl p-3 border border-slate-100 flex flex-col gap-2.5 text-[10px] text-slate-700">
-                      {hasMentorScore && (
-                        <div className="flex flex-col gap-0.5">
-                          <div className="flex items-center gap-1 text-purple-700 font-bold">
-                            <Award size={12} />
-                            <span>Mentor: {card.scoreMentor}/100</span>
-                          </div>
-                          {card.feedbackMentor && (
-                            <p className="text-slate-500 dark:text-gray-300 italic pl-4">&ldquo;{card.feedbackMentor}&rdquo;</p>
-                          )}
-                        </div>
-                      )}
-                      {hasAdvisorScore && (
-                        <div className={`flex flex-col gap-0.5 ${hasMentorScore ? 'border-t border-slate-200 dark:border-gray-700/50 pt-2' : ''}`}>
-                          <div className="flex items-center gap-1 text-yellow-700 font-bold">
-                            <Award size={12} />
-                            <span>Guru: {card.scoreAdvisor}/100</span>
-                          </div>
-                          {card.feedbackAdvisor && (
-                            <p className="text-slate-500 dark:text-gray-300 italic pl-4">&ldquo;{card.feedbackAdvisor}&rdquo;</p>
-                          )}
-                        </div>
-                      )}
-                    </div>
-                  )}
-
-                  {/* Action Buttons */}
-                  <div className="flex gap-2 border-t border-slate-100 pt-4 mt-1">
-                    <button
-                      onClick={() => onOpenCard?.(card)}
-                      className="flex-1 flex items-center justify-center gap-1.5 border border-slate-200 dark:border-gray-700 hover:bg-slate-50 dark:hover:bg-[#2D435E] text-slate-700 rounded-xl font-bold text-xs min-h-[48px] transition cursor-pointer"
-                    >
-                      <Eye size={14} />
-                      <span>Detail</span>
-                    </button>
-
-                    {isSiswa && (
-                      <>
-                        <button
-                          onClick={() => onEditCard?.(card)}
-                          className="flex-1 flex items-center justify-center gap-1.5 border border-blue-100 dark:border-blue-500/20 bg-primary/10/50 dark:bg-primary/100/10 hover:bg-primary/10 dark:hover:bg-primary/100/20 text-blue-700 dark:text-blue-400 rounded-xl font-bold text-xs min-h-[48px] transition cursor-pointer"
-                        >
-                          <Edit2 size={14} />
-                          <span>Edit</span>
-                        </button>
-                        <button
-                          onClick={() => {
-                            if (confirm('Apakah Anda yakin ingin menghapus kegiatan ini?')) {
-                              deleteCard(card.id);
-                            }
-                          }}
-                          className="flex items-center justify-center w-[48px] border border-red-100 dark:border-red-500/20 bg-red-50/50 dark:bg-red-500/10 hover:bg-red-50 dark:hover:bg-red-500/20 text-red-600 dark:text-red-500 rounded-xl font-bold text-xs min-h-[48px] transition cursor-pointer shrink-0"
-                        >
-                          <Trash2 size={14} />
-                        </button>
-                      </>
-                    )}
-                  </div>
-                </div>
-                </div>
-              );
-            })
-          )}
-        </div>
-
-        
+const signatureReplacement = `
         {/* Printable Signature Lines */}
         <div className="hidden print:grid grid-cols-3 gap-8 mt-24 text-[11px] text-black" style={{ pageBreakInside: 'avoid' }}>
           <div className="flex flex-col items-center text-center">
@@ -364,7 +187,7 @@ export const LogbookTable: React.FC<LogbookTableProps> = ({ onOpenCard, onEditCa
             <span className="font-bold mt-1">Siswa PKL</span>
             <div className="h-24" />
             <span className="font-bold underline">{state.studentName || '____________________'}</span>
-            <span className="mt-1">{state.nisn ? `NIS/NISN: ${state.nisn}` : 'NIS/NISN: ____________________'}</span>
+            <span className="mt-1">{state.nisn ? \`NIS/NISN: \${state.nisn}\` : 'NIS/NISN: ____________________'}</span>
           </div>
         </div>
 
@@ -380,9 +203,11 @@ export const LogbookTable: React.FC<LogbookTableProps> = ({ onOpenCard, onEditCa
            </div>
         </div>
       </div>
+`;
 
+const stylesReplacement = `
       {/* Tailwind print helper styles */}
-      <style jsx global>{`
+      <style jsx global>{\`
         @media print {
           body {
             background: white !important;
@@ -391,7 +216,7 @@ export const LogbookTable: React.FC<LogbookTableProps> = ({ onOpenCard, onEditCa
             line-height: 1.5 !important;
           }
           /* Hide non-printable elements */
-          nav, header, footer:not(.print\\:block), button, .print\\:hidden, [role="button"] {
+          nav, header, footer:not(.print\\\\:block), button, .print\\\\:hidden, [role="button"] {
             display: none !important;
           }
           /* Remove layout containers shadows */
@@ -416,7 +241,7 @@ export const LogbookTable: React.FC<LogbookTableProps> = ({ onOpenCard, onEditCa
             display: table-footer-group;
           }
           /* Format signature block nicely */
-          .print\\:grid {
+          .print\\\\:grid {
             display: grid !important;
             page-break-inside: avoid !important;
             break-inside: avoid !important;
@@ -433,7 +258,22 @@ export const LogbookTable: React.FC<LogbookTableProps> = ({ onOpenCard, onEditCa
             margin: 2cm;
           }
         }
-      `}</style>
-</div>
-  );
-};
+      \`}</style>
+`;
+
+let newContent = content;
+
+// Replace cover page
+newContent = newContent.replace(/\{\/\* Printable Cover Page \*\/\}[\s\S]*?(?=\{\/\* Table representation)/, coverReplacement);
+
+// Replace Table representation
+newContent = newContent.replace(/\{\/\* Table representation \(Desktop\) \*\/\}[\s\S]*?(?=\{\/\* Mobile Timeline\/Card List)/, tableReplacement);
+
+// Replace Signatures. We added a </div> at the end to match what was deleted.
+newContent = newContent.replace(/\{\/\* Printable Signature Lines \*\/\}[\s\S]*?(?=\{\/\* Tailwind print helper styles)/, signatureReplacement);
+
+// Replace styles
+newContent = newContent.replace(/\{\/\* Tailwind print helper styles \*\/\}[\s\S]*?(?=\<\/div\>\s*\n\s*\);)/, stylesReplacement);
+
+fs.writeFileSync('src/components/LogbookTable.tsx', newContent);
+console.log('Successfully replaced LogbookTable.tsx');

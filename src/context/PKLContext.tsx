@@ -52,6 +52,13 @@ export interface UserProfile {
   classes?: { id: string; name: string }[];
   companies?: { id: string; name: string }[];
   nisn?: string | null;
+  nip?: string | null;
+  companyName?: string | null;
+  jobTitle?: string | null;
+  employeeId?: string | null;
+  companyEmail?: string | null;
+  profileImage?: string | null;
+  createdAt?: string | Date;
   boardBackground?: string | null;
 }
 
@@ -159,6 +166,7 @@ interface PKLContextProps {
   logout: () => Promise<void>;
   updateCurrentUserName?: (name: string) => void;
   updateCurrentUserBackground: (url: string | null) => void;
+  updateProfileContext: (updates: Partial<UserProfile>) => void;
   getPendingUsers?: () => Promise<{ success: boolean; error?: string; data: any[] }>;
   verifyUser?: (userId: string, status: string) => Promise<{ success: boolean; error?: string }>;
 }
@@ -821,6 +829,12 @@ export const PKLProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     }
   };
 
+  const updateProfileContext = (updates: Partial<UserProfile>) => {
+    if (currentUser) {
+      setCurrentUser({ ...currentUser, ...updates });
+    }
+  };
+
   const resetState = async () => {
     setLoading(true);
     try {
@@ -879,6 +893,7 @@ export const PKLProvider: React.FC<{ children: React.ReactNode }> = ({ children 
         logout,
         updateCurrentUserName,
         updateCurrentUserBackground,
+        updateProfileContext,
         getPendingUsers,
         verifyUser,
       }}

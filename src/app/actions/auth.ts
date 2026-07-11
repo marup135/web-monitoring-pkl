@@ -172,6 +172,13 @@ export async function registerAction(
           classId: true,
           companyId: true,
           nisn: true,
+          nip: true,
+          companyName: true,
+          jobTitle: true,
+          employeeId: true,
+          companyEmail: true,
+          profileImage: true,
+          createdAt: true,
           classes: {
             select: { id: true, name: true }
           },
@@ -235,6 +242,14 @@ export async function loginAction(identifier: string, password: string) {
         classId: true,
         companyId: true,
         nisn: true,
+        nip: true,
+        companyName: true,
+        jobTitle: true,
+        employeeId: true,
+        companyEmail: true,
+        profileImage: true,
+        createdAt: true,
+        boardBackground: true,
         classes: {
           select: { id: true, name: true }
         },
@@ -284,6 +299,14 @@ export async function getCurrentUserAction() {
         classId: true,
         companyId: true,
         nisn: true,
+        nip: true,
+        companyName: true,
+        jobTitle: true,
+        employeeId: true,
+        companyEmail: true,
+        profileImage: true,
+        createdAt: true,
+        boardBackground: true,
         classes: {
           select: {
             id: true,

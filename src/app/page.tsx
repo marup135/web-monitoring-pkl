@@ -38,6 +38,7 @@ function DashboardContent() {
   const [isSettingsActive, setIsSettingsActive] = useState(false);
   const [settingsActiveSection, setSettingsActiveSection] = useState<'profile' | null>(null);
   const [isUserMenuOpen, setIsUserMenuOpen] = useState(false);
+  const [isDesktopUserMenuOpen, setIsDesktopUserMenuOpen] = useState(false);
 
   const isPembimbing = currentUser && currentUser.role !== 'siswa';
 
@@ -122,9 +123,13 @@ function DashboardContent() {
         </div>
         <button
           onClick={() => setIsUserMenuOpen(true)}
-          className="w-8 h-8 rounded-full bg-blue-100 flex items-center justify-center text-blue-600 font-bold text-xs cursor-pointer min-h-0 min-w-0"
+          className="w-8 h-8 rounded-full bg-blue-100 flex items-center justify-center text-blue-600 font-bold text-xs cursor-pointer min-h-0 min-w-0 overflow-hidden shrink-0 border border-slate-200 dark:border-gray-700"
         >
-          {currentUser?.name?.charAt(0).toUpperCase()}
+          {currentUser?.profileImage ? (
+            <img src={currentUser.profileImage} alt="Profile" className="w-full h-full object-cover" />
+          ) : (
+            currentUser?.name?.charAt(0).toUpperCase()
+          )}
         </button>
       </div>
 
@@ -200,8 +205,12 @@ function DashboardContent() {
             <div className="mt-auto pt-6">
               <div className="flex items-center justify-between p-3 bg-slate-50 dark:bg-gray-800/50 rounded-2xl border border-slate-100 dark:border-gray-700/50">
                 <div className="flex items-center gap-3 overflow-hidden">
-                  <div className="w-9 h-9 rounded-xl bg-blue-100 dark:bg-gray-800 flex items-center justify-center text-blue-600 dark:text-gray-300 font-bold text-sm shrink-0">
-                    {currentUser?.name?.charAt(0).toUpperCase()}
+                  <div className="w-9 h-9 rounded-xl bg-blue-100 dark:bg-gray-800 flex items-center justify-center text-blue-600 dark:text-gray-300 font-bold text-sm shrink-0 overflow-hidden">
+                    {currentUser?.profileImage ? (
+                      <img src={currentUser.profileImage} alt="Profile" className="w-full h-full object-cover" />
+                    ) : (
+                      currentUser?.name?.charAt(0).toUpperCase()
+                    )}
                   </div>
                   <div className="overflow-hidden">
                     <p className="text-sm font-bold text-slate-800 dark:text-gray-200 truncate leading-tight">{currentUser?.name}</p>
@@ -242,6 +251,15 @@ function DashboardContent() {
           <span className="text-[9px] font-bold mt-0.5">{t('board').split(' ')[0]}</span>
         </button>
         <button
+          onClick={() => { setActiveTab('attendance'); setIsSettingsActive(false); }}
+          className={`flex flex-col items-center justify-center flex-1 h-full cursor-pointer transition-colors ${
+            !isSettingsActive && activeTab === 'attendance' ? 'text-primary' : 'text-slate-400'
+          }`}
+        >
+          <Clock size={20} />
+          <span className="text-[9px] font-bold mt-0.5">{t('attendance').split(' ')[0]}</span>
+        </button>
+        <button
           onClick={() => { setActiveTab('logbook'); setIsSettingsActive(false); }}
           className={`flex flex-col items-center justify-center flex-1 h-full cursor-pointer transition-colors ${
             !isSettingsActive && activeTab === 'logbook' ? 'text-primary' : 'text-slate-400'
@@ -250,15 +268,17 @@ function DashboardContent() {
           <FileSpreadsheet size={20} />
           <span className="text-[9px] font-bold mt-0.5">{t('logbook').split(' ')[0]}</span>
         </button>
-        <button
-          onClick={() => setIsUserMenuOpen(true)}
-          className={`flex flex-col items-center justify-center flex-1 h-full cursor-pointer transition-colors ${
-            isUserMenuOpen && !isSettingsActive ? 'text-primary' : 'text-slate-400'
-          }`}
-        >
-          <User size={20} />
-          <span className="text-[9px] font-bold mt-0.5">{t('users')}</span>
-        </button>
+        {currentUser?.role !== 'siswa' && (
+          <button
+            onClick={() => setIsUserMenuOpen(true)}
+            className={`flex flex-col items-center justify-center flex-1 h-full cursor-pointer transition-colors ${
+              isUserMenuOpen && !isSettingsActive ? 'text-primary' : 'text-slate-400'
+            }`}
+          >
+            <User size={20} />
+            <span className="text-[9px] font-bold mt-0.5">{t('users')}</span>
+          </button>
+        )}
         <button
           onClick={() => setIsSettingsActive(true)}
           className={`flex flex-col items-center justify-center flex-1 h-full cursor-pointer transition-colors ${
@@ -318,10 +338,72 @@ function DashboardContent() {
           
           <span className="text-[#E2E8F0] hidden sm:inline">|</span>
           
-          <div className="flex items-center gap-2">
-            <span className="text-xs text-[#64748B] dark:text-gray-300">
-              Pengguna: <span className="font-semibold text-primary">{currentUser?.name}</span>
-            </span>
+          <div className="relative">
+            <div 
+              className="flex items-center gap-2 cursor-pointer hover:bg-slate-50 dark:hover:bg-gray-800 p-1.5 pr-3 rounded-full transition"
+              onClick={() => setIsDesktopUserMenuOpen(!isDesktopUserMenuOpen)}
+            >
+              <div className="w-7 h-7 rounded-full bg-blue-100 flex items-center justify-center text-blue-600 font-bold text-[10px] overflow-hidden shrink-0 border border-slate-200 dark:border-gray-700">
+                {currentUser?.profileImage ? (
+                  <img src={currentUser.profileImage} alt="Profile" className="w-full h-full object-cover" />
+                ) : (
+                  currentUser?.name?.charAt(0).toUpperCase()
+                )}
+              </div>
+              <span className="text-xs text-[#64748B] dark:text-gray-300">
+                Pengguna: <span className="font-semibold text-primary">{currentUser?.name}</span>
+              </span>
+            </div>
+
+            {/* Desktop User Menu Popover */}
+            {isDesktopUserMenuOpen && (
+              <>
+                <div className="fixed inset-0 z-40" onClick={() => setIsDesktopUserMenuOpen(false)} />
+                <div className="absolute top-full right-0 mt-2 w-72 bg-white dark:bg-[#243447] border border-[#E2E8F0] dark:border-gray-700 rounded-2xl shadow-xl z-50 animate-in fade-in zoom-in-95 duration-200 overflow-hidden">
+                  <div className="p-4 border-b border-[#E2E8F0] dark:border-gray-700">
+                    <div className="flex items-center gap-3">
+                      <div className="w-12 h-12 rounded-full bg-blue-100 flex items-center justify-center text-blue-600 font-bold text-lg overflow-hidden shrink-0 border border-slate-200 dark:border-gray-700">
+                        {currentUser?.profileImage ? (
+                          <img src={currentUser.profileImage} alt="Profile" className="w-full h-full object-cover" />
+                        ) : (
+                          currentUser?.name?.charAt(0).toUpperCase()
+                        )}
+                      </div>
+                      <div className="overflow-hidden">
+                        <h4 className="font-bold text-sm text-slate-800 dark:text-gray-200 truncate">{currentUser?.name}</h4>
+                        <p className="text-[10px] text-slate-500 dark:text-gray-400 truncate">{currentUser?.email || currentUser?.username}</p>
+                        <span className="inline-block mt-1 px-2 py-0.5 bg-blue-50 dark:bg-blue-500/10 text-blue-600 dark:text-blue-400 font-bold text-[9px] uppercase tracking-wider rounded-md border border-blue-100 dark:border-blue-500/20">
+                          {currentUser?.role?.replace('_', ' ')}
+                        </span>
+                      </div>
+                    </div>
+                    <div className="mt-3 pt-3 border-t border-[#E2E8F0] dark:border-gray-700 flex flex-col gap-1 text-[11px] text-slate-500 dark:text-gray-400">
+                      <div className="flex justify-between">
+                        <span>{currentUser?.role === 'siswa' ? 'Sekolah' : 'Instansi'}:</span>
+                        <span className="font-semibold text-slate-700 dark:text-gray-300 truncate max-w-[120px] text-right">{currentUser?.school || currentUser?.company || '-'}</span>
+                      </div>
+                      {currentUser?.role === 'siswa' && (
+                        <div className="flex justify-between mt-0.5">
+                          <span>Kelas:</span>
+                          <span className="font-semibold text-slate-700 dark:text-gray-300 truncate max-w-[120px] text-right">{currentUser?.classes?.[0]?.name || '-'}</span>
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                  <div className="p-2 flex flex-col gap-1">
+                    <a href="/profile" className="flex items-center gap-2 px-3 py-2 hover:bg-slate-50 dark:hover:bg-gray-800 rounded-xl text-xs font-bold text-slate-700 dark:text-gray-200 transition">
+                      👤 Lihat Profil
+                    </a>
+                    <button onClick={() => { setIsDesktopUserMenuOpen(false); setIsSettingsActive(true); setSettingsActiveSection('profile'); }} className="flex w-full items-center gap-2 px-3 py-2 hover:bg-slate-50 dark:hover:bg-gray-800 rounded-xl text-xs font-bold text-slate-700 dark:text-gray-200 transition">
+                      ⚙ Pengaturan
+                    </button>
+                    <button onClick={logout} className="flex w-full items-center gap-2 px-3 py-2 hover:bg-red-50 dark:hover:bg-red-500/10 text-red-600 dark:text-red-400 rounded-xl text-xs font-bold transition">
+                      🚪 Logout
+                    </button>
+                  </div>
+                </div>
+              </>
+            )}
           </div>
 
           <span className="text-[#E2E8F0] hidden sm:inline">|</span>
@@ -478,8 +560,12 @@ function DashboardContent() {
             <div className="w-12 h-1.5 bg-slate-200 rounded-full mx-auto mb-2" />
             
             <div className="flex items-center gap-4">
-              <div className="w-14 h-14 rounded-2xl bg-gradient-to-tr from-[#2563EB] to-blue-400 flex items-center justify-center text-white font-black text-xl shadow-md shrink-0">
-                {currentUser?.name?.charAt(0).toUpperCase()}
+              <div className="w-14 h-14 rounded-2xl bg-gradient-to-tr from-[#2563EB] to-blue-400 flex items-center justify-center text-white font-black text-xl shadow-md shrink-0 overflow-hidden">
+                {currentUser?.profileImage ? (
+                  <img src={currentUser.profileImage} alt="Profile" className="w-full h-full object-cover" />
+                ) : (
+                  currentUser?.name?.charAt(0).toUpperCase()
+                )}
               </div>
               <div className="overflow-hidden">
                 <h3 className="font-extrabold text-slate-800 dark:text-gray-200 text-base leading-snug truncate">{currentUser?.name}</h3>
@@ -495,6 +581,16 @@ function DashboardContent() {
             <hr className="border-[#E2E8F0] dark:border-gray-700 my-1" />
 
             <div className="flex flex-col gap-2">
+              <a
+                href="/profile"
+                className="flex items-center gap-3 px-4 py-3 hover:bg-slate-50 dark:hover:bg-[#2D435E] rounded-2xl text-slate-700 font-bold text-xs text-left transition min-h-[48px] cursor-pointer"
+              >
+                <div className="w-8 h-8 rounded-xl bg-slate-100 dark:bg-gray-800 flex items-center justify-center text-slate-500 dark:text-gray-300 shrink-0">
+                  <User size={16} />
+                </div>
+                <span>Lihat Profil</span>
+              </a>
+
               <button
                 onClick={() => {
                   setIsUserMenuOpen(false);
@@ -504,9 +600,9 @@ function DashboardContent() {
                 className="flex items-center gap-3 px-4 py-3 hover:bg-slate-50 dark:hover:bg-[#2D435E] rounded-2xl text-slate-700 font-bold text-xs text-left transition min-h-[48px] cursor-pointer"
               >
                 <div className="w-8 h-8 rounded-xl bg-slate-100 dark:bg-gray-800 flex items-center justify-center text-slate-500 dark:text-gray-300 shrink-0">
-                  <User size={16} />
+                  <Settings size={16} />
                 </div>
-                <span>{t('profile')}</span>
+                <span>{t('settings')}</span>
               </button>
 
               <hr className="border-[#E2E8F0] dark:border-gray-700 my-2" />
@@ -600,7 +696,9 @@ export default function Home() {
   return (
     <PKLProvider>
       <div className="min-h-screen flex flex-col font-sans bg-[#F8FAFC] dark:bg-gray-900 text-[#0F172A] dark:text-gray-200">
+        <div className="min-h-screen flex flex-col font-sans bg-[#F8FAFC] dark:bg-gray-900 text-[#0F172A] dark:text-gray-200">
         <HomeWrapper />
+      </div>
       </div>
     </PKLProvider>
   );

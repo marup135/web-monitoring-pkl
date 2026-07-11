@@ -25,6 +25,9 @@ model User {
   jobTitle    String?  @db.VarChar(100)
   employeeId  String?  @db.VarChar(50)
   companyEmail String? @db.VarChar(255)
+  profileImage String? @db.Text
+  lastMorningReminder   String? @db.VarChar(10) // Format: YYYY-MM-DD
+  lastAfternoonReminder String? @db.VarChar(10) // Format: YYYY-MM-DD
   createdAt DateTime @default(now())
 
   // Relations for Siswa
