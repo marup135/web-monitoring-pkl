@@ -16,6 +16,7 @@ export const AdminPortal: React.FC = () => {
     classesList,
     companiesList,
     allUsersList,
+    currentUser,
     fetchAdminData,
     createClass,
     updateClass,
@@ -169,9 +170,11 @@ export const AdminPortal: React.FC = () => {
         <div>
           <h2 className="text-sm font-bold uppercase tracking-wider text-[#64748B] dark:text-gray-300 flex items-center gap-2">
             <ShieldAlert size={16} className="text-red-500" />
-            Portal Administrator SMKN 1 Bojong
+            Portal Administrator {currentUser?.institution?.name || "SMKN 1 Bojong"}
           </h2>
-          <p className="text-[11px] text-[#64748B] dark:text-gray-300">{t('adminPortalDesc')}</p>
+          <p className="text-[11px] text-[#64748B] dark:text-gray-300">
+            {t('adminPortalDesc')} {currentUser?.institution?.code && <span className="font-bold text-primary ml-1">KODE INSTITUSI: {currentUser.institution.code}</span>}
+          </p>
         </div>
         <div className="flex items-center gap-2 w-full sm:w-auto justify-end">
           <button 

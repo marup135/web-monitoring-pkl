@@ -289,7 +289,8 @@ export const AuthPage: React.FC = () => {
           (role === 'PARTICIPANT' || role === 'INTERNAL_MENTOR') ? school.trim() : undefined,
           role === 'EXTERNAL_MENTOR' ? jabatan.trim() : undefined,
           role === 'EXTERNAL_MENTOR' ? employeeId.trim() : undefined,
-          role === 'EXTERNAL_MENTOR' ? companyEmail.trim() : undefined
+          role === 'EXTERNAL_MENTOR' ? companyEmail.trim() : undefined,
+          institutionCode.trim() ? institutionCode.trim() : undefined
         );
         if (res.success && res.pending) {
           clearError();
@@ -801,6 +802,23 @@ export const AuthPage: React.FC = () => {
                             </p>
                           </>
                         )}
+
+                        {/* Institution Code (For all roles) */}
+                        <div className="flex flex-col gap-1.5">
+                          <label className="text-xs text-[#64748B] dark:text-gray-300 font-bold">
+                            Kode Institusi (Opsional)
+                          </label>
+                          <div className="relative">
+                            <input
+                              type="text"
+                              placeholder="KODE-INSTITUSI"
+                              value={institutionCode}
+                              onChange={(e) => setInstitutionCode(e.target.value)}
+                              className={inputClass(false)}
+                            />
+                          </div>
+                          <p className="text-[10px] text-slate-500 mt-0.5">Isi jika Anda diberikan kode pendaftaran dari Admin.</p>
+                        </div>
                       </div>
                     </div>
                   </div>

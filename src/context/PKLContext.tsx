@@ -60,6 +60,7 @@ export interface UserProfile {
   profileImage?: string | null;
   createdAt?: string | Date;
   boardBackground?: string | null;
+  institution?: { name: string; code: string; } | null;
 }
 
 export interface ClassItem {
