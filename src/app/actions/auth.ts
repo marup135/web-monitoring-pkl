@@ -159,8 +159,11 @@ export async function registerAction(
       }
     });
 
+    console.log("--- REGISTRATION LOG ---");
     console.log("Role:", role);
-    console.log("Status yang disimpan:", status);
+    console.log("Status:", status);
+    console.log("InstitutionId:", resolvedInstitutionId);
+    console.log("------------------------");
 
     // Set cookie session ONLY IF ACTIVE
     if (status === 'ACTIVE') {

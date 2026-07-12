@@ -60,6 +60,7 @@ export const AuthPage: React.FC = () => {
   const [company, setCompany] = useState('');
   const [selectedClass, setSelectedClass] = useState('');
   const [school, setSchool] = useState('');
+  const [institutionCode, setInstitutionCode] = useState('');
   const [nip, setNip] = useState('');
   const [jabatan, setJabatan] = useState('');
   const [nisn, setNisn] = useState('');

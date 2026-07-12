@@ -45,6 +45,7 @@ export const AdminPortal: React.FC = () => {
   // Overview metrics state
   const [overallMetrics, setOverallMetrics] = useState<any>(null);
   const [pendingUsersList, setPendingUsersList] = useState<any[]>([]);
+  const [verificationFilter, setVerificationFilter] = useState<'ALL' | 'PARTICIPANT' | 'INTERNAL_MENTOR' | 'EXTERNAL_MENTOR'>('ALL');
 
   const reloadAll = async () => {
     await fetchAdminData();
@@ -217,7 +218,15 @@ export const AdminPortal: React.FC = () => {
         {activeTab === 'verifikasi' && (
           <div className="flex flex-col gap-4">
             <h3 className="text-sm font-bold text-slate-700 dark:text-gray-200 uppercase tracking-wider mb-2">{t('pendingAccountsList')}</h3>
-            {pendingUsersList.length === 0 ? (
+
+            <div className="flex flex-wrap gap-2 mb-4">
+              <button onClick={() => setVerificationFilter('ALL')} className={`px-3 py-1.5 text-xs font-bold rounded-lg border transition ${verificationFilter === 'ALL' ? 'bg-primary text-white border-primary' : 'bg-slate-50 dark:bg-gray-800 text-slate-600 dark:text-gray-300 border-slate-200 dark:border-gray-700'}`}>Semua</button>
+              <button onClick={() => setVerificationFilter('PARTICIPANT')} className={`px-3 py-1.5 text-xs font-bold rounded-lg border transition ${verificationFilter === 'PARTICIPANT' ? 'bg-primary text-white border-primary' : 'bg-slate-50 dark:bg-gray-800 text-slate-600 dark:text-gray-300 border-slate-200 dark:border-gray-700'}`}>Participant</button>
+              <button onClick={() => setVerificationFilter('INTERNAL_MENTOR')} className={`px-3 py-1.5 text-xs font-bold rounded-lg border transition ${verificationFilter === 'INTERNAL_MENTOR' ? 'bg-primary text-white border-primary' : 'bg-slate-50 dark:bg-gray-800 text-slate-600 dark:text-gray-300 border-slate-200 dark:border-gray-700'}`}>Internal Mentor</button>
+              <button onClick={() => setVerificationFilter('EXTERNAL_MENTOR')} className={`px-3 py-1.5 text-xs font-bold rounded-lg border transition ${verificationFilter === 'EXTERNAL_MENTOR' ? 'bg-primary text-white border-primary' : 'bg-slate-50 dark:bg-gray-800 text-slate-600 dark:text-gray-300 border-slate-200 dark:border-gray-700'}`}>External Mentor</button>
+            </div>
+
+            {(pendingUsersList.filter(u => verificationFilter === 'ALL' ? true : u.role === verificationFilter)).length === 0 ? (
               <p className="text-xs text-slate-500 dark:text-gray-400">{t('noPendingAccounts')}</p>
             ) : (
               <div className="overflow-x-auto rounded-xl border border-slate-200 dark:border-gray-700">
@@ -232,7 +241,7 @@ export const AdminPortal: React.FC = () => {
                     </tr>
                   </thead>
                   <tbody>
-                    {pendingUsersList.map(user => (
+                    {pendingUsersList.filter(u => verificationFilter === 'ALL' ? true : u.role === verificationFilter).map(user => (
                       <tr key={user.id} className="border-b border-slate-100 dark:border-gray-700 hover:bg-slate-50/50 dark:hover:bg-gray-800/30">
                         <td className="p-3">
                           <p className="text-xs font-bold text-slate-800 dark:text-gray-200">{user.name}</p>

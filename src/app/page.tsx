@@ -92,7 +92,7 @@ function DashboardContent() {
         {/* Role Portal Conditional Selection */}
         {currentUser.role === 'SUPER_ADMIN' ? (
           <SuperAdminPortal />
-        ) : currentUser.role === 'INSTITUTION_ADMIN' ? (
+        ) : (currentUser.role === 'INSTITUTION_ADMIN' || currentUser.role === 'admin') ? (
           <AdminPortal />
         ) : currentUser.role === 'INTERNAL_MENTOR' ? (
           <GuruPortal onPantau={handlePantauStudent} />

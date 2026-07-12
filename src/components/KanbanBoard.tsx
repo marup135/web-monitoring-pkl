@@ -48,7 +48,7 @@ export const KanbanBoard: React.FC<KanbanBoardProps> = ({ onOpenCard }) => {
     }
   };
 
-  const handleModalSubmit = (e: React.FormEvent) => {
+  const handleModalSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setValidationError(null);
 
@@ -69,16 +69,20 @@ export const KanbanBoard: React.FC<KanbanBoardProps> = ({ onOpenCard }) => {
     if (!newTitle.trim()) return;
     const categoryToSave = newCategory === 'Lainnya' ? customCategory.trim() || 'Lainnya' : newCategory;
     
-    addCard(newTitle, newDesc, categoryToSave, newDueDate, newStartTime, newEndTime, newColumnId);
-    
-    setNewTitle('');
-    setNewDesc('');
-    setNewCategory('Coding');
-    setCustomCategory('');
-    setNewColumnId('rencana');
-    setNewStartTime('');
-    setNewEndTime('');
-    setIsAddModalOpen(false);
+    try {
+      await addCard(newTitle, newDesc, categoryToSave, newDueDate, newStartTime, newEndTime, newColumnId);
+      
+      setNewTitle('');
+      setNewDesc('');
+      setNewCategory('Coding');
+      setCustomCategory('');
+      setNewColumnId('rencana');
+      setNewStartTime('');
+      setNewEndTime('');
+      setIsAddModalOpen(false);
+    } catch (err: any) {
+      setValidationError(err.message || 'Gagal menyimpan kegiatan.');
+    }
   };
 
   // Filter cards based on search and category filter

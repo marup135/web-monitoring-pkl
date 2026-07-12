@@ -162,7 +162,7 @@ interface PKLContextProps {
   deleteCard: (cardId: string) => Promise<void>;
   resetState: () => Promise<void>;
   login: (username: string, password: string) => Promise<{ success: boolean; error?: string }>;
-  register: (username: string, email: string, password: string, name: string, role: string, companyName?: string, className?: string, nisn?: string, nip?: string, school?: string, jabatan?: string, employeeId?: string, companyEmail?: string) => Promise<{ success: boolean; error?: string; pending?: boolean; message?: string }>;
+  register: (username: string, email: string, password: string, name: string, role: string, companyName?: string, className?: string, nisn?: string, nip?: string, school?: string, jabatan?: string, employeeId?: string, companyEmail?: string, institutionCode?: string) => Promise<{ success: boolean; error?: string; pending?: boolean; message?: string }>;
   logout: () => Promise<void>;
   updateCurrentUserName?: (name: string) => void;
   updateCurrentUserBackground: (url: string | null) => void;
@@ -194,9 +194,9 @@ export const PKLProvider: React.FC<{ children: React.ReactNode }> = ({ children 
   const [allUsersList, setAllUsersList] = useState<UserItem[]>([]);
 
   const activeRole: PKLRole = currentUser
-    ? currentUser.role === 'siswa'
+    ? currentUser.role === 'PARTICIPANT' || currentUser.role === 'siswa'
       ? 'Mahasiswa'
-      : currentUser.role === 'pembimbing_eksternal'
+      : currentUser.role === 'EXTERNAL_MENTOR' || currentUser.role === 'pembimbing_eksternal'
       ? 'Mentor'
       : 'Dosen Pembimbing'
     : 'Mahasiswa';
@@ -206,7 +206,7 @@ export const PKLProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     setClassesList(cl);
     const co = await getCompaniesAction();
     setCompaniesList(co);
-    if (currentUser?.role === 'admin') {
+    if (currentUser?.role === 'admin' || currentUser?.role === 'SUPER_ADMIN' || currentUser?.role === 'INSTITUTION_ADMIN') {
       const u = await getAllUsersAction();
       setAllUsersList(u);
     }
@@ -221,7 +221,7 @@ export const PKLProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     if (!user) return;
     setLoading(true);
     try {
-      if (user.role === 'siswa') {
+      if (user.role === 'siswa' || user.role === 'PARTICIPANT') {
         const dbState = await getPKLState();
         setState(dbState);
       } else {
@@ -291,7 +291,7 @@ export const PKLProvider: React.FC<{ children: React.ReactNode }> = ({ children 
           
           await fetchState(user, null, initialClassId, initialCompanyId);
           
-          if (user.role === 'admin') {
+          if (user.role === 'admin' || user.role === 'SUPER_ADMIN' || user.role === 'INSTITUTION_ADMIN') {
             const u = await getAllUsersAction();
             setAllUsersList(u);
           }
@@ -326,7 +326,7 @@ export const PKLProvider: React.FC<{ children: React.ReactNode }> = ({ children 
 
         await fetchState(res.user, null, initialClassId, initialCompanyId);
         
-        if (res.user.role === 'admin') {
+        if (res.user.role === 'admin' || res.user.role === 'SUPER_ADMIN' || res.user.role === 'INSTITUTION_ADMIN') {
           const cl = await getClassesAction();
           setClassesList(cl);
           const co = await getCompaniesAction();
@@ -342,10 +342,10 @@ export const PKLProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     }
   };
 
-  const register = async (username: string, email: string, password: string, name: string, role: string, companyName?: string, className?: string, nisn?: string, nip?: string, school?: string, jabatan?: string, employeeId?: string, companyEmail?: string) => {
+  const register = async (username: string, email: string, password: string, name: string, role: string, companyName?: string, className?: string, nisn?: string, nip?: string, school?: string, jabatan?: string, employeeId?: string, companyEmail?: string, institutionCode?: string) => {
     setLoading(true);
     try {
-      const res = await registerAction(username, email, password, name, role, companyName, className, nisn, nip, school, jabatan, employeeId, companyEmail);
+      const res = await registerAction(username, email, password, name, role, companyName, className, nisn, nip, school, jabatan, employeeId, companyEmail, institutionCode);
       if (res.success && res.user) {
         setCurrentUser(res.user as UserProfile);
         setSelectedStudentIdState(null);
@@ -364,7 +364,7 @@ export const PKLProvider: React.FC<{ children: React.ReactNode }> = ({ children 
 
         await fetchState(res.user, null, initialClassId, initialCompanyId);
         
-        if (res.user.role === 'admin') {
+        if (res.user.role === 'admin' || res.user.role === 'SUPER_ADMIN' || res.user.role === 'INSTITUTION_ADMIN') {
           const cl = await getClassesAction();
           setClassesList(cl);
           const co = await getCompaniesAction();
@@ -786,7 +786,7 @@ export const PKLProvider: React.FC<{ children: React.ReactNode }> = ({ children 
   const addAdvisorNote = async (text: string) => {
     setLoading(true);
     try {
-      const targetStudentId = currentUser?.role === 'siswa' ? currentUser.id : selectedStudentId;
+      const targetStudentId = currentUser?.role === 'siswa' || currentUser?.role === 'PARTICIPANT' ? currentUser.id : selectedStudentId;
       if (!targetStudentId) throw new Error('No student selected');
       const res = await addAdvisorNoteAction(text, state.advisorName, targetStudentId);
       if (res && !res.success) {

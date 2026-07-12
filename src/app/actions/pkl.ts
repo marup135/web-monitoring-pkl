@@ -70,7 +70,7 @@ export async function getPKLState(selectedStudentId?: string): Promise<PKLState>
 
     // Determine target student
     let targetStudentId = currentUser.id;
-    if (currentUser.role !== 'PARTICIPANT') {
+    if (currentUser.role !== 'PARTICIPANT' && currentUser.role !== 'siswa') {
       if (selectedStudentId) {
         const targetStudent = await prisma.user.findUnique({
           where: { id: selectedStudentId }
@@ -307,7 +307,7 @@ export async function createCardAction(
       return { success: false, error: 'Sesi tidak sah.' };
     }
 
-    if (currentUser.role !== 'PARTICIPANT') {
+    if (currentUser.role !== 'PARTICIPANT' && currentUser.role !== 'siswa') {
       return { success: false, error: 'Hanya siswa yang dapat membuat rencana kegiatan' };
     }
 
@@ -830,7 +830,7 @@ export async function addAttachmentAction(cardId: string, name: string, url: str
     const card = await prisma.card.findUnique({ where: { id: cardId } });
     if (!card) return { success: false, error: 'Kegiatan tidak ditemukan.' };
 
-    if (currentUser.role !== 'PARTICIPANT' || card.studentId !== currentUser.id) {
+    if ((currentUser.role !== 'PARTICIPANT' && currentUser.role !== 'siswa') || card.studentId !== currentUser.id) {
       return { success: false, error: 'Akses ditolak: Hanya pemilik kegiatan yang dapat mengunggah lampiran.' };
     }
 
@@ -859,7 +859,7 @@ export async function deleteAttachmentAction(cardId: string, index: number) {
     const card = await prisma.card.findUnique({ where: { id: cardId } });
     if (!card) return { success: false, error: 'Kegiatan tidak ditemukan.' };
 
-    if (currentUser.role !== 'PARTICIPANT' || card.studentId !== currentUser.id) {
+    if ((currentUser.role !== 'PARTICIPANT' && currentUser.role !== 'siswa') || card.studentId !== currentUser.id) {
       return { success: false, error: 'Akses ditolak: Hanya pemilik kegiatan yang dapat menghapus lampiran.' };
     }
 
@@ -886,7 +886,7 @@ export async function addAdvisorNoteAction(text: string, advisorName: string, st
     }
 
     const student = await prisma.user.findUnique({ where: { id: studentId } });
-    if (!student || student.role !== 'PARTICIPANT' || !canAdvisorAccessStudent(currentUser, student)) {
+    if (!student || (student.role !== 'PARTICIPANT' && student.role !== 'siswa') || !canAdvisorAccessStudent(currentUser, student)) {
       return { success: false, error: 'Akses ditolak: Siswa dari kelas lain.' };
     }
 
@@ -915,7 +915,7 @@ export async function deleteCardAction(cardId: string) {
     const card = await prisma.card.findUnique({ where: { id: cardId } });
     if (!card) return { success: false, error: 'Kegiatan tidak ditemukan.' };
 
-    if (currentUser.role !== 'PARTICIPANT' || card.studentId !== currentUser.id) {
+    if ((currentUser.role !== 'PARTICIPANT' && currentUser.role !== 'siswa') || card.studentId !== currentUser.id) {
       return { success: false, error: 'Akses ditolak: Hanya pemilik kegiatan yang dapat menghapusnya.' };
     }
 
@@ -1472,7 +1472,13 @@ export async function getAllUsersAction() {
       return [];
     }
 
+    const whereClause: any = {};
+    if (currentUser.role === 'INSTITUTION_ADMIN' && currentUser.institutionId) {
+      whereClause.institutionId = currentUser.institutionId;
+    }
+
     return prisma.user.findMany({
+      where: whereClause,
       select: {
         id: true,
         username: true,
@@ -1854,10 +1860,16 @@ export async function getPendingUsersAction() {
       return { success: false, error: 'Unauthorized', data: [] };
     }
 
+    const whereClause: any = { status: 'PENDING' };
+    if (currentUser.role === 'INSTITUTION_ADMIN' && currentUser.institutionId) {
+      whereClause.institutionId = currentUser.institutionId;
+    }
+
+    console.log("--- APPROVAL LOG ---");
+    console.log("Admin InstitutionId:", currentUser.institutionId);
+    console.log("WhereClause:", whereClause);
     const pendingUsers = await prisma.user.findMany({
-      where: {
-        status: 'PENDING'
-      },
+      where: whereClause,
       select: {
         id: true,
         name: true,
@@ -1876,6 +1888,8 @@ export async function getPendingUsersAction() {
       orderBy: { createdAt: 'desc' }
     });
 
+    console.log("Jumlah pendingUsers:", pendingUsers.length);
+    console.log("--------------------");
     return { success: true, data: pendingUsers };
   } catch (error) {
     console.error('Failed to get pending users:', error);
