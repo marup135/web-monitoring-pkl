@@ -106,7 +106,10 @@ export async function registerAction(
     }
     // If not found, use default for backward compatibility
     if (!resolvedInstitutionId) {
-       const inst = await prisma.institution.findFirst();
+       const inst = await prisma.institution.findFirst({
+         where: { status: 'ACTIVE' },
+         orderBy: { createdAt: 'desc' }
+       });
        if (inst) resolvedInstitutionId = inst.id;
     }
 
