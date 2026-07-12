@@ -359,46 +359,52 @@ function DashboardContent() {
             {isDesktopUserMenuOpen && (
               <>
                 <div className="fixed inset-0 z-40" onClick={() => setIsDesktopUserMenuOpen(false)} />
-                <div className="absolute top-full right-0 mt-2 w-72 bg-white dark:bg-[#243447] border border-[#E2E8F0] dark:border-gray-700 rounded-2xl shadow-xl z-50 animate-in fade-in zoom-in-95 duration-200 overflow-hidden">
-                  <div className="p-4 border-b border-[#E2E8F0] dark:border-gray-700">
-                    <div className="flex items-center gap-3">
-                      <div className="w-12 h-12 rounded-full bg-blue-100 flex items-center justify-center text-blue-600 font-bold text-lg overflow-hidden shrink-0 border border-slate-200 dark:border-gray-700">
+                <div className="absolute top-full right-0 mt-3 w-80 bg-white dark:bg-[#1E293B] border border-slate-100 dark:border-gray-800 rounded-[28px] shadow-[0_8px_30px_rgb(0,0,0,0.08)] dark:shadow-[0_8px_30px_rgb(0,0,0,0.4)] z-50 animate-in fade-in slide-in-from-top-2 duration-200 overflow-hidden">
+                  <div className="p-6">
+                    <div className="flex items-center gap-4">
+                      <div className="w-16 h-16 rounded-full bg-blue-100 flex items-center justify-center text-blue-600 font-black text-2xl overflow-hidden shrink-0 border-2 border-slate-100 dark:border-gray-700 shadow-sm">
                         {currentUser?.profileImage ? (
+                          /* eslint-disable-next-line @next/next/no-img-element */
                           <img src={currentUser.profileImage} alt="Profile" className="w-full h-full object-cover" />
                         ) : (
                           currentUser?.name?.charAt(0).toUpperCase()
                         )}
                       </div>
-                      <div className="overflow-hidden">
-                        <h4 className="font-bold text-sm text-slate-800 dark:text-gray-200 truncate">{currentUser?.name}</h4>
-                        <p className="text-[10px] text-slate-500 dark:text-gray-400 truncate">{currentUser?.email || currentUser?.username}</p>
-                        <span className="inline-block mt-1 px-2 py-0.5 bg-blue-50 dark:bg-blue-500/10 text-blue-600 dark:text-blue-400 font-bold text-[9px] uppercase tracking-wider rounded-md border border-blue-100 dark:border-blue-500/20">
-                          {currentUser?.role?.replace('_', ' ')}
-                        </span>
-                      </div>
-                    </div>
-                    <div className="mt-3 pt-3 border-t border-[#E2E8F0] dark:border-gray-700 flex flex-col gap-1 text-[11px] text-slate-500 dark:text-gray-400">
-                      <div className="flex justify-between">
-                        <span>{currentUser?.role === 'siswa' ? t('schoolLabel') : t('institutionLabel')}:</span>
-                        <span className="font-semibold text-slate-700 dark:text-gray-300 truncate max-w-[120px] text-right">{currentUser?.school || currentUser?.company || '-'}</span>
-                      </div>
-                      {currentUser?.role === 'siswa' && (
-                        <div className="flex justify-between mt-0.5">
-                          <span>{t('classLabel')}</span>
-                          <span className="font-semibold text-slate-700 dark:text-gray-300 truncate max-w-[120px] text-right">{currentUser?.classes?.[0]?.name || '-'}</span>
+                      <div className="overflow-hidden flex flex-col justify-center">
+                        <h4 className="font-extrabold text-base text-slate-800 dark:text-gray-100 truncate">{currentUser?.name}</h4>
+                        
+                        {(currentUser?.role === 'siswa' && (currentUser?.nisn || (currentUser as any)?.nis)) && (
+                          <p className="text-xs font-semibold text-slate-500 dark:text-gray-400 truncate mt-0.5">NIS/NISN: {currentUser.nisn || (currentUser as any).nis}</p>
+                        )}
+                        {(currentUser?.role === 'mahasiswa' && (currentUser as any)?.nim) && (
+                          <p className="text-xs font-semibold text-slate-500 dark:text-gray-400 truncate mt-0.5">NIM: {(currentUser as any).nim}</p>
+                        )}
+                        {(currentUser?.role?.includes('pembimbing') && (currentUser as any)?.nip) && (
+                          <p className="text-xs font-semibold text-slate-500 dark:text-gray-400 truncate mt-0.5">NIP: {(currentUser as any).nip}</p>
+                        )}
+
+                        <div className="mt-1.5">
+                          <span className="inline-block px-2.5 py-0.5 bg-blue-50/80 dark:bg-blue-500/10 text-blue-600 dark:text-blue-400 font-bold text-[10px] uppercase tracking-wider rounded-md border border-blue-100/50 dark:border-blue-500/20">
+                            {currentUser?.role?.replace('_', ' ')}
+                          </span>
                         </div>
-                      )}
+                      </div>
                     </div>
                   </div>
-                  <div className="p-2 flex flex-col gap-1">
-                    <a href="/profile" className="flex items-center gap-2 px-3 py-2 hover:bg-slate-50 dark:hover:bg-gray-800 rounded-xl text-xs font-bold text-slate-700 dark:text-gray-200 transition">
-                      👤 Lihat Profil
-                    </a>
-                    <button onClick={() => { setIsDesktopUserMenuOpen(false); setIsSettingsActive(true); setSettingsActiveSection('profile'); }} className="flex w-full items-center gap-2 px-3 py-2 hover:bg-slate-50 dark:hover:bg-gray-800 rounded-xl text-xs font-bold text-slate-700 dark:text-gray-200 transition">
-                      ⚙ Pengaturan
+                  
+                  <div className="p-3 bg-slate-50/50 dark:bg-gray-800/30 flex flex-col gap-1 border-t border-slate-100 dark:border-gray-800">
+                    <button onClick={() => { setIsDesktopUserMenuOpen(false); setIsSettingsActive(true); setSettingsActiveSection('profile'); }} className="flex items-center gap-3 px-4 py-3 hover:bg-white dark:hover:bg-gray-800 hover:shadow-sm rounded-2xl text-xs font-bold text-slate-700 dark:text-gray-200 transition-all w-full text-left">
+                      <User size={16} className="text-slate-400 dark:text-gray-400" />
+                      <span>Lihat Detail Profil</span>
                     </button>
-                    <button onClick={logout} className="flex w-full items-center gap-2 px-3 py-2 hover:bg-red-50 dark:hover:bg-red-500/10 text-red-600 dark:text-red-400 rounded-xl text-xs font-bold transition">
-                      🚪 Logout
+                    <button onClick={() => { setIsDesktopUserMenuOpen(false); setIsSettingsActive(true); setSettingsActiveSection(null as any); }} className="flex items-center gap-3 px-4 py-3 hover:bg-white dark:hover:bg-gray-800 hover:shadow-sm rounded-2xl text-xs font-bold text-slate-700 dark:text-gray-200 transition-all w-full text-left">
+                      <Settings size={16} className="text-slate-400 dark:text-gray-400" />
+                      <span>Pengaturan Aplikasi</span>
+                    </button>
+                    <div className="h-px bg-slate-100 dark:bg-gray-800 my-1 mx-2" />
+                    <button onClick={logout} className="flex items-center gap-3 px-4 py-3 hover:bg-red-50 dark:hover:bg-red-500/10 hover:text-red-600 dark:hover:text-red-400 rounded-2xl text-xs font-bold text-slate-600 dark:text-gray-300 transition-all w-full text-left">
+                      <LogOut size={16} className="text-red-400" />
+                      <span>Logout</span>
                     </button>
                   </div>
                 </div>
@@ -551,73 +557,88 @@ function DashboardContent() {
 
       {/* User Menu Bottom Sheet */}
       {isUserMenuOpen && (
-        <div className="fixed inset-0 z-50 flex items-end justify-center print:hidden animate-in fade-in duration-200">
+        <div className="fixed inset-0 z-50 flex items-end justify-center print:hidden">
           <div 
             onClick={() => setIsUserMenuOpen(false)}
-            className="fixed inset-0 bg-slate-900/40 backdrop-blur-sm"
+            className="fixed inset-0 bg-slate-900/40 backdrop-blur-sm animate-in fade-in duration-200"
           />
-          <div className="relative w-full max-w-lg bg-white dark:bg-[#243447] rounded-t-3xl shadow-2xl dark:shadow-sm dark:shadow-slate-900/20 dark:border-t dark:bg-gray-800 p-6 flex flex-col gap-5 z-10 animate-in slide-in-from-bottom duration-300 max-h-[85vh] overflow-y-auto pb-safe">
-            <div className="w-12 h-1.5 bg-slate-200 rounded-full mx-auto mb-2" />
-            
-            <div className="flex items-center gap-4">
-              <div className="w-14 h-14 rounded-2xl bg-gradient-to-tr from-[#2563EB] to-blue-400 flex items-center justify-center text-white font-black text-xl shadow-md shrink-0 overflow-hidden">
-                {currentUser?.profileImage ? (
-                  <img src={currentUser.profileImage} alt="Profile" className="w-full h-full object-cover" />
-                ) : (
-                  currentUser?.name?.charAt(0).toUpperCase()
-                )}
-              </div>
-              <div className="overflow-hidden">
-                <h3 className="font-extrabold text-slate-800 dark:text-gray-200 text-base leading-snug truncate">{currentUser?.name}</h3>
-                <div className="flex flex-wrap gap-1.5 items-center mt-1">
-                  <span className="inline-block px-2.5 py-0.5 rounded bg-primary/10 dark:bg-primary/100/10 border border-blue-100 dark:border-blue-500/20 text-primary dark:text-blue-500 font-bold text-[9px] uppercase tracking-wider">
-                    {currentUser?.role?.replace('_', ' ')}
-                  </span>
+          <div className="relative w-full max-w-lg bg-white dark:bg-[#1E293B] rounded-t-[28px] shadow-[0_-8px_30px_rgb(0,0,0,0.12)] dark:shadow-[0_-8px_30px_rgb(0,0,0,0.5)] dark:border-t dark:border-gray-800 flex flex-col z-10 animate-in slide-in-from-bottom duration-300 max-h-[85vh] overflow-y-auto pb-safe">
+            <div className="p-6">
+              <div className="w-12 h-1.5 bg-slate-200 dark:bg-gray-700 rounded-full mx-auto mb-6" />
+              
+              <div className="flex items-center gap-4">
+                <div className="w-[72px] h-[72px] rounded-full bg-blue-100 flex items-center justify-center text-blue-600 font-black text-2xl overflow-hidden shrink-0 border-4 border-slate-50 dark:border-gray-800 shadow-sm">
+                  {currentUser?.profileImage ? (
+                    /* eslint-disable-next-line @next/next/no-img-element */
+                    <img src={currentUser.profileImage} alt="Profile" className="w-full h-full object-cover" />
+                  ) : (
+                    currentUser?.name?.charAt(0).toUpperCase()
+                  )}
                 </div>
-                <p className="text-[11px] text-slate-400 mt-1 truncate">{currentUser?.username}@nebotrack.com</p>
+                <div className="overflow-hidden flex flex-col justify-center">
+                  <h3 className="font-extrabold text-lg text-slate-800 dark:text-gray-100 truncate">{currentUser?.name}</h3>
+                  
+                  {(currentUser?.role === 'siswa' && (currentUser?.nisn || (currentUser as any)?.nis)) && (
+                    <p className="text-sm font-semibold text-slate-500 dark:text-gray-400 truncate mt-0.5">NIS/NISN: {currentUser.nisn || (currentUser as any).nis}</p>
+                  )}
+                  {(currentUser?.role === 'mahasiswa' && (currentUser as any)?.nim) && (
+                    <p className="text-sm font-semibold text-slate-500 dark:text-gray-400 truncate mt-0.5">NIM: {(currentUser as any).nim}</p>
+                  )}
+                  {(currentUser?.role?.includes('pembimbing') && (currentUser as any)?.nip) && (
+                    <p className="text-sm font-semibold text-slate-500 dark:text-gray-400 truncate mt-0.5">NIP: {(currentUser as any).nip}</p>
+                  )}
+
+                  <div className="mt-2">
+                    <span className="inline-block px-3 py-1 bg-blue-50 dark:bg-blue-500/10 text-blue-600 dark:text-blue-400 font-bold text-xs uppercase tracking-wider rounded-lg border border-blue-100/50 dark:border-blue-500/20">
+                      {currentUser?.role?.replace('_', ' ')}
+                    </span>
+                  </div>
+                </div>
               </div>
             </div>
 
-            <hr className="border-[#E2E8F0] dark:border-gray-700 my-1" />
-
-            <div className="flex flex-col gap-2">
-              <a
-                href="/profile"
-                className="flex items-center gap-3 px-4 py-3 hover:bg-slate-50 dark:hover:bg-[#2D435E] rounded-2xl text-slate-700 font-bold text-xs text-left transition min-h-[48px] cursor-pointer"
-              >
-                <div className="w-8 h-8 rounded-xl bg-slate-100 dark:bg-gray-800 flex items-center justify-center text-slate-500 dark:text-gray-300 shrink-0">
-                  <User size={16} />
-                </div>
-                <span>Lihat Profil</span>
-              </a>
-
+            <div className="p-4 bg-slate-50/50 dark:bg-gray-800/30 flex flex-col gap-2 border-t border-slate-100 dark:border-gray-800 flex-1">
               <button
                 onClick={() => {
                   setIsUserMenuOpen(false);
                   setIsSettingsActive(true);
                   setSettingsActiveSection('profile');
                 }}
-                className="flex items-center gap-3 px-4 py-3 hover:bg-slate-50 dark:hover:bg-[#2D435E] rounded-2xl text-slate-700 font-bold text-xs text-left transition min-h-[48px] cursor-pointer"
+                className="flex items-center gap-4 px-4 py-3.5 hover:bg-white dark:hover:bg-gray-800 hover:shadow-sm rounded-2xl text-slate-700 dark:text-gray-200 font-bold text-sm text-left transition-all w-full"
               >
-                <div className="w-8 h-8 rounded-xl bg-slate-100 dark:bg-gray-800 flex items-center justify-center text-slate-500 dark:text-gray-300 shrink-0">
-                  <Settings size={16} />
+                <div className="w-10 h-10 rounded-xl bg-white dark:bg-gray-800 flex items-center justify-center shadow-sm text-slate-500 dark:text-gray-400 shrink-0">
+                  <User size={20} />
                 </div>
-                <span>{t('settings')}</span>
+                <span>Lihat Detail Profil</span>
               </button>
 
-              <hr className="border-[#E2E8F0] dark:border-gray-700 my-2" />
+              <button
+                onClick={() => {
+                  setIsUserMenuOpen(false);
+                  setIsSettingsActive(true);
+                  setSettingsActiveSection(null as any);
+                }}
+                className="flex items-center gap-4 px-4 py-3.5 hover:bg-white dark:hover:bg-gray-800 hover:shadow-sm rounded-2xl text-slate-700 dark:text-gray-200 font-bold text-sm text-left transition-all w-full"
+              >
+                <div className="w-10 h-10 rounded-xl bg-white dark:bg-gray-800 flex items-center justify-center shadow-sm text-slate-500 dark:text-gray-400 shrink-0">
+                  <Settings size={20} />
+                </div>
+                <span>Pengaturan Aplikasi</span>
+              </button>
+
+              <div className="h-px bg-slate-200 dark:bg-gray-700 my-2 mx-4" />
 
               <button
                 onClick={() => {
                   setIsUserMenuOpen(false);
                   logout();
                 }}
-                className="flex items-center gap-3 px-4 py-3 bg-red-50/50 dark:bg-red-500/10 hover:bg-red-50 dark:hover:bg-red-500/20 rounded-2xl text-[#EF4444] dark:text-red-500 border border-red-100/50 dark:border-red-500/20 font-bold text-xs text-left transition min-h-[48px] cursor-pointer"
+                className="flex items-center gap-4 px-4 py-3.5 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-2xl text-[#EF4444] dark:text-red-400 font-bold text-sm text-left transition-all w-full mb-4"
               >
-                <div className="w-8 h-8 rounded-xl bg-red-50 dark:bg-red-500/20 flex items-center justify-center text-[#EF4444] dark:text-red-500 shrink-0">
-                  <LogOut size={16} />
+                <div className="w-10 h-10 rounded-xl bg-red-50 dark:bg-red-500/10 flex items-center justify-center text-[#EF4444] dark:text-red-400 shrink-0">
+                  <LogOut size={20} />
                 </div>
-                <span>{t('logout')}</span>
+                <span>Logout</span>
               </button>
             </div>
           </div>

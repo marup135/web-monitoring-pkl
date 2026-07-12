@@ -303,13 +303,13 @@ export function AttendancePage() {
                           : 'bg-slate-100 text-slate-400 dark:bg-gray-800 dark:text-gray-600 cursor-not-allowed'
                       }`}
                     >
-                      {actionLoading ? '{t("checkInProcessing")}' : 'Absen Masuk'}
+                      {actionLoading ? t("checkInProcessing") : t("checkInButton")}
                     </button>
                     {!canCheckIn && (
                       <p className="text-[10px] text-red-500 font-medium mt-1.5 text-center">
                         {timeInMinutes < checkInStart 
-                          ? '{t("checkInNotStarted")}' 
-                          : '{t("checkInEnded")}'}
+                          ? t("checkInNotStarted") 
+                          : t("checkInEnded")}
                       </p>
                     )}
                   </div>
@@ -344,7 +344,7 @@ export function AttendancePage() {
                           : 'bg-slate-100 text-slate-400 dark:bg-gray-800 dark:text-gray-600 cursor-not-allowed'
                       }`}
                     >
-                      {actionLoading ? '{t("checkInProcessing")}' : 'Absen Pulang'}
+                      {actionLoading ? t("checkInProcessing") : t("checkOutButton")}
                     </button>
                     {!todayAttendance?.checkIn ? (
                       <p className="text-[10px] text-amber-500 font-medium mt-1.5 text-center">
@@ -353,8 +353,8 @@ export function AttendancePage() {
                     ) : !canCheckOut ? (
                       <p className="text-[10px] text-red-500 font-medium mt-1.5 text-center">
                         {timeInMinutes < checkOutStart 
-                          ? '{t("checkOutNotStarted")}' 
-                          : '{t("checkOutEnded")}'}
+                          ? t("checkOutNotStarted") 
+                          : t("checkOutEnded")}
                       </p>
                     ) : null}
                   </div>
