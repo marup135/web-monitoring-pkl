@@ -121,7 +121,7 @@ export const KanbanBoard: React.FC<KanbanBoardProps> = ({ onOpenCard }) => {
     if (!targetCard) return;
 
     if (columnId === 'selesai' && activeRole === 'Mahasiswa') {
-      alert('Anda tidak dapat memindahkan kegiatan langsung ke kolom Selesai. Kegiatan harus dinilai/direview terlebih dahulu oleh Pembimbing.');
+      alert(t('cantMoveToDone'));
       return;
     }
 

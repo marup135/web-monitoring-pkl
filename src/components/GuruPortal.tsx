@@ -2,6 +2,7 @@
 
 import React, { useState, useEffect } from 'react';
 import { usePKL } from '../context/PKLContext';
+import { useLanguage } from '../context/LanguageContext';
 import { getDashboardMetricsAction } from '@/app/actions/pkl';
 import { Users, Calendar, FileSpreadsheet, Award, UserCheck, BarChart3, AlertCircle } from 'lucide-react';
 
@@ -24,6 +25,7 @@ interface DashboardMetrics {
 }
 
 export const GuruPortal: React.FC<GuruPortalProps> = ({ onPantau }) => {
+  const { t } = useLanguage();
   const {
     currentUser,
     studentsList,
@@ -62,14 +64,14 @@ export const GuruPortal: React.FC<GuruPortalProps> = ({ onPantau }) => {
           <div className="w-20 h-20 bg-primary/10 rounded-2xl flex items-center justify-center mb-6">
             <UserCheck size={36} className="text-primary" />
           </div>
-          <h2 className="text-lg font-bold text-[#0F172A] dark:text-white mb-2">Belum Ada Assignment</h2>
+          <h2 className="text-lg font-bold text-[#0F172A] dark:text-white mb-2">{t('noAssignmentTitle')}</h2>
           <p className="text-sm text-[#64748B] dark:text-gray-300 max-w-md leading-relaxed mb-4">
             Anda belum ditugaskan untuk membimbing kelas mana pun.
-            Silakan hubungi <span className="font-semibold text-primary">Administrator</span> untuk mendapatkan assignment kelas bimbingan.
+            Silakan hubungi <span className="font-semibold text-primary">{t('adminContact')}</span> {t('toGetAssignmentGuru')}
           </p>
           <div className="flex items-center gap-2 text-xs text-[#64748B] dark:text-gray-300 bg-[#F8FAFC] dark:bg-gray-900 border border-[#E2E8F0] dark:border-gray-700 rounded-xl px-4 py-2.5">
             <AlertCircle size={14} className="text-amber-500" />
-            <span>Setelah Admin menugaskan kelas, dashboard akan otomatis menampilkan data siswa.</span>
+            <span>{t('assignmentNoteGuru')}</span>
           </div>
         </div>
       </div>
@@ -83,14 +85,14 @@ export const GuruPortal: React.FC<GuruPortalProps> = ({ onPantau }) => {
         <div>
           <h2 className="text-sm font-bold uppercase tracking-wider text-[#64748B] dark:text-gray-300 flex items-center gap-2">
             <UserCheck size={16} className="text-primary" />
-            Dashboard Monitoring Kelas: <span className="text-primary">{activeClassName}</span>
+            {t('dashboardMonitoringClass')} <span className="text-primary">{activeClassName}</span>
           </h2>
-          <p className="text-[11px] text-[#64748B] dark:text-gray-300">Tinjau dan verifikasi logbook harian siswa di bawah bimbingan Anda.</p>
+          <p className="text-[11px] text-[#64748B] dark:text-gray-300">{t('guruMonitorDesc')}</p>
         </div>
 
         {currentUser?.classes && currentUser.classes.length > 1 && (
           <div className="flex items-center gap-2">
-            <span className="text-xs font-semibold text-[#64748B] dark:text-gray-300">Pilih Kelas:</span>
+            <span className="text-xs font-semibold text-[#64748B] dark:text-gray-300">{t('selectClass')}</span>
             <select
               value={selectedClassId || ''}
               onChange={(e) => setSelectedClassId(e.target.value)}
@@ -112,8 +114,8 @@ export const GuruPortal: React.FC<GuruPortalProps> = ({ onPantau }) => {
             <Users size={20} />
           </div>
           <div>
-            <span className="text-[10px] text-[#64748B] dark:text-gray-300 font-semibold block uppercase">Total Siswa</span>
-            <span className="text-lg font-black text-[#0F172A] dark:text-white">{metrics?.totalStudents ?? 0} orang</span>
+            <span className="text-[10px] text-[#64748B] dark:text-gray-300 font-semibold block uppercase">{t('totalStudents')}</span>
+            <span className="text-lg font-black text-[#0F172A] dark:text-white">{metrics?.totalStudents ?? 0} {t('personCount')}</span>
           </div>
         </div>
 
@@ -123,8 +125,8 @@ export const GuruPortal: React.FC<GuruPortalProps> = ({ onPantau }) => {
             <Calendar size={20} />
           </div>
           <div>
-            <span className="text-[10px] text-[#64748B] dark:text-gray-300 font-semibold block uppercase">Aktif Hari Ini</span>
-            <span className="text-lg font-black text-[#0F172A] dark:text-white">{metrics?.monitoringToday ?? 0} keg.</span>
+            <span className="text-[10px] text-[#64748B] dark:text-gray-300 font-semibold block uppercase">{t('activeToday')}</span>
+            <span className="text-lg font-black text-[#0F172A] dark:text-white">{metrics?.monitoringToday ?? 0} {t('activitiesCount')}</span>
           </div>
         </div>
 
@@ -134,8 +136,8 @@ export const GuruPortal: React.FC<GuruPortalProps> = ({ onPantau }) => {
             <FileSpreadsheet size={20} />
           </div>
           <div>
-            <span className="text-[10px] text-[#64748B] dark:text-gray-300 font-semibold block uppercase">Belum Direview</span>
-            <span className="text-lg font-black text-[#0F172A] dark:text-white">{metrics?.pendingReview ?? 0} log</span>
+            <span className="text-[10px] text-[#64748B] dark:text-gray-300 font-semibold block uppercase">{t('needReview')}</span>
+            <span className="text-lg font-black text-[#0F172A] dark:text-white">{metrics?.pendingReview ?? 0} {t('logsCount')}</span>
           </div>
         </div>
 
@@ -145,8 +147,8 @@ export const GuruPortal: React.FC<GuruPortalProps> = ({ onPantau }) => {
             <AlertCircle size={20} />
           </div>
           <div>
-            <span className="text-[10px] text-[#64748B] dark:text-gray-300 font-semibold block uppercase">Belum Dinilai</span>
-            <span className="text-lg font-black text-[#0F172A] dark:text-white">{metrics?.pendingGrades ?? 0} keg.</span>
+            <span className="text-[10px] text-[#64748B] dark:text-gray-300 font-semibold block uppercase">{t('notGraded')}</span>
+            <span className="text-lg font-black text-[#0F172A] dark:text-white">{metrics?.pendingGrades ?? 0} {t('activitiesCount')}</span>
           </div>
         </div>
 
@@ -156,7 +158,7 @@ export const GuruPortal: React.FC<GuruPortalProps> = ({ onPantau }) => {
             <Award size={20} />
           </div>
           <div>
-            <span className="text-[10px] text-[#64748B] dark:text-gray-300 font-semibold block uppercase">Rerata Nilai (Internal)</span>
+            <span className="text-[10px] text-[#64748B] dark:text-gray-300 font-semibold block uppercase">{t('avgGradeInt')}</span>
             <span className="text-lg font-black text-[#0F172A] dark:text-white">{metrics?.averageGrade ?? 0}/100</span>
           </div>
         </div>
@@ -170,7 +172,7 @@ export const GuruPortal: React.FC<GuruPortalProps> = ({ onPantau }) => {
           <div>
             <h3 className="text-xs font-bold text-[#64748B] dark:text-gray-300 uppercase tracking-wider mb-4 flex items-center gap-1.5">
               <BarChart3 size={15} className="text-primary" />
-              Aktivitas Jurnal Kelas
+              {t('activityJournalGuru')}
             </h3>
             
             {loadingMetrics ? (
@@ -187,7 +189,7 @@ export const GuruPortal: React.FC<GuruPortalProps> = ({ onPantau }) => {
                 {Object.entries(metrics.columnCounts).map(([col, val]) => {
                   const total = Object.values(metrics.columnCounts).reduce((a, b) => a + b, 0);
                   const percent = total > 0 ? Math.round((val / total) * 100) : 0;
-                  const label = col === 'rencana' ? 'Rencana' : col === 'progres' ? 'Progres' : col === 'review' ? 'Review' : 'Selesai';
+                  const label = col === 'rencana' ? t('statusPlan') : col === 'progres' ? t('statusProgress') : col === 'review' ? t('statusReview') : t('statusDone');
                   const color = col === 'rencana' ? 'bg-blue-400' : col === 'progres' ? 'bg-yellow-400' : col === 'review' ? 'bg-purple-400' : 'bg-green-500';
                   
                   return (
@@ -204,7 +206,7 @@ export const GuruPortal: React.FC<GuruPortalProps> = ({ onPantau }) => {
                 })}
               </div>
             ) : (
-              <p className="text-xs text-slate-500 dark:text-gray-2000 italic text-center py-8">Gagal memuat data grafik.</p>
+              <p className="text-xs text-slate-500 dark:text-gray-2000 italic text-center py-8">{t('chartLoadFailed')}</p>
             )}
           </div>
         </div>
@@ -213,23 +215,23 @@ export const GuruPortal: React.FC<GuruPortalProps> = ({ onPantau }) => {
         <div className="lg:col-span-2 bg-white dark:bg-[#243447] border border-[#E2E8F0] dark:border-gray-700 rounded-2xl p-5 shadow-sm relative overflow-hidden">
           <h3 className="text-xs font-bold text-[#64748B] dark:text-gray-300 uppercase tracking-wider mb-4 flex items-center gap-1.5">
             <Users size={15} className="text-primary" />
-            Daftar Siswa Kelas {activeClassName}
+            {t('studentListClass')} {activeClassName}
           </h3>
 
           {studentsList.length === 0 ? (
             <div className="flex flex-col items-center justify-center py-12 text-center text-[#64748B] dark:text-gray-300">
               <Users size={32} className="mb-2 text-gray-300 animate-bounce" />
-              <p className="text-xs">Belum ada siswa terdaftar pada kelas ini.</p>
+              <p className="text-xs">{t('noStudentGuru')}</p>
             </div>
           ) : (
             <div className="overflow-x-auto w-full">
               <table className="w-full text-left border-collapse text-xs">
                 <thead>
                   <tr className="border-b border-[#E2E8F0] dark:border-gray-700 text-[#64748B] dark:text-gray-300 font-semibold uppercase tracking-wider">
-                    <th className="py-2.5 px-2">Nama Siswa</th>
-                    <th className="py-2.5 px-2">Perusahaan PKL</th>
-                    <th className="py-2.5 px-2 text-center">Penyelesaian</th>
-                    <th className="py-2.5 px-2 text-center">Tindakan</th>
+                    <th className="py-2.5 px-2">{t('studentNameCol')}</th>
+                    <th className="py-2.5 px-2">{t('companyCol')}</th>
+                    <th className="py-2.5 px-2 text-center">{t('studentCompletion')}</th>
+                    <th className="py-2.5 px-2 text-center">{t('studentActions')}</th>
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-[#E2E8F0] text-[#0F172A] dark:text-gray-200">

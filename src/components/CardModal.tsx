@@ -75,13 +75,13 @@ export const CardModal: React.FC<CardModalProps> = ({ card, onClose, initialEdit
       const startMin = startH * 60 + startM;
       const endMin = endH * 60 + endM;
       if (endMin < startMin) {
-        setValidationError('Waktu selesai tidak boleh lebih awal dari waktu mulai.');
+        setValidationError(t('errEndTime'));
         return;
       }
     }
 
     if (!editTitle.trim()) {
-      setValidationError('Judul rencana kegiatan wajib diisi.');
+      setValidationError(t('errTitleRequired'));
       return;
     }
 
@@ -98,7 +98,7 @@ export const CardModal: React.FC<CardModalProps> = ({ card, onClose, initialEdit
       );
       setIsEditing(false);
     } catch (err) {
-      setValidationError((err as Error).message || 'Gagal memperbarui rincian kegiatan.');
+      setValidationError((err as Error).message || t('errUpdateDetailsFailed'));
     }
   };
 
@@ -116,11 +116,11 @@ export const CardModal: React.FC<CardModalProps> = ({ card, onClose, initialEdit
       if (res.success && res.fileUrl && res.name && res.type) {
         await addAttachment(card.id, res.name, res.fileUrl, res.type);
       } else {
-        setValidationError(res.error || 'Gagal mengunggah file.');
+        setValidationError(res.error || t('errUploadFailed'));
       }
     } catch (err) {
       console.error(err);
-      setValidationError('Gagal mengunggah file.');
+      setValidationError(t('errUploadFailed'));
     } finally {
       setUploading(false);
     }
@@ -137,12 +137,12 @@ export const CardModal: React.FC<CardModalProps> = ({ card, onClose, initialEdit
     if (isNaN(disc) || disc < 0 || disc > 100 ||
         isNaN(skl) || skl < 0 || skl > 100 ||
         isNaN(att) || att < 0 || att > 100) {
-      setValidationError('Nilai kedisiplinan, keahlian, dan sikap harus berupa angka antara 0 s.d 100.');
+      setValidationError(t('errMentorScoreFormat'));
       return;
     }
 
     if (!mentorFeedback.trim()) {
-      setValidationError('Umpan balik / catatan mentor wajib diisi.');
+      setValidationError(t('errMentorFeedbackRequired'));
       return;
     }
 
@@ -156,7 +156,7 @@ export const CardModal: React.FC<CardModalProps> = ({ card, onClose, initialEdit
       );
       onClose();
     } catch (err) {
-      setValidationError((err as Error).message || 'Gagal menyimpan penilaian mentor.');
+      setValidationError((err as Error).message || t('errMentorGradeFailed'));
     }
   };
 
@@ -171,12 +171,12 @@ export const CardModal: React.FC<CardModalProps> = ({ card, onClose, initialEdit
     if (isNaN(disc) || disc < 0 || disc > 100 ||
         isNaN(rep) || rep < 0 || rep > 100 ||
         isNaN(comm) || comm < 0 || comm > 100) {
-      setValidationError('Nilai kedisiplinan, laporan, dan komunikasi harus berupa angka antara 0 s.d 100.');
+      setValidationError(t('errTeacherScoreFormat'));
       return;
     }
 
     if (!advisorFeedback.trim()) {
-      setValidationError('Umpan balik / catatan guru wajib diisi.');
+      setValidationError(t('errTeacherFeedbackRequired'));
       return;
     }
 
@@ -190,7 +190,7 @@ export const CardModal: React.FC<CardModalProps> = ({ card, onClose, initialEdit
       );
       onClose();
     } catch (err) {
-      setValidationError((err as Error).message || 'Gagal menyimpan penilaian guru.');
+      setValidationError((err as Error).message || t('errTeacherGradeFailed'));
     }
   };
 
@@ -202,18 +202,18 @@ export const CardModal: React.FC<CardModalProps> = ({ card, onClose, initialEdit
       await addComment(card.id, commentText.trim());
       setCommentText('');
     } catch (err) {
-      setValidationError((err as Error).message || 'Gagal mengirim komentar.');
+      setValidationError((err as Error).message || t('errCommentFailed'));
     }
   };
 
   const handleDelete = async () => {
     setValidationError(null);
-    if (confirm('Apakah Anda yakin ingin menghapus kegiatan ini?')) {
+    if (confirm(t('deleteConfirm'))) {
       try {
         await deleteCard(card.id);
         onClose();
       } catch (err) {
-        setValidationError((err as Error).message || 'Gagal menghapus kegiatan.');
+        setValidationError((err as Error).message || t('errDeleteFailed'));
       }
     }
   };
@@ -437,7 +437,7 @@ export const CardModal: React.FC<CardModalProps> = ({ card, onClose, initialEdit
                       {/* Tanggal & Waktu Display */}
                       <div className="flex flex-col gap-1.5 mb-4 text-xs font-medium text-slate-600 dark:text-gray-300 border-b border-slate-100 dark:border-gray-700/50 pb-3">
                         <div className="flex items-center gap-2">
-                          <span className="text-[#94A3B8] font-normal w-12">Tanggal</span>
+                          <span className="text-[#94A3B8] font-normal w-12">{t('date')}</span>
                           <span>
                             {card.dueDate ? new Date(card.dueDate).toLocaleDateString('id-ID', { day: '2-digit', month: 'long', year: 'numeric' }) : '-'}
                           </span>
@@ -480,12 +480,12 @@ export const CardModal: React.FC<CardModalProps> = ({ card, onClose, initialEdit
                           {uploading ? (
                             <>
                               <Loader2 size={13} className="animate-spin" />
-                              <span>Mengunggah...</span>
+                              <span>{t('uploading')}</span>
                             </>
                           ) : (
                             <>
                               <Plus size={13} />
-                              <span>Unggah File</span>
+                              <span>{t('uploadFile')}</span>
                             </>
                           )}
                         </label>

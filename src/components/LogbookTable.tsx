@@ -67,17 +67,17 @@ export const LogbookTable: React.FC<LogbookTableProps> = ({ onOpenCard, onEditCa
         <div className="hidden print:flex flex-col items-center justify-center min-h-[26cm] w-full" style={{ pageBreakAfter: 'always' }}>
           {/* eslint-disable-next-line @next/next/no-img-element */}
           <img src="/nebo.png" alt="Logo" className="w-48 h-48 object-contain mb-10" />
-          <h1 className="text-3xl font-bold uppercase text-black text-center leading-snug">LAPORAN JURNAL KEGIATAN</h1>
-          <h1 className="text-3xl font-bold uppercase text-black text-center mb-16 leading-snug">PRAKTIK KERJA LAPANGAN (PKL)</h1>
+          <h1 className="text-3xl font-bold uppercase text-black text-center leading-snug">{t("reportTitle")}</h1>
+          <h1 className="text-3xl font-bold uppercase text-black text-center mb-16 leading-snug">{t("reportSubtitle")}</h1>
           
           <table className="mt-8 text-base font-bold text-black border-none text-left w-full max-w-2xl">
             <tbody>
-              <tr><td className="py-3 pr-4 w-64">Nama Siswa</td><td className="py-3 px-2 w-4">:</td><td className="py-3">{state.studentName || '-'}</td></tr>
-              <tr><td className="py-3 pr-4">NIS / NISN</td><td className="py-3 px-2">:</td><td className="py-3">{state.nisn || '-'}</td></tr>
-              <tr><td className="py-3 pr-4">Asal Sekolah</td><td className="py-3 px-2">:</td><td className="py-3">{(currentUser as any)?.school || '-'}</td></tr>
-              <tr><td className="py-3 pr-4">Perusahaan PKL</td><td className="py-3 px-2">:</td><td className="py-3">{state.companyName || '-'}</td></tr>
-              <tr><td className="py-3 pr-4">Pembimbing Eksternal (Perusahaan)</td><td className="py-3 px-2">:</td><td className="py-3">{state.mentorName || '-'}</td></tr>
-              <tr><td className="py-3 pr-4">Pembimbing Internal (Sekolah)</td><td className="py-3 px-2">:</td><td className="py-3">{state.advisorName || '-'}</td></tr>
+              <tr><td className="py-3 pr-4 w-64">{t("studentName")}</td><td className="py-3 px-2 w-4">:</td><td className="py-3">{state.studentName || '-'}</td></tr>
+              <tr><td className="py-3 pr-4">{t("nisn")}</td><td className="py-3 px-2">:</td><td className="py-3">{state.nisn || '-'}</td></tr>
+              <tr><td className="py-3 pr-4">{t("schoolOrigin")}</td><td className="py-3 px-2">:</td><td className="py-3">{(currentUser as any)?.school || '-'}</td></tr>
+              <tr><td className="py-3 pr-4">{t("internCompany")}</td><td className="py-3 px-2">:</td><td className="py-3">{state.companyName || '-'}</td></tr>
+              <tr><td className="py-3 pr-4">{t("externalAdvisor")}</td><td className="py-3 px-2">:</td><td className="py-3">{state.mentorName || '-'}</td></tr>
+              <tr><td className="py-3 pr-4">{t("internalAdvisor")}</td><td className="py-3 px-2">:</td><td className="py-3">{state.advisorName || '-'}</td></tr>
             </tbody>
           </table>
         </div>
@@ -99,14 +99,14 @@ export const LogbookTable: React.FC<LogbookTableProps> = ({ onOpenCard, onEditCa
           <table className="w-full text-left border-collapse text-xs border border-[#E2E8F0] dark:border-gray-700 rounded-xl overflow-hidden print:overflow-visible shadow-sm print:border-black print:rounded-none">
             <thead className="print:table-header-group">
               <tr className="border-b border-[#E2E8F0] dark:border-gray-700 text-slate-500 dark:text-gray-300 font-semibold uppercase tracking-wider bg-[#F8FAFC] dark:bg-gray-900 print:border-black print:text-black print:bg-gray-100">
-                <th className="py-3 px-2 w-10 text-center print:border print:border-black print:py-3 print:px-2">No</th>
-                <th className="py-3 px-3 w-28 print:border print:border-black print:py-3 print:px-2">Tanggal</th>
-                <th className="py-3 px-3 w-24 print:border print:border-black print:py-3 print:px-2">Kategori</th>
-                <th className="py-3 px-4 print:border print:border-black print:py-3 print:px-2">Rincian Kegiatan</th>
-                <th className="py-3 px-3 w-20 text-center hidden print:table-cell print:border print:border-black print:py-3 print:px-2">Jam</th>
-                <th className="py-3 px-3 w-24 text-center print:border print:border-black print:py-3 print:px-2">Status</th>
-                <th className="py-3 px-3 w-32 hidden print:table-cell print:border print:border-black print:py-3 print:px-2">Evaluasi Pembimbing Internal</th>
-                <th className="py-3 px-3 w-32 hidden print:table-cell print:border print:border-black print:py-3 print:px-2">Evaluasi Pembimbing Eksternal</th>
+                <th className="py-3 px-2 w-10 text-center print:border print:border-black print:py-3 print:px-2">{t("no")}</th>
+                <th className="py-3 px-3 w-28 print:border print:border-black print:py-3 print:px-2">{t("date")}</th>
+                <th className="py-3 px-3 w-24 print:border print:border-black print:py-3 print:px-2">{t("category")}</th>
+                <th className="py-3 px-4 print:border print:border-black print:py-3 print:px-2">{t("details")}</th>
+                <th className="py-3 px-3 w-20 text-center hidden print:table-cell print:border print:border-black print:py-3 print:px-2">{t("start")} / {t("end")}</th>
+                <th className="py-3 px-3 w-24 text-center print:border print:border-black print:py-3 print:px-2">{t("status")}</th>
+                <th className="py-3 px-3 w-32 hidden print:table-cell print:border print:border-black print:py-3 print:px-2">{t("internalEvaluation")}</th>
+                <th className="py-3 px-3 w-32 hidden print:table-cell print:border print:border-black print:py-3 print:px-2">{t("externalEvaluation")}</th>
                 <th className="py-3 px-4 w-48 print:hidden">{t('eval')}</th>
               </tr>
             </thead>
@@ -159,7 +159,7 @@ export const LogbookTable: React.FC<LogbookTableProps> = ({ onOpenCard, onEditCa
                     <td className="py-2 px-3 hidden print:table-cell print:border print:border-black align-top">
                       {card.scoreAdvisor !== undefined ? (
                         <div className="text-xs">
-                          <div className="font-bold mb-1">Nilai: {card.scoreAdvisor}/100</div>
+                          <div className="font-bold mb-1">{t('averageScore')}: {card.scoreAdvisor}/100</div>
                           {card.feedbackAdvisor && <div className="italic text-[10px] mt-1">&ldquo;{card.feedbackAdvisor}&rdquo;</div>}
                         </div>
                       ) : (
@@ -171,7 +171,7 @@ export const LogbookTable: React.FC<LogbookTableProps> = ({ onOpenCard, onEditCa
                     <td className="py-2 px-3 hidden print:table-cell print:border print:border-black align-top">
                       {card.scoreMentor !== undefined ? (
                         <div className="text-xs">
-                          <div className="font-bold mb-1">Nilai: {card.scoreMentor}/100</div>
+                          <div className="font-bold mb-1">{t('averageScore')}: {card.scoreMentor}/100</div>
                           {card.feedbackMentor && <div className="italic text-[10px] mt-1">&ldquo;{card.feedbackMentor}&rdquo;</div>}
                         </div>
                       ) : (
@@ -282,7 +282,7 @@ export const LogbookTable: React.FC<LogbookTableProps> = ({ onOpenCard, onEditCa
                         <div className="flex flex-col gap-0.5">
                           <div className="flex items-center gap-1 text-purple-700 font-bold">
                             <Award size={12} />
-                            <span>Mentor: {card.scoreMentor}/100</span>
+                            <span>{t('mentor')}: {card.scoreMentor}/100</span>
                           </div>
                           {card.feedbackMentor && (
                             <p className="text-slate-500 dark:text-gray-300 italic pl-4">&ldquo;{card.feedbackMentor}&rdquo;</p>
@@ -293,7 +293,7 @@ export const LogbookTable: React.FC<LogbookTableProps> = ({ onOpenCard, onEditCa
                         <div className={`flex flex-col gap-0.5 ${hasMentorScore ? 'border-t border-slate-200 dark:border-gray-700/50 pt-2' : ''}`}>
                           <div className="flex items-center gap-1 text-yellow-700 font-bold">
                             <Award size={12} />
-                            <span>Guru: {card.scoreAdvisor}/100</span>
+                            <span>{t('teacher')}: {card.scoreAdvisor}/100</span>
                           </div>
                           {card.feedbackAdvisor && (
                             <p className="text-slate-500 dark:text-gray-300 italic pl-4">&ldquo;{card.feedbackAdvisor}&rdquo;</p>
@@ -310,7 +310,7 @@ export const LogbookTable: React.FC<LogbookTableProps> = ({ onOpenCard, onEditCa
                       className="flex-1 flex items-center justify-center gap-1.5 border border-slate-200 dark:border-gray-700 hover:bg-slate-50 dark:hover:bg-[#2D435E] text-slate-700 rounded-xl font-bold text-xs min-h-[48px] transition cursor-pointer"
                     >
                       <Eye size={14} />
-                      <span>Detail</span>
+                      <span>{t("detail")}</span>
                     </button>
 
                     {isSiswa && (
@@ -320,11 +320,11 @@ export const LogbookTable: React.FC<LogbookTableProps> = ({ onOpenCard, onEditCa
                           className="flex-1 flex items-center justify-center gap-1.5 border border-blue-100 dark:border-blue-500/20 bg-primary/10/50 dark:bg-primary/100/10 hover:bg-primary/10 dark:hover:bg-primary/100/20 text-blue-700 dark:text-blue-400 rounded-xl font-bold text-xs min-h-[48px] transition cursor-pointer"
                         >
                           <Edit2 size={14} />
-                          <span>Edit</span>
+                          <span>{t("edit")}</span>
                         </button>
                         <button
                           onClick={() => {
-                            if (confirm('Apakah Anda yakin ingin menghapus kegiatan ini?')) {
+                            if (confirm(t("deleteConfirm"))) {
                               deleteCard(card.id);
                             }
                           }}
@@ -346,22 +346,22 @@ export const LogbookTable: React.FC<LogbookTableProps> = ({ onOpenCard, onEditCa
         {/* Printable Signature Lines */}
         <div className="hidden print:grid grid-cols-3 gap-8 mt-24 text-[11px] text-black" style={{ pageBreakInside: 'avoid' }}>
           <div className="flex flex-col items-center text-center">
-            <span>Mengetahui,</span>
+            <span>{t("signatureAcknowledged")}</span>
             <span className="font-bold mt-1">Pembimbing Eksternal (Perusahaan)</span>
             <div className="h-24" />
             <span className="font-bold underline">{state.mentorName || '____________________'}</span>
-            <span className="mt-1">Jabatan: ____________________</span>
+            <span className="mt-1">{t("positionSignature")} ____________________</span>
           </div>
           <div className="flex flex-col items-center text-center">
-            <span>Mengetahui,</span>
+            <span>{t("signatureAcknowledged")}</span>
             <span className="font-bold mt-1">Pembimbing Internal (Sekolah)</span>
             <div className="h-24" />
             <span className="font-bold underline">{state.advisorName || '____________________'}</span>
-            <span className="mt-1">NIP: ____________________</span>
+            <span className="mt-1">{t("nipSignature")} ____________________</span>
           </div>
           <div className="flex flex-col items-center text-center">
             <span>Bojong, {new Date().toLocaleDateString('id-ID', { day: 'numeric', month: 'long', year: 'numeric' })}</span>
-            <span className="font-bold mt-1">Siswa PKL</span>
+            <span className="font-bold mt-1">{t("studentSignature")}</span>
             <div className="h-24" />
             <span className="font-bold underline">{state.studentName || '____________________'}</span>
             <span className="mt-1">{state.nisn ? `NIS/NISN: ${state.nisn}` : 'NIS/NISN: ____________________'}</span>
@@ -372,10 +372,10 @@ export const LogbookTable: React.FC<LogbookTableProps> = ({ onOpenCard, onEditCa
         <div className="hidden print:block fixed bottom-0 left-0 right-0 text-[10px] text-black pt-2 pb-2 mt-16">
            <div className="border-t-[1.5px] border-black pt-2 flex justify-between items-center">
              <div>
-               Dicetak melalui <strong>NeboTrack</strong> - https://nebotrack.vercel.app
+               {t("printedVia")} <strong>NeboTrack</strong> - https://nebotrack.vercel.app
              </div>
              <div>
-               Tanggal Cetak: {new Date().toLocaleDateString('id-ID', { day: 'numeric', month: 'long', year: 'numeric' })} | Halaman <span className="pageNumber"></span> dari <span className="totalPages"></span>
+               {t("printDate")} {new Date().toLocaleDateString('id-ID', { day: 'numeric', month: 'long', year: 'numeric' })} | Halaman <span className="pageNumber"></span> {t("of")} <span className="totalPages"></span>
              </div>
            </div>
         </div>

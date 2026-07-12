@@ -5,10 +5,12 @@
 import React, { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { Key, Eye, EyeOff, Loader2, ArrowRight, AlertCircle, ShieldCheck } from 'lucide-react';
+import { useLanguage } from '../../context/LanguageContext';
 import { updatePasswordAction } from '../actions/auth';
 
 export default function ResetPasswordPage() {
   const router = useRouter();
+  const { t } = useLanguage();
   const [token, setToken] = useState<string | null>(null);
   
   const [password, setPassword] = useState('');
@@ -30,10 +32,10 @@ export default function ResetPasswordPage() {
       if (accessToken) {
         setToken(accessToken);
       } else {
-        setErrorState({ message: 'Tautan reset tidak valid atau tidak lengkap.', type: 'server' });
+        setErrorState({ message: t('errResetLinkInvalid'), type: 'server' });
       }
     } else {
-      setErrorState({ message: 'Tautan reset tidak ditemukan.', type: 'server' });
+      setErrorState({ message: t('errResetLinkNotFound'), type: 'server' });
     }
   }, []);
 
@@ -48,24 +50,24 @@ export default function ResetPasswordPage() {
     clearError();
 
     if (!token) {
-      setError('Akses ditolak. Token tidak ditemukan.', 'server');
+      setError(t('errTokenNotFound'), 'server');
       return;
     }
 
     if (!password) {
-      setError('Password Baru wajib diisi.', 'field', 'password');
+      setError(t('errNewPasswordRequired'), 'field', 'password');
       return;
     }
     if (password.length < 5) {
-      setError('Password harus terdiri dari minimal 5 karakter.', 'field', 'password');
+      setError(t('errPasswordLength'), 'field', 'password');
       return;
     }
     if (!confirmPassword) {
-      setError('Konfirmasi Password wajib diisi.', 'field', 'confirmPassword');
+      setError(t('errConfirmPasswordRequired'), 'field', 'confirmPassword');
       return;
     }
     if (password !== confirmPassword) {
-      setError('Password dan Konfirmasi Password tidak sama.', 'field', 'confirmPassword');
+      setError(t('errPasswordMismatch'), 'field', 'confirmPassword');
       return;
     }
 
@@ -79,10 +81,10 @@ export default function ResetPasswordPage() {
           router.push('/');
         }, 3000);
       } else {
-        setError(res.error || 'Gagal mengubah password.', 'server');
+        setError(res.error || t('errUpdatePasswordFailed'), 'server');
       }
     } catch {
-      setError('Terjadi kesalahan pada server. Silakan coba beberapa saat lagi.', 'server');
+      setError(t('errServer'), 'server');
     } finally {
       setLoading(false);
     }
@@ -148,7 +150,7 @@ export default function ResetPasswordPage() {
                   <Key size={15} className={`absolute left-3.5 top-1/2 -translate-y-1/2 ${passwordHasError ? 'text-red-400' : 'text-[#94A3B8]'}`} />
                   <input
                     type={showPassword ? 'text' : 'password'}
-                    placeholder="Masukkan password baru..."
+                    placeholder={t("newPasswordPlaceholder")}
                     value={password}
                     onChange={(e) => {
                       setPassword(e.target.value);
@@ -183,7 +185,7 @@ export default function ResetPasswordPage() {
                   <Key size={15} className={`absolute left-3.5 top-1/2 -translate-y-1/2 ${confirmPasswordHasError ? 'text-red-400' : 'text-[#94A3B8]'}`} />
                   <input
                     type={showConfirmPassword ? 'text' : 'password'}
-                    placeholder="Ulangi password baru..."
+                    placeholder={t("confirmNewPasswordPlaceholder")}
                     value={confirmPassword}
                     onChange={(e) => {
                       setConfirmPassword(e.target.value);
@@ -218,11 +220,11 @@ export default function ResetPasswordPage() {
                 {loading ? (
                   <>
                     <Loader2 size={16} className="animate-spin" />
-                    <span>Menyimpan...</span>
+                    <span>{t('saving')}</span>
                   </>
                 ) : (
                   <>
-                    <span>Simpan Password Baru</span>
+                    <span>{t('saveNewPassword')}</span>
                     <ArrowRight size={15} />
                   </>
                 )}

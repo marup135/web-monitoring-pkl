@@ -30,12 +30,12 @@ export const LanguageProvider: React.FC<{ children: React.ReactNode }> = ({ chil
   };
 
   const t = (key: TranslationKey): string => {
-    // Return translation if exists, otherwise return the key itself as fallback
+    // Return translation if exists
     if (!mounted) {
       // return default ID language strings during SSR to prevent hydration mismatches
-      return translations['id'][key] || key;
+      return translations['id'][key];
     }
-    return translations[language][key] || key;
+    return translations[language][key];
   };
 
   return (

@@ -72,10 +72,10 @@ function DashboardContent() {
                 <p className="text-[10px] md:text-xs text-[#64748B] dark:text-gray-300 font-medium mt-0.5">
                   Selamat datang, <span className="text-primary font-bold">{currentUser.name}</span> (Peran:{' '}
                   {currentUser.role === 'admin'
-                    ? 'Administrator'
+                    ? t('roleAdmin')
                     : currentUser.role === 'pembimbing_internal'
-                    ? 'Pembimbing Internal - Sekolah'
-                    : 'Pembimbing Eksternal - Perusahaan'}
+                    ? t('roleInternal')
+                    : t('roleExternal')}
                   )
                 </p>
               </div>
@@ -379,12 +379,12 @@ function DashboardContent() {
                     </div>
                     <div className="mt-3 pt-3 border-t border-[#E2E8F0] dark:border-gray-700 flex flex-col gap-1 text-[11px] text-slate-500 dark:text-gray-400">
                       <div className="flex justify-between">
-                        <span>{currentUser?.role === 'siswa' ? 'Sekolah' : 'Instansi'}:</span>
+                        <span>{currentUser?.role === 'siswa' ? t('schoolLabel') : t('institutionLabel')}:</span>
                         <span className="font-semibold text-slate-700 dark:text-gray-300 truncate max-w-[120px] text-right">{currentUser?.school || currentUser?.company || '-'}</span>
                       </div>
                       {currentUser?.role === 'siswa' && (
                         <div className="flex justify-between mt-0.5">
-                          <span>Kelas:</span>
+                          <span>{t('classLabel')}</span>
                           <span className="font-semibold text-slate-700 dark:text-gray-300 truncate max-w-[120px] text-right">{currentUser?.classes?.[0]?.name || '-'}</span>
                         </div>
                       )}
@@ -411,7 +411,7 @@ function DashboardContent() {
           {currentUser?.role === 'siswa' && (
             <button 
               onClick={() => {
-                if (confirm('Apakah Anda ingin mereset database ke data bawaan simulasi (data awal)? Semua akun baru yang terdaftar akan terhapus.')) {
+                if (confirm(t('confirmResetDbAlert'))) {
                   resetState();
                 }
               }}
@@ -628,6 +628,7 @@ function DashboardContent() {
 }
 
 function LoginSuccessToast({ visible }: { visible: boolean }) {
+  const { t } = useLanguage();
   if (!visible) return null;
   return (
     <div className="fixed top-4 right-4 z-[9999] animate-in slide-in-from-top-3 fade-in duration-300">
@@ -638,8 +639,8 @@ function LoginSuccessToast({ visible }: { visible: boolean }) {
           </svg>
         </div>
         <div>
-          <p className="text-[13px] font-bold text-[#0F172A] dark:text-white">Login berhasil!</p>
-          <p className="text-[11px] text-[#64748B] dark:text-gray-300">Selamat datang kembali.</p>
+          <p className="text-[13px] font-bold text-[#0F172A] dark:text-white">{t('loginSuccess')}</p>
+          <p className="text-[11px] text-[#64748B] dark:text-gray-300">{t('welcomeBack')}</p>
         </div>
       </div>
     </div>
@@ -647,6 +648,7 @@ function LoginSuccessToast({ visible }: { visible: boolean }) {
 }
 
 function HomeWrapper() {
+  const { t } = useLanguage();
   const { currentUser, loading } = usePKL();
   const [showToast, setShowToast] = useState(false);
 
@@ -671,7 +673,7 @@ function HomeWrapper() {
       <div className="min-h-screen flex flex-col items-center justify-center bg-[#F8FAFC] dark:bg-gray-900">
         <div className="flex flex-col items-center gap-4 animate-in fade-in duration-300">
           <div className="w-12 h-12 rounded-2xl border-4 border-slate-100 border-t-[#2563EB] animate-spin" />
-          <span className="text-xs font-bold text-[#64748B] dark:text-gray-300 animate-pulse uppercase tracking-widest">Memuat Sesi...</span>
+          <span className="text-xs font-bold text-[#64748B] dark:text-gray-300 animate-pulse uppercase tracking-widest">{t('loadingSession')}</span>
         </div>
       </div>
     );

@@ -2,6 +2,7 @@
 
 import React, { useState, useEffect } from 'react';
 import { usePKL } from '../context/PKLContext';
+import { useLanguage } from '../context/LanguageContext';
 import { 
   getServerTimeAction, 
   getAttendanceTodayAction, 
@@ -22,6 +23,7 @@ interface AttendanceRecord {
 
 export function AttendancePage() {
   const { currentUser } = usePKL();
+  const { t } = useLanguage();
   const [loading, setLoading] = useState(true);
   const [actionLoading, setActionLoading] = useState(false);
   const [todayAttendance, setTodayAttendance] = useState<AttendanceRecord | null>(null);
@@ -161,13 +163,13 @@ export function AttendancePage() {
   const getStatusLabel = (status: string) => {
     switch (status) {
       case 'CHECKED_IN':
-        return { label: 'Sudah Check-in', color: 'bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-400' };
+        return { label: t('statusCheckedIn'), color: 'bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-400' };
       case 'COMPLETED':
-        return { label: 'Selesai / Sudah Check-out', color: 'bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-400' };
+        return { label: t('statusCompleted'), color: 'bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-400' };
       case 'ABSENT':
-        return { label: 'Alfa / Tidak Hadir', color: 'bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-400' };
+        return { label: t('statusAbsent'), color: 'bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-400' };
       default:
-        return { label: 'Belum Absen', color: 'bg-slate-100 text-slate-800 dark:bg-gray-800 dark:text-gray-400' };
+        return { label: t('statusNotCheckedIn'), color: 'bg-slate-100 text-slate-800 dark:bg-gray-800 dark:text-gray-400' };
     }
   };
 
@@ -175,9 +177,9 @@ export function AttendancePage() {
     return (
       <div className="flex flex-col items-center justify-center p-8 bg-white dark:bg-[#243447] border border-[#E2E8F0] dark:border-gray-700 rounded-3xl shadow-sm text-center min-h-[300px]">
         <AlertCircle className="w-12 h-12 text-[#64748B] mb-4" />
-        <h3 className="text-lg font-bold text-[#0F172A] dark:text-white">Fitur Khusus Siswa</h3>
+        <h3 className="text-lg font-bold text-[#0F172A] dark:text-white">{t("studentFeatureOnly")}</h3>
         <p className="text-xs text-[#64748B] dark:text-gray-300 max-w-sm mt-2">
-          Fitur absensi masuk & pulang harian hanya dapat diakses oleh akun dengan peran Siswa/Mahasiswa PKL.
+          {t("studentFeatureDesc")}
         </p>
       </div>
     );
@@ -202,7 +204,7 @@ export function AttendancePage() {
             </div>
             <div>
               <p className="text-[13px] font-bold text-[#0F172A] dark:text-white">
-                {errorMsg ? 'Terjadi Kesalahan' : 'Berhasil'}
+                {errorMsg ? t('errorTitle') : t('successTitle')}
               </p>
               <p className="text-[11px] text-[#64748B] dark:text-gray-300">
                 {errorMsg || successMsg}
@@ -219,7 +221,7 @@ export function AttendancePage() {
         <div className="bg-white dark:bg-[#243447] border border-[#E2E8F0] dark:border-gray-700 rounded-3xl p-6 shadow-sm flex flex-col justify-between space-y-6">
           <div>
             <div className="flex items-center justify-between">
-              <span className="text-[11px] font-bold uppercase tracking-wider text-slate-400">Jam Kerja Server</span>
+              <span className="text-[11px] font-bold uppercase tracking-wider text-slate-400">{t("serverWorkHours")}</span>
               <button 
                 onClick={fetchAttendanceData}
                 disabled={loading}
@@ -246,7 +248,7 @@ export function AttendancePage() {
           </div>
 
           <div className="border-t border-[#E2E8F0] dark:border-gray-700/60 pt-4">
-            <span className="text-[10px] font-extrabold uppercase tracking-wider text-slate-400 block mb-2">Status Hari Ini</span>
+            <span className="text-[10px] font-extrabold uppercase tracking-wider text-slate-400 block mb-2">{t("todayStatus")}</span>
             {loading ? (
               <div className="h-10 bg-slate-100 dark:bg-gray-800 animate-pulse rounded-xl" />
             ) : (
@@ -262,9 +264,9 @@ export function AttendancePage() {
         {/* Buttons Action Check-in & Check-out */}
         <div className="lg:col-span-2 bg-white dark:bg-[#243447] border border-[#E2E8F0] dark:border-gray-700 rounded-3xl p-6 shadow-sm flex flex-col justify-between">
           <div>
-            <h3 className="text-base font-bold text-[#0F172A] dark:text-white">Absensi Harian PKL</h3>
+            <h3 className="text-base font-bold text-[#0F172A] dark:text-white">{t("attendanceDaily")}</h3>
             <p className="text-xs text-[#64748B] dark:text-gray-300 mt-1">
-              Lakukan absensi masuk di pagi hari dan absensi pulang setelah selesai beraktivitas di tempat PKL.
+              {t("attendanceDailyDesc")}
             </p>
           </div>
 
@@ -279,13 +281,13 @@ export function AttendancePage() {
               {/* Check-In Button Box */}
               <div className="border border-slate-100 dark:border-gray-800 bg-slate-50/50 dark:bg-gray-800/20 rounded-2xl p-4 flex flex-col justify-between space-y-3">
                 <div>
-                  <span className="text-xs font-bold text-[#0F172A] dark:text-white block">Absen Masuk (Check-in)</span>
-                  <span className="text-[10px] text-[#64748B] dark:text-gray-300 block mt-0.5">Sesi Pagi: 07.00 - 09.00 WIB</span>
+                  <span className="text-xs font-bold text-[#0F172A] dark:text-white block">{t("checkInBox")}</span>
+                  <span className="text-[10px] text-[#64748B] dark:text-gray-300 block mt-0.5">{t("morningSession")}</span>
                   
                   {/* Status Indicator inside box */}
                   {todayAttendance?.checkIn && (
                     <span className="inline-flex items-center gap-1 mt-2 text-xs font-semibold text-green-600 dark:text-green-400">
-                      <UserCheck size={14} /> Terabsen {todayAttendance.checkIn} WIB
+                      <UserCheck size={14} /> {t("checkedInAt").replace("{time}", todayAttendance.checkIn as string)}
                     </span>
                   )}
                 </div>
@@ -301,19 +303,19 @@ export function AttendancePage() {
                           : 'bg-slate-100 text-slate-400 dark:bg-gray-800 dark:text-gray-600 cursor-not-allowed'
                       }`}
                     >
-                      {actionLoading ? 'Memproses...' : 'Absen Masuk'}
+                      {actionLoading ? '{t("checkInProcessing")}' : 'Absen Masuk'}
                     </button>
                     {!canCheckIn && (
                       <p className="text-[10px] text-red-500 font-medium mt-1.5 text-center">
                         {timeInMinutes < checkInStart 
-                          ? 'Absensi masuk dibuka pukul 07.00 WIB.' 
-                          : 'Waktu absensi masuk telah berakhir.'}
+                          ? '{t("checkInNotStarted")}' 
+                          : '{t("checkInEnded")}'}
                       </p>
                     )}
                   </div>
                 ) : (
                   <button disabled className="w-full py-2.5 px-4 bg-green-50 text-green-500 dark:bg-green-950/20 dark:text-green-400 border border-green-200 dark:border-green-800/30 font-bold text-xs rounded-xl cursor-not-allowed min-h-[42px]">
-                    Sudah Absen Masuk
+                    {t("alreadyCheckedIn")}
                   </button>
                 )}
               </div>
@@ -321,12 +323,12 @@ export function AttendancePage() {
               {/* Check-Out Button Box */}
               <div className="border border-slate-100 dark:border-gray-800 bg-slate-50/50 dark:bg-gray-800/20 rounded-2xl p-4 flex flex-col justify-between space-y-3">
                 <div>
-                  <span className="text-xs font-bold text-[#0F172A] dark:text-white block">Absen Pulang (Check-out)</span>
-                  <span className="text-[10px] text-[#64748B] dark:text-gray-300 block mt-0.5">Sesi Sore: 16.00 - 18.00 WIB</span>
+                  <span className="text-xs font-bold text-[#0F172A] dark:text-white block">{t("checkOutBox")}</span>
+                  <span className="text-[10px] text-[#64748B] dark:text-gray-300 block mt-0.5">{t("afternoonSession")}</span>
                   
                   {todayAttendance?.checkOut && (
                     <span className="inline-flex items-center gap-1 mt-2 text-xs font-semibold text-green-600 dark:text-green-400">
-                      <UserCheck size={14} /> Terabsen {todayAttendance.checkOut} WIB
+                      <UserCheck size={14} /> {t("checkedOutAt").replace("{time}", todayAttendance.checkOut as string)}
                     </span>
                   )}
                 </div>
@@ -342,23 +344,23 @@ export function AttendancePage() {
                           : 'bg-slate-100 text-slate-400 dark:bg-gray-800 dark:text-gray-600 cursor-not-allowed'
                       }`}
                     >
-                      {actionLoading ? 'Memproses...' : 'Absen Pulang'}
+                      {actionLoading ? '{t("checkInProcessing")}' : 'Absen Pulang'}
                     </button>
                     {!todayAttendance?.checkIn ? (
                       <p className="text-[10px] text-amber-500 font-medium mt-1.5 text-center">
-                        Lakukan absen masuk terlebih dahulu.
+                        {t("doCheckInFirst")}
                       </p>
                     ) : !canCheckOut ? (
                       <p className="text-[10px] text-red-500 font-medium mt-1.5 text-center">
                         {timeInMinutes < checkOutStart 
-                          ? 'Absensi pulang dibuka pukul 16.00 WIB.' 
-                          : 'Waktu absensi pulang telah berakhir.'}
+                          ? '{t("checkOutNotStarted")}' 
+                          : '{t("checkOutEnded")}'}
                       </p>
                     ) : null}
                   </div>
                 ) : (
                   <button disabled className="w-full py-2.5 px-4 bg-green-50 text-green-500 dark:bg-green-950/20 dark:text-green-400 border border-green-200 dark:border-green-800/30 font-bold text-xs rounded-xl cursor-not-allowed min-h-[42px]">
-                    Absensi Hari Ini Selesai
+                    {t("todayAttendanceDone")}
                   </button>
                 )}
               </div>
@@ -368,7 +370,7 @@ export function AttendancePage() {
 
           <div className="border-t border-[#E2E8F0] dark:border-gray-700/60 pt-3">
             <p className="text-[10px] text-slate-400 font-semibold leading-relaxed">
-              * Jam absensi disinkronkan langsung dengan server UTC+7 (WIB). Pelanggaran waktu dapat menyebabkan status absensi terlambat atau alfa.
+              {t("syncNote")}
             </p>
           </div>
         </div>
@@ -377,7 +379,7 @@ export function AttendancePage() {
 
       {/* Attendance History Section */}
       <div className="bg-white dark:bg-[#243447] border border-[#E2E8F0] dark:border-gray-700 rounded-3xl p-6 shadow-sm">
-        <h3 className="text-base font-bold text-[#0F172A] dark:text-white mb-4">Riwayat Absensi</h3>
+        <h3 className="text-base font-bold text-[#0F172A] dark:text-white mb-4">{t("attendanceHistory")}</h3>
         
         {loading ? (
           <div className="space-y-3">
@@ -387,17 +389,17 @@ export function AttendancePage() {
         ) : history.length === 0 ? (
           <div className="text-center py-8 border border-dashed border-slate-200 dark:border-gray-700 rounded-2xl">
             <AlertCircle className="w-8 h-8 text-slate-300 dark:text-gray-600 mx-auto mb-2" />
-            <p className="text-xs text-[#64748B] dark:text-gray-300 font-medium">Belum ada riwayat absensi.</p>
+            <p className="text-xs text-[#64748B] dark:text-gray-300 font-medium">{t("noAttendanceHistory")}</p>
           </div>
         ) : (
           <div className="overflow-x-auto rounded-2xl border border-slate-100 dark:border-gray-800">
             <table className="w-full text-left border-collapse text-xs">
               <thead>
                 <tr className="bg-slate-50 dark:bg-gray-800/50 border-b border-slate-100 dark:border-gray-800 text-slate-500 dark:text-gray-400 font-bold">
-                  <th className="p-3.5">Tanggal</th>
-                  <th className="p-3.5">Jam Masuk</th>
-                  <th className="p-3.5">Jam Pulang</th>
-                  <th className="p-3.5">Status</th>
+                  <th className="p-3.5">{t("colDate")}</th>
+                  <th className="p-3.5">{t("colCheckIn")}</th>
+                  <th className="p-3.5">{t("colCheckOut")}</th>
+                  <th className="p-3.5">{t("colStatus")}</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-slate-100 dark:divide-gray-800">

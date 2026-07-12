@@ -3,6 +3,7 @@
 
 import React, { useState, useEffect } from 'react';
 import { usePKL } from '../context/PKLContext';
+import { useLanguage } from '../context/LanguageContext';
 import { getDashboardMetricsAction } from '@/app/actions/pkl';
 import { 
   Building2, Users, FolderKanban, Plus, Edit2, Trash2, CheckSquare, 
@@ -10,6 +11,7 @@ import {
 } from 'lucide-react';
 
 export const AdminPortal: React.FC = () => {
+  const { t } = useLanguage();
   const {
     classesList,
     companiesList,
@@ -72,7 +74,7 @@ export const AdminPortal: React.FC = () => {
     if (res.success) {
       setNewClassName('');
     } else {
-      alert(res.error || 'Gagal menambahkan kelas.');
+      alert(res.error || t('errAddClass'));
     }
   };
 
@@ -83,7 +85,7 @@ export const AdminPortal: React.FC = () => {
     if (res.success) {
       setNewCompanyName('');
     } else {
-      alert(res.error || 'Gagal menambahkan perusahaan.');
+      alert(res.error || t('errAddCompany'));
     }
   };
 
@@ -94,12 +96,12 @@ export const AdminPortal: React.FC = () => {
       setEditingId(null);
       setEditText('');
     } else {
-      alert(res.error || 'Gagal memperbarui data.');
+      alert(res.error || t('errUpdateData'));
     }
   };
 
   const handleDelete = async (type: 'class' | 'company', id: string) => {
-    if (!confirm('Apakah Anda yakin ingin menghapus data ini?')) return;
+    if (!confirm(t('confirmDeleteData'))) return;
     const res = type === 'class' ? await deleteClass(id) : await deleteCompany(id);
     if (!res.success) {
       alert(res.error);
@@ -152,10 +154,10 @@ export const AdminPortal: React.FC = () => {
   };
 
   const handleResetData = async () => {
-    if (confirm('PERINGATAN: Ini akan menghapus seluruh data siswa, logbook, dan mereset ke data awal. Lanjutkan?')) {
+    if (confirm(t('confirmResetDb'))) {
       await resetState();
       await reloadAll();
-      alert('Database berhasil direset.');
+      alert(t('successResetDb'));
     }
   };
 
@@ -168,7 +170,7 @@ export const AdminPortal: React.FC = () => {
             <ShieldAlert size={16} className="text-red-500" />
             Portal Administrator SMKN 1 Bojong
           </h2>
-          <p className="text-[11px] text-[#64748B] dark:text-gray-300">Kelola data master kelas, perusahaan, dan hubungan pembimbing siswa.</p>
+          <p className="text-[11px] text-[#64748B] dark:text-gray-300">{t('adminPortalDesc')}</p>
         </div>
         <div className="flex items-center gap-2 w-full sm:w-auto justify-end">
           <button 
@@ -190,11 +192,11 @@ export const AdminPortal: React.FC = () => {
       {/* Tabs Menu */}
       <div className="flex border-b border-[#E2E8F0] dark:border-gray-700 gap-4 overflow-x-auto py-1 whitespace-nowrap -mx-4 px-4 sm:mx-0 sm:px-0 scrollbar-none">
         {[
-          { key: 'overview', label: 'Ringkasan' },
-          { key: 'verifikasi', label: 'Verifikasi Akun' },
-          { key: 'kelas', label: 'Data Kelas' },
-          { key: 'perusahaan', label: 'Data Perusahaan' },
-          { key: 'users', label: 'Penugasan (Assignment)' }
+          { key: 'overview', label: t('tabOverview') },
+          { key: 'verifikasi', label: t('tabVerification') },
+          { key: 'kelas', label: t('tabClasses') },
+          { key: 'perusahaan', label: t('tabCompanies') },
+          { key: 'users', label: t('tabAssignments') }
         ].map((tab) => (
           <button
             key={tab.key}
@@ -214,19 +216,19 @@ export const AdminPortal: React.FC = () => {
       <div className="bg-white dark:bg-[#243447] border border-[#E2E8F0] dark:border-gray-700 rounded-2xl p-4 md:p-6 shadow-sm min-h-[300px]">
         {activeTab === 'verifikasi' && (
           <div className="flex flex-col gap-4">
-            <h3 className="text-sm font-bold text-slate-700 dark:text-gray-200 uppercase tracking-wider mb-2">Daftar Akun Menunggu Verifikasi</h3>
+            <h3 className="text-sm font-bold text-slate-700 dark:text-gray-200 uppercase tracking-wider mb-2">{t('pendingAccountsList')}</h3>
             {pendingUsersList.length === 0 ? (
-              <p className="text-xs text-slate-500 dark:text-gray-400">Tidak ada akun yang menunggu verifikasi saat ini.</p>
+              <p className="text-xs text-slate-500 dark:text-gray-400">{t('noPendingAccounts')}</p>
             ) : (
               <div className="overflow-x-auto rounded-xl border border-slate-200 dark:border-gray-700">
                 <table className="w-full text-left border-collapse">
                   <thead>
                     <tr className="bg-slate-50 dark:bg-gray-800/50 border-b border-slate-200 dark:border-gray-700">
-                      <th className="p-3 text-[10px] font-bold text-slate-500 dark:text-gray-400 uppercase tracking-wider">Nama & Email</th>
-                      <th className="p-3 text-[10px] font-bold text-slate-500 dark:text-gray-400 uppercase tracking-wider">Role</th>
-                      <th className="p-3 text-[10px] font-bold text-slate-500 dark:text-gray-400 uppercase tracking-wider">Info Tambahan</th>
-                      <th className="p-3 text-[10px] font-bold text-slate-500 dark:text-gray-400 uppercase tracking-wider">Status</th>
-                      <th className="p-3 text-[10px] font-bold text-slate-500 dark:text-gray-400 uppercase tracking-wider text-right">Aksi</th>
+                      <th className="p-3 text-[10px] font-bold text-slate-500 dark:text-gray-400 uppercase tracking-wider">{t('nameAndEmail')}</th>
+                      <th className="p-3 text-[10px] font-bold text-slate-500 dark:text-gray-400 uppercase tracking-wider">{t('roleLabel')}</th>
+                      <th className="p-3 text-[10px] font-bold text-slate-500 dark:text-gray-400 uppercase tracking-wider">{t('additionalInfo')}</th>
+                      <th className="p-3 text-[10px] font-bold text-slate-500 dark:text-gray-400 uppercase tracking-wider">{t('statusLabel')}</th>
+                      <th className="p-3 text-[10px] font-bold text-slate-500 dark:text-gray-400 uppercase tracking-wider text-right">{t('actionCol')}</th>
                     </tr>
                   </thead>
                   <tbody>
@@ -244,10 +246,10 @@ export const AdminPortal: React.FC = () => {
                         <td className="p-3 text-[10px] text-slate-600 dark:text-gray-300">
                           {user.role === 'pembimbing_eksternal' ? (
                             <div className="flex flex-col gap-0.5">
-                              <span><strong>Perusahaan:</strong> {user.companyName || user.company || '-'}</span>
-                              <span><strong>Jabatan:</strong> {user.jobTitle || user.jabatan || '-'}</span>
-                              <span><strong>ID Karyawan:</strong> {user.employeeId || '-'}</span>
-                              <span><strong>Email Corp:</strong> {user.companyEmail || '-'}</span>
+                              <span><strong>{t('companyLabel')}</strong> {user.companyName || user.company || '-'}</span>
+                              <span><strong>{t('positionLabel')}</strong> {user.jobTitle || user.jabatan || '-'}</span>
+                              <span><strong>{t('employeeIdLabel')}</strong> {user.employeeId || '-'}</span>
+                              <span><strong>{t('corpEmailLabel')}</strong> {user.companyEmail || '-'}</span>
                             </div>
                           ) : (
                             <span>{user.school || '-'}</span>
@@ -301,35 +303,35 @@ export const AdminPortal: React.FC = () => {
               <div className="bg-slate-50 dark:bg-gray-800/50 border border-slate-200 dark:border-gray-700/80 p-4 rounded-2xl flex items-center gap-3">
                 <div className="p-3 bg-blue-100 text-blue-600 rounded-xl"><Users size={20} /></div>
                 <div>
-                  <span className="text-[10px] text-slate-500 dark:text-gray-300 uppercase block font-semibold">Total Siswa</span>
+                  <span className="text-[10px] text-slate-500 dark:text-gray-300 uppercase block font-semibold">{t('totalStudents')}</span>
                   <span className="text-lg font-black text-slate-800 dark:text-gray-200">{overallMetrics?.totalStudents ?? 0} orang</span>
                 </div>
               </div>
               <div className="bg-slate-50 dark:bg-gray-800/50 border border-slate-200 dark:border-gray-700/80 p-4 rounded-2xl flex items-center gap-3">
                 <div className="p-3 bg-amber-100 text-amber-600 rounded-xl"><Calendar size={20} /></div>
                 <div>
-                  <span className="text-[10px] text-slate-500 dark:text-gray-300 uppercase block font-semibold">Aktif Hari Ini</span>
+                  <span className="text-[10px] text-slate-500 dark:text-gray-300 uppercase block font-semibold">{t('activeToday')}</span>
                   <span className="text-lg font-black text-slate-800 dark:text-gray-200">{overallMetrics?.monitoringToday ?? 0} keg.</span>
                 </div>
               </div>
               <div className="bg-slate-50 dark:bg-gray-800/50 border border-slate-200 dark:border-gray-700/80 p-4 rounded-2xl flex items-center gap-3">
                 <div className="p-3 bg-purple-100 text-purple-600 rounded-xl"><FileSpreadsheet size={20} /></div>
                 <div>
-                  <span className="text-[10px] text-slate-500 dark:text-gray-300 uppercase block font-semibold">Menunggu Review</span>
+                  <span className="text-[10px] text-slate-500 dark:text-gray-300 uppercase block font-semibold">{t('needReview')}</span>
                   <span className="text-lg font-black text-slate-800 dark:text-gray-200">{overallMetrics?.pendingReview ?? 0} log</span>
                 </div>
               </div>
               <div className="bg-slate-50 dark:bg-gray-800/50 border border-slate-200 dark:border-gray-700/80 p-4 rounded-2xl flex items-center gap-3">
                 <div className="p-3 bg-green-100 text-green-600 rounded-xl"><Award size={20} /></div>
                 <div>
-                  <span className="text-[10px] text-slate-500 dark:text-gray-300 uppercase block font-semibold">Rerata Nilai Sekolah</span>
+                  <span className="text-[10px] text-slate-500 dark:text-gray-300 uppercase block font-semibold">{t('schoolAvgScore')}</span>
                   <span className="text-lg font-black text-slate-800 dark:text-gray-200">{overallMetrics?.averageGrade ?? 0}/100</span>
                 </div>
               </div>
             </div>
 
             <div className="border border-[#E2E8F0] dark:border-gray-700 rounded-xl p-4 bg-slate-50 dark:bg-gray-800/50">
-              <h3 className="text-xs font-bold text-slate-700 uppercase mb-3 tracking-wider">Status Jurnal Seluruh Siswa</h3>
+              <h3 className="text-xs font-bold text-slate-700 uppercase mb-3 tracking-wider">{t('journalStatusAll')}</h3>
               {overallMetrics ? (
                 <div className="flex flex-col gap-3.5">
                   {Object.entries(overallMetrics.columnCounts).map(([col, val]: any) => {
@@ -349,7 +351,7 @@ export const AdminPortal: React.FC = () => {
                   })}
                 </div>
               ) : (
-                <p className="text-xs text-slate-500 dark:text-gray-2000 italic">Memuat grafik...</p>
+                <p className="text-xs text-slate-500 dark:text-gray-2000 italic">{t('loadingChart')}</p>
               )}
             </div>
           </div>
@@ -362,7 +364,7 @@ export const AdminPortal: React.FC = () => {
               <input
                 type="text"
                 required
-                placeholder="Tambah nama kelas baru (Contoh: XII PPLG 3)"
+                placeholder={t('addClassPlaceholder')}
                 value={newClassName}
                 onChange={(e) => setNewClassName(e.target.value)}
                 className="bg-white dark:bg-[#243447] border border-[#E2E8F0] dark:border-gray-700 rounded-xl px-3 py-2.5 text-sm flex-1 text-[#0F172A] dark:text-gray-200 focus:outline-none focus:border-primary dark:focus:border-blue-500 min-h-[48px] md:min-h-0 md:py-2 md:text-xs"
@@ -381,8 +383,8 @@ export const AdminPortal: React.FC = () => {
               <table className="w-full text-left border-collapse min-w-[400px]">
                 <thead>
                   <tr className="bg-slate-50 dark:bg-gray-800/50 border-b border-[#E2E8F0] dark:border-gray-700 text-slate-500 dark:text-gray-300 font-semibold">
-                    <th className="py-2.5 px-4">Nama Kelas</th>
-                    <th className="py-2.5 px-4 text-right">Tindakan</th>
+                    <th className="py-2.5 px-4">{t('classNameCol')}</th>
+                    <th className="py-2.5 px-4 text-right">{t('studentActions')}</th>
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-[#E2E8F0]">
@@ -448,7 +450,7 @@ export const AdminPortal: React.FC = () => {
               <input
                 type="text"
                 required
-                placeholder="Tambah nama perusahaan baru (Contoh: GoTo)"
+                placeholder={t('addCompanyPlaceholder')}
                 value={newCompanyName}
                 onChange={(e) => setNewCompanyName(e.target.value)}
                 className="bg-white dark:bg-[#243447] border border-[#E2E8F0] dark:border-gray-700 rounded-xl px-3 py-2.5 text-sm flex-1 text-[#0F172A] dark:text-gray-200 focus:outline-none focus:border-primary dark:focus:border-blue-500 min-h-[48px] md:min-h-0 md:py-2 md:text-xs"
@@ -467,8 +469,8 @@ export const AdminPortal: React.FC = () => {
               <table className="w-full text-left border-collapse min-w-[400px]">
                 <thead>
                   <tr className="bg-slate-50 dark:bg-gray-800/50 border-b border-[#E2E8F0] dark:border-gray-700 text-slate-500 dark:text-gray-300 font-semibold">
-                    <th className="py-2.5 px-4">Nama Perusahaan</th>
-                    <th className="py-2.5 px-4 text-right">Tindakan</th>
+                    <th className="py-2.5 px-4">{t('companyNameCol')}</th>
+                    <th className="py-2.5 px-4 text-right">{t('studentActions')}</th>
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-[#E2E8F0]">
@@ -529,7 +531,7 @@ export const AdminPortal: React.FC = () => {
 
         {activeTab === 'users' && (
           <div className="flex flex-col gap-6 text-xs">
-            <h3 className="text-xs font-bold text-slate-500 dark:text-gray-300 uppercase tracking-wider mb-2">Penugasan Pembimbing & Siswa</h3>
+            <h3 className="text-xs font-bold text-slate-500 dark:text-gray-300 uppercase tracking-wider mb-2">{t('assignmentsTitle')}</h3>
             
             <div className="flex flex-col gap-6">
               {/* Guru Section */}
@@ -539,14 +541,14 @@ export const AdminPortal: React.FC = () => {
                 </h4>
                 <div className="flex flex-col gap-3">
                   {allUsersList.filter(u => u.role === 'pembimbing_internal').length === 0 ? (
-                    <p className="text-xs text-slate-500 dark:text-gray-2000 italic py-2">Belum ada Pembimbing Internal terdaftar.</p>
+                    <p className="text-xs text-slate-500 dark:text-gray-2000 italic py-2">{t('noInternalAdvisors')}</p>
                   ) : allUsersList.filter(u => u.role === 'pembimbing_internal').map((guru: any) => {
                     const currentClassIds = guru.classes?.map((c: any) => c.id) || [];
                     return (
                       <div key={guru.id} className="bg-white dark:bg-[#243447] border border-[#E2E8F0] dark:border-gray-700 p-3 rounded-lg flex flex-col md:flex-row justify-between md:items-center gap-3">
                         <div>
                           <p className="font-bold text-slate-800 dark:text-gray-200 text-sm md:text-xs">{guru.name}</p>
-                          <p className="text-[10px] text-slate-400 font-medium">Username: {guru.username}</p>
+                          <p className="text-[10px] text-slate-400 font-medium">{t('usernameLabel')} {guru.username}</p>
                         </div>
                         <div className="flex flex-wrap gap-2">
                           {classesList.map(c => {
@@ -580,14 +582,14 @@ export const AdminPortal: React.FC = () => {
                 </h4>
                 <div className="flex flex-col gap-3">
                   {allUsersList.filter(u => u.role === 'pembimbing_eksternal').length === 0 ? (
-                    <p className="text-xs text-slate-500 dark:text-gray-2000 italic py-2">Belum ada Pembimbing Eksternal terdaftar.</p>
+                    <p className="text-xs text-slate-500 dark:text-gray-2000 italic py-2">{t('noExternalAdvisors')}</p>
                   ) : allUsersList.filter(u => u.role === 'pembimbing_eksternal').map((mentor: any) => {
                     const currentCompIds = mentor.companies?.map((c: any) => c.id) || [];
                     return (
                       <div key={mentor.id} className="bg-white dark:bg-[#243447] border border-[#E2E8F0] dark:border-gray-700 p-3 rounded-lg flex flex-col md:flex-row justify-between md:items-center gap-3">
                         <div>
                           <p className="font-bold text-slate-800 dark:text-gray-200 text-sm md:text-xs">{mentor.name}</p>
-                          <p className="text-[10px] text-slate-400 font-medium">Username: {mentor.username}</p>
+                          <p className="text-[10px] text-slate-400 font-medium">{t('usernameLabel')} {mentor.username}</p>
                         </div>
                         <div className="flex flex-wrap gap-2">
                           {companiesList.map(co => {
@@ -621,14 +623,14 @@ export const AdminPortal: React.FC = () => {
                 </h4>
                 <div className="flex flex-col gap-3">
                   {allUsersList.filter(u => u.role === 'siswa').length === 0 ? (
-                    <p className="text-xs text-slate-500 dark:text-gray-2000 italic py-2">Belum ada Siswa terdaftar.</p>
+                    <p className="text-xs text-slate-500 dark:text-gray-2000 italic py-2">{t('noStudentsRegistered')}</p>
                   ) : allUsersList.filter(u => u.role === 'siswa').map((siswa: any) => {
                     return (
                       <div key={siswa.id} className="bg-white dark:bg-[#243447] border border-[#E2E8F0] dark:border-gray-700 p-3 rounded-lg flex flex-col gap-3">
                         <div className="flex flex-col lg:flex-row justify-between lg:items-center gap-3">
                           <div className="flex-1 flex flex-col sm:flex-row gap-3">
                             <div className="flex flex-col gap-1 flex-1">
-                              <label className="text-[9px] uppercase tracking-wider text-slate-400 font-bold">Nama Lengkap</label>
+                              <label className="text-[9px] uppercase tracking-wider text-slate-400 font-bold">{t('fullNameLabel')}</label>
                               <input
                                 type="text"
                                 defaultValue={siswa.name}
@@ -637,11 +639,11 @@ export const AdminPortal: React.FC = () => {
                               />
                             </div>
                             <div className="flex flex-col gap-1 flex-1">
-                              <label className="text-[9px] uppercase tracking-wider text-slate-400 font-bold">NIS / NISN</label>
+                              <label className="text-[9px] uppercase tracking-wider text-slate-400 font-bold">{t('nisnLabel')}</label>
                               <input
                                 type="text"
                                 defaultValue={siswa.nisn || ''}
-                                placeholder="Belum diisi"
+                                placeholder={t('notFilled')}
                                 onBlur={(e) => handleSiswaProfileUpdate(siswa.id, siswa.name, e.target.value)}
                                 className="bg-slate-50 dark:bg-gray-800/50 border border-slate-200 dark:border-gray-700 rounded-xl md:rounded-lg px-3 py-2 md:p-1.5 text-sm md:text-xs text-slate-800 dark:text-gray-200 focus:outline-none min-h-[48px] md:min-h-0"
                               />
@@ -650,13 +652,13 @@ export const AdminPortal: React.FC = () => {
                           
                           <div className="flex flex-col sm:flex-row gap-3 w-full lg:w-auto">
                             <div className="flex flex-col gap-1 min-w-[120px] flex-1">
-                              <label className="text-[9px] uppercase tracking-wider text-slate-400 font-bold">Kelas</label>
+                              <label className="text-[9px] uppercase tracking-wider text-slate-400 font-bold">{t('studentClass')}</label>
                               <select
                                 value={siswa.classId || ''}
                                 onChange={(e) => handleSiswaClassChange(siswa.id, e.target.value)}
                                 className="bg-slate-50 dark:bg-gray-800/50 border border-slate-200 dark:border-gray-700 rounded-xl md:rounded-lg px-3 py-2 md:p-1.5 text-sm md:text-xs focus:outline-none min-h-[48px] md:min-h-0 w-full"
                               >
-                                <option value="">-- Tanpa Kelas --</option>
+                                <option value="">{t('noClassAssigned')}</option>
                                 {classesList.map(c => (
                                   <option key={c.id} value={c.id}>{c.name}</option>
                                 ))}
@@ -664,13 +666,13 @@ export const AdminPortal: React.FC = () => {
                             </div>
 
                             <div className="flex flex-col gap-1 min-w-[150px] flex-1">
-                              <label className="text-[9px] uppercase tracking-wider text-slate-400 font-bold">Perusahaan</label>
+                              <label className="text-[9px] uppercase tracking-wider text-slate-400 font-bold">{t('company')}</label>
                               <select
                                 value={siswa.companyId || ''}
                                 onChange={(e) => handleSiswaCompanyChange(siswa.id, e.target.value)}
                                 className="bg-slate-50 dark:bg-gray-800/50 border border-slate-200 dark:border-gray-700 rounded-xl md:rounded-lg px-3 py-2 md:p-1.5 text-sm md:text-xs focus:outline-none min-h-[48px] md:min-h-0 w-full"
                               >
-                                <option value="">-- Tanpa Perusahaan --</option>
+                                <option value="">{t('noCompanyAssigned')}</option>
                                 {companiesList.map(co => (
                                   <option key={co.id} value={co.id}>{co.name}</option>
                                 ))}
