@@ -1,6 +1,6 @@
 <div align="center">
-  <img src="public/interntrack.jpg" alt="InternTrack Logo" width="160" style="border-radius: 20px; margin-bottom: 20px;" />
-  <h1>🚀 InternTrack</h1>
+  <img src="public/nebo.png" alt="NEBO Logo" width="160" style="border-radius: 20px; margin-bottom: 20px;" />
+  <h1>🚀 NeboTrack</h1>
   <p align="center">
     <strong>Sistem Monitoring & Logbook Jurnal Harian PKL Digital SMKN 1 Bojong</strong>
     <br />
@@ -27,13 +27,13 @@
 
 ## 📖 Deskripsi Aplikasi
 
-**InternTrack** adalah platform monitoring terpadu yang dirancang khusus untuk memfasilitasi program **Praktek Kerja Lapangan (PKL)** bagi siswa SMKN 1 Bojong. Aplikasi ini menjembatani komunikasi, pelaporan, dan evaluasi berkala antara tiga pihak utama:
+**NeboTrack** adalah platform monitoring terpadu yang dirancang khusus untuk memfasilitasi program **Praktek Kerja Lapangan (PKL)** bagi siswa SMKN 1 Bojong. Aplikasi ini menjembatani komunikasi, pelaporan, dan evaluasi berkala antara tiga pihak utama:
 
 *   👤 **Siswa**: Mencatat aktivitas harian dan memantau progres.
 *   👨‍🏫 **Guru Pembimbing (Internal)**: Memantau dan mengevaluasi perkembangan siswa di lapangan.
 *   🏢 **Mentor Perusahaan (Eksternal)**: Memberikan feedback dan verifikasi langsung atas pekerjaan siswa.
 
-Dengan antarmuka yang modern, InternTrack mendukung **Kanban Board** di Desktop untuk manajemen tugas yang terorganisir dan **Mobile Timeline** di Smartphone untuk kemudahan pengisian jurnal di mana saja.
+Dengan antarmuka yang modern, NeboTrack mendukung **Kanban Board** di Desktop untuk manajemen tugas yang terorganisir dan **Mobile Timeline** di Smartphone untuk kemudahan pengisian jurnal di mana saja.
 
 ---
 
@@ -89,10 +89,10 @@ Ikuti langkah-langkah berikut untuk menjalankan project di lingkungan lokal:
 ### 2. Clone & Install
 ```bash
 # Clone repositori
-git clone https://github.com/username/interntrack.git
+git clone https://github.com/username/nebotrack.git
 
 # Masuk ke folder
-cd interntrack
+cd nebotrack
 
 # Instal dependensi
 npm install
@@ -135,7 +135,7 @@ Buka [http://localhost:3000](http://localhost:3000) di browser Anda.
 ## 📂 Struktur Folder
 
 ```bash
-interntrack/
+nebotrack/
 ├── 📁 prisma/          # Schema database & seeder
 ├── 📁 public/          # Aset statis (Logo, Icon)
 ├── 📁 src/

@@ -348,16 +348,16 @@ export const AuthPage: React.FC = () => {
             <div className="relative mb-5">
               <div className="absolute inset-0 rounded-2xl bg-primary/10 blur-md scale-110" />
               <img
-                src="/interntrack.jpg"
-                alt="InternTrack Logo"
+                src="/nebo.png"
+                alt="NEBO Logo"
                 className="relative w-[72px] h-[72px] md:w-[88px] md:h-[88px] object-contain rounded-2xl shadow-md border border-[#E2E8F0] dark:border-gray-700"
               />
             </div>
             <h1 className="text-2xl md:text-[28px] font-black text-[#0F172A] dark:text-white tracking-tight">
-              InternTrack
+              NEBO
             </h1>
             <p className="text-sm text-[#64748B] dark:text-gray-300 font-medium mt-2 text-center leading-relaxed max-w-[280px]">
-              Track Your Progress, Shape Your Future.
+              Network for Education & Business Opportunities
             </p>
           </div>
 
@@ -886,7 +886,7 @@ export const AuthPage: React.FC = () => {
                         className="mt-0.5 h-4 w-4 rounded border-slate-300 text-primary focus:ring-primary focus:ring-offset-0 cursor-pointer"
                       />
                       <span className="text-xs text-slate-600 dark:text-gray-300 font-medium leading-tight">
-                        Saya menyetujui Syarat & Ketentuan serta Kebijakan Privasi yang berlaku untuk penggunaan InternTrack.
+                        Saya menyetujui Syarat & Ketentuan serta Kebijakan Privasi yang berlaku untuk penggunaan NeboTrack.
                       </span>
                     </label>
                   )}
@@ -1024,7 +1024,7 @@ export const AuthPage: React.FC = () => {
 
         {/* Footer */}
         <p className="text-center text-xs text-slate-400 dark:text-gray-500 mt-6 font-medium">
-          © 2026 InternTrack · SMKN 1 Bojong
+          © 2026 NeboTrack · SMKN 1 Bojong
         </p>
       </div>
     </div>

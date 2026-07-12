@@ -6,7 +6,7 @@ const coverReplacement = `
         {/* Printable Cover Page */}
         <div className="hidden print:flex flex-col items-center justify-center min-h-[26cm] w-full" style={{ pageBreakAfter: 'always' }}>
           {/* eslint-disable-next-line @next/next/no-img-element */}
-          <img src="/interntrack.jpg" alt="Logo" className="w-48 h-48 object-contain mb-10" />
+          <img src="/nebo.png" alt="Logo" className="w-48 h-48 object-contain mb-10" />
           <h1 className="text-3xl font-bold uppercase text-black text-center leading-snug">LAPORAN JURNAL KEGIATAN</h1>
           <h1 className="text-3xl font-bold uppercase text-black text-center mb-16 leading-snug">PRAKTIK KERJA LAPANGAN (PKL)</h1>
           
@@ -195,7 +195,7 @@ const signatureReplacement = `
         <div className="hidden print:block fixed bottom-0 left-0 right-0 text-[10px] text-black pt-2 pb-2 mt-16">
            <div className="border-t-[1.5px] border-black pt-2 flex justify-between items-center">
              <div>
-               Dicetak melalui <strong>InternTrack</strong> - https://nebotrack.vercel.app
+               Dicetak melalui <strong>NeboTrack</strong> - https://nebotrack.vercel.app
              </div>
              <div>
                Tanggal Cetak: {new Date().toLocaleDateString('id-ID', { day: 'numeric', month: 'long', year: 'numeric' })} | Halaman <span className="pageNumber"></span> dari <span className="totalPages"></span>

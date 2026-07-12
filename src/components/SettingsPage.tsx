@@ -626,7 +626,7 @@ export const SettingsPage: React.FC<SettingsPageProps> = ({
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6 md:gap-8">
           {/* ABOUT CARD */}
           <button 
-            onClick={() => alert(`InternTrack v1.0.0 (Stable)\n${t('aboutDesc')}`)}
+            onClick={() => alert(`NeboTrack v1.0.0 (Stable)\n${t('aboutDesc')}`)}
             className="group bg-white dark:bg-[#1E293B] rounded-[20px] shadow-[0_8px_30px_rgb(0,0,0,0.04)] dark:shadow-[0_8px_30px_rgb(0,0,0,0.1)] border border-slate-100 dark:border-gray-800 transition-all duration-300 hover:shadow-[0_8px_30px_rgb(0,0,0,0.08)] hover:-translate-y-1 p-6 flex items-center justify-between text-left"
           >
             <div className="flex items-center gap-4">

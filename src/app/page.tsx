@@ -61,13 +61,13 @@ function DashboardContent() {
           <div>
             <div className="flex items-center gap-3">
               <img
-                src="/interntrack.jpg"
-                alt="InternTrack Logo"
+                src="/nebo.png"
+                alt="NEBO Logo"
                 className="w-10 h-10 object-contain rounded-xl shadow-sm border border-[#E2E8F0] dark:border-gray-700"
               />
               <div>
                 <h1 className="text-xl md:text-2xl font-black text-[#0F172A] dark:text-white tracking-tight">
-                  PORTAL PEMBIMBING - INTERNTRACK
+                  PORTAL PEMBIMBING - NEBOTRACK
                 </h1>
                 <p className="text-[10px] md:text-xs text-[#64748B] dark:text-gray-300 font-medium mt-0.5">
                   Selamat datang, <span className="text-primary font-bold">{currentUser.name}</span> (Peran:{' '}
@@ -116,9 +116,9 @@ function DashboardContent() {
           <Menu size={22} />
         </button>
         <div className="flex items-center gap-2">
-          <img src="/interntrack.jpg" alt="Logo" className="w-6 h-6 object-contain rounded" />
+          <img src="/nebo.png" alt="Logo" className="w-6 h-6 object-contain rounded" />
           <span className="font-bold text-sm text-slate-800 dark:text-gray-200 uppercase tracking-tight">
-            InternTrack
+            NeboTrack
           </span>
         </div>
         <button
@@ -143,8 +143,8 @@ function DashboardContent() {
           <div className="relative w-72 bg-white dark:bg-[#243447] h-full shadow-2xl flex flex-col p-6 animate-in slide-in-from-left duration-300">
             <div className="flex items-center justify-between mb-8">
               <div className="flex items-center gap-2">
-                <img src="/interntrack.jpg" alt="Logo" className="w-8 h-8 object-contain rounded-xl" />
-                <span className="font-black text-slate-800 dark:text-gray-200 text-base">InternTrack</span>
+                <img src="/nebo.png" alt="Logo" className="w-8 h-8 object-contain rounded-xl" />
+                <span className="font-black text-slate-800 dark:text-gray-200 text-base">NeboTrack</span>
               </div>
               <button 
                 onClick={() => setIsDrawerOpen(false)}
@@ -295,14 +295,14 @@ function DashboardContent() {
         <div>
           <div className="flex items-center gap-3">
             <img
-              src="/interntrack.jpg"
-              alt="InternTrack Logo"
+              src="/nebo.png"
+              alt="NEBO Logo"
               className="w-10 h-10 object-contain rounded-xl shadow-sm border border-[#E2E8F0] dark:border-gray-700"
             />
             <div>
               <div className="flex items-center gap-2">
                 <h1 className="text-2xl font-black text-[#0F172A] dark:text-white tracking-tight">
-                  InternTrack
+                  NEBO
                 </h1>
                 {loading && (
                   <div className="flex items-center gap-1.5 px-2 py-0.5 rounded-md bg-primary/10 border border-primary/20 text-[10px] text-primary font-semibold uppercase animate-pulse">
@@ -312,7 +312,7 @@ function DashboardContent() {
                 )}
               </div>
               <p className="text-xs text-[#64748B] dark:text-gray-300 font-medium mt-0.5">
-                Track Your Progress, Shape Your Future.
+                Network for Education & Business Opportunities
               </p>
             </div>
           </div>
@@ -574,7 +574,7 @@ function DashboardContent() {
                     {currentUser?.role?.replace('_', ' ')}
                   </span>
                 </div>
-                <p className="text-[11px] text-slate-400 mt-1 truncate">{currentUser?.username}@interntrack.com</p>
+                <p className="text-[11px] text-slate-400 mt-1 truncate">{currentUser?.username}@nebotrack.com</p>
               </div>
             </div>
 
@@ -686,7 +686,7 @@ function HomeWrapper() {
       <LoginSuccessToast visible={showToast} />
       <DashboardContent />
       <footer className="py-6 border-t border-[#E2E8F0] dark:border-gray-700 text-center text-xs text-[#64748B] dark:text-gray-300 print:hidden mt-12 bg-white dark:bg-[#243447]">
-        <span>&copy; 2026 InternTrack. Built with Next.js &amp; Tailwind CSS.</span>
+        <span>&copy; 2026 NeboTrack. Built with Next.js &amp; Tailwind CSS.</span>
       </footer>
     </>
   );

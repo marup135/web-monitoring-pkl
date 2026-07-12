@@ -25,7 +25,7 @@ export async function sendAttendanceReminder(to: string, name: string, type: 'pa
           <p>Silakan segera melakukan absensi melalui aplikasi sebelum batas waktu yang ditentukan (09.00 WIB).</p>
           <br/>
           <p>Terima kasih,</p>
-          <p>Tim InternTrack</p>
+          <p>Tim NeboTrack</p>
         </div>
       `;
     } else {
@@ -43,13 +43,13 @@ export async function sendAttendanceReminder(to: string, name: string, type: 'pa
           <p>sebelum pukul 18.00 WIB hari ini.</p>
           <br/>
           <p>Terima kasih,</p>
-          <p>Tim InternTrack</p>
+          <p>Tim NeboTrack</p>
         </div>
       `;
     }
 
     const data = await resend.emails.send({
-      from: `InternTrack <${FROM_EMAIL}>`,
+      from: `NeboTrack <${FROM_EMAIL}>`,
       to: [to],
       subject,
       html,

@@ -112,8 +112,8 @@ export default function ResetPasswordPage() {
             <div className="relative mb-4">
               <div className="absolute inset-0 rounded-2xl bg-primary/10 blur-md scale-110" />
               <img
-                src="/interntrack.jpg"
-                alt="InternTrack Logo"
+                src="/nebo.png"
+                alt="NEBO Logo"
                 className="relative w-[72px] h-[72px] md:w-[88px] md:h-[88px] object-contain rounded-2xl shadow-md border border-[#E2E8F0] dark:border-gray-700"
               />
             </div>

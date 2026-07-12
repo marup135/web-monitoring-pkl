@@ -15,8 +15,8 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "InternTrack",
-  description: "Track Your Progress, Shape Your Future.",
+  title: "NeboTrack",
+  description: "Network for Education & Business Opportunities",
 };
 
 export default function RootLayout({
