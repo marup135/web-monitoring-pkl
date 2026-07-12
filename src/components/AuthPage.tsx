@@ -2,6 +2,7 @@
 'use client';
 
 import React, { useState, useRef, useEffect } from 'react';
+import Link from 'next/link';
 import { usePKL } from '../context/PKLContext';
 import { forgotPasswordAction } from '../app/actions/auth';
 import {
@@ -412,7 +413,41 @@ export const AuthPage: React.FC = () => {
                 </div>
               )}
 
-              {isForgotPassword && (
+              
+                {/* CTA Admin Institusi - Login */}
+                {isLogin && (
+                  <div className="mt-8 border-t border-slate-200 dark:border-gray-700 pt-6">
+                    <div className="flex flex-col items-center text-center gap-3 bg-slate-50 dark:bg-gray-800/50 p-5 rounded-2xl border border-slate-100 dark:border-gray-700/50">
+                      <div className="w-10 h-10 bg-primary/10 rounded-xl flex items-center justify-center text-primary mb-1">
+                        <Building2 size={20} />
+                      </div>
+                      <h3 className="text-sm font-bold text-slate-800 dark:text-white">
+                        🏫 Ingin mengelola sekolah, kampus, atau perusahaan?
+                      </h3>
+                      <p className="text-xs text-slate-500 dark:text-gray-400 max-w-[280px]">
+                        Kelola data peserta, pembimbing, absensi, logbook, dan laporan dalam satu dashboard.
+                      </p>
+                      <Link href="/register-admin" className="mt-2 w-full min-h-[44px] bg-white dark:bg-gray-800 hover:bg-slate-50 dark:hover:bg-gray-700 text-primary font-bold text-sm rounded-xl border border-slate-200 dark:border-gray-700 transition-all duration-200 flex items-center justify-center cursor-pointer shadow-sm">
+                        Daftar sebagai Admin Institusi
+                      </Link>
+                    </div>
+                  </div>
+                )}
+
+                
+                {/* CTA Admin Institusi - Register */}
+                {isRegister && (
+                  <div className="mt-8 border-t border-slate-200 dark:border-gray-700 pt-6 text-center">
+                    <p className="text-xs text-slate-500 dark:text-gray-400 mb-3">
+                      Ingin mendaftarkan sekolah, kampus, atau perusahaan?
+                    </p>
+                    <Link href="/register-admin" className="text-primary font-bold text-sm hover:text-blue-700 flex items-center justify-center gap-1 transition-colors">
+                      Daftar sebagai Admin Institusi <ArrowRight size={16} />
+                    </Link>
+                  </div>
+                )}
+
+                {isForgotPassword && (
                 <div className="mb-8 text-center animate-in fade-in zoom-in-95 duration-200">
                   <h2 className="text-lg font-bold text-[#0F172A] dark:text-white">Lupa Password?</h2>
                   <p className="text-sm text-[#64748B] dark:text-gray-300 mt-2">Masukkan email Anda untuk menerima tautan reset password.</p>
