@@ -7,82 +7,112 @@ generator client {
   provider = "prisma-client-js"
 }
 
+enum InstitutionType {
+  SCHOOL
+  UNIVERSITY
+  TRAINING_CENTER
+  COMPANY
+  OTHER
+}
+
+model Institution {
+  id        String          @id @default(uuid())
+  name      String          @db.VarChar(255)
+  code      String          @unique @db.VarChar(50)
+  type      InstitutionType @default(OTHER)
+  logo      String?         @db.Text
+  address   String?         @db.Text
+  phone     String?         @db.VarChar(50)
+  website   String?         @db.VarChar(255)
+  email     String?         @db.VarChar(255)
+  status    String          @default("PENDING") @db.VarChar(20) // PENDING, ACTIVE, REJECTED
+  createdAt DateTime        @default(now())
+  updatedAt DateTime        @updatedAt
+
+  users     User[]       @relation("UserInstitution")
+  classes   Kelas[]      @relation("InstitutionClasses")
+  companies Perusahaan[] @relation("InstitutionCompanies")
+}
+
 model User {
-  id        String   @id @default(uuid())
-  username  String   @unique @db.VarChar(255)
-  email     String?  @unique @db.VarChar(255)
-  password  String   @db.VarChar(255)
-  name      String   @db.VarChar(255)
-  role      String   @db.VarChar(50) // "siswa" | "pembimbing_internal" | "pembimbing_eksternal"
-  company   String?  @db.VarChar(255) // Optional: Nama Perusahaan
-  nisn      String?  @db.VarChar(50)  // Optional: NIS/NISN
-  nip       String?  @db.VarChar(50)
-  status    String   @default("ACTIVE") @db.VarChar(20)
-  jabatan   String?  @db.VarChar(100)
-  school    String   @default("SMKN 1 BOJONG") @db.VarChar(255)
-  boardBackground String? @db.Text
-  companyName String?  @db.VarChar(255)
-  jobTitle    String?  @db.VarChar(100)
-  employeeId  String?  @db.VarChar(50)
-  companyEmail String? @db.VarChar(255)
-  profileImage String? @db.Text
-  lastMorningReminder   String? @db.VarChar(10) // Format: YYYY-MM-DD
-  lastAfternoonReminder String? @db.VarChar(10) // Format: YYYY-MM-DD
-  createdAt DateTime @default(now())
+  id                    String   @id @default(uuid())
+  username              String   @unique @db.VarChar(255)
+  email                 String?  @unique @db.VarChar(255)
+  password              String   @db.VarChar(255)
+  name                  String   @db.VarChar(255)
+  role                  String   @db.VarChar(50) // "siswa" | "pembimbing_internal" | "pembimbing_eksternal"
+  company               String?  @db.VarChar(255) // Optional: Nama Perusahaan
+  nisn                  String?  @db.VarChar(50) // Optional: NIS/NISN
+  nip                   String?  @db.VarChar(50)
+  status                String   @default("ACTIVE") @db.VarChar(20)
+  jabatan               String?  @db.VarChar(100)
+  school                String   @default("SMKN 1 BOJONG") @db.VarChar(255)
+  boardBackground       String?  @db.Text
+  companyName           String?  @db.VarChar(255)
+  jobTitle              String?  @db.VarChar(100)
+  employeeId            String?  @db.VarChar(50)
+  companyEmail          String?  @db.VarChar(255)
+  profileImage          String?  @db.Text
+  lastMorningReminder   String?  @db.VarChar(10) // Format: YYYY-MM-DD
+  lastAfternoonReminder String?  @db.VarChar(10) // Format: YYYY-MM-DD
+  createdAt             DateTime @default(now())
+
+  institutionId String?      @db.VarChar(255)
+  institution   Institution? @relation("UserInstitution", fields: [institutionId], references: [id], onDelete: SetNull)
 
   // Relations for Siswa
-  classId   String?      @db.VarChar(255)
-  class     Kelas?       @relation("StudentClass", fields: [classId], references: [id], onDelete: SetNull)
-  companyId String?      @db.VarChar(255)
+  classId    String?     @db.VarChar(255)
+  class      Kelas?      @relation("StudentClass", fields: [classId], references: [id], onDelete: SetNull)
+  companyId  String?     @db.VarChar(255)
   perusahaan Perusahaan? @relation("StudentCompany", fields: [companyId], references: [id], onDelete: SetNull)
 
   // Relations for Guru (Advisor)
-  classes   Kelas[]      @relation("AdvisorClasses")
+  classes Kelas[] @relation("AdvisorClasses")
 
   // Relations for Mentor
   companies Perusahaan[] @relation("MentorCompanies")
 
   // Relations
-  cards         Card[]        @relation("StudentCards")
-  advisorNotes  AdvisorNote[] @relation("StudentNotes")
-  writtenNotes  AdvisorNote[] @relation("AdvisorNotes")
-  attendances   Attendance[]  @relation("UserAttendances")
+  cards        Card[]        @relation("StudentCards")
+  advisorNotes AdvisorNote[] @relation("StudentNotes")
+  writtenNotes AdvisorNote[] @relation("AdvisorNotes")
+  attendances  Attendance[]  @relation("UserAttendances")
 }
 
 model Card {
-  id           String        @id @default(uuid())
-  title        String        @db.VarChar(255)
-  description  String        @db.Text
-  columnId     String        @default("rencana")
-  category     String        @default("Coding")
-  startTime    String        @default("")
-  endTime      String        @default("")
-  dueDate      String
-  createdAt    DateTime      @default(now())
-  
+  id          String   @id @default(uuid())
+  title       String   @db.VarChar(255)
+  description String   @db.Text
+  columnId    String   @default("rencana")
+  category    String   @default("Coding")
+  startTime   String   @default("")
+  endTime     String   @default("")
+  dueDate     String
+  createdAt   DateTime @default(now())
+
   // Mentor (Pembimbing Eksternal) scores
   scoreMentor           Int?
   scoreMentorDiscipline Int?
   scoreMentorSkill      Int?
   scoreMentorAttitude   Int?
-  feedbackMentor        String?       @db.Text
+  feedbackMentor        String? @db.Text
 
   // Advisor (Pembimbing Internal / Guru) scores
   scoreAdvisor              Int?
   scoreAdvisorDiscipline    Int?
   scoreAdvisorReport        Int?
   scoreAdvisorCommunication Int?
-  feedbackAdvisor           String?       @db.Text
+  feedbackAdvisor           String? @db.Text
 
   // Attachments JSON string
-  attachmentsJson           String?       @db.Text
+  attachmentsJson String? @db.Text
 
-  comments     Comment[]
-  history      HistoryItem[]
+  comments Comment[]
+  history  HistoryItem[]
 
   // Link card to student
-  studentId    String
-  student      User          @relation("StudentCards", fields: [studentId], references: [id], onDelete: Cascade)
+  studentId String
+  student   User   @relation("StudentCards", fields: [studentId], references: [id], onDelete: Cascade)
 
   @@index([studentId])
 }
@@ -116,10 +146,10 @@ model AdvisorNote {
   createdAt   DateTime @default(now())
 
   // Link advisor note to student and the advisor who wrote it
-  studentId   String
-  student     User     @relation("StudentNotes", fields: [studentId], references: [id], onDelete: Cascade)
-  advisorId   String
-  advisor     User     @relation("AdvisorNotes", fields: [advisorId], references: [id], onDelete: Cascade)
+  studentId String
+  student   User   @relation("StudentNotes", fields: [studentId], references: [id], onDelete: Cascade)
+  advisorId String
+  advisor   User   @relation("AdvisorNotes", fields: [advisorId], references: [id], onDelete: Cascade)
 
   @@index([studentId])
   @@index([advisorId])
@@ -130,9 +160,12 @@ model Kelas {
   name      String   @unique @db.VarChar(255)
   createdAt DateTime @default(now())
 
+  institutionId String?      @db.VarChar(255)
+  institution   Institution? @relation("InstitutionClasses", fields: [institutionId], references: [id], onDelete: SetNull)
+
   // Relations
-  students  User[]   @relation("StudentClass")
-  advisors  User[]   @relation("AdvisorClasses")
+  students User[] @relation("StudentClass")
+  advisors User[] @relation("AdvisorClasses")
 }
 
 model Perusahaan {
@@ -140,22 +173,25 @@ model Perusahaan {
   name      String   @unique @db.VarChar(255)
   createdAt DateTime @default(now())
 
+  institutionId String?      @db.VarChar(255)
+  institution   Institution? @relation("InstitutionCompanies", fields: [institutionId], references: [id], onDelete: SetNull)
+
   // Relations
-  students  User[]   @relation("StudentCompany")
-  mentors   User[]   @relation("MentorCompanies")
+  students User[] @relation("StudentCompany")
+  mentors  User[] @relation("MentorCompanies")
 }
 
 model Attendance {
   id        String   @id @default(uuid())
   userId    String
   user      User     @relation("UserAttendances", fields: [userId], references: [id], onDelete: Cascade)
-  date      String   // format "YYYY-MM-DD"
-  checkIn   String?  // format "HH:mm"
-  checkOut  String?  // format "HH:mm"
+  date      String // format "YYYY-MM-DD"
+  checkIn   String? // format "HH:mm"
+  checkOut  String? // format "HH:mm"
   status    String   @default("NOT_CHECKED_IN") @db.VarChar(50) // NOT_CHECKED_IN, CHECKED_IN, COMPLETED, ABSENT
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
-  @@index([userId])
   @@unique([userId, date])
+  @@index([userId])
 }

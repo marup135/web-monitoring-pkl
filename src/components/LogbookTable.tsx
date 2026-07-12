@@ -237,7 +237,7 @@ export const LogbookTable: React.FC<LogbookTableProps> = ({ onOpenCard, onEditCa
               });
               const hasMentorScore = card.scoreMentor !== undefined && card.scoreMentor !== null;
               const hasAdvisorScore = card.scoreAdvisor !== undefined && card.scoreAdvisor !== null;
-              const isSiswa = currentUser?.role === 'siswa';
+              const isSiswa = currentUser?.role === 'PARTICIPANT';
 
               return (
                 <div key={card.id} className="relative">

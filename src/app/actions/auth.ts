@@ -1,3 +1,4 @@
+
 'use server';
 
 import prisma from '@/lib/prisma';
@@ -18,15 +19,16 @@ export async function registerAction(
   school?: string,
   jabatan?: string,
   employeeId?: string,
-  companyEmail?: string
+  companyEmail?: string,
+  institutionCode?: string
 ) {
   try {
     // Admin cannot register via the form
-    if (role === 'admin') {
-      return { success: false, error: 'Akun Admin tidak dapat dibuat melalui registrasi.' };
+    if (role === 'SUPER_ADMIN' || role === 'INSTITUTION_ADMIN') {
+      return { success: false, error: 'Akun Admin tidak dapat dibuat melalui registrasi biasa.' };
     }
 
-    const allowedRoles = ['siswa', 'pembimbing_internal', 'pembimbing_eksternal'];
+    const allowedRoles = ['PARTICIPANT', 'INTERNAL_MENTOR', 'EXTERNAL_MENTOR'];
     if (!allowedRoles.includes(role)) {
       return { success: false, error: 'Peran registrasi tidak valid.' };
     }
@@ -45,22 +47,16 @@ export async function registerAction(
 
     let status = 'PENDING';
 
-    if (role === 'siswa') {
+    if (role === 'PARTICIPANT') {
       status = 'ACTIVE';
       if (!className || !className.trim()) {
         return { success: false, error: 'Kelas / Program Studi wajib diisi.' };
       }
-      if (!school || !school.trim()) {
-        return { success: false, error: 'Asal Sekolah / Kampus wajib diisi.' };
-      }
-    } else if (role === 'pembimbing_internal') {
+    } else if (role === 'INTERNAL_MENTOR') {
       if (!nip || !nip.trim()) {
         return { success: false, error: 'NIP / Nomor Identitas wajib diisi.' };
       }
-      if (!school || !school.trim()) {
-        return { success: false, error: 'Asal Sekolah / Kampus wajib diisi.' };
-      }
-    } else if (role === 'pembimbing_eksternal') {
+    } else if (role === 'EXTERNAL_MENTOR') {
       const cleanCompany = companyName?.trim();
       if (!cleanCompany) {
         return { success: false, error: 'Nama Perusahaan wajib diisi.' };
@@ -77,7 +73,7 @@ export async function registerAction(
     }
 
     const cleanEmail = email.trim().toLowerCase();
-    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    const emailRegex = /^[^s@]+@[^s@]+.[^s@]+$/;
     if (!emailRegex.test(cleanEmail)) {
       return { success: false, error: 'Format email tidak valid.' };
     }
@@ -97,26 +93,42 @@ export async function registerAction(
       }
       return { success: false, error: 'Username sudah digunakan.' };
     }
+    
+    // Resolve Institution
+    let resolvedInstitutionId = null;
+    if (institutionCode) {
+      const inst = await prisma.institution.findUnique({
+        where: { code: institutionCode.trim() }
+      });
+      if (inst) {
+        resolvedInstitutionId = inst.id;
+      }
+    }
+    // If not found, use default for backward compatibility
+    if (!resolvedInstitutionId) {
+       const inst = await prisma.institution.findFirst();
+       if (inst) resolvedInstitutionId = inst.id;
+    }
 
     const hashedPassword = hashPassword(password);
 
     let resolvedClassId = null;
-    if (role === 'siswa' && className) {
+    if (role === 'PARTICIPANT' && className) {
       const trimmedClass = className.trim();
       let dbClass = await prisma.kelas.findUnique({ where: { name: trimmedClass } });
       if (!dbClass) {
-        dbClass = await prisma.kelas.create({ data: { name: trimmedClass } });
+        dbClass = await prisma.kelas.create({ data: { name: trimmedClass, institutionId: resolvedInstitutionId } });
       }
       resolvedClassId = dbClass.id;
     }
 
     let resolvedCompanyId = null;
     let finalCompany = null;
-    if ((role === 'siswa' || role === 'pembimbing_eksternal') && companyName) {
+    if ((role === 'PARTICIPANT' || role === 'EXTERNAL_MENTOR') && companyName) {
       finalCompany = companyName.trim();
       let dbCompany = await prisma.perusahaan.findUnique({ where: { name: finalCompany } });
       if (!dbCompany) {
-        dbCompany = await prisma.perusahaan.create({ data: { name: finalCompany } });
+        dbCompany = await prisma.perusahaan.create({ data: { name: finalCompany, institutionId: resolvedInstitutionId } });
       }
       resolvedCompanyId = dbCompany.id;
     }
@@ -128,19 +140,20 @@ export async function registerAction(
         password: hashedPassword,
         name: cleanName,
         role,
+        institutionId: resolvedInstitutionId,
         company: finalCompany,
-        nisn: role === 'siswa' ? (nisn?.trim() || null) : null,
-        nip: role === 'pembimbing_internal' ? (nip?.trim() || null) : null,
-        jabatan: role === 'pembimbing_eksternal' ? (jabatan?.trim() || null) : null,
-        school: (role === 'siswa' || role === 'pembimbing_internal') && school ? school.trim() : "SMKN 1 BOJONG",
+        nisn: role === 'PARTICIPANT' ? (nisn?.trim() || null) : null,
+        nip: role === 'INTERNAL_MENTOR' ? (nip?.trim() || null) : null,
+        jabatan: role === 'EXTERNAL_MENTOR' ? (jabatan?.trim() || null) : null,
+        school: (role === 'PARTICIPANT' || role === 'INTERNAL_MENTOR') && school ? school.trim() : "SMKN 1 BOJONG",
         status,
         companyName: finalCompany,
-        jobTitle: role === 'pembimbing_eksternal' ? (jabatan?.trim() || null) : null,
-        employeeId: role === 'pembimbing_eksternal' ? (employeeId?.trim() || null) : null,
-        companyEmail: role === 'pembimbing_eksternal' ? (companyEmail?.trim() || null) : null,
+        jobTitle: role === 'EXTERNAL_MENTOR' ? (jabatan?.trim() || null) : null,
+        employeeId: role === 'EXTERNAL_MENTOR' ? (employeeId?.trim() || null) : null,
+        companyEmail: role === 'EXTERNAL_MENTOR' ? (companyEmail?.trim() || null) : null,
         classId: resolvedClassId,
-        companyId: role === 'siswa' ? resolvedCompanyId : null,
-        companies: role === 'pembimbing_eksternal' && resolvedCompanyId ? {
+        companyId: role === 'PARTICIPANT' ? resolvedCompanyId : null,
+        companies: role === 'EXTERNAL_MENTOR' && resolvedCompanyId ? {
           connect: { id: resolvedCompanyId }
         } : undefined,
       }
@@ -179,6 +192,7 @@ export async function registerAction(
           companyEmail: true,
           profileImage: true,
           createdAt: true,
+          institution: true,
           classes: {
             select: { id: true, name: true }
           },
@@ -195,6 +209,72 @@ export async function registerAction(
   } catch (error) {
     console.error(error);
     return { success: false, error: 'Gagal melakukan pendaftaran' };
+  }
+}
+
+export async function registerInstitutionAdminAction(
+  name: string,
+  email: string,
+  password: string,
+  institutionName: string,
+  institutionType: 'SCHOOL' | 'UNIVERSITY' | 'TRAINING_CENTER' | 'COMPANY' | 'OTHER',
+  address: string,
+  phone: string,
+  website?: string
+) {
+  try {
+    const cleanName = name.trim();
+    const cleanEmail = email.trim().toLowerCase();
+    
+    const existingUser = await prisma.user.findFirst({
+      where: { email: cleanEmail }
+    });
+    if (existingUser) {
+      return { success: false, error: 'Email sudah terdaftar.' };
+    }
+
+    // Generate unique institution code
+    let code = institutionName.replace(/[^a-zA-Z0-9]/g, '').toUpperCase().substring(0, 10);
+    let counter = 1;
+    while(await prisma.institution.findUnique({ where: { code } })) {
+      code = code.substring(0, 8) + counter;
+      counter++;
+    }
+
+    const hashedPassword = hashPassword(password);
+    const cleanUsername = "admin_" + code.toLowerCase() + "_" + Date.now().toString().substring(8);
+
+    // Create Institution (PENDING)
+    const inst = await prisma.institution.create({
+      data: {
+        name: institutionName,
+        code,
+        type: institutionType,
+        address,
+        phone,
+        website,
+        email: cleanEmail,
+        status: 'PENDING'
+      }
+    });
+
+    // Create User (PENDING)
+    await prisma.user.create({
+      data: {
+        username: cleanUsername,
+        email: cleanEmail,
+        password: hashedPassword,
+        name: cleanName,
+        role: 'INSTITUTION_ADMIN',
+        status: 'PENDING',
+        institutionId: inst.id
+      }
+    });
+
+    return { success: true, pending: true, message: 'Pendaftaran institusi berhasil disubmit. Menunggu persetujuan Super Admin.' };
+  } catch(error) {
+    console.error(error);
+    return { success: false, error: 'Gagal mendaftarkan admin institusi' };
   }
 }
 
@@ -250,6 +330,7 @@ export async function loginAction(identifier: string, password: string) {
         profileImage: true,
         createdAt: true,
         boardBackground: true,
+        institution: true,
         classes: {
           select: { id: true, name: true }
         },
@@ -307,6 +388,7 @@ export async function getCurrentUserAction() {
         profileImage: true,
         createdAt: true,
         boardBackground: true,
+        institution: true,
         classes: {
           select: {
             id: true,

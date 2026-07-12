@@ -342,7 +342,7 @@ export const SettingsPage: React.FC<SettingsPageProps> = ({
                 </div>
               </div>
 
-              {currentUser?.role === 'siswa' && (
+              {currentUser?.role === 'PARTICIPANT' && (
                 <>
                   <div>
                     <label className="block text-xs font-bold text-slate-500 dark:text-gray-400 uppercase tracking-wide mb-2">Kelas / Program Studi</label>

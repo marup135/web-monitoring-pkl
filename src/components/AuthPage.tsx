@@ -20,9 +20,9 @@ import {
 
 
 const ROLES = [
-  { value: 'siswa', label: 'Siswa PKL' },
-  { value: 'pembimbing_internal', label: 'Pembimbing Internal (Sekolah)' },
-  { value: 'pembimbing_eksternal', label: 'Pembimbing Eksternal (Perusahaan)' },
+  { value: 'PARTICIPANT', label: 'Peserta / Siswa / Mahasiswa' },
+  { value: 'INTERNAL_MENTOR', label: 'Pembimbing Internal (Guru/Dosen/Instruktur)' },
+  { value: 'EXTERNAL_MENTOR', label: 'Pembimbing Eksternal (Perusahaan)' },
 ];
 
 // Alert types
@@ -55,7 +55,7 @@ export const AuthPage: React.FC = () => {
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
   const [name, setName] = useState('');
-  const [role, setRole] = useState('siswa');
+  const [role, setRole] = useState('PARTICIPANT');
   const [company, setCompany] = useState('');
   const [selectedClass, setSelectedClass] = useState('');
   const [school, setSchool] = useState('');
@@ -210,7 +210,7 @@ export const AuthPage: React.FC = () => {
         setError('Nama hanya boleh mengandung huruf, spasi, titik, koma, atau tanda petik.', 'field');
         return;
       }
-      if (role === 'siswa') {
+      if (role === 'PARTICIPANT') {
         if (!selectedClass.trim()) {
           setError('Kelas / Program Studi wajib diisi.', 'field');
           return;
@@ -219,7 +219,7 @@ export const AuthPage: React.FC = () => {
           setError('Asal Sekolah / Kampus wajib diisi.', 'field');
           return;
         }
-      } else if (role === 'pembimbing_internal') {
+      } else if (role === 'INTERNAL_MENTOR') {
         if (!nip.trim()) {
           setError('NIP / Nomor Identitas wajib diisi.', 'field');
           return;
@@ -228,7 +228,7 @@ export const AuthPage: React.FC = () => {
           setError('Asal Sekolah / Kampus wajib diisi.', 'field');
           return;
         }
-      } else if (role === 'pembimbing_eksternal') {
+      } else if (role === 'EXTERNAL_MENTOR') {
         const cleanCompany = company.trim();
         if (!cleanCompany) {
           setError('Nama perusahaan wajib diisi.', 'field');
@@ -280,14 +280,14 @@ export const AuthPage: React.FC = () => {
           password,
           name.trim(),
           role,
-          (role === 'siswa' || role === 'pembimbing_eksternal') ? company.trim() : undefined,
-          role === 'siswa' ? selectedClass.trim() : undefined,
-          role === 'siswa' ? nisn.trim() : undefined,
-          role === 'pembimbing_internal' ? nip.trim() : undefined,
-          (role === 'siswa' || role === 'pembimbing_internal') ? school.trim() : undefined,
-          role === 'pembimbing_eksternal' ? jabatan.trim() : undefined,
-          role === 'pembimbing_eksternal' ? employeeId.trim() : undefined,
-          role === 'pembimbing_eksternal' ? companyEmail.trim() : undefined
+          (role === 'PARTICIPANT' || role === 'EXTERNAL_MENTOR') ? company.trim() : undefined,
+          role === 'PARTICIPANT' ? selectedClass.trim() : undefined,
+          role === 'PARTICIPANT' ? nisn.trim() : undefined,
+          role === 'INTERNAL_MENTOR' ? nip.trim() : undefined,
+          (role === 'PARTICIPANT' || role === 'INTERNAL_MENTOR') ? school.trim() : undefined,
+          role === 'EXTERNAL_MENTOR' ? jabatan.trim() : undefined,
+          role === 'EXTERNAL_MENTOR' ? employeeId.trim() : undefined,
+          role === 'EXTERNAL_MENTOR' ? companyEmail.trim() : undefined
         );
         if (res.success && res.pending) {
           clearError();
@@ -444,9 +444,9 @@ export const AuthPage: React.FC = () => {
                             className="w-full bg-white dark:bg-[#243447] border border-[#E2E8F0] dark:border-gray-700 rounded-2xl px-4 text-sm text-[#0F172A] dark:text-gray-200 text-left flex justify-between items-center focus:outline-none focus:border-primary focus:ring-2 focus:ring-blue-100 cursor-pointer min-h-[48px] transition-all"
                           >
                             <span className="flex items-center gap-2">
-                              {role === 'siswa' && '🎓 '}
-                              {role === 'pembimbing_internal' && '👨‍🏫 '}
-                              {role === 'pembimbing_eksternal' && '🏢 '}
+                              {role === 'PARTICIPANT' && '🎓 '}
+                              {role === 'INTERNAL_MENTOR' && '👨‍🏫 '}
+                              {role === 'EXTERNAL_MENTOR' && '🏢 '}
                               {currentRoleLabel}
                             </span>
                             <ChevronDown
@@ -470,9 +470,9 @@ export const AuthPage: React.FC = () => {
                                       : 'text-[#0F172A] dark:text-gray-200 hover:bg-slate-50 dark:hover:bg-gray-800 font-medium'
                                   }`}
                                 >
-                                  {r.value === 'siswa' && '🎓 '}
-                                  {r.value === 'pembimbing_internal' && '👨‍🏫 '}
-                                  {r.value === 'pembimbing_eksternal' && '🏢 '}
+                                  {r.value === 'PARTICIPANT' && '🎓 '}
+                                  {r.value === 'INTERNAL_MENTOR' && '👨‍🏫 '}
+                                  {r.value === 'EXTERNAL_MENTOR' && '🏢 '}
                                   {r.label}
                                 </button>
                               ))}
@@ -618,7 +618,7 @@ export const AuthPage: React.FC = () => {
 
                       <div className="flex flex-col gap-5">
                         {/* Siswa */}
-                        {role === 'siswa' && (
+                        {role === 'PARTICIPANT' && (
                           <>
                             <div className="flex flex-col gap-1.5">
                               <label className="text-xs text-[#64748B] dark:text-gray-300 font-bold">
@@ -669,7 +669,7 @@ export const AuthPage: React.FC = () => {
                         )}
 
                         {/* Pembimbing Internal */}
-                        {role === 'pembimbing_internal' && (
+                        {role === 'INTERNAL_MENTOR' && (
                           <>
                             <div className="flex flex-col gap-1.5">
                               <label className="text-xs text-[#64748B] dark:text-gray-300 font-bold">
@@ -709,7 +709,7 @@ export const AuthPage: React.FC = () => {
                         )}
 
                         {/* Pembimbing Eksternal */}
-                        {role === 'pembimbing_eksternal' && (
+                        {role === 'EXTERNAL_MENTOR' && (
                           <>
                             <div className="flex flex-col gap-1.5">
                               <label className="text-xs text-[#64748B] dark:text-gray-300 font-bold">

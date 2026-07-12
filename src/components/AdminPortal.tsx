@@ -244,7 +244,7 @@ export const AdminPortal: React.FC = () => {
                           </span>
                         </td>
                         <td className="p-3 text-[10px] text-slate-600 dark:text-gray-300">
-                          {user.role === 'pembimbing_eksternal' ? (
+                          {user.role === 'EXTERNAL_MENTOR' ? (
                             <div className="flex flex-col gap-0.5">
                               <span><strong>{t('companyLabel')}</strong> {user.companyName || user.company || '-'}</span>
                               <span><strong>{t('positionLabel')}</strong> {user.jobTitle || user.jabatan || '-'}</span>
@@ -540,9 +540,9 @@ export const AdminPortal: React.FC = () => {
                   Pembimbing Internal (Guru ↔ Kelas)
                 </h4>
                 <div className="flex flex-col gap-3">
-                  {allUsersList.filter(u => u.role === 'pembimbing_internal').length === 0 ? (
+                  {allUsersList.filter(u => u.role === 'INTERNAL_MENTOR').length === 0 ? (
                     <p className="text-xs text-slate-500 dark:text-gray-2000 italic py-2">{t('noInternalAdvisors')}</p>
-                  ) : allUsersList.filter(u => u.role === 'pembimbing_internal').map((guru: any) => {
+                  ) : allUsersList.filter(u => u.role === 'INTERNAL_MENTOR').map((guru: any) => {
                     const currentClassIds = guru.classes?.map((c: any) => c.id) || [];
                     return (
                       <div key={guru.id} className="bg-white dark:bg-[#243447] border border-[#E2E8F0] dark:border-gray-700 p-3 rounded-lg flex flex-col md:flex-row justify-between md:items-center gap-3">
@@ -581,9 +581,9 @@ export const AdminPortal: React.FC = () => {
                   Pembimbing Eksternal (Mentor ↔ Perusahaan)
                 </h4>
                 <div className="flex flex-col gap-3">
-                  {allUsersList.filter(u => u.role === 'pembimbing_eksternal').length === 0 ? (
+                  {allUsersList.filter(u => u.role === 'EXTERNAL_MENTOR').length === 0 ? (
                     <p className="text-xs text-slate-500 dark:text-gray-2000 italic py-2">{t('noExternalAdvisors')}</p>
-                  ) : allUsersList.filter(u => u.role === 'pembimbing_eksternal').map((mentor: any) => {
+                  ) : allUsersList.filter(u => u.role === 'EXTERNAL_MENTOR').map((mentor: any) => {
                     const currentCompIds = mentor.companies?.map((c: any) => c.id) || [];
                     return (
                       <div key={mentor.id} className="bg-white dark:bg-[#243447] border border-[#E2E8F0] dark:border-gray-700 p-3 rounded-lg flex flex-col md:flex-row justify-between md:items-center gap-3">
@@ -622,9 +622,9 @@ export const AdminPortal: React.FC = () => {
                   Siswa (Siswa ↔ Kelas & Perusahaan)
                 </h4>
                 <div className="flex flex-col gap-3">
-                  {allUsersList.filter(u => u.role === 'siswa').length === 0 ? (
+                  {allUsersList.filter(u => u.role === 'PARTICIPANT').length === 0 ? (
                     <p className="text-xs text-slate-500 dark:text-gray-2000 italic py-2">{t('noStudentsRegistered')}</p>
-                  ) : allUsersList.filter(u => u.role === 'siswa').map((siswa: any) => {
+                  ) : allUsersList.filter(u => u.role === 'PARTICIPANT').map((siswa: any) => {
                     return (
                       <div key={siswa.id} className="bg-white dark:bg-[#243447] border border-[#E2E8F0] dark:border-gray-700 p-3 rounded-lg flex flex-col gap-3">
                         <div className="flex flex-col lg:flex-row justify-between lg:items-center gap-3">

@@ -11,6 +11,7 @@ import { AuthPage } from '../components/AuthPage';
 import { GuruPortal } from '../components/GuruPortal';
 import { MentorPortal } from '../components/MentorPortal';
 import { AdminPortal } from '../components/AdminPortal';
+import { SuperAdminPortal } from '../components/SuperAdminPortal';
 import { PKLCard } from '../types/pkl';
 import { LayoutDashboard, FileSpreadsheet, BarChart3, Building2, UserCheck, RefreshCw, Menu, X, User, Settings, Key, LogOut, Clock } from 'lucide-react';
 import { SettingsPage } from '../components/SettingsPage';
@@ -40,7 +41,7 @@ function DashboardContent() {
   const [isUserMenuOpen, setIsUserMenuOpen] = useState(false);
   const [isDesktopUserMenuOpen, setIsDesktopUserMenuOpen] = useState(false);
 
-  const isPembimbing = currentUser && currentUser.role !== 'siswa';
+  const isPembimbing = currentUser && currentUser.role !== 'PARTICIPANT';
 
   // Sync selected card details if the state updates while open
   const activeCard = selectedCard
@@ -71,11 +72,7 @@ function DashboardContent() {
                 </h1>
                 <p className="text-[10px] md:text-xs text-[#64748B] dark:text-gray-300 font-medium mt-0.5">
                   Selamat datang, <span className="text-primary font-bold">{currentUser.name}</span> (Peran:{' '}
-                  {currentUser.role === 'admin'
-                    ? t('roleAdmin')
-                    : currentUser.role === 'pembimbing_internal'
-                    ? t('roleInternal')
-                    : t('roleExternal')}
+                  {currentUser.role === 'SUPER_ADMIN' ? 'Super Admin' : currentUser.role === 'INSTITUTION_ADMIN' ? 'Admin Institusi' : currentUser.role === 'INTERNAL_MENTOR' ? 'Pembimbing Internal' : 'Pembimbing Eksternal'}
                   )
                 </p>
               </div>
@@ -93,9 +90,11 @@ function DashboardContent() {
         </div>
 
         {/* Role Portal Conditional Selection */}
-        {currentUser.role === 'admin' ? (
+        {currentUser.role === 'SUPER_ADMIN' ? (
+          <SuperAdminPortal />
+        ) : currentUser.role === 'INSTITUTION_ADMIN' ? (
           <AdminPortal />
-        ) : currentUser.role === 'pembimbing_internal' ? (
+        ) : currentUser.role === 'INTERNAL_MENTOR' ? (
           <GuruPortal onPantau={handlePantauStudent} />
         ) : (
           <MentorPortal onPantau={handlePantauStudent} />

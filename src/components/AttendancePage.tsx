@@ -173,7 +173,7 @@ export function AttendancePage() {
     }
   };
 
-  if (currentUser?.role !== 'siswa') {
+  if (currentUser?.role !== 'PARTICIPANT') {
     return (
       <div className="flex flex-col items-center justify-center p-8 bg-white dark:bg-[#243447] border border-[#E2E8F0] dark:border-gray-700 rounded-3xl shadow-sm text-center min-h-[300px]">
         <AlertCircle className="w-12 h-12 text-[#64748B] mb-4" />
