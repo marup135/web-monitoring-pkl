@@ -69,7 +69,7 @@ export async function getAttendanceHistoryAction(userId: string) {
   }
 }
 
-export async function checkInAction(userId: string) {
+export async function checkInAction(userId: string, lat?: number, lng?: number, photo?: string) {
   try {
     const serverTime = await getServerTimeAction();
     const currentHour = serverTime.hours;
@@ -110,10 +110,16 @@ export async function checkInAction(userId: string) {
         userId,
         date: serverTime.dateString,
         checkIn: serverTime.timeString,
+        checkInLat: lat,
+        checkInLng: lng,
+        checkInPhoto: photo,
         status: 'CHECKED_IN'
       },
       update: {
         checkIn: serverTime.timeString,
+        checkInLat: lat,
+        checkInLng: lng,
+        checkInPhoto: photo,
         status: 'CHECKED_IN'
       }
     });
@@ -125,7 +131,7 @@ export async function checkInAction(userId: string) {
   }
 }
 
-export async function checkOutAction(userId: string) {
+export async function checkOutAction(userId: string, lat?: number, lng?: number, photo?: string) {
   try {
     const serverTime = await getServerTimeAction();
     const currentHour = serverTime.hours;
@@ -168,6 +174,9 @@ export async function checkOutAction(userId: string) {
       },
       data: {
         checkOut: serverTime.timeString,
+        checkOutLat: lat,
+        checkOutLng: lng,
+        checkOutPhoto: photo,
         status: 'COMPLETED'
       }
     });

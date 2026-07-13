@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { usePKL } from '../context/PKLContext';
 import { useLanguage } from '../context/LanguageContext';
 import { 
@@ -10,7 +10,7 @@ import {
   checkInAction, 
   checkOutAction 
 } from '@/app/actions/attendance';
-import { Clock, Calendar, CheckCircle2, AlertCircle, RefreshCw, UserCheck } from 'lucide-react';
+import { Clock, Calendar, CheckCircle2, AlertCircle, RefreshCw, UserCheck, Camera, MapPin, X } from 'lucide-react';
 
 interface AttendanceRecord {
   id: string;
@@ -38,6 +38,16 @@ export function AttendancePage() {
   const [clientTimeOffset, setClientTimeOffset] = useState<number>(0); // ms offset
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
   const [successMsg, setSuccessMsg] = useState<string | null>(null);
+
+  // --- Camera & Location States ---
+  const [isCameraModalOpen, setIsCameraModalOpen] = useState(false);
+  const [cameraMode, setCameraMode] = useState<'in' | 'out'>('in');
+  const [location, setLocation] = useState<{lat: number, lng: number} | null>(null);
+  const [locError, setLocError] = useState('');
+  const videoRef = useRef<HTMLVideoElement>(null);
+  const canvasRef = useRef<HTMLCanvasElement>(null);
+  const [stream, setStream] = useState<MediaStream | null>(null);
+  const [photoCaptured, setPhotoCaptured] = useState<string | null>(null);
 
   const fetchAttendanceData = async () => {
     if (!currentUser) return;
@@ -118,43 +128,104 @@ export function AttendancePage() {
   const canCheckIn = timeInMinutes >= checkInStart && timeInMinutes <= checkInEnd;
   const canCheckOut = timeInMinutes >= checkOutStart && timeInMinutes <= checkOutEnd;
 
-  const handleCheckIn = async () => {
-    if (!currentUser || actionLoading) return;
+  // --- Camera & Location Methods ---
+  const startCamera = async () => {
     try {
-      setActionLoading(true);
-      setErrorMsg(null);
-      setSuccessMsg(null);
-
-      const res = await checkInAction(currentUser.id);
-      if (res.success) {
-        setSuccessMsg('Absen masuk berhasil dilakukan!');
-        await fetchAttendanceData();
-      } else {
-        setErrorMsg(res.error || 'Gagal absen masuk.');
+      const mediaStream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: "user" } });
+      setStream(mediaStream);
+      if (videoRef.current) {
+        videoRef.current.srcObject = mediaStream;
       }
-    } catch (err: any) {
-      setErrorMsg(err.message || 'Terjadi kesalahan saat absen masuk.');
-    } finally {
-      setActionLoading(false);
+    } catch (err) {
+      console.error("Camera access denied:", err);
+      setLocError("Akses kamera ditolak atau tidak tersedia.");
     }
   };
 
-  const handleCheckOut = async () => {
-    if (!currentUser || actionLoading) return;
+  const stopCamera = () => {
+    if (stream) {
+      stream.getTracks().forEach(track => track.stop());
+      setStream(null);
+    }
+  };
+
+  const fetchLocation = () => {
+    if (!navigator.geolocation) {
+      setLocError("Geolocation tidak didukung oleh browser ini.");
+      return;
+    }
+    navigator.geolocation.getCurrentPosition(
+      (position) => {
+        setLocation({
+          lat: position.coords.latitude,
+          lng: position.coords.longitude
+        });
+      },
+      (error) => {
+        console.error("Location error:", error);
+        setLocError("Akses lokasi ditolak. Mohon izinkan akses lokasi.");
+      },
+      { enableHighAccuracy: true }
+    );
+  };
+
+  const capturePhoto = () => {
+    if (videoRef.current && canvasRef.current) {
+      const video = videoRef.current;
+      const canvas = canvasRef.current;
+      canvas.width = video.videoWidth;
+      canvas.height = video.videoHeight;
+      const ctx = canvas.getContext('2d');
+      if (ctx) {
+        ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
+        // Compress image to save database space (base64)
+        const dataUrl = canvas.toDataURL('image/jpeg', 0.5);
+        setPhotoCaptured(dataUrl);
+      }
+    }
+  };
+
+  const openModal = (mode: 'in' | 'out') => {
+    setCameraMode(mode);
+    setPhotoCaptured(null);
+    setLocation(null);
+    setLocError('');
+    setIsCameraModalOpen(true);
+    fetchLocation();
+    startCamera();
+  };
+
+  const closeModal = () => {
+    stopCamera();
+    setIsCameraModalOpen(false);
+  };
+
+  const handleConfirmAttendance = async () => {
+    if (!currentUser || actionLoading || !photoCaptured || !location) return;
+    
     try {
       setActionLoading(true);
       setErrorMsg(null);
       setSuccessMsg(null);
+      
+      let res;
+      if (cameraMode === 'in') {
+        res = await checkInAction(currentUser.id, location.lat, location.lng, photoCaptured);
+      } else {
+        res = await checkOutAction(currentUser.id, location.lat, location.lng, photoCaptured);
+      }
 
-      const res = await checkOutAction(currentUser.id);
       if (res.success) {
-        setSuccessMsg('Absen pulang berhasil dilakukan! Sampai jumpa besok.');
+        setSuccessMsg(cameraMode === 'in' ? 'Absen masuk berhasil dilakukan!' : 'Absen pulang berhasil dilakukan! Sampai jumpa besok.');
+        closeModal();
         await fetchAttendanceData();
       } else {
-        setErrorMsg(res.error || 'Gagal absen pulang.');
+        setErrorMsg(res.error || `Gagal absen ${cameraMode === 'in' ? 'masuk' : 'pulang'}.`);
+        closeModal();
       }
     } catch (err: any) {
-      setErrorMsg(err.message || 'Terjadi kesalahan saat absen pulang.');
+      setErrorMsg(err.message || 'Terjadi kesalahan saat absensi.');
+      closeModal();
     } finally {
       setActionLoading(false);
     }
@@ -214,6 +285,82 @@ export function AttendancePage() {
         </div>
       )}
 
+      {/* Camera & Location Modal Overlay */}
+      {isCameraModalOpen && (
+        <div className="fixed inset-0 z-[9999] bg-black/60 backdrop-blur-sm flex items-center justify-center p-4">
+          <div className="bg-white dark:bg-[#1E293B] rounded-3xl w-full max-w-md shadow-2xl overflow-hidden flex flex-col">
+            <div className="flex justify-between items-center p-5 border-b border-gray-100 dark:border-gray-800">
+              <h3 className="font-bold text-gray-800 dark:text-white">
+                {cameraMode === 'in' ? 'Verifikasi Absen Masuk' : 'Verifikasi Absen Pulang'}
+              </h3>
+              <button onClick={closeModal} className="p-1.5 rounded-full hover:bg-gray-100 dark:hover:bg-gray-700 text-gray-500 transition">
+                <X size={18} />
+              </button>
+            </div>
+            
+            <div className="p-5 flex flex-col gap-4">
+              {/* Location Status */}
+              <div className={`p-3 rounded-xl flex items-start gap-3 text-sm ${location ? 'bg-green-50 text-green-700 dark:bg-green-900/30 dark:text-green-400' : 'bg-amber-50 text-amber-700 dark:bg-amber-900/30 dark:text-amber-400'}`}>
+                <MapPin size={20} className="shrink-0 mt-0.5" />
+                <div>
+                  <p className="font-semibold">{location ? 'Lokasi Ditemukan' : 'Mencari Lokasi...'}</p>
+                  <p className="text-xs opacity-80">
+                    {location 
+                      ? `${location.lat.toFixed(6)}, ${location.lng.toFixed(6)}` 
+                      : locError || 'Pastikan GPS Anda aktif dan berikan izin lokasi.'}
+                  </p>
+                </div>
+              </div>
+
+              {/* Camera Preview */}
+              <div className="relative rounded-2xl overflow-hidden bg-gray-900 aspect-[4/3] flex items-center justify-center border border-gray-200 dark:border-gray-700">
+                {!photoCaptured ? (
+                  <>
+                    <video ref={videoRef} autoPlay playsInline muted className="w-full h-full object-cover" />
+                    <canvas ref={canvasRef} className="hidden" />
+                    <div className="absolute bottom-4 left-0 right-0 flex justify-center">
+                      <button 
+                        onClick={capturePhoto}
+                        className="bg-white text-gray-900 rounded-full w-14 h-14 flex items-center justify-center shadow-lg hover:scale-105 transition active:scale-95"
+                      >
+                        <Camera size={24} />
+                      </button>
+                    </div>
+                  </>
+                ) : (
+                  <>
+                    <img src={photoCaptured} alt="Captured" className="w-full h-full object-cover" />
+                    <div className="absolute bottom-4 left-0 right-0 flex justify-center gap-3">
+                      <button 
+                        onClick={() => setPhotoCaptured(null)}
+                        className="bg-gray-800 text-white px-4 py-2 rounded-xl text-sm font-semibold shadow-lg hover:bg-gray-700 transition"
+                      >
+                        Ulangi Foto
+                      </button>
+                    </div>
+                  </>
+                )}
+              </div>
+            </div>
+
+            <div className="p-5 border-t border-gray-100 dark:border-gray-800 bg-gray-50 dark:bg-[#1E293B]">
+              <button
+                onClick={handleConfirmAttendance}
+                disabled={!location || !photoCaptured || actionLoading}
+                className={`w-full py-3 rounded-xl font-bold transition flex justify-center items-center gap-2 ${
+                  location && photoCaptured
+                    ? 'bg-primary hover:bg-primary-hover text-white shadow-md'
+                    : 'bg-gray-200 text-gray-400 dark:bg-gray-800 cursor-not-allowed'
+                }`}
+              >
+                {actionLoading ? <RefreshCw size={18} className="animate-spin" /> : <CheckCircle2 size={18} />}
+                {actionLoading ? 'Memproses...' : 'Kirim Absensi'}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
       {/* Main Attendance Card */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         
@@ -266,7 +413,7 @@ export function AttendancePage() {
           <div>
             <h3 className="text-base font-bold text-[#0F172A] dark:text-white">{t("attendanceDaily")}</h3>
             <p className="text-xs text-[#64748B] dark:text-gray-300 mt-1">
-              {t("attendanceDailyDesc")}
+              {t("attendanceDailyDesc")} (Wajib melampirkan foto selfie dan lokasi)
             </p>
           </div>
 
@@ -295,15 +442,16 @@ export function AttendancePage() {
                 {!todayAttendance?.checkIn ? (
                   <div>
                     <button
-                      onClick={handleCheckIn}
+                      onClick={() => openModal('in')}
                       disabled={!canCheckIn || actionLoading}
-                      className={`w-full py-2.5 px-4 font-bold text-xs rounded-xl transition cursor-pointer min-h-[42px] flex items-center justify-center ${
+                      className={`w-full py-2.5 px-4 font-bold text-xs rounded-xl transition cursor-pointer min-h-[42px] flex items-center justify-center gap-2 ${
                         canCheckIn 
                           ? 'bg-primary text-white hover:bg-primary-hover shadow-md' 
                           : 'bg-slate-100 text-slate-400 dark:bg-gray-800 dark:text-gray-600 cursor-not-allowed'
                       }`}
                     >
-                      {actionLoading ? t("checkInProcessing") : t("checkInButton")}
+                      <Camera size={14} />
+                      {t("checkInButton")}
                     </button>
                     {!canCheckIn && (
                       <p className="text-[10px] text-red-500 font-medium mt-1.5 text-center">
@@ -336,15 +484,16 @@ export function AttendancePage() {
                 {!todayAttendance?.checkOut ? (
                   <div>
                     <button
-                      onClick={handleCheckOut}
+                      onClick={() => openModal('out')}
                       disabled={!todayAttendance?.checkIn || !canCheckOut || actionLoading}
-                      className={`w-full py-2.5 px-4 font-bold text-xs rounded-xl transition cursor-pointer min-h-[42px] flex items-center justify-center ${
+                      className={`w-full py-2.5 px-4 font-bold text-xs rounded-xl transition cursor-pointer min-h-[42px] flex items-center justify-center gap-2 ${
                         todayAttendance?.checkIn && canCheckOut
                           ? 'bg-primary text-white hover:bg-primary-hover shadow-md' 
                           : 'bg-slate-100 text-slate-400 dark:bg-gray-800 dark:text-gray-600 cursor-not-allowed'
                       }`}
                     >
-                      {actionLoading ? t("checkInProcessing") : t("checkOutButton")}
+                      <Camera size={14} />
+                      {t("checkOutButton")}
                     </button>
                     {!todayAttendance?.checkIn ? (
                       <p className="text-[10px] text-amber-500 font-medium mt-1.5 text-center">
@@ -370,7 +519,7 @@ export function AttendancePage() {
 
           <div className="border-t border-[#E2E8F0] dark:border-gray-700/60 pt-3">
             <p className="text-[10px] text-slate-400 font-semibold leading-relaxed">
-              {t("syncNote")}
+              {t("syncNote")} (Hanya browser/perangkat yang mendukung GPS dan Kamera yang dapat digunakan).
             </p>
           </div>
         </div>
@@ -399,17 +548,27 @@ export function AttendancePage() {
                   <th className="p-3.5">{t("colDate")}</th>
                   <th className="p-3.5">{t("colCheckIn")}</th>
                   <th className="p-3.5">{t("colCheckOut")}</th>
+                  <th className="p-3.5">Lokasi & Bukti</th>
                   <th className="p-3.5">{t("colStatus")}</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-slate-100 dark:divide-gray-800">
-                {history.map((item) => {
+                {history.map((item: any) => {
                   const labelInfo = getStatusLabel(item.status);
                   return (
                     <tr key={item.id} className="hover:bg-slate-50/50 dark:hover:bg-gray-800/20 text-[#0F172A] dark:text-gray-200">
                       <td className="p-3.5 font-medium">{item.date}</td>
                       <td className="p-3.5">{item.checkIn ? `${item.checkIn} WIB` : '-'}</td>
                       <td className="p-3.5">{item.checkOut ? `${item.checkOut} WIB` : '-'}</td>
+                      <td className="p-3.5">
+                        {item.checkInPhoto || item.checkOutPhoto ? (
+                          <span className="text-xs text-primary font-medium flex items-center gap-1">
+                            <CheckCircle2 size={12}/> Terekam
+                          </span>
+                        ) : (
+                          <span className="text-xs text-gray-400 italic">-</span>
+                        )}
+                      </td>
                       <td className="p-3.5">
                         <span className={`inline-block px-2 py-0.5 rounded-lg text-[10px] font-bold uppercase ${labelInfo.color}`}>
                           {labelInfo.label}

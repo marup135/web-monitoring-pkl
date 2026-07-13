@@ -1,6 +1,6 @@
 <div align="center">
   <img src="public/nebo.png" alt="NEBO Logo" width="160" style="border-radius: 20px; margin-bottom: 20px;" />
-  <h1>🚀 NeboTrack</h1>
+  <h1>🚀 NeboTrack (Web Monitoring PKL)</h1>
   <p align="center">
     <strong>Sistem Monitoring & Logbook Jurnal Harian PKL Digital SMKN 1 Bojong</strong>
     <br />
@@ -8,10 +8,10 @@
   </p>
 
   <p align="center">
-    <img src="https://img.shields.io/badge/Next.js-15.1.4-black?style=for-the-badge&logo=next.js" alt="Next.js" />
-    <img src="https://img.shields.io/badge/React-19.0.0-blue?style=for-the-badge&logo=react" alt="React" />
+    <img src="https://img.shields.io/badge/Next.js-16.2-black?style=for-the-badge&logo=next.js" alt="Next.js" />
+    <img src="https://img.shields.io/badge/React-19.2-blue?style=for-the-badge&logo=react" alt="React" />
     <img src="https://img.shields.io/badge/TailwindCSS-v4-38B2AC?style=for-the-badge&logo=tailwind-css" alt="TailwindCSS" />
-    <img src="https://img.shields.io/badge/Prisma-6.2.1-2D3748?style=for-the-badge&logo=prisma" alt="Prisma" />
+    <img src="https://img.shields.io/badge/Prisma-6.16-2D3748?style=for-the-badge&logo=prisma" alt="Prisma" />
   </p>
 
   <p align="center">
@@ -19,7 +19,8 @@
     <a href="#-teknologi-yang-digunakan">Teknologi</a> •
     <a href="#-cara-instalasi">Instalasi</a> •
     <a href="#-struktur-folder">Struktur</a> •
-    <a href="#-kontributor">Kontribusi</a>
+    <a href="#-skema-database">Database</a> •
+    <a href="#-peran-pengguna-roles">Roles</a>
   </p>
 </div>
 
@@ -27,13 +28,13 @@
 
 ## 📖 Deskripsi Aplikasi
 
-**NeboTrack** adalah platform monitoring terpadu yang dirancang khusus untuk memfasilitasi program **Praktek Kerja Lapangan (PKL)** bagi siswa SMKN 1 Bojong. Aplikasi ini menjembatani komunikasi, pelaporan, dan evaluasi berkala antara tiga pihak utama:
+**NeboTrack (Web Monitoring PKL)** adalah platform monitoring terpadu yang dirancang khusus untuk memfasilitasi program **Praktek Kerja Lapangan (PKL)** bagi siswa SMKN 1 Bojong. Aplikasi ini menjembatani komunikasi, pelaporan, dan evaluasi berkala antara tiga pihak utama:
 
-*   👤 **Siswa**: Mencatat aktivitas harian dan memantau progres.
+*   👤 **Siswa**: Mencatat aktivitas harian, absensi kehadiran, dan memantau progres.
 *   👨‍🏫 **Guru Pembimbing (Internal)**: Memantau dan mengevaluasi perkembangan siswa di lapangan.
 *   🏢 **Mentor Perusahaan (Eksternal)**: Memberikan feedback dan verifikasi langsung atas pekerjaan siswa.
 
-Dengan antarmuka yang modern, NeboTrack mendukung **Kanban Board** di Desktop untuk manajemen tugas yang terorganisir dan **Mobile Timeline** di Smartphone untuk kemudahan pengisian jurnal di mana saja.
+Dengan antarmuka yang modern, NeboTrack mendukung **Kanban Board** di Desktop untuk manajemen tugas yang terorganisir dan **Mobile Timeline** di Smartphone untuk kemudahan pengisian absensi & jurnal di mana saja.
 
 ---
 
@@ -42,9 +43,9 @@ Dengan antarmuka yang modern, NeboTrack mendukung **Kanban Board** di Desktop un
 - 📊 **Dashboard & Statistik**: Pantau progress harian, jam kerja, dan nilai rata-rata siswa secara real-time.
 - 📋 **Kanban Board**: Manajemen tugas bergaya Trello yang intuitif (Rencana, Sedang Dikerjakan, Review, Selesai).
 - 📱 **Mobile-First Design**: Tampilan logbook bergaya *timeline* dengan interaksi gestur (bottom sheet).
-- 📝 **Logbook Harian**: Pencatatan jurnal kegiatan beserta evaluasi dan feedback langsung.
+- 📝 **Logbook Harian & Absensi**: Pencatatan jurnal kegiatan beserta absensi (check-in/check-out) dan evaluasi langsung.
 - 🌙 **Dark Mode**: Dukungan tema gelap untuk kenyamanan mata.
-- 👥 **Multi-Role Access**: Hak akses aman berbasis role untuk Admin, Guru, Mentor, dan Siswa.
+- 👥 **Multi-Role Access**: Hak akses aman berbasis role untuk Admin, Siswa, Pembimbing Internal, dan Pembimbing Eksternal.
 
 ---
 
@@ -52,12 +53,12 @@ Dengan antarmuka yang modern, NeboTrack mendukung **Kanban Board** di Desktop un
 
 | Komponen | Teknologi |
 | :--- | :--- |
-| **Framework** | [Next.js 15+ (App Router)](https://nextjs.org/) |
-| **UI Library** | [React 19](https://reactjs.org/) & [Lucide Icons](https://lucide.dev/) |
+| **Framework** | [Next.js 16.2 (App Router)](https://nextjs.org/) |
+| **UI Library** | [React 19.2](https://reactjs.org/) & [Lucide Icons](https://lucide.dev/) |
 | **Styling** | [Tailwind CSS v4](https://tailwindcss.com/) |
-| **Database ORM** | [Prisma](https://prisma.io/) (Adapter MariaDB) |
-| **Database** | [MariaDB](https://mariadb.org/) |
-| **Deployment** | [Vercel](https://vercel.com/) & [Railway](https://railway.app/) |
+| **Database ORM** | [Prisma 6.16](https://prisma.io/) |
+| **Database** | [PostgreSQL](https://www.postgresql.org/) (Supabase) |
+| **Deployment** | [Vercel](https://vercel.com/) |
 
 ---
 
@@ -84,49 +85,48 @@ Ikuti langkah-langkah berikut untuk menjalankan project di lingkungan lokal:
 
 ### 1. Persyaratan
 - Node.js (v18 ke atas)
-- npm / yarn / pnpm
+- npm / pnpm
 
 ### 2. Clone & Install
 ```bash
 # Clone repositori
-git clone https://github.com/username/nebotrack.git
+git clone https://github.com/username/web-monitoring-pkl.git
 
 # Masuk ke folder
-cd nebotrack
+cd web-monitoring-pkl
 
-# Instal dependensi
+# Instal dependensi (akan otomatis menjalankan 'prisma generate' via postinstall)
 npm install
 ```
 
 ### 3. Konfigurasi Environment
-Salin file `.env.example` menjadi `.env` dan sesuaikan konfigurasinya:
-```bash
-cp .env.example .env
-```
-Isi variabel berikut:
+Buat file `.env` di root direktori dan sesuaikan konfigurasinya dengan database PostgreSQL Anda:
 ```env
-DATABASE_URL="mysql://USER:PASSWORD@HOST:PORT/DATABASE_NAME"
-NEXTAUTH_SECRET="buat_secret_key_yang_aman"
+DATABASE_URL="postgresql://USER:PASSWORD@HOST:PORT/DATABASE_NAME"
 ```
 
 ### 4. Setup Database
 ```bash
-# Generate client prisma
-npx prisma generate
-
-# Jalankan migrasi
-npx prisma migrate dev --name init
-
-# Isi data awal (optional)
-npx prisma db seed
+# Sinkronisasi schema database dengan Prisma
+npx prisma db push
 ```
+*(Catatan: Anda tidak perlu `prisma generate` lagi jika script postinstall npm berhasil berjalan. Namun jika diperlukan, jalankan `npx prisma generate`)*
 
 ---
 
 ## 🚀 Menjalankan Project
 
+Jalankan perintah berikut sesuai dengan kebutuhan (mengacu pada `package.json`):
+
 ```bash
+# Menjalankan development server
 npm run dev
+
+# Melakukan build aplikasi untuk production
+npm run build
+
+# Menjalankan aplikasi hasil build production
+npm run start
 ```
 Buka [http://localhost:3000](http://localhost:3000) di browser Anda.
 
@@ -135,30 +135,47 @@ Buka [http://localhost:3000](http://localhost:3000) di browser Anda.
 ## 📂 Struktur Folder
 
 ```bash
-nebotrack/
-├── 📁 prisma/          # Schema database & seeder
+web-monitoring-pkl/
+├── 📁 prisma/          # Schema database (schema.prisma) & config
 ├── 📁 public/          # Aset statis (Logo, Icon)
 ├── 📁 src/
-│   ├── 📁 app/         # Next.js App Router (Pages & API)
+│   ├── 📁 app/         # Next.js App Router (Pages, API, Actions)
 │   ├── 📁 components/  # Komponen UI Reusable
 │   ├── 📁 context/     # State Management
-│   ├── 📁 lib/         # Utilitas & Konfigurasi Prisma
-│   └── 📁 types/        # Definisi TypeScript
+│   ├── 📁 lib/         # Utilitas & Konfigurasi (Prisma, Email, dll)
+│   └── 📁 types/       # Definisi TypeScript
 ├── 📄 .env             # Variabel Lingkungan
-├── 📄 package.json     # Dependensi Project
+├── 📄 package.json     # Dependensi Project & Script
 └── 📄 tailwind.config  # Konfigurasi Styling
 ```
 
 ---
 
+## 🗄 Skema Database
+
+Aplikasi ini menggunakan skema relasional dengan model utama sebagai berikut:
+
+- **`User`**: Menyimpan data pengguna termasuk kredensial, role, serta relasi ke institusi, kelas, dan perusahaan.
+- **`Institution`**: Data institusi/sekolah.
+- **`Kelas`**: Data kelas yang menampung siswa dan pembimbing.
+- **`Perusahaan`**: Tempat siswa melaksanakan PKL beserta mentornya.
+- **`Card`**: Logbook/tugas harian siswa pada Kanban board. Dilengkapi dengan penilaian (score) dan *feedback* dari mentor maupun pembimbing.
+- **`Comment` & `HistoryItem`**: Komentar dan riwayat aktivitas dari setiap kartu Logbook (`Card`).
+- **`AdvisorNote`**: Catatan dari pembimbing untuk siswa.
+- **`Attendance`**: Pencatatan absensi harian (check-in, check-out, status kehadiran, foto lokasi).
+
+---
+
 ## 🎭 Peran Pengguna (Roles)
 
-| Role | Deskripsi |
-| :--- | :--- |
-| **Admin** | Manajemen data master, user, jurusan, dan perusahaan. |
-| **Pembimbing** | Memantau perkembangan dan memberikan nilai internal. |
-| **Mentor** | Verifikasi harian dan penilaian kinerja di industri. |
-| **Siswa** | Mengisi jurnal dan melaporkan progress tugas. |
+Sistem menggunakan kontrol akses ketat berdasarkan field `role` di model `User`. Nilai role (sesuai *codebase*) beserta hak aksesnya adalah:
+
+| Role | Nilai di DB | Deskripsi |
+| :--- | :--- | :--- |
+| **Admin** | `admin` | Manajemen data master, user, jurusan, dan perusahaan. *Catatan: Role admin tidak dapat didaftarkan secara publik melalui form registrasi biasa.* |
+| **Siswa** | `siswa` | Mengisi jurnal/logbook harian, melapor absensi kehadiran, dan memantau nilai. |
+| **Pembimbing Internal** | `pembimbing_internal` | Guru dari sekolah yang memantau perkembangan siswa dan memberikan nilai/evaluasi internal. |
+| **Pembimbing Eksternal** | `pembimbing_eksternal` | Mentor dari pihak perusahaan (industri) yang memberikan verifikasi harian dan penilaian kinerja di industri. |
 
 ---
 
@@ -180,4 +197,3 @@ Kontribusi selalu terbuka! Jika Anda ingin meningkatkan aplikasi ini:
     <img src="https://img.shields.io/badge/License-MIT-yellow" alt="License MIT" />
   </p>
 </div>
-
