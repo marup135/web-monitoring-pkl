@@ -5,6 +5,7 @@ import prisma from '@/lib/prisma';
 import { PKLCard, AdvisorNote, TaskCategory, PKLRole, PKLState } from '@/types/pkl';
 import { cookies } from 'next/headers';
 import { verifySession, hashPassword } from '@/lib/auth';
+import { createNotification } from './notifications';
 import { writeFile, mkdir } from 'fs/promises';
 import path from 'path';
 
@@ -1955,6 +1956,15 @@ export async function verifyUserAction(userId: string, status: string) {
       where: { id: userId },
       data: { status }
     });
+
+    if (status === 'ACTIVE') {
+      await createNotification(
+        userId,
+        'Akun Disetujui',
+        'Admin telah menyetujui akun Anda. Selamat datang di NeboTrack!',
+        'SUCCESS'
+      );
+    }
 
     return { success: true };
   } catch (error) {

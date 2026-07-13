@@ -17,6 +17,7 @@ import { LayoutDashboard, FileSpreadsheet, BarChart3, Building2, UserCheck, Refr
 import { SettingsPage } from '../components/SettingsPage';
 import { useLanguage } from '../context/LanguageContext';
 import { AttendancePage } from '../components/AttendancePage';
+import { NotificationBell } from '../components/NotificationBell';
 
 function DashboardContent() {
   const { t } = useLanguage();
@@ -80,6 +81,7 @@ function DashboardContent() {
           </div>
 
           <div className="flex items-center gap-3 w-full md:w-auto">
+            <NotificationBell />
             <button
               onClick={logout}
               className="w-full md:w-auto px-4 py-3 md:py-2.5 bg-[#EF4444] hover:bg-[#DC2626] dark:bg-red-500/10 dark:hover:bg-red-500/20 dark:text-red-500 dark:border dark:border-red-500/20 text-white font-semibold text-xs rounded-xl shadow-sm transition cursor-pointer min-h-[48px] md:min-h-0"
@@ -337,6 +339,8 @@ function DashboardContent() {
           
           <span className="text-[#E2E8F0] hidden sm:inline">|</span>
           
+          <NotificationBell />
+
           <div className="relative">
             <div 
               className="flex items-center gap-2 cursor-pointer hover:bg-slate-50 dark:hover:bg-gray-800 p-1.5 pr-3 rounded-full transition"

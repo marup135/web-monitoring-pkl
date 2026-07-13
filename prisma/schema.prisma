@@ -77,6 +77,7 @@ model User {
   advisorNotes AdvisorNote[] @relation("StudentNotes")
   writtenNotes AdvisorNote[] @relation("AdvisorNotes")
   attendances  Attendance[]  @relation("UserAttendances")
+  notifications Notification[] @relation("UserNotifications")
 }
 
 model Card {
@@ -202,5 +203,18 @@ model Attendance {
   updatedAt     DateTime @updatedAt
 
   @@unique([userId, date])
+  @@index([userId])
+}
+
+model Notification {
+  id        String   @id @default(uuid())
+  userId    String
+  user      User     @relation("UserNotifications", fields: [userId], references: [id], onDelete: Cascade)
+  title     String   @db.VarChar(255)
+  message   String   @db.Text
+  isRead    Boolean  @default(false)
+  type      String   @default("INFO") @db.VarChar(50) // INFO, WARNING, SUCCESS, ERROR
+  createdAt DateTime @default(now())
+
   @@index([userId])
 }

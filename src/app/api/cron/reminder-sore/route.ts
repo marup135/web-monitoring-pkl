@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server';
 import { PrismaClient } from '@prisma/client';
 import { sendAttendanceReminder } from '@/lib/email';
+import { createNotification } from '@/app/actions/notifications';
 
 const prisma = new PrismaClient();
 
@@ -86,6 +87,23 @@ export async function GET(req: Request) {
               where: { id: student.id },
               data: { lastAfternoonReminder: today }
             });
+
+            if (isMissingLogbook) {
+              await createNotification(
+                student.id,
+                'Pengingat Logbook',
+                'Logbook harian Anda belum diisi hari ini.',
+                'WARNING'
+              );
+            }
+            if (isMissingCheckOut) {
+              await createNotification(
+                student.id,
+                'Pengingat Absensi',
+                'Jangan lupa check-out (absen pulang) hari ini.',
+                'WARNING'
+              );
+            }
           } else {
             console.error(`[CRON] Email Failed to send to: ${student.email}, error: ${res.error}`);
             errors.push({ studentId: student.id, error: res.error });
