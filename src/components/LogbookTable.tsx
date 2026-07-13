@@ -22,13 +22,13 @@ export const LogbookTable: React.FC<LogbookTableProps> = ({ onOpenCard, onEditCa
   const getStatusBadge = (status: string) => {
     switch (status) {
       case 'selesai':
-        return 'text-green-700 bg-green-50 border-green-200';
+        return 'text-green-700 dark:text-green-400 bg-green-50 dark:bg-green-500/10 border-green-200 dark:border-green-800/50';
       case 'review':
-        return 'text-yellow-700 bg-yellow-50 border-yellow-200';
+        return 'text-yellow-700 dark:text-yellow-400 bg-yellow-50 dark:bg-yellow-500/10 border-yellow-200 dark:border-yellow-800/50';
       case 'progres':
-        return 'text-blue-700 bg-primary/10 border-blue-200';
+        return 'text-blue-700 dark:text-blue-400 bg-primary/10 dark:bg-blue-500/10 border-blue-200 dark:border-blue-800/50';
       default:
-        return 'text-slate-600 bg-slate-50 dark:bg-gray-800/50 border-slate-200 dark:border-gray-700';
+        return 'text-slate-600 dark:text-gray-300 bg-slate-50 dark:bg-gray-800/50 border-slate-200 dark:border-gray-700';
     }
   };
 
@@ -136,7 +136,7 @@ export const LogbookTable: React.FC<LogbookTableProps> = ({ onOpenCard, onEditCa
                       </div>
                     </td>
                     <td className="py-4 px-3 print:border print:border-black print:py-2 align-top">
-                      <span className="px-2 py-0.5 rounded border border-[#E2E8F0] dark:border-gray-700 bg-slate-50 dark:bg-gray-800/50 print:border-none print:bg-transparent text-[11px] text-slate-700 print:px-0 print:py-0 print:font-medium">
+                      <span className="px-2 py-0.5 rounded border border-[#E2E8F0] dark:border-gray-700 bg-slate-50 dark:bg-gray-800/50 print:border-none print:bg-transparent text-[11px] text-slate-700 dark:text-gray-300 print:px-0 print:py-0 print:font-medium">
                         {card.category === 'Laporan' ? t('report') : card.category === 'Lainnya' ? t('others') : card.category}
                       </span>
                     </td>
@@ -247,7 +247,7 @@ export const LogbookTable: React.FC<LogbookTableProps> = ({ onOpenCard, onEditCa
                   <div className="bg-white dark:bg-[#243447] border border-[#E2E8F0] dark:border-gray-700 rounded-2xl p-6 shadow-sm hover:shadow transition duration-200 flex flex-col gap-4">
                   {/* Header: Category & Status */}
                   <div className="flex items-center justify-between">
-                    <span className="px-2.5 py-1 rounded-lg border border-[#E2E8F0] dark:border-gray-700 bg-slate-50 dark:bg-gray-800/50 text-[11px] font-bold text-slate-700 uppercase tracking-wider">
+                    <span className="px-2.5 py-1 rounded-lg border border-[#E2E8F0] dark:border-gray-700 bg-slate-50 dark:bg-gray-800/50 text-[11px] font-bold text-slate-700 dark:text-gray-300 uppercase tracking-wider">
                       {card.category === 'Laporan' ? t('report') : card.category === 'Lainnya' ? t('others') : card.category}
                     </span>
                     <span className={`px-2 py-0.5 rounded-md border text-[9px] font-bold uppercase tracking-wider ${getStatusBadge(card.columnId)}`}>

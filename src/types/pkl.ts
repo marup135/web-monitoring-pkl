@@ -32,6 +32,9 @@ export interface PKLCard {
   endTime: string;
   dueDate: string;
   createdAt: string;
+  studentId: string;
+  collaborators?: { id: string; name: string; nisn?: string; profileImage?: string }[];
+  collaboratorsCanEdit?: boolean;
   
   // Mentor (Pembimbing Eksternal) grades
   scoreMentor?: number;

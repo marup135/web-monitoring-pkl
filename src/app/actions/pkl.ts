@@ -147,8 +147,21 @@ export async function getPKLState(selectedStudentId?: string): Promise<PKLState>
     }
 
     const cards = await prisma.card.findMany({
-      where: { studentId: targetStudentId },
+      where: {
+        OR: [
+          { studentId: targetStudentId },
+          { collaborators: { some: { id: targetStudentId } } }
+        ]
+      },
       include: {
+        collaborators: {
+          select: {
+            id: true,
+            name: true,
+            nisn: true,
+            profileImage: true
+          }
+        },
         comments: {
           orderBy: {
             createdAt: 'asc',
@@ -183,6 +196,8 @@ export async function getPKLState(selectedStudentId?: string): Promise<PKLState>
       endTime: c.endTime,
       dueDate: c.dueDate,
       createdAt: c.createdAt.toISOString(),
+      studentId: c.studentId,
+      collaboratorsCanEdit: c.collaboratorsCanEdit || false,
 
       scoreMentor: c.scoreMentor ?? undefined,
       scoreMentorDiscipline: c.scoreMentorDiscipline ?? undefined,
@@ -201,6 +216,13 @@ export async function getPKLState(selectedStudentId?: string): Promise<PKLState>
       // Legacy compatibility mapping
       score: c.scoreMentor ?? undefined,
       feedback: c.feedbackMentor ?? undefined,
+
+      collaborators: c.collaborators ? c.collaborators.map((collab: any) => ({
+        id: collab.id,
+        name: collab.name,
+        nisn: collab.nisn || undefined,
+        profileImage: collab.profileImage || undefined
+      })) : [],
 
       comments: c.comments.map((comm: any) => ({
         id: comm.id,
@@ -300,7 +322,8 @@ export async function createCardAction(
   activeRole: PKLRole,
   columnId: PKLCard['columnId'] = 'rencana',
   startTime: string = '',
-  endTime: string = ''
+  endTime: string = '',
+  collaboratorNisns: string[] = []
 ) {
   try {
     const currentUser = await getAuthenticatedUser();
@@ -312,6 +335,19 @@ export async function createCardAction(
       return { success: false, error: 'Hanya siswa yang dapat membuat rencana kegiatan' };
     }
 
+    let connectCollaborators: { id: string }[] = [];
+    if (collaboratorNisns && collaboratorNisns.length > 0) {
+      const users = await prisma.user.findMany({
+        where: {
+          nisn: { in: collaboratorNisns },
+          role: { in: ['siswa', 'PARTICIPANT'] }
+        },
+        select: { id: true }
+      });
+      connectCollaborators = users.map(u => ({ id: u.id }));
+    }
+
+    // @ts-ignore
     const card = await prisma.card.create({
       data: {
         title,
@@ -322,13 +358,29 @@ export async function createCardAction(
         endTime,
         columnId,
         studentId: currentUser.id,
+        collaborators: connectCollaborators.length > 0 ? {
+          connect: connectCollaborators
+        } : undefined,
         history: {
           create: {
-            text: `Card dibuat oleh ${currentUser.name} (Mahasiswa)`,
+            text: `Card dibuat oleh ${currentUser.name} (Mahasiswa)${connectCollaborators.length > 0 ? ' dengan ' + connectCollaborators.length + ' kolaborator' : ''}`,
           },
         },
       },
     });
+
+    // Notify collaborators
+    if (connectCollaborators.length > 0) {
+      for (const col of connectCollaborators) {
+        await createNotification(
+          col.id,
+          'Ditambahkan ke Kegiatan',
+          `${currentUser.name} menambahkan Anda sebagai kolaborator pada kegiatan "${title}".`,
+          'INFO'
+        );
+      }
+    }
+
     return { success: true, cardId: card.id };
   } catch (error) {
     console.error('Failed to create card', error);
@@ -357,14 +409,18 @@ export async function updateCardColumnAction(
 
     const card = await prisma.card.findUnique({
       where: { id: cardId },
+      include: { collaborators: true }
     });
 
     if (!card) return { success: false, error: 'Kegiatan tidak ditemukan.' };
 
     // RBAC validation
     if (currentUser.role === 'PARTICIPANT') {
-      if (card.studentId !== currentUser.id) {
-        return { success: false, error: 'Akses ditolak: Anda bukan pemilik kegiatan ini.' };
+      const isOwner = card.studentId === currentUser.id;
+      const isCollabWithPermission = card.collaboratorsCanEdit && card.collaborators.some(c => c.id === currentUser.id);
+      
+      if (!isOwner && !isCollabWithPermission) {
+        return { success: false, error: 'Akses ditolak: Anda bukan pemilik kegiatan ini dan belum diizinkan.' };
       }
     } else if (currentUser.role === 'EXTERNAL_MENTOR') {
       const student = await prisma.user.findUnique({ where: { id: card.studentId } });
@@ -1970,5 +2026,54 @@ export async function verifyUserAction(userId: string, status: string) {
   } catch (error) {
     console.error('Failed to verify user:', error);
     return { success: false, error: 'Terjadi kesalahan saat memverifikasi pengguna' };
+  }
+}
+
+export async function manageCollaboratorsAction(
+  cardId: string,
+  collaboratorNisns: string[],
+  collaboratorsCanEdit: boolean
+) {
+  try {
+    const currentUser = await getAuthenticatedUser();
+    if (!currentUser) return { success: false, error: 'Sesi tidak sah.' };
+
+    const card = await prisma.card.findUnique({
+      where: { id: cardId },
+      include: { collaborators: true }
+    });
+
+    if (!card) return { success: false, error: 'Kegiatan tidak ditemukan.' };
+    
+    if (card.studentId !== currentUser.id) {
+      return { success: false, error: 'Hanya pemilik kegiatan yang dapat mengelola kolaborator.' };
+    }
+
+    let connectCollaborators: { id: string }[] = [];
+    if (collaboratorNisns.length > 0) {
+      const users = await prisma.user.findMany({
+        where: {
+          nisn: { in: collaboratorNisns },
+          role: { in: ['siswa', 'PARTICIPANT'] }
+        },
+        select: { id: true }
+      });
+      connectCollaborators = users.map(u => ({ id: u.id }));
+    }
+
+    await prisma.card.update({
+      where: { id: cardId },
+      data: {
+        collaboratorsCanEdit,
+        collaborators: {
+          set: connectCollaborators
+        }
+      }
+    });
+    
+    return { success: true };
+  } catch (error) {
+    console.error('Failed to manage collaborators', error);
+    return { success: false, error: 'Gagal mengelola kolaborator.' };
   }
 }

@@ -3,7 +3,7 @@
 import React, { useState } from 'react';
 import { usePKL } from '../context/PKLContext';
 import { PKLCard } from '../types/pkl';
-import { X, Calendar, Clock, MessageSquare, Award, Trash2, Edit2, Send, History, CheckCircle, File, FileText, Image as ImageIcon, Paperclip, Loader2, Plus, ChevronDown } from 'lucide-react';
+import { X, Calendar, Clock, MessageSquare, Award, Trash2, Edit2, Send, History, CheckCircle, File, FileText, Image as ImageIcon, Paperclip, Loader2, Plus, ChevronDown, Users } from 'lucide-react';
 import { useLanguage } from '../context/LanguageContext';
 
 interface CardModalProps {
@@ -23,10 +23,12 @@ export const CardModal: React.FC<CardModalProps> = ({ card, onClose, initialEdit
     addAttachment,
     deleteAttachment,
     deleteCard,
-    updateCardColumn
+    updateCardColumn,
+    manageCollaborators,
+    currentUser
   } = usePKL();
   const { t } = useLanguage();
-  const [activeTab, setActiveTab] = useState<'details' | 'history'>('details');
+  const [activeTab, setActiveTab] = useState<'details' | 'history' | 'collaborators'>('details');
 
   // Edit Mode states (for Student)
   const [isEditing, setIsEditing] = useState(initialEdit || false);
@@ -64,6 +66,11 @@ export const CardModal: React.FC<CardModalProps> = ({ card, onClose, initialEdit
   // File Upload states
   const [uploading, setUploading] = useState(false);
   const [validationError, setValidationError] = useState<string | null>(null);
+  
+  // Collaborator management states
+  const [newCollabNisn, setNewCollabNisn] = useState('');
+  const [collaborators, setCollaborators] = useState(card.collaborators || []);
+  const [canEdit, setCanEdit] = useState(card.collaboratorsCanEdit || false);
 
   const handleSaveDetails = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -220,7 +227,9 @@ export const CardModal: React.FC<CardModalProps> = ({ card, onClose, initialEdit
 
   const isStudent = activeRole === 'Mahasiswa';
   const isMentor = activeRole === 'Mentor';
-  const canEdit = true;
+  const isOwner = currentUser?.id === card.studentId;
+  const isCollaborator = card.collaborators?.some(c => c.id === currentUser?.id);
+  const userCanEdit = isOwner || (isCollaborator && card.collaboratorsCanEdit);
 
   return (
     <div className="fixed inset-0 z-50 flex items-end md:items-center justify-center p-0 md:p-4 bg-slate-900/40 backdrop-blur-sm">
@@ -270,6 +279,15 @@ export const CardModal: React.FC<CardModalProps> = ({ card, onClose, initialEdit
           >
             <History size={14} />
             {t('tabHistory')} ({card.history.length})
+          </button>
+          <button
+            onClick={() => setActiveTab('collaborators')}
+            className={`py-3 px-4 text-xs font-semibold border-b-2 transition-all flex items-center gap-2 cursor-pointer ${
+              activeTab === 'collaborators' ? 'border-primary text-primary' : 'border-transparent text-[#64748B] dark:text-gray-300 hover:text-[#0F172A] dark:text-gray-200'
+            }`}
+          >
+            <Users size={14} />
+            Anggota {card.collaborators && card.collaborators.length > 0 ? `(${card.collaborators.length})` : ''}
           </button>
         </div>
 
@@ -864,7 +882,8 @@ export const CardModal: React.FC<CardModalProps> = ({ card, onClose, initialEdit
                       { id: 'review', label: t('review') },
                       { id: 'selesai', label: t('done') },
                     ].map((col) => {
-                      const isDisabled = card.columnId === col.id || (col.id === 'selesai' && isStudent);
+                      const isLocked = card.columnId === 'selesai' && isStudent;
+                      const isDisabled = card.columnId === col.id || (col.id === 'selesai' && isStudent) || isLocked;
                       return (
                         <button
                           key={col.id}
@@ -873,7 +892,7 @@ export const CardModal: React.FC<CardModalProps> = ({ card, onClose, initialEdit
                           className={`w-full py-1.5 px-3 rounded-xl text-left text-xs font-semibold border transition cursor-pointer ${
                             card.columnId === col.id
                               ? 'bg-primary/10 border-blue-200 text-primary cursor-default'
-                              : col.id === 'selesai' && isStudent
+                              : isDisabled
                               ? 'bg-slate-50 dark:bg-gray-800/50 border-slate-200 dark:border-gray-700 text-slate-400 cursor-not-allowed opacity-50'
                               : 'bg-white dark:bg-[#243447] border-[#E2E8F0] dark:border-gray-700 text-slate-700 hover:bg-slate-50 dark:hover:bg-[#2D435E] hover:text-slate-900'
                           }`}
@@ -901,7 +920,7 @@ export const CardModal: React.FC<CardModalProps> = ({ card, onClose, initialEdit
               </div>
 
             </div>
-          ) : (
+          ) : activeTab === 'history' ? (
             /* History Log Tab */
             <div className="flex flex-col gap-4">
               <div className="flex flex-col gap-3">
@@ -926,7 +945,90 @@ export const CardModal: React.FC<CardModalProps> = ({ card, onClose, initialEdit
                 ))}
               </div>
             </div>
-          )}
+          ) : activeTab === 'collaborators' ? (
+            /* Collaborators Tab */
+            <div className="flex flex-col gap-4">
+              <h3 className="font-semibold text-lg text-slate-800 dark:text-white">Anggota Kegiatan (Kolaborator)</h3>
+              
+              <div className="flex flex-col gap-2">
+                {collaborators.length === 0 ? (
+                  <p className="text-sm text-slate-500">Belum ada kolaborator yang ditambahkan.</p>
+                ) : (
+                  collaborators.map(c => (
+                    <div key={c.id} className="flex justify-between items-center bg-slate-50 dark:bg-gray-800 p-3 rounded-xl border border-slate-200 dark:border-gray-700">
+                      <div className="flex items-center gap-3">
+                        <div className="w-8 h-8 bg-primary/20 text-primary flex items-center justify-center rounded-full font-bold uppercase">
+                          {c.name.charAt(0)}
+                        </div>
+                        <div>
+                          <p className="font-medium text-sm text-slate-700 dark:text-white">{c.name}</p>
+                          <p className="text-xs text-slate-500">NISN: {c.nisn || '-'}</p>
+                        </div>
+                      </div>
+                      {isOwner && (
+                        <button 
+                          onClick={() => {
+                            setCollaborators(prev => prev.filter(collab => collab.id !== c.id));
+                          }}
+                          className="text-red-500 hover:text-red-600 p-2 cursor-pointer"
+                        >
+                          <Trash2 size={14} />
+                        </button>
+                      )}
+                    </div>
+                  ))
+                )}
+              </div>
+              
+              {isOwner && (
+                <div className="mt-4 flex flex-col gap-3 p-4 border border-slate-200 dark:border-gray-700 rounded-xl bg-slate-50 dark:bg-gray-800/50">
+                  <h4 className="font-semibold text-sm">Tambah Anggota Baru</h4>
+                  <div className="flex gap-2">
+                    <input 
+                      type="text" 
+                      id="new-collab-nisn"
+                      placeholder="Masukkan NISN siswa"
+                      className="flex-1 px-3 py-2 text-sm border border-slate-200 dark:border-gray-700 rounded-lg bg-white dark:bg-gray-900 focus:outline-none focus:border-primary"
+                    />
+                    <button 
+                      onClick={() => {
+                        const input = document.getElementById('new-collab-nisn') as HTMLInputElement;
+                        const nisn = input.value.trim();
+                        if (!nisn) return;
+                        setCollaborators(prev => [...prev, { id: 'temp-' + Date.now(), name: 'User ' + nisn, nisn }]);
+                        input.value = '';
+                      }}
+                      className="px-4 py-2 bg-primary text-white text-sm font-semibold rounded-lg hover:bg-primary/90 transition cursor-pointer"
+                    >
+                      Tambah
+                    </button>
+                  </div>
+                  
+                  <div className="flex items-center gap-2 mt-2">
+                    <input 
+                      type="checkbox" 
+                      id="collab-can-edit"
+                      checked={canEdit}
+                      onChange={(e) => setCanEdit(e.target.checked)}
+                      className="w-4 h-4 text-primary rounded border-slate-300 focus:ring-primary"
+                    />
+                    <label htmlFor="collab-can-edit" className="text-sm text-slate-600 dark:text-gray-300">
+                      Izinkan anggota memindahkan dan mengedit kegiatan ini?
+                    </label>
+                  </div>
+                  
+                  <button 
+                    onClick={() => {
+                      manageCollaborators(card.id, collaborators.map(c => c.nisn).filter(Boolean) as string[], canEdit);
+                    }}
+                    className="mt-2 w-full py-2 bg-primary text-white text-sm font-semibold rounded-lg hover:bg-primary/90 transition cursor-pointer"
+                  >
+                    Simpan Perubahan
+                  </button>
+                </div>
+              )}
+            </div>
+          ) : null}
         </div>
 
       </div>

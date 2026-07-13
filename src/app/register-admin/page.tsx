@@ -15,6 +15,7 @@ import {
   Loader2,
 } from 'lucide-react';
 import { registerInstitutionAdminAction } from '../actions/auth';
+import { Footer } from '../../components/Footer';
 
 type AlertType = 'field' | 'server';
 
@@ -97,7 +98,8 @@ export default function RegisterAdminPage() {
     }`;
 
   return (
-    <div className="min-h-screen flex items-center justify-center p-4 bg-gradient-to-br from-[#F0F4FF] via-[#F8FAFC] to-[#EFF6FF] text-[#0F172A] dark:text-gray-200 relative overflow-hidden font-sans">
+    <div className="flex flex-col min-h-screen">
+      <div className="flex-1 flex items-center justify-center p-4 bg-gradient-to-br from-[#F0F4FF] via-[#F8FAFC] to-[#EFF6FF] text-[#0F172A] dark:text-gray-200 relative overflow-hidden font-sans">
       {/* Decorative blobs */}
       <div className="absolute top-0 left-0 w-[500px] h-[500px] bg-primary/8 rounded-full blur-3xl pointer-events-none -translate-x-1/2 -translate-y-1/2" />
       <div className="absolute bottom-0 right-0 w-[400px] h-[400px] bg-[#7C3AED]/6 rounded-full blur-3xl pointer-events-none translate-x-1/3 translate-y-1/3" />
@@ -347,7 +349,9 @@ export default function RegisterAdminPage() {
             </form>
           )}
         </div>
+        </div>
       </div>
+      <Footer />
     </div>
   );
 }

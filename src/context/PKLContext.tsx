@@ -31,6 +31,7 @@ import {
   assignSiswaAction,
   getPendingUsersAction,
   verifyUserAction,
+  manageCollaboratorsAction,
 } from '@/app/actions/pkl';
 import {
   registerAction,
@@ -132,7 +133,8 @@ interface PKLContextProps {
   assignGuruToClass: (userId: string, classIds: string[]) => Promise<{ success: boolean; error?: string }>;
   assignMentorToCompany: (userId: string, companyIds: string[]) => Promise<{ success: boolean; error?: string }>;
   assignSiswa: (userId: string, classId: string | null, companyId: string | null, name?: string, nisn?: string) => Promise<{ success: boolean; error?: string }>;
-  addCard: (title: string, description: string, category: string, dueDate: string, startTime: string, endTime: string, columnId?: PKLCard['columnId']) => Promise<void>;
+  manageCollaborators: (cardId: string, collaboratorNisns: string[], collaboratorsCanEdit: boolean) => Promise<void>;
+  addCard: (title: string, description: string, category: string, dueDate: string, startTime: string, endTime: string, columnId?: PKLCard['columnId'], collaboratorNisns?: string[]) => Promise<void>;
   updateCardColumn: (cardId: string, targetColumn: PKLCard['columnId']) => Promise<void>;
   updateCardDetails: (
     cardId: string,
@@ -587,10 +589,27 @@ export const PKLProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     }
   };
 
-  const addCard = async (title: string, description: string, category: string, dueDate: string, startTime: string, endTime: string, columnId?: PKLCard['columnId']) => {
+  const manageCollaborators = async (cardId: string, collaboratorNisns: string[], collaboratorsCanEdit: boolean) => {
     setLoading(true);
     try {
-      const res = await createCardAction(title, description, category, dueDate, state.studentName, activeRole, columnId, startTime, endTime);
+      const res = await manageCollaboratorsAction(cardId, collaboratorNisns, collaboratorsCanEdit);
+      if (res.success) {
+        alert("Berhasil memperbarui kolaborator.");
+        await fetchState();
+      } else {
+        alert(res.error || 'Gagal memperbarui kolaborator');
+      }
+    } catch (err: any) {
+      alert(err.message || 'Gagal memperbarui kolaborator');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const addCard = async (title: string, description: string, category: string, dueDate: string, startTime: string, endTime: string, columnId?: PKLCard['columnId'], collaboratorNisns: string[] = []) => {
+    setLoading(true);
+    try {
+      const res = await createCardAction(title, description, category, dueDate, state.studentName, activeRole, columnId, startTime, endTime, collaboratorNisns);
       if (res && !res.success) {
         throw new Error(res.error || 'Gagal membuat kegiatan.');
       }
@@ -877,6 +896,7 @@ export const PKLProvider: React.FC<{ children: React.ReactNode }> = ({ children 
         assignGuruToClass,
         assignMentorToCompany,
         assignSiswa,
+        manageCollaborators,
         addCard,
         updateCardColumn,
         updateCardDetails,

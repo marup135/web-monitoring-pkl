@@ -36,6 +36,7 @@ export const KanbanBoard: React.FC<KanbanBoardProps> = ({ onOpenCard }) => {
   });
   const [newStartTime, setNewStartTime] = useState('');
   const [newEndTime, setNewEndTime] = useState('');
+  const [newCollaborators, setNewCollaborators] = useState('');
   const [validationError, setValidationError] = useState<string | null>(null);
 
   const getColumnTitle = (id: PKLCard['columnId']) => {
@@ -67,10 +68,25 @@ export const KanbanBoard: React.FC<KanbanBoardProps> = ({ onOpenCard }) => {
     }
 
     if (!newTitle.trim()) return;
+
+    const isDuplicate = state.cards.some(
+      (card) => card.title.trim().toLowerCase() === newTitle.trim().toLowerCase()
+    );
+
+    if (isDuplicate) {
+      setValidationError('Kegiatan dengan judul tersebut sudah ada. Harap gunakan judul yang berbeda.');
+      return;
+    }
+
     const categoryToSave = newCategory === 'Lainnya' ? customCategory.trim() || 'Lainnya' : newCategory;
     
+    const collaboratorNisns = newCollaborators
+      .split(',')
+      .map(n => n.trim())
+      .filter(n => n.length > 0);
+
     try {
-      await addCard(newTitle, newDesc, categoryToSave, newDueDate, newStartTime, newEndTime, newColumnId);
+      await addCard(newTitle, newDesc, categoryToSave, newDueDate, newStartTime, newEndTime, newColumnId, collaboratorNisns);
       
       setNewTitle('');
       setNewDesc('');
@@ -79,6 +95,7 @@ export const KanbanBoard: React.FC<KanbanBoardProps> = ({ onOpenCard }) => {
       setNewColumnId('rencana');
       setNewStartTime('');
       setNewEndTime('');
+      setNewCollaborators('');
       setIsAddModalOpen(false);
     } catch (err: any) {
       setValidationError(err.message || 'Gagal menyimpan kegiatan.');
@@ -94,10 +111,10 @@ export const KanbanBoard: React.FC<KanbanBoardProps> = ({ onOpenCard }) => {
   });
 
   const columns: { id: PKLCard['columnId']; title: string; color: string; ringColor: string; bgBadge: string }[] = [
-    { id: 'rencana', title: t('plan'), color: 'border-t-slate-400', ringColor: 'focus-within:ring-slate-500/10', bgBadge: 'bg-slate-100 dark:bg-gray-800 text-slate-700 border border-slate-200 dark:border-gray-700/50' },
-    { id: 'progres', title: t('progress'), color: 'border-t-blue-500', ringColor: 'focus-within:ring-blue-500/10', bgBadge: 'bg-primary/10 text-blue-700 border border-blue-100' },
-    { id: 'review', title: t('review'), color: 'border-t-yellow-500', ringColor: 'focus-within:ring-yellow-500/10', bgBadge: 'bg-yellow-50 text-yellow-700 border border-yellow-100' },
-    { id: 'selesai', title: t('done'), color: 'border-t-green-500', ringColor: 'focus-within:ring-green-500/10', bgBadge: 'bg-green-50 text-green-700 border border-green-100' }
+    { id: 'rencana', title: t('plan'), color: 'border-t-slate-400', ringColor: 'focus-within:ring-slate-500/10', bgBadge: 'bg-slate-100 dark:bg-gray-800/50 text-slate-700 dark:text-gray-300 border border-slate-200 dark:border-gray-700' },
+    { id: 'progres', title: t('progress'), color: 'border-t-blue-500', ringColor: 'focus-within:ring-blue-500/10', bgBadge: 'bg-slate-100 dark:bg-gray-800/50 text-slate-700 dark:text-gray-300 border border-slate-200 dark:border-gray-700' },
+    { id: 'review', title: t('review'), color: 'border-t-yellow-500', ringColor: 'focus-within:ring-yellow-500/10', bgBadge: 'bg-slate-100 dark:bg-gray-800/50 text-slate-700 dark:text-gray-300 border border-slate-200 dark:border-gray-700' },
+    { id: 'selesai', title: t('done'), color: 'border-t-green-500', ringColor: 'focus-within:ring-green-500/10', bgBadge: 'bg-slate-100 dark:bg-gray-800/50 text-slate-700 dark:text-gray-300 border border-slate-200 dark:border-gray-700' }
   ];
 
   // HTML5 Drag and Drop handlers
@@ -129,16 +146,21 @@ export const KanbanBoard: React.FC<KanbanBoardProps> = ({ onOpenCard }) => {
       return;
     }
 
+    if (targetCard.columnId === 'selesai' && activeRole === 'Mahasiswa') {
+      alert('Kegiatan yang sudah disetujui (Selesai) tidak dapat dipindahkan kembali.');
+      return;
+    }
+
     updateCardColumn(cardId, columnId);
   };
 
   const getCategoryColor = (cat: TaskCategory) => {
     switch (cat) {
-      case 'Coding': return 'bg-primary/10 text-blue-700 border-blue-100';
-      case 'Design': return 'bg-purple-50 text-purple-700 border-purple-100';
-      case 'Laporan': return 'bg-green-50 text-green-700 border-green-100';
-      case 'Networking': return 'bg-sky-50 text-sky-700 border-sky-100';
-      default: return 'bg-slate-50 dark:bg-gray-800/50 text-slate-700 border-slate-100';
+      case 'Coding': return 'bg-primary/10 text-blue-700 dark:text-blue-400 border-blue-100 dark:border-blue-800/50';
+      case 'Design': return 'bg-purple-50 text-purple-700 dark:text-purple-400 border-purple-100 dark:border-purple-800/50 dark:bg-purple-500/10';
+      case 'Laporan': return 'bg-green-50 text-green-700 dark:text-green-400 border-green-100 dark:border-green-800/50 dark:bg-green-500/10';
+      case 'Networking': return 'bg-sky-50 text-sky-700 dark:text-sky-400 border-sky-100 dark:border-sky-800/50 dark:bg-sky-500/10';
+      default: return 'bg-slate-50 dark:bg-gray-800/50 text-slate-700 dark:text-gray-300 border-slate-100 dark:border-gray-700';
     }
   };
 
@@ -149,15 +171,15 @@ export const KanbanBoard: React.FC<KanbanBoardProps> = ({ onOpenCard }) => {
     switch (cat) {
       case 'Coding':
       case 'Semua':
-        return 'bg-primary/10 text-blue-700 border-blue-200';
+        return 'bg-primary/10 text-blue-700 dark:text-blue-400 border-blue-200 dark:border-blue-800/50';
       case 'Design':
-        return 'bg-purple-50 text-purple-700 border-purple-200';
+        return 'bg-purple-50 text-purple-700 dark:text-purple-400 border-purple-200 dark:border-purple-800/50 dark:bg-purple-500/10';
       case 'Laporan':
-        return 'bg-green-50 text-green-700 border-green-200';
+        return 'bg-green-50 text-green-700 dark:text-green-400 border-green-200 dark:border-green-800/50 dark:bg-green-500/10';
       case 'Networking':
-        return 'bg-sky-50 text-sky-700 border-sky-200';
+        return 'bg-sky-50 text-sky-700 dark:text-sky-400 border-sky-200 dark:border-sky-800/50 dark:bg-sky-500/10';
       default:
-        return 'bg-slate-50 dark:bg-gray-800/50 text-slate-700 border-slate-200 dark:border-gray-700';
+        return 'bg-slate-50 dark:bg-gray-800/50 text-slate-700 dark:text-gray-300 border-slate-200 dark:border-gray-700';
     }
   };
 
@@ -263,7 +285,7 @@ export const KanbanBoard: React.FC<KanbanBoardProps> = ({ onOpenCard }) => {
                   return (
                     <div
                       key={card.id}
-                      draggable={activeRole !== 'Dosen Pembimbing'}
+                      draggable={activeRole !== 'Dosen Pembimbing' && !(activeRole === 'Mahasiswa' && card.columnId === 'selesai')}
                       onDragStart={(e) => handleDragStart(e, card.id)}
                       onClick={() => onOpenCard(card)}
                       className={`bg-white dark:bg-[#243447] border rounded-2xl p-5 md:p-5 cursor-pointer relative shadow-sm hover:border-slate-300 dark:border-gray-500 hover:shadow-md transition duration-200 group ${
@@ -295,9 +317,22 @@ export const KanbanBoard: React.FC<KanbanBoardProps> = ({ onOpenCard }) => {
                         {card.title}
                       </h4>
 
-                      <p className="text-xs text-[#64748B] dark:text-gray-300 line-clamp-3 mb-4 leading-relaxed">
+                      <p className="text-xs text-[#64748B] dark:text-gray-300 line-clamp-3 mb-3 leading-relaxed">
                         {card.description}
                       </p>
+                      
+                      {card.collaborators && card.collaborators.length > 0 && (
+                        <div className="flex flex-wrap gap-1 mb-3">
+                          <span className="text-[10px] text-slate-500 font-semibold flex items-center mr-1">
+                            👥
+                          </span>
+                          {card.collaborators.map(c => (
+                            <span key={c.id} className="text-[10px] px-1.5 py-0.5 bg-slate-100 dark:bg-gray-800 text-slate-600 dark:text-gray-300 rounded border border-slate-200 dark:border-gray-700 truncate max-w-[80px]" title={c.name}>
+                              {c.name.split(' ')[0]}
+                            </span>
+                          ))}
+                        </div>
+                      )}
 
                       <div className="flex items-center justify-between text-[11px] text-[#64748B] dark:text-gray-300 border-t border-[#E2E8F0] dark:border-gray-700 pt-3">
                         <div className="flex items-center gap-1">
@@ -459,7 +494,7 @@ export const KanbanBoard: React.FC<KanbanBoardProps> = ({ onOpenCard }) => {
                             setNewCategory(cat);
                             setIsCategoryDropdownOpen(false);
                           }}
-                          className={`w-full text-left px-3 py-2 text-xs transition-colors hover:bg-slate-50 dark:hover:bg-[#2D435E] flex items-center justify-between cursor-pointer ${newCategory === cat ? 'bg-primary/10 text-primary font-semibold' : 'text-slate-700'}`}
+                          className={`w-full text-left px-3 py-2 text-xs transition-colors hover:bg-slate-50 dark:hover:bg-[#2D435E] flex items-center justify-between cursor-pointer ${newCategory === cat ? 'bg-primary/10 text-primary font-semibold' : 'text-slate-700 dark:text-gray-200'}`}
                         >
                           {cat === 'Laporan' ? t('report') : cat === 'Lainnya' ? t('others') : cat}
                         </button>
@@ -497,7 +532,7 @@ export const KanbanBoard: React.FC<KanbanBoardProps> = ({ onOpenCard }) => {
                             setNewColumnId(col.id as PKLCard['columnId']);
                             setIsColumnDropdownOpen(false);
                           }}
-                          className={`w-full text-left px-3 py-2 text-xs transition-colors hover:bg-slate-50 dark:hover:bg-[#2D435E] flex items-center justify-between cursor-pointer ${newColumnId === col.id ? 'bg-primary/10 text-primary font-semibold' : 'text-slate-700'}`}
+                          className={`w-full text-left px-3 py-2 text-xs transition-colors hover:bg-slate-50 dark:hover:bg-[#2D435E] flex items-center justify-between cursor-pointer ${newColumnId === col.id ? 'bg-primary/10 text-primary font-semibold' : 'text-slate-700 dark:text-gray-200'}`}
                         >
                           {col.title}
                         </button>
@@ -521,6 +556,20 @@ export const KanbanBoard: React.FC<KanbanBoardProps> = ({ onOpenCard }) => {
                   />
                 </div>
               )}
+
+              {/* Collaborators (NISN) */}
+              <div className="flex flex-col gap-1.5">
+                <label className="text-[11px] text-[#64748B] dark:text-gray-300 font-semibold uppercase tracking-wider">
+                  NISN Kolaborator (Opsional, pisahkan dengan koma)
+                </label>
+                <input
+                  type="text"
+                  placeholder="Misal: 123456, 654321"
+                  value={newCollaborators}
+                  onChange={(e) => setNewCollaborators(e.target.value)}
+                  className="w-full bg-white dark:bg-[#243447] border border-[#E2E8F0] dark:border-gray-700 rounded-xl px-3 text-sm text-[#0F172A] dark:text-gray-200 focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary min-h-[48px] py-3 md:min-h-0 md:py-2"
+                />
+              </div>
 
               {/* Deskripsi (6. Deskripsi) */}
               <div className="flex flex-col gap-1.5">

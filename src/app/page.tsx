@@ -18,6 +18,8 @@ import { SettingsPage } from '../components/SettingsPage';
 import { useLanguage } from '../context/LanguageContext';
 import { AttendancePage } from '../components/AttendancePage';
 import { NotificationBell } from '../components/NotificationBell';
+import { LandingPage } from '../components/LandingPage';
+import { Footer } from '../components/Footer';
 
 function DashboardContent() {
   const { t } = useLanguage();
@@ -463,7 +465,7 @@ function DashboardContent() {
           }`}
         >
           <LayoutDashboard size={14} />
-          Kanban Board (Trello)
+          Progress Board
         </button>
 
         <button
@@ -675,6 +677,7 @@ function HomeWrapper() {
   const { t } = useLanguage();
   const { currentUser, loading } = usePKL();
   const [showToast, setShowToast] = useState(false);
+  const [showLogin, setShowLogin] = useState(false);
 
   useEffect(() => {
     if (currentUser && typeof window !== 'undefined' && sessionStorage.getItem('login_success') === 'true') {
@@ -704,16 +707,39 @@ function HomeWrapper() {
   }
 
   if (!currentUser) {
-    return <AuthPage />;
+    if (showLogin) {
+      return (
+        <div className="flex flex-col min-h-screen">
+          <div className="relative flex-1 w-full flex flex-col">
+            <button
+              onClick={() => setShowLogin(false)}
+              className="absolute top-4 left-4 md:top-6 md:left-6 z-50 p-2.5 px-4 bg-white/90 dark:bg-gray-800/90 backdrop-blur-sm rounded-xl shadow-sm border border-slate-200 dark:border-gray-700 text-slate-600 dark:text-gray-300 hover:text-primary dark:hover:text-primary hover:bg-white dark:hover:bg-gray-800 transition-all flex items-center gap-2 font-semibold text-sm cursor-pointer"
+            >
+              <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M10 19l-7-7m0 0l7-7m-7 7h18" />
+              </svg>
+              Kembali
+            </button>
+            <AuthPage />
+          </div>
+          <Footer />
+        </div>
+      );
+    }
+    return (
+      <div className="flex flex-col min-h-screen">
+        <div className="flex-1">
+          <LandingPage onLoginClick={() => setShowLogin(true)} />
+        </div>
+        <Footer />
+      </div>
+    );
   }
 
   return (
     <>
       <LoginSuccessToast visible={showToast} />
       <DashboardContent />
-      <footer className="py-6 border-t border-[#E2E8F0] dark:border-gray-700 text-center text-xs text-[#64748B] dark:text-gray-300 print:hidden mt-12 bg-white dark:bg-[#243447]">
-        <span>&copy; 2026 NeboTrack. Built with Next.js &amp; Tailwind CSS.</span>
-      </footer>
     </>
   );
 }
