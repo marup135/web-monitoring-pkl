@@ -686,7 +686,7 @@ export const AuthPage: React.FC = () => {
 
                             <div className="flex flex-col gap-1.5">
                               <label className="text-xs text-[#64748B] dark:text-gray-300 font-bold">
-                                NIS / NISN / NIM (Opsional)
+                                NIS / NISN / NIM
                               </label>
                               <div className="relative">
                                 <input
@@ -780,7 +780,7 @@ export const AuthPage: React.FC = () => {
 
                             <div className="flex flex-col gap-1.5">
                               <label className="text-xs text-[#64748B] dark:text-gray-300 font-bold">
-                                Nomor Induk Karyawan (Opsional)
+                                Nomor Induk Karyawan
                               </label>
                               <div className="relative">
                                 <input
@@ -802,7 +802,7 @@ export const AuthPage: React.FC = () => {
                         {/* Institution Code (For all roles) */}
                         <div className="flex flex-col gap-1.5">
                           <label className="text-xs text-[#64748B] dark:text-gray-300 font-bold">
-                            Kode Institusi (Opsional)
+                            Kode Institusi (Dapatkan dari Admin Sekolah)
                           </label>
                           <div className="relative">
                             <input
