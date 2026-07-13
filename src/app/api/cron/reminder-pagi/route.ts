@@ -25,7 +25,7 @@ export async function GET(req: Request) {
     // Cari semua siswa yang aktif
     const students = await prisma.user.findMany({
       where: {
-        role: 'siswa',
+        role: { in: ['siswa', 'PARTICIPANT'] },
         status: 'ACTIVE'
       },
       select: {

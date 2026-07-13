@@ -1,14 +1,20 @@
-import { Resend } from 'resend';
+import nodemailer from 'nodemailer';
 
-const resend = process.env.RESEND_API_KEY ? new Resend(process.env.RESEND_API_KEY) : null;
+const userEmail = process.env.GMAIL_EMAIL;
+const userPass = process.env.GMAIL_APP_PASSWORD;
 
-// Menggunakan email default onboarding dari Resend, atau domain custom bila tersedia di ENV
-const FROM_EMAIL = process.env.RESEND_FROM_EMAIL || 'onboarding@resend.dev';
+const transporter = nodemailer.createTransport({
+  service: 'gmail',
+  auth: {
+    user: userEmail,
+    pass: userPass,
+  },
+});
 
 export async function sendAttendanceReminder(to: string, name: string, type: 'pagi' | 'sore') {
-  if (!resend) {
-    console.warn(`[Mock Email] Resend API Key is not configured. Could not send ${type} reminder to ${to}`);
-    return { success: false, error: 'Resend API Key not configured' };
+  if (!userEmail || !userPass) {
+    console.warn(`[Mock Email] GMAIL_EMAIL or GMAIL_APP_PASSWORD is not configured. Could not send ${type} reminder to ${to}`);
+    return { success: false, error: 'Gmail credentials not configured' };
   }
 
   try {
@@ -48,19 +54,14 @@ export async function sendAttendanceReminder(to: string, name: string, type: 'pa
       `;
     }
 
-    const data = await resend.emails.send({
-      from: `NeboTrack <${FROM_EMAIL}>`,
-      to: [to],
+    const info = await transporter.sendMail({
+      from: `"NeboTrack" <${userEmail}>`,
+      to,
       subject,
       html,
     });
 
-    if (data.error) {
-      console.error('Failed to send email:', data.error);
-      return { success: false, error: data.error.message };
-    }
-
-    return { success: true, data };
+    return { success: true, messageId: info.messageId };
   } catch (error: any) {
     console.error('Error sending email:', error);
     return { success: false, error: error.message };
