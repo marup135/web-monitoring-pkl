@@ -45,12 +45,14 @@ export function getExternalMentorLabel(type: InstitutionType | undefined | null)
   }
 }
 
+import { PARTICIPANT_ROLES } from './constants';
+
 export function getRoleLabel(role: string, type?: InstitutionType | null): string {
   if (role === 'SUPER_ADMIN') return 'Super Admin';
   if (role === 'INSTITUTION_ADMIN') return 'Admin Institusi';
   if (role === 'INTERNAL_MENTOR') return getInternalMentorLabel(type);
   if (role === 'EXTERNAL_MENTOR') return getExternalMentorLabel(type);
-  if (role === 'PARTICIPANT') return getParticipantLabel(type);
+  if (PARTICIPANT_ROLES.includes(role)) return getParticipantLabel(type);
   if (!role) return '';
   return role.replace('_', ' ');
 }

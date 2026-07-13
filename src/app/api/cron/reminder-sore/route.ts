@@ -1,4 +1,5 @@
 import { NextResponse } from 'next/server';
+import { PARTICIPANT_ROLES } from '@/lib/constants';
 import { PrismaClient } from '@prisma/client';
 import { sendAttendanceReminder } from '@/lib/email';
 import { createNotification } from '@/app/actions/notifications';
@@ -23,7 +24,7 @@ export async function GET(req: Request) {
     // Cari semua siswa yang aktif
     const students = await prisma.user.findMany({
       where: {
-        role: { in: ['siswa', 'PARTICIPANT'] },
+        role: { in: PARTICIPANT_ROLES },
         status: 'ACTIVE'
       },
       select: {

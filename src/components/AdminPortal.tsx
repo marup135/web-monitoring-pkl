@@ -4,6 +4,7 @@
 import React, { useState, useEffect } from 'react';
 import { usePKL } from '../context/PKLContext';
 import { useLanguage } from '../context/LanguageContext';
+import { PARTICIPANT_ROLES } from '../lib/constants';
 import { getDashboardMetricsAction } from '@/app/actions/pkl';
 import { 
   Building2, Users, FolderKanban, Plus, Edit2, Trash2, CheckSquare, 
@@ -46,7 +47,7 @@ export const AdminPortal: React.FC = () => {
   // Overview metrics state
   const [overallMetrics, setOverallMetrics] = useState<any>(null);
   const [pendingUsersList, setPendingUsersList] = useState<any[]>([]);
-  const [verificationFilter, setVerificationFilter] = useState<'ALL' | 'PARTICIPANT' | 'INTERNAL_MENTOR' | 'EXTERNAL_MENTOR'>('ALL');
+  const [verificationFilter, setVerificationFilter] = useState<string>('ALL');
 
   const reloadAll = async () => {
     await fetchAdminData();
@@ -224,12 +225,12 @@ export const AdminPortal: React.FC = () => {
 
             <div className="flex flex-wrap gap-2 mb-4">
               <button onClick={() => setVerificationFilter('ALL')} className={`px-3 py-1.5 text-xs font-bold rounded-lg border transition ${verificationFilter === 'ALL' ? 'bg-primary text-white border-primary' : 'bg-slate-50 dark:bg-gray-800 text-slate-600 dark:text-gray-300 border-slate-200 dark:border-gray-700'}`}>Semua</button>
-              <button onClick={() => setVerificationFilter('PARTICIPANT')} className={`px-3 py-1.5 text-xs font-bold rounded-lg border transition ${verificationFilter === 'PARTICIPANT' ? 'bg-primary text-white border-primary' : 'bg-slate-50 dark:bg-gray-800 text-slate-600 dark:text-gray-300 border-slate-200 dark:border-gray-700'}`}>Participant</button>
+              <button onClick={() => setVerificationFilter('siswa')} className={`px-3 py-1.5 text-xs font-bold rounded-lg border transition ${PARTICIPANT_ROLES.includes(verificationFilter) ? 'bg-primary text-white border-primary' : 'bg-slate-50 dark:bg-gray-800 text-slate-600 dark:text-gray-300 border-slate-200 dark:border-gray-700'}`}>Siswa / Mahasiswa</button>
               <button onClick={() => setVerificationFilter('INTERNAL_MENTOR')} className={`px-3 py-1.5 text-xs font-bold rounded-lg border transition ${verificationFilter === 'INTERNAL_MENTOR' ? 'bg-primary text-white border-primary' : 'bg-slate-50 dark:bg-gray-800 text-slate-600 dark:text-gray-300 border-slate-200 dark:border-gray-700'}`}>Internal Mentor</button>
               <button onClick={() => setVerificationFilter('EXTERNAL_MENTOR')} className={`px-3 py-1.5 text-xs font-bold rounded-lg border transition ${verificationFilter === 'EXTERNAL_MENTOR' ? 'bg-primary text-white border-primary' : 'bg-slate-50 dark:bg-gray-800 text-slate-600 dark:text-gray-300 border-slate-200 dark:border-gray-700'}`}>External Mentor</button>
             </div>
 
-            {(pendingUsersList.filter(u => verificationFilter === 'ALL' ? true : u.role === verificationFilter)).length === 0 ? (
+            {(pendingUsersList.filter(u => verificationFilter === 'ALL' ? true : (PARTICIPANT_ROLES.includes(verificationFilter) ? PARTICIPANT_ROLES.includes(u.role) : u.role === verificationFilter))).length === 0 ? (
               <p className="text-xs text-slate-500 dark:text-gray-400">{t('noPendingAccounts')}</p>
             ) : (
               <div className="overflow-x-auto rounded-xl border border-slate-200 dark:border-gray-700">
@@ -244,7 +245,7 @@ export const AdminPortal: React.FC = () => {
                     </tr>
                   </thead>
                   <tbody>
-                    {pendingUsersList.filter(u => verificationFilter === 'ALL' ? true : u.role === verificationFilter).map(user => (
+                    {pendingUsersList.filter(u => verificationFilter === 'ALL' ? true : (PARTICIPANT_ROLES.includes(verificationFilter) ? PARTICIPANT_ROLES.includes(u.role) : u.role === verificationFilter)).map(user => (
                       <tr key={user.id} className="border-b border-slate-100 dark:border-gray-700 hover:bg-slate-50/50 dark:hover:bg-gray-800/30">
                         <td className="p-3">
                           <p className="text-xs font-bold text-slate-800 dark:text-gray-200">{user.name}</p>
@@ -634,9 +635,9 @@ export const AdminPortal: React.FC = () => {
                   Siswa (Siswa ↔ Kelas & Perusahaan)
                 </h4>
                 <div className="flex flex-col gap-3">
-                  {allUsersList.filter(u => u.role === 'PARTICIPANT').length === 0 ? (
+                  {allUsersList.filter(u => PARTICIPANT_ROLES.includes(u.role)).length === 0 ? (
                     <p className="text-xs text-slate-500 dark:text-gray-2000 italic py-2">{t('noStudentsRegistered')}</p>
-                  ) : allUsersList.filter(u => u.role === 'PARTICIPANT').map((siswa: any) => {
+                  ) : allUsersList.filter(u => PARTICIPANT_ROLES.includes(u.role)).map((siswa: any) => {
                     return (
                       <div key={siswa.id} className="bg-white dark:bg-[#243447] border border-[#E2E8F0] dark:border-gray-700 p-3 rounded-lg flex flex-col gap-3">
                         <div className="flex flex-col lg:flex-row justify-between lg:items-center gap-3">

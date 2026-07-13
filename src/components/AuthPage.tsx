@@ -4,6 +4,7 @@
 import React, { useState, useRef, useEffect } from 'react';
 import Link from 'next/link';
 import { usePKL } from '../context/PKLContext';
+import { PARTICIPANT_ROLES } from '../lib/constants';
 import { forgotPasswordAction } from '../app/actions/auth';
 import {
   Building2,
@@ -56,7 +57,7 @@ export const AuthPage: React.FC = () => {
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
   const [name, setName] = useState('');
-  const [role, setRole] = useState('PARTICIPANT');
+  const [role, setRole] = useState('siswa');
   const [company, setCompany] = useState('');
   const [selectedClass, setSelectedClass] = useState('');
   const [school, setSchool] = useState('');
@@ -212,7 +213,7 @@ export const AuthPage: React.FC = () => {
         setError('Nama hanya boleh mengandung huruf, spasi, titik, koma, atau tanda petik.', 'field');
         return;
       }
-      if (role === 'PARTICIPANT') {
+      if (PARTICIPANT_ROLES.includes(role)) {
         if (!selectedClass.trim()) {
           setError('Kelas / Program Studi wajib diisi.', 'field');
           return;
@@ -282,11 +283,11 @@ export const AuthPage: React.FC = () => {
           password,
           name.trim(),
           role,
-          (role === 'PARTICIPANT' || role === 'EXTERNAL_MENTOR') ? company.trim() : undefined,
-          role === 'PARTICIPANT' ? selectedClass.trim() : undefined,
-          role === 'PARTICIPANT' ? nisn.trim() : undefined,
+          (PARTICIPANT_ROLES.includes(role) || role === 'EXTERNAL_MENTOR') ? company.trim() : undefined,
+          PARTICIPANT_ROLES.includes(role) ? selectedClass.trim() : undefined,
+          PARTICIPANT_ROLES.includes(role) ? nisn.trim() : undefined,
           role === 'INTERNAL_MENTOR' ? nip.trim() : undefined,
-          (role === 'PARTICIPANT' || role === 'INTERNAL_MENTOR') ? school.trim() : undefined,
+          (PARTICIPANT_ROLES.includes(role) || role === 'INTERNAL_MENTOR') ? school.trim() : undefined,
           role === 'EXTERNAL_MENTOR' ? jabatan.trim() : undefined,
           role === 'EXTERNAL_MENTOR' ? employeeId.trim() : undefined,
           role === 'EXTERNAL_MENTOR' ? companyEmail.trim() : undefined,
@@ -446,7 +447,7 @@ export const AuthPage: React.FC = () => {
                             className="w-full bg-white dark:bg-[#243447] border border-[#E2E8F0] dark:border-gray-700 rounded-2xl px-4 text-sm text-[#0F172A] dark:text-gray-200 text-left flex justify-between items-center focus:outline-none focus:border-primary focus:ring-2 focus:ring-blue-100 cursor-pointer min-h-[48px] transition-all"
                           >
                             <span className="flex items-center gap-2">
-                              {role === 'PARTICIPANT' && '🎓 '}
+                              {PARTICIPANT_ROLES.includes(role) && '🎓 '}
                               {role === 'INTERNAL_MENTOR' && '👨‍🏫 '}
                               {role === 'EXTERNAL_MENTOR' && '🏢 '}
                               {currentRoleLabel}
@@ -619,7 +620,7 @@ export const AuthPage: React.FC = () => {
 
                       <div className="flex flex-col gap-5">
                         {/* Siswa */}
-                        {role === 'PARTICIPANT' && (
+                        {PARTICIPANT_ROLES.includes(role) && (
                           <>
                             <div className="flex flex-col gap-1.5">
                               <label className="text-xs text-[#64748B] dark:text-gray-300 font-bold">

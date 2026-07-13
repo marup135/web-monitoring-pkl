@@ -5,6 +5,7 @@ import { usePKL } from '../context/PKLContext';
 import { PKLCard } from '../types/pkl';
 import { Printer, Calendar, Award, Clock, Eye, Edit2, Trash2 } from 'lucide-react';
 import { useLanguage } from '../context/LanguageContext';
+import { PARTICIPANT_ROLES } from '../lib/constants';
 
 interface LogbookTableProps {
   onOpenCard?: (card: PKLCard) => void;
@@ -237,7 +238,7 @@ export const LogbookTable: React.FC<LogbookTableProps> = ({ onOpenCard, onEditCa
               });
               const hasMentorScore = card.scoreMentor !== undefined && card.scoreMentor !== null;
               const hasAdvisorScore = card.scoreAdvisor !== undefined && card.scoreAdvisor !== null;
-              const isSiswa = currentUser?.role === 'PARTICIPANT';
+              const isSiswa = currentUser?.role && PARTICIPANT_ROLES.includes(currentUser.role);
 
               return (
                 <div key={card.id} className="relative">

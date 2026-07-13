@@ -2,6 +2,7 @@
 
 import React, { createContext, useContext, useState, useEffect } from 'react';
 import { PKLState, PKLCard, PKLRole } from '../types/pkl';
+import { PARTICIPANT_ROLES } from '../lib/constants';
 import {
   getPKLState,
   createCardAction,
@@ -197,7 +198,7 @@ export const PKLProvider: React.FC<{ children: React.ReactNode }> = ({ children 
   const [allUsersList, setAllUsersList] = useState<UserItem[]>([]);
 
   const activeRole: PKLRole = currentUser
-    ? currentUser.role === 'PARTICIPANT' || currentUser.role === 'siswa'
+    ? PARTICIPANT_ROLES.includes(currentUser.role)
       ? 'Mahasiswa'
       : currentUser.role === 'EXTERNAL_MENTOR' || currentUser.role === 'pembimbing_eksternal'
       ? 'Mentor'
@@ -224,7 +225,7 @@ export const PKLProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     if (!user) return;
     setLoading(true);
     try {
-      if (user.role === 'siswa' || user.role === 'PARTICIPANT') {
+      if (PARTICIPANT_ROLES.includes(user.role)) {
         const dbState = await getPKLState();
         setState(dbState);
       } else {
@@ -806,7 +807,7 @@ export const PKLProvider: React.FC<{ children: React.ReactNode }> = ({ children 
   const addAdvisorNote = async (text: string) => {
     setLoading(true);
     try {
-      const targetStudentId = currentUser?.role === 'siswa' || currentUser?.role === 'PARTICIPANT' ? currentUser.id : selectedStudentId;
+      const targetStudentId = PARTICIPANT_ROLES.includes(currentUser?.role || '') ? currentUser?.id : selectedStudentId;
       if (!targetStudentId) throw new Error('No student selected');
       const res = await addAdvisorNoteAction(text, state.advisorName, targetStudentId);
       if (res && !res.success) {

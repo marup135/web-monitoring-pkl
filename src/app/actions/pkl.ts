@@ -1,5 +1,7 @@
-/* eslint-disable @typescript-eslint/no-unused-vars, @typescript-eslint/no-explicit-any */
 'use server';
+import { PARTICIPANT_ROLES } from '@/lib/constants';
+/* eslint-disable @typescript-eslint/no-unused-vars, @typescript-eslint/no-explicit-any */
+
 
 import prisma from '@/lib/prisma';
 import { PKLCard, AdvisorNote, TaskCategory, PKLRole, PKLState } from '@/types/pkl';
@@ -71,12 +73,12 @@ export async function getPKLState(selectedStudentId?: string): Promise<PKLState>
 
     // Determine target student
     let targetStudentId = currentUser.id;
-    if (currentUser.role !== 'PARTICIPANT' && currentUser.role !== 'siswa') {
+    if (!PARTICIPANT_ROLES.includes(currentUser.role)) {
       if (selectedStudentId) {
         const targetStudent = await prisma.user.findUnique({
           where: { id: selectedStudentId }
         });
-        if (!targetStudent || targetStudent.role !== 'PARTICIPANT') {
+        if (!targetStudent || !PARTICIPANT_ROLES.includes(targetStudent.role)) {
           throw new Error('Siswa tidak ditemukan');
         }
 
@@ -100,17 +102,17 @@ export async function getPKLState(selectedStudentId?: string): Promise<PKLState>
         if (currentUser.role === 'EXTERNAL_MENTOR') {
           const mentorCompanyIds = currentUser.companies.map((c: { id: string }) => c.id);
           firstStudent = await prisma.user.findFirst({
-            where: { role: 'PARTICIPANT', companyId: { in: mentorCompanyIds } }
+            where: { role: { in: PARTICIPANT_ROLES }, companyId: { in: mentorCompanyIds } }
           });
         } else if (currentUser.role === 'INTERNAL_MENTOR') {
           const advisorClassIds = currentUser.classes.map((c: { id: string }) => c.id);
           firstStudent = await prisma.user.findFirst({
-            where: { role: 'PARTICIPANT', classId: { in: advisorClassIds } }
+            where: { role: { in: PARTICIPANT_ROLES }, classId: { in: advisorClassIds } }
           });
         } else {
           // Admin role
           firstStudent = await prisma.user.findFirst({
-            where: { role: 'PARTICIPANT' }
+            where: { role: { in: PARTICIPANT_ROLES } }
           });
         }
 
@@ -120,7 +122,7 @@ export async function getPKLState(selectedStudentId?: string): Promise<PKLState>
           if ((currentUser.role === 'SUPER_ADMIN' || currentUser.role === 'INSTITUTION_ADMIN')) {
             await resetDatabaseAction();
             const seededStudent = await prisma.user.findFirst({
-              where: { role: 'PARTICIPANT' }
+              where: { role: { in: PARTICIPANT_ROLES } }
             });
             targetStudentId = seededStudent ? seededStudent.id : '';
           } else {
@@ -331,7 +333,7 @@ export async function createCardAction(
       return { success: false, error: 'Sesi tidak sah.' };
     }
 
-    if (currentUser.role !== 'PARTICIPANT' && currentUser.role !== 'siswa') {
+    if (!PARTICIPANT_ROLES.includes(currentUser.role)) {
       return { success: false, error: 'Hanya siswa yang dapat membuat rencana kegiatan' };
     }
 
@@ -340,7 +342,7 @@ export async function createCardAction(
       const users = await prisma.user.findMany({
         where: {
           nisn: { in: collaboratorNisns },
-          role: { in: ['siswa', 'PARTICIPANT'] }
+          role: { in: PARTICIPANT_ROLES }
         },
         select: { id: true }
       });
@@ -400,7 +402,7 @@ export async function updateCardColumnAction(
       return { success: false, error: 'Sesi tidak sah atau telah berakhir.' };
     }
 
-    if (targetColumn === 'selesai' && currentUser.role === 'PARTICIPANT') {
+    if (targetColumn === 'selesai' && PARTICIPANT_ROLES.includes(currentUser.role)) {
       return {
         success: false,
         error: 'Siswa tidak dapat memindahkan kegiatan langsung ke status Selesai. Kegiatan harus dinilai/direview terlebih dahulu oleh Pembimbing.'
@@ -415,7 +417,7 @@ export async function updateCardColumnAction(
     if (!card) return { success: false, error: 'Kegiatan tidak ditemukan.' };
 
     // RBAC validation
-    if (currentUser.role === 'PARTICIPANT') {
+    if (PARTICIPANT_ROLES.includes(currentUser.role)) {
       const isOwner = card.studentId === currentUser.id;
       const isCollabWithPermission = card.collaboratorsCanEdit && card.collaborators.some(c => c.id === currentUser.id);
       
@@ -441,7 +443,7 @@ export async function updateCardColumnAction(
       selesai: 'Selesai (Disetujui)',
     };
 
-    const displayRole = currentUser.role === 'PARTICIPANT' ? 'Mahasiswa' : currentUser.role === 'EXTERNAL_MENTOR' ? 'Mentor' : 'Dosen Pembimbing';
+    const displayRole = PARTICIPANT_ROLES.includes(currentUser.role) ? 'Mahasiswa' : currentUser.role === 'EXTERNAL_MENTOR' ? 'Mentor' : 'Dosen Pembimbing';
     const text = `Status dipindahkan dari [${columnNameIndonesian[card.columnId as PKLCard['columnId']]}] ke [${columnNameIndonesian[targetColumn]}] oleh ${currentUser.name} (${displayRole})`;
 
     await prisma.$transaction(async (tx) => {
@@ -543,7 +545,7 @@ export async function updateCardDetailsAction(
     };
 
     // Role-based field restrictions and auth verification
-    if (currentUser.role === 'PARTICIPANT') {
+    if (PARTICIPANT_ROLES.includes(currentUser.role)) {
       if (card.studentId !== currentUser.id) {
         return { success: false, error: 'Akses ditolak: Anda bukan pemilik kegiatan ini.' };
       }
@@ -574,7 +576,7 @@ export async function updateCardDetailsAction(
       return { success: false, error: 'Akses ditolak: Peran tidak sah.' };
     }
 
-    const displayRole = currentUser.role === 'PARTICIPANT' ? 'Mahasiswa' : currentUser.role === 'EXTERNAL_MENTOR' ? 'Mentor' : 'Dosen Pembimbing';
+    const displayRole = PARTICIPANT_ROLES.includes(currentUser.role) ? 'Mahasiswa' : currentUser.role === 'EXTERNAL_MENTOR' ? 'Mentor' : 'Dosen Pembimbing';
     const text = `Detail kartu diperbarui oleh ${currentUser.name} (${displayRole})`;
 
     await prisma.$transaction(async (tx) => {
@@ -619,7 +621,7 @@ export async function addCommentAction(
     }
 
     // Auth verification
-    if (currentUser.role === 'PARTICIPANT') {
+    if (PARTICIPANT_ROLES.includes(currentUser.role)) {
       if (card.studentId !== currentUser.id) {
         return { success: false, error: 'Akses ditolak.' };
       }
@@ -635,7 +637,7 @@ export async function addCommentAction(
       }
     }
 
-    const displayRole = currentUser.role === 'PARTICIPANT' ? 'Mahasiswa' : currentUser.role === 'EXTERNAL_MENTOR' ? 'Mentor' : 'Dosen Pembimbing';
+    const displayRole = PARTICIPANT_ROLES.includes(currentUser.role) ? 'Mahasiswa' : currentUser.role === 'EXTERNAL_MENTOR' ? 'Mentor' : 'Dosen Pembimbing';
     const historyText = `${currentUser.name} (${displayRole}) menambahkan komentar`;
 
     await prisma.$transaction(async (tx) => {
@@ -887,7 +889,7 @@ export async function addAttachmentAction(cardId: string, name: string, url: str
     const card = await prisma.card.findUnique({ where: { id: cardId } });
     if (!card) return { success: false, error: 'Kegiatan tidak ditemukan.' };
 
-    if ((currentUser.role !== 'PARTICIPANT' && currentUser.role !== 'siswa') || card.studentId !== currentUser.id) {
+    if ((!PARTICIPANT_ROLES.includes(currentUser.role)) || card.studentId !== currentUser.id) {
       return { success: false, error: 'Akses ditolak: Hanya pemilik kegiatan yang dapat mengunggah lampiran.' };
     }
 
@@ -916,7 +918,7 @@ export async function deleteAttachmentAction(cardId: string, index: number) {
     const card = await prisma.card.findUnique({ where: { id: cardId } });
     if (!card) return { success: false, error: 'Kegiatan tidak ditemukan.' };
 
-    if ((currentUser.role !== 'PARTICIPANT' && currentUser.role !== 'siswa') || card.studentId !== currentUser.id) {
+    if ((!PARTICIPANT_ROLES.includes(currentUser.role)) || card.studentId !== currentUser.id) {
       return { success: false, error: 'Akses ditolak: Hanya pemilik kegiatan yang dapat menghapus lampiran.' };
     }
 
@@ -943,7 +945,7 @@ export async function addAdvisorNoteAction(text: string, advisorName: string, st
     }
 
     const student = await prisma.user.findUnique({ where: { id: studentId } });
-    if (!student || (student.role !== 'PARTICIPANT' && student.role !== 'siswa') || !canAdvisorAccessStudent(currentUser, student)) {
+    if (!student || (!PARTICIPANT_ROLES.includes(student.role)) || !canAdvisorAccessStudent(currentUser, student)) {
       return { success: false, error: 'Akses ditolak: Siswa dari kelas lain.' };
     }
 
@@ -972,7 +974,7 @@ export async function deleteCardAction(cardId: string) {
     const card = await prisma.card.findUnique({ where: { id: cardId } });
     if (!card) return { success: false, error: 'Kegiatan tidak ditemukan.' };
 
-    if ((currentUser.role !== 'PARTICIPANT' && currentUser.role !== 'siswa') || card.studentId !== currentUser.id) {
+    if ((!PARTICIPANT_ROLES.includes(currentUser.role)) || card.studentId !== currentUser.id) {
       return { success: false, error: 'Akses ditolak: Hanya pemilik kegiatan yang dapat menghapusnya.' };
     }
 
@@ -989,15 +991,15 @@ export async function deleteCardAction(cardId: string) {
 export async function getStudentsAction(classId?: string, companyId?: string) {
   try {
     const currentUser = await getAuthenticatedUser();
-    if (!currentUser || currentUser.role === 'PARTICIPANT') {
+    if (!currentUser || PARTICIPANT_ROLES.includes(currentUser.role)) {
       return [];
     }
 
     const whereClause: {
-      role: string;
+      role: string | { in: string[] };
       classId?: string | null | { in: string[] };
       companyId?: string | null | { in: string[] };
-    } = { role: 'PARTICIPANT' };
+    } = { role: { in: PARTICIPANT_ROLES } };
 
     // Apply role-based constraints and client-selected filters
     if (currentUser.role === 'EXTERNAL_MENTOR') {
@@ -1139,7 +1141,7 @@ export async function resetDatabaseAction() {
         username: 'PARTICIPANT',
         password: hashPassword('PARTICIPANT'),
         name: 'Rian Adriadi',
-        role: 'PARTICIPANT',
+        role: 'siswa',
         company: 'PT Teknologi Nusantara',
         nisn: '222310123',
         classId: class1.id,
@@ -1181,7 +1183,7 @@ export async function resetDatabaseAction() {
         username: 'siswa2',
         password: hashPassword('siswa2'),
         name: 'Andi M',
-        role: 'PARTICIPANT',
+        role: 'siswa',
         company: 'PT Telkom Indonesia',
         nisn: '12345678',
         classId: class2.id,
@@ -1679,7 +1681,7 @@ export async function assignSiswaAction(
     }
 
     const targetUser = await prisma.user.findUnique({ where: { id: userId } });
-    if (!targetUser || targetUser.role !== 'PARTICIPANT') {
+    if (!targetUser || !PARTICIPANT_ROLES.includes(targetUser.role)) {
       return { success: false, error: 'User bukan Siswa.' };
     }
 
@@ -1712,15 +1714,15 @@ export async function assignSiswaAction(
 export async function getDashboardMetricsAction(classId?: string, companyId?: string) {
   try {
     const currentUser = await getAuthenticatedUser();
-    if (!currentUser || currentUser.role === 'PARTICIPANT') {
+    if (!currentUser || PARTICIPANT_ROLES.includes(currentUser.role)) {
       return null;
     }
 
     const whereClause: {
-      role: string;
+      role: string | { in: string[] };
       classId?: string | null | { in: string[] };
       companyId?: string | null | { in: string[] };
-    } = { role: 'PARTICIPANT' };
+    } = { role: { in: PARTICIPANT_ROLES } };
 
     if (currentUser.role === 'EXTERNAL_MENTOR') {
       const mentorCompanyIds = currentUser.companies.map((c: { id: string }) => c.id);
@@ -2054,7 +2056,7 @@ export async function manageCollaboratorsAction(
       const users = await prisma.user.findMany({
         where: {
           nisn: { in: collaboratorNisns },
-          role: { in: ['siswa', 'PARTICIPANT'] }
+          role: { in: PARTICIPANT_ROLES }
         },
         select: { id: true }
       });

@@ -3,6 +3,7 @@
 
 import React, { useState, useEffect } from 'react';
 import { PKLProvider, usePKL } from '../context/PKLContext';
+import { PARTICIPANT_ROLES } from '../lib/constants';
 import { KanbanBoard } from '../components/KanbanBoard';
 import { LogbookTable } from '../components/LogbookTable';
 import { DashboardStats } from '../components/DashboardStats';
@@ -44,7 +45,7 @@ function DashboardContent() {
   const [isUserMenuOpen, setIsUserMenuOpen] = useState(false);
   const [isDesktopUserMenuOpen, setIsDesktopUserMenuOpen] = useState(false);
 
-  const isPembimbing = currentUser && currentUser.role !== 'PARTICIPANT';
+  const isPembimbing = currentUser && !PARTICIPANT_ROLES.includes(currentUser.role);
 
   // Sync selected card details if the state updates while open
   const activeCard = selectedCard

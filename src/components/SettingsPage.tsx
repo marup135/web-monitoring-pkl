@@ -8,6 +8,7 @@ import { uploadBoardBackgroundAction, updateBoardBackgroundAction } from '../app
 import { changePasswordAction, forgotPasswordAction } from '../app/actions/auth';
 import { updateProfileInfoAction, uploadProfileImageAction } from '../app/actions/profile';
 import { useLanguage } from '../context/LanguageContext';
+import { PARTICIPANT_ROLES } from '../lib/constants';
 import { Language } from '../i18n/translations';
 
 type WorkspaceTheme = 'ocean' | 'emerald' | 'purple' | 'orange' | 'red' | 'graphite' | 'midnight' | 'forest';
@@ -342,7 +343,7 @@ export const SettingsPage: React.FC<SettingsPageProps> = ({
                 </div>
               </div>
 
-              {currentUser?.role === 'PARTICIPANT' && (
+              {(currentUser?.role && PARTICIPANT_ROLES.includes(currentUser.role)) && (
                 <>
                   <div>
                     <label className="block text-xs font-bold text-slate-500 dark:text-gray-400 uppercase tracking-wide mb-2">Kelas / Program Studi</label>

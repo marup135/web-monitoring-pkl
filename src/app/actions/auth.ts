@@ -1,5 +1,6 @@
-
 'use server';
+import { PARTICIPANT_ROLES } from '@/lib/constants';
+
 
 import prisma from '@/lib/prisma';
 import { cookies } from 'next/headers';
@@ -28,7 +29,7 @@ export async function registerAction(
       return { success: false, error: 'Akun Admin tidak dapat dibuat melalui registrasi biasa.' };
     }
 
-    const allowedRoles = ['PARTICIPANT', 'INTERNAL_MENTOR', 'EXTERNAL_MENTOR'];
+    const allowedRoles = [...PARTICIPANT_ROLES, 'INTERNAL_MENTOR', 'EXTERNAL_MENTOR'];
     if (!allowedRoles.includes(role)) {
       return { success: false, error: 'Peran registrasi tidak valid.' };
     }
@@ -47,7 +48,7 @@ export async function registerAction(
 
     let status = 'PENDING';
 
-    if (role === 'PARTICIPANT') {
+    if (PARTICIPANT_ROLES.includes(role)) {
       status = 'ACTIVE';
       if (!className || !className.trim()) {
         return { success: false, error: 'Kelas / Program Studi wajib diisi.' };
@@ -116,7 +117,7 @@ export async function registerAction(
     const hashedPassword = hashPassword(password);
 
     let resolvedClassId = null;
-    if (role === 'PARTICIPANT' && className) {
+    if (PARTICIPANT_ROLES.includes(role) && className) {
       const trimmedClass = className.trim();
       let dbClass = await prisma.kelas.findUnique({ where: { name: trimmedClass } });
       if (!dbClass) {
@@ -127,7 +128,7 @@ export async function registerAction(
 
     let resolvedCompanyId = null;
     let finalCompany = null;
-    if ((role === 'PARTICIPANT' || role === 'EXTERNAL_MENTOR') && companyName) {
+    if ((PARTICIPANT_ROLES.includes(role) || role === 'EXTERNAL_MENTOR') && companyName) {
       finalCompany = companyName.trim();
       let dbCompany = await prisma.perusahaan.findUnique({ where: { name: finalCompany } });
       if (!dbCompany) {
@@ -145,17 +146,17 @@ export async function registerAction(
         role,
         institutionId: resolvedInstitutionId,
         company: finalCompany,
-        nisn: role === 'PARTICIPANT' ? (nisn?.trim() || null) : null,
+        nisn: PARTICIPANT_ROLES.includes(role) ? (nisn?.trim() || null) : null,
         nip: role === 'INTERNAL_MENTOR' ? (nip?.trim() || null) : null,
         jabatan: role === 'EXTERNAL_MENTOR' ? (jabatan?.trim() || null) : null,
-        school: (role === 'PARTICIPANT' || role === 'INTERNAL_MENTOR') && school ? school.trim() : "SMKN 1 BOJONG",
+        school: (PARTICIPANT_ROLES.includes(role) || role === 'INTERNAL_MENTOR') && school ? school.trim() : "SMKN 1 BOJONG",
         status,
         companyName: finalCompany,
         jobTitle: role === 'EXTERNAL_MENTOR' ? (jabatan?.trim() || null) : null,
         employeeId: role === 'EXTERNAL_MENTOR' ? (employeeId?.trim() || null) : null,
         companyEmail: role === 'EXTERNAL_MENTOR' ? (companyEmail?.trim() || null) : null,
         classId: resolvedClassId,
-        companyId: role === 'PARTICIPANT' ? resolvedCompanyId : null,
+        companyId: PARTICIPANT_ROLES.includes(role) ? resolvedCompanyId : null,
         companies: role === 'EXTERNAL_MENTOR' && resolvedCompanyId ? {
           connect: { id: resolvedCompanyId }
         } : undefined,
