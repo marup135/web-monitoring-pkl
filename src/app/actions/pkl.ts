@@ -1036,7 +1036,18 @@ export async function resetDatabaseAction() {
       prisma.user.deleteMany(),
       prisma.kelas.deleteMany(),
       prisma.perusahaan.deleteMany(),
+      prisma.institution.deleteMany(),
     ]);
+
+    // Seed Institution
+    const inst = await prisma.institution.create({
+      data: {
+        name: 'SMKN 1 BOJONG',
+        code: 'SMKN1BOJ2',
+        type: 'SCHOOL',
+        status: 'ACTIVE'
+      }
+    });
 
     // Seed Kelas
     const predefinedClasses = [
@@ -1052,7 +1063,7 @@ export async function resetDatabaseAction() {
 
     const seededClasses: Record<string, any> = {};
     for (const className of predefinedClasses) {
-      const cls = await prisma.kelas.create({ data: { name: className } });
+      const cls = await prisma.kelas.create({ data: { name: className, institutionId: inst.id } });
       seededClasses[className] = cls;
     }
 
@@ -1060,10 +1071,10 @@ export async function resetDatabaseAction() {
     const class2 = seededClasses['XII PPLG 2'];
 
     // Seed Perusahaan
-    const comp1 = await prisma.perusahaan.create({ data: { name: 'PT Teknologi Nusantara' } });
-    const comp2 = await prisma.perusahaan.create({ data: { name: 'PT Telkom Indonesia' } });
-    await prisma.perusahaan.create({ data: { name: 'PT Astra International' } });
-    await prisma.perusahaan.create({ data: { name: 'PLN' } });
+    const comp1 = await prisma.perusahaan.create({ data: { name: 'PT Teknologi Nusantara', institutionId: inst.id } });
+    const comp2 = await prisma.perusahaan.create({ data: { name: 'PT Telkom Indonesia', institutionId: inst.id } });
+    await prisma.perusahaan.create({ data: { name: 'PT Astra International', institutionId: inst.id } });
+    await prisma.perusahaan.create({ data: { name: 'PLN', institutionId: inst.id } });
 
     // Seed mock users
     const studentUser = await prisma.user.create({
@@ -1076,6 +1087,7 @@ export async function resetDatabaseAction() {
         nisn: '222310123',
         classId: class1.id,
         companyId: comp1.id,
+        institutionId: inst.id,
       }
     });
 
@@ -1086,9 +1098,38 @@ export async function resetDatabaseAction() {
         name: 'Budi Santoso, S.Kom.',
         role: 'EXTERNAL_MENTOR',
         company: 'PT Teknologi Nusantara',
+        institutionId: inst.id,
         companies: {
           connect: { id: comp1.id }
         }
+      }
+    });
+
+    await prisma.user.create({
+      data: {
+        username: 'manajer',
+        password: hashPassword('manajer'),
+        name: 'manajer',
+        role: 'EXTERNAL_MENTOR',
+        company: 'PT Telkom Indonesia',
+        institutionId: inst.id,
+        companies: {
+          connect: { id: comp2.id }
+        }
+      }
+    });
+
+    await prisma.user.create({
+      data: {
+        username: 'siswa2',
+        password: hashPassword('siswa2'),
+        name: 'Andi M',
+        role: 'PARTICIPANT',
+        company: 'PT Telkom Indonesia',
+        nisn: '12345678',
+        classId: class2.id,
+        companyId: comp2.id,
+        institutionId: inst.id,
       }
     });
 
@@ -1099,6 +1140,7 @@ export async function resetDatabaseAction() {
         name: 'Dr. Ir. Heryanto, M.T.',
         role: 'INTERNAL_MENTOR',
         school: 'SMKN 1 BOJONG',
+        institutionId: inst.id,
         classes: {
           connect: [
             { id: class1.id },
@@ -1113,7 +1155,8 @@ export async function resetDatabaseAction() {
         username: 'admin',
         password: hashPassword('admin'),
         name: 'Administrator SMKN 1 Bojong',
-        role: 'admin'
+        role: 'INSTITUTION_ADMIN',
+        institutionId: inst.id,
       }
     });
 

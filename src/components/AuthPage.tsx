@@ -1046,7 +1046,7 @@ export const AuthPage: React.FC = () => {
                       { role: 'Siswa', user: 'marup / pppppp', pass: 'pppppp' },
                       { role: 'Pem. Eksternal', user: 'manajer / pppppp', pass: 'pppppp' },
                       { role: 'Pem. Internal', user: 'ibuguru / pppppp', pass: 'pppppp' },
-                      { role: 'Admin', user: 'admin / pppppp', pass: 'pppppp' },
+                      { role: 'Admin', user: 'adminnebo / pppppp', pass: 'pppppp' },
                     ].map((acc) => (
                       <li key={acc.user} className="flex items-center gap-2">
                         <span className="text-slate-400 font-bold min-w-[100px]">{acc.role}</span>
