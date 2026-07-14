@@ -22,7 +22,7 @@ import {
 
 
 const ROLES = [
-  { value: 'PARTICIPANT', label: 'Peserta / Siswa / Mahasiswa' },
+  { value: 'siswa', label: 'Peserta / Siswa / Mahasiswa' },
   { value: 'INTERNAL_MENTOR', label: 'Pembimbing Internal (Guru/Dosen/Instruktur)' },
   { value: 'EXTERNAL_MENTOR', label: 'Pembimbing Eksternal (Perusahaan)' },
 ];
@@ -226,6 +226,10 @@ export const AuthPage: React.FC<AuthPageProps> = ({ initialView = 'login' }) => 
           setError('Asal Sekolah / Kampus wajib diisi.', 'field');
           return;
         }
+        if (!nisn.trim()) {
+          setError('NIS / NISN / NIM wajib diisi.', 'field');
+          return;
+        }
       } else if (role === 'INTERNAL_MENTOR') {
         if (!nip.trim()) {
           setError('NIP / Nomor Identitas wajib diisi.', 'field');
@@ -249,6 +253,11 @@ export const AuthPage: React.FC<AuthPageProps> = ({ initialView = 'login' }) => 
           setError('Nomor Identitas Karyawan wajib diisi.', 'field');
           return;
         }
+      }
+
+      if (!institutionCode.trim()) {
+        setError('Kode Institusi wajib diisi.', 'field');
+        return;
       }
     }
 
@@ -476,7 +485,7 @@ export const AuthPage: React.FC<AuthPageProps> = ({ initialView = 'login' }) => 
                                     : 'text-[#0F172A] dark:text-gray-200 hover:bg-slate-50 dark:hover:bg-gray-800 font-medium'
                                     }`}
                                 >
-                                  {r.value === 'PARTICIPANT' && '🎓 '}
+                                  {r.value === 'siswa' && '🎓 '}
                                   {r.value === 'INTERNAL_MENTOR' && '👨‍🏫 '}
                                   {r.value === 'EXTERNAL_MENTOR' && '🏢 '}
                                   {r.label}
@@ -628,16 +637,19 @@ export const AuthPage: React.FC<AuthPageProps> = ({ initialView = 'login' }) => 
                           <>
                             <div className="flex flex-col gap-1.5">
                               <label className="text-xs text-[#64748B] dark:text-gray-300 font-bold">
-                                Asal Sekolah / Kampus / Institusi
+                                Asal Sekolah / Kampus <span className="text-red-500">*</span>
                               </label>
                               <div className="relative">
                                 <Building2 size={18} className="absolute left-4 top-1/2 -translate-y-1/2 text-[#94A3B8]" />
                                 <input
                                   type="text"
-                                  placeholder="SMKN 1 Bojong"
+                                  placeholder="SMK Negeri 1 Bandung"
                                   value={school}
-                                  onChange={(e) => setSchool(e.target.value)}
-                                  className={inputClass(false)}
+                                  onChange={(e) => {
+                                    setSchool(e.target.value);
+                                    if (errorState) clearError();
+                                  }}
+                                  className={`${inputClass(false)} pl-10`}
                                 />
                               </div>
                             </div>
@@ -659,7 +671,7 @@ export const AuthPage: React.FC<AuthPageProps> = ({ initialView = 'login' }) => 
 
                             <div className="flex flex-col gap-1.5">
                               <label className="text-xs text-[#64748B] dark:text-gray-300 font-bold">
-                                NIS / NISN / NIM
+                                NIS / NISN / NIM <span className="text-red-500">*</span>
                               </label>
                               <div className="relative">
                                 <input
@@ -679,16 +691,19 @@ export const AuthPage: React.FC<AuthPageProps> = ({ initialView = 'login' }) => 
                           <>
                             <div className="flex flex-col gap-1.5">
                               <label className="text-xs text-[#64748B] dark:text-gray-300 font-bold">
-                                Nama Sekolah
+                                Asal Sekolah / Kampus <span className="text-red-500">*</span>
                               </label>
                               <div className="relative">
                                 <Building2 size={18} className="absolute left-4 top-1/2 -translate-y-1/2 text-[#94A3B8]" />
                                 <input
                                   type="text"
-                                  placeholder="SMKN 1 Bojong"
+                                  placeholder="SMK Negeri 1 Bandung"
                                   value={school}
-                                  onChange={(e) => setSchool(e.target.value)}
-                                  className={inputClass(false)}
+                                  onChange={(e) => {
+                                    setSchool(e.target.value);
+                                    if (errorState) clearError();
+                                  }}
+                                  className={`${inputClass(false)} pl-10`}
                                 />
                               </div>
                             </div>
@@ -775,7 +790,7 @@ export const AuthPage: React.FC<AuthPageProps> = ({ initialView = 'login' }) => 
                         {/* Institution Code (For all roles) */}
                         <div className="flex flex-col gap-1.5">
                           <label className="text-xs text-[#64748B] dark:text-gray-300 font-bold">
-                            Kode Institusi (Dapatkan dari Admin Sekolah)
+                            Kode Institusi <span className="text-red-500">*</span>
                           </label>
                           <div className="relative">
                             <input
@@ -786,7 +801,7 @@ export const AuthPage: React.FC<AuthPageProps> = ({ initialView = 'login' }) => 
                               className={inputClass(false)}
                             />
                           </div>
-                          <p className="text-[10px] text-slate-500 mt-0.5">Isi jika Anda diberikan kode pendaftaran dari Admin.</p>
+                          <p className="text-[10px] text-slate-500 mt-0.5">Wajib diisi dengan kode yang diberikan oleh Admin Sekolah Siswa.</p>
                         </div>
                       </div>
                     </div>
@@ -978,7 +993,7 @@ export const AuthPage: React.FC<AuthPageProps> = ({ initialView = 'login' }) => 
               )}
 
               {/* Error Alert */}
-              {errorState && errorState.type !== 'field' && (
+              {errorState && (!errorState.field || errorState.type !== 'field') && (
                 <div
                   className={`mt-6 p-4 rounded-2xl border text-sm leading-relaxed animate-in fade-in slide-in-from-top-2 duration-300 flex items-start gap-3 ${errorState.type === 'server'
                     ? 'bg-orange-50 border-orange-200 dark:bg-orange-500/10 dark:border-orange-500/20'

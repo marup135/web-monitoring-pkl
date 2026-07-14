@@ -51,6 +51,7 @@ export function AttendancePage() {
     checkOutPhoto?: string | null;
     checkOutLat?: number | null;
     checkOutLng?: number | null;
+    activityNotes?: string | null;
   } | null>(null);
 
   // --- Camera & Location States ---
@@ -237,7 +238,36 @@ export function AttendancePage() {
     if (file) {
       const reader = new FileReader();
       reader.onload = (event) => {
-        setPhotoCaptured(event.target?.result as string);
+        const img = new Image();
+        img.onload = () => {
+          const canvas = document.createElement('canvas');
+          const MAX_WIDTH = 800;
+          const MAX_HEIGHT = 800;
+          let width = img.width;
+          let height = img.height;
+
+          if (width > height) {
+            if (width > MAX_WIDTH) {
+              height *= MAX_WIDTH / width;
+              width = MAX_WIDTH;
+            }
+          } else {
+            if (height > MAX_HEIGHT) {
+              width *= MAX_HEIGHT / height;
+              height = MAX_HEIGHT;
+            }
+          }
+
+          canvas.width = width;
+          canvas.height = height;
+          const ctx = canvas.getContext('2d');
+          if (ctx) {
+            ctx.drawImage(img, 0, 0, width, height);
+            const dataUrl = canvas.toDataURL('image/jpeg', 0.5);
+            setPhotoCaptured(dataUrl);
+          }
+        };
+        img.src = event.target?.result as string;
       };
       reader.readAsDataURL(file);
     }
@@ -772,6 +802,14 @@ export function AttendancePage() {
                       >
                         <MapPin size={14} /> Lihat Lokasi di Peta
                       </a>
+                    )}
+                    {proofModalData.activityNotes && (
+                      <div className="mt-2 bg-slate-50 dark:bg-gray-800 p-3 rounded-xl border border-slate-100 dark:border-gray-700">
+                        <span className="text-[10px] font-bold uppercase text-slate-400 block mb-1">Catatan Kegiatan</span>
+                        <p className="text-xs text-[#0F172A] dark:text-gray-200 leading-relaxed whitespace-pre-wrap">
+                          {proofModalData.activityNotes}
+                        </p>
+                      </div>
                     )}
                   </>
                 ) : (

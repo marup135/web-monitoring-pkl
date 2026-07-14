@@ -18,7 +18,7 @@ export async function updateProfileInfoAction(name: string, email: string) {
 
     const updatedUser = await prisma.user.update({
       where: { id: userId },
-      data: { name, email },
+      data: { name, email: email === '' ? null : email },
     });
 
     return { success: true, user: { name: updatedUser.name, email: updatedUser.email } };

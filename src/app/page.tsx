@@ -682,6 +682,7 @@ function HomeWrapper() {
   const { currentUser, loading } = usePKL();
   const [showToast, setShowToast] = useState(false);
   const [showLogin, setShowLogin] = useState(false);
+  const [authView, setAuthView] = useState<'login' | 'register'>('login');
 
   useEffect(() => {
     if (currentUser && typeof window !== 'undefined' && sessionStorage.getItem('login_success') === 'true') {
@@ -724,7 +725,7 @@ function HomeWrapper() {
               </svg>
               Kembali
             </button>
-            <AuthPage />
+            <AuthPage initialView={authView} />
           </div>
           <Footer />
         </div>
@@ -733,7 +734,10 @@ function HomeWrapper() {
     return (
       <div className="flex flex-col min-h-screen">
         <div className="flex-1">
-          <LandingPage onLoginClick={() => setShowLogin(true)} />
+          <LandingPage 
+            onLoginClick={() => { setAuthView('login'); setShowLogin(true); }} 
+            onRegisterClick={() => { setAuthView('register'); setShowLogin(true); }}
+          />
         </div>
         <Footer />
       </div>

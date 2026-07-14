@@ -96,24 +96,20 @@ export async function registerAction(
       return { success: false, error: 'Username sudah digunakan.' };
     }
     
-    // Resolve Institution
-    let resolvedInstitutionId = null;
-    if (institutionCode) {
-      const inst = await prisma.institution.findUnique({
-        where: { code: institutionCode.trim() }
-      });
-      if (inst) {
-        resolvedInstitutionId = inst.id;
-      }
+    if (!institutionCode || !institutionCode.trim()) {
+      return { success: false, error: 'Kode Institusi wajib diisi.' };
     }
-    // If not found, use default for backward compatibility
-    if (!resolvedInstitutionId) {
-       const inst = await prisma.institution.findFirst({
-         where: { status: 'ACTIVE' },
-         orderBy: { createdAt: 'desc' }
-       });
-       if (inst) resolvedInstitutionId = inst.id;
+
+    const inst = await prisma.institution.findUnique({
+      where: { code: institutionCode.trim() }
+    });
+
+    if (!inst) {
+      return { success: false, error: 'Kode Institusi tidak ditemukan atau tidak valid.' };
     }
+    
+    const resolvedInstitutionId = inst.id;
+    const resolvedSchoolName = inst.name;
 
     const hashedPassword = hashPassword(password);
 
@@ -150,7 +146,7 @@ export async function registerAction(
         nisn: PARTICIPANT_ROLES.includes(role) ? (nisn?.trim() || null) : null,
         nip: role === 'INTERNAL_MENTOR' ? (nip?.trim() || null) : null,
         jabatan: role === 'EXTERNAL_MENTOR' ? (jabatan?.trim() || null) : null,
-        school: (PARTICIPANT_ROLES.includes(role) || role === 'INTERNAL_MENTOR') && school ? school.trim() : "SMKN 1 BOJONG",
+        school: resolvedSchoolName,
         status,
         companyName: finalCompany,
         jobTitle: role === 'EXTERNAL_MENTOR' ? (jabatan?.trim() || null) : null,

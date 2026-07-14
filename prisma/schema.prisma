@@ -50,6 +50,7 @@ model User {
   lastAfternoonReminder String?        @db.VarChar(10)
   lastMorningReminder   String?        @db.VarChar(10)
   institutionId         String?        @db.VarChar(255)
+  faceDescriptor        String?
   writtenNotes          AdvisorNote[]  @relation("AdvisorNotes")
   advisorNotes          AdvisorNote[]  @relation("StudentNotes")
   attendances           Attendance[]   @relation("UserAttendances")
@@ -59,9 +60,8 @@ model User {
   perusahaan            Perusahaan?    @relation("StudentCompany", fields: [companyId], references: [id])
   institution           Institution?   @relation("UserInstitution", fields: [institutionId], references: [id])
   classes               Kelas[]        @relation("AdvisorClasses")
-  companies             Perusahaan[]   @relation("MentorCompanies")
   collaboratingCards    Card[]         @relation("CardCollaborators")
-  faceDescriptor        String?        @db.Text
+  companies             Perusahaan[]   @relation("MentorCompanies")
 }
 
 model Card {
@@ -86,11 +86,11 @@ model Card {
   feedbackAdvisor           String?
   attachmentsJson           String?
   studentId                 String
-  student                   User          @relation("StudentCards", fields: [studentId], references: [id], onDelete: Cascade)
-  collaborators             User[]        @relation("CardCollaborators")
   collaboratorsCanEdit      Boolean       @default(false)
+  student                   User          @relation("StudentCards", fields: [studentId], references: [id], onDelete: Cascade)
   comments                  Comment[]
   history                   HistoryItem[]
+  collaborators             User[]        @relation("CardCollaborators")
 
   @@index([studentId])
 }
@@ -166,7 +166,7 @@ model Attendance {
   checkOutLat   Float?
   checkOutLng   Float?
   checkOutPhoto String?
-  activityNotes String?  @db.Text
+  activityNotes String?
   user          User     @relation("UserAttendances", fields: [userId], references: [id], onDelete: Cascade)
 
   @@unique([userId, date])
