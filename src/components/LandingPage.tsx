@@ -22,22 +22,22 @@ export const LandingPage: React.FC<LandingPageProps> = ({ onLoginClick, onRegist
             <span className="text-xl md:text-2xl font-black text-blue-600 dark:text-blue-500 tracking-tight">TRACK</span>
           </div>
         </div>
-        
+
         <div className="hidden lg:flex items-center gap-8 font-semibold text-sm text-slate-600 dark:text-gray-300">
           <Link href="/#beranda" className="hover:text-blue-600 dark:hover:text-blue-400 transition-colors">Beranda</Link>
           <Link href="/#fitur-utama" className="hover:text-blue-600 dark:hover:text-blue-400 transition-colors">Fitur Utama</Link>
           <Link href="/#panduan" className="hover:text-blue-600 dark:hover:text-blue-400 transition-colors">Panduan</Link>
           <Link href="/#tentang-kami" className="hover:text-blue-600 dark:hover:text-blue-400 transition-colors">Tentang Kami</Link>
         </div>
-        
+
         <div className="flex items-center gap-3">
-          <button 
+          <button
             onClick={onLoginClick}
             className="px-5 py-2.5 text-sm font-bold border border-slate-200 dark:border-gray-700 text-slate-700 dark:text-gray-200 rounded-xl hover:bg-slate-50 dark:hover:bg-gray-800 transition-colors cursor-pointer"
           >
             Masuk
           </button>
-          <button 
+          <button
             onClick={onRegisterClick}
             className="hidden sm:flex px-5 py-2.5 text-sm font-bold bg-blue-600 hover:bg-blue-700 text-white rounded-xl transition-colors shadow-md shadow-blue-500/20 cursor-pointer"
           >
@@ -48,7 +48,7 @@ export const LandingPage: React.FC<LandingPageProps> = ({ onLoginClick, onRegist
 
       {/* Hero Section */}
       <main id="beranda" className="relative z-10 min-h-[calc(100vh-85px)] flex flex-col items-center justify-center text-center px-4 py-12 md:py-20">
-        
+
         <div className="max-w-4xl mx-auto flex flex-col items-center">
           <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-blue-50 dark:bg-blue-500/10 border border-blue-100 dark:border-blue-500/20 text-blue-600 dark:text-blue-400 text-xs font-bold mb-8 animate-in fade-in slide-in-from-bottom-4 duration-500">
             <span className="relative flex h-2 w-2">
@@ -59,18 +59,18 @@ export const LandingPage: React.FC<LandingPageProps> = ({ onLoginClick, onRegist
           </div>
 
           <h1 className="text-4xl md:text-6xl font-extrabold leading-[1.15] tracking-tight mb-6 text-slate-900 dark:text-white animate-in fade-in slide-in-from-bottom-6 duration-700">
-            Sistem Manajemen <br className="hidden md:block"/>
+            Sistem Manajemen <br className="hidden md:block" />
             <span className="text-transparent bg-clip-text bg-gradient-to-r from-blue-600 to-indigo-600 dark:from-blue-400 dark:to-indigo-400">
               PKL & Magang
             </span> Cerdas
           </h1>
-          
+
           <p className="text-base md:text-xl font-medium mb-10 max-w-2xl text-slate-600 dark:text-gray-300 leading-relaxed animate-in fade-in slide-in-from-bottom-8 duration-1000">
-            Pantau kehadiran, jurnal harian, dan pencapaian kompetensi siswa secara real-time. Mempermudah kolaborasi antara sekolah, siswa, dan perusahaan (DUDI).
+            Pantau kehadiran, jurnal harian, dan pencapaian kompetensi siswa secara real-time. Mempermudah kolaborasi antara sekolah, siswa, dan perusahaan.
           </p>
-          
+
           <div className="flex flex-col sm:flex-row items-center gap-4 w-full sm:w-auto animate-in fade-in slide-in-from-bottom-10 duration-1000 delay-150">
-            <button 
+            <button
               onClick={onLoginClick}
               className="w-full sm:w-auto px-8 py-3.5 bg-blue-600 text-white font-bold rounded-xl hover:bg-blue-700 transition-all flex items-center justify-center gap-2 shadow-lg shadow-blue-500/30 hover:shadow-blue-500/50 hover:-translate-y-0.5 active:translate-y-0 cursor-pointer"
             >
@@ -79,12 +79,7 @@ export const LandingPage: React.FC<LandingPageProps> = ({ onLoginClick, onRegist
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M17 8l4 4m0 0l-4 4m4-4H3" />
               </svg>
             </button>
-            <Link 
-              href="/register-admin"
-              className="w-full sm:w-auto px-8 py-3.5 bg-white dark:bg-gray-800 text-slate-700 dark:text-gray-200 font-bold rounded-xl hover:bg-slate-50 dark:hover:bg-gray-700 border border-slate-200 dark:border-gray-700 transition-all flex items-center justify-center gap-2 shadow-sm"
-            >
-              Daftar Sebagai Admin
-            </Link>
+
           </div>
         </div>
 
@@ -129,7 +124,7 @@ export const LandingPage: React.FC<LandingPageProps> = ({ onLoginClick, onRegist
         <div id="tentang-kami" className="mt-24 mb-20 max-w-4xl mx-auto px-4 w-full text-center">
           <h2 className="text-2xl md:text-3xl font-bold text-slate-800 dark:text-white mb-6">Tentang Kami</h2>
           <p className="text-slate-600 dark:text-gray-300 leading-relaxed max-w-2xl mx-auto">
-            NeboTrack adalah inisiatif digital untuk memodernisasi pelaksanaan Praktik Kerja Lapangan (PKL) dan Magang. Kami menjembatani komunikasi antara sekolah, siswa, dan dunia industri (DUDI) dalam satu platform yang terintegrasi, transparan, dan mudah digunakan.
+            NeboTrack adalah inisiatif digital untuk memodernisasi pelaksanaan Praktik Kerja Lapangan (PKL) dan Magang. Kami menjembatani komunikasi antara sekolah, siswa, dan dunia industri dalam satu platform yang terintegrasi, transparan, dan mudah digunakan.
           </p>
         </div>
       </main>
