@@ -643,7 +643,7 @@ export const AuthPage: React.FC<AuthPageProps> = ({ initialView = 'login' }) => 
                                 <Building2 size={18} className="absolute left-4 top-1/2 -translate-y-1/2 text-[#94A3B8]" />
                                 <input
                                   type="text"
-                                  placeholder="SMK Negeri 1 Bandung"
+                                  placeholder="SMKN 1 BOJONG"
                                   value={school}
                                   onChange={(e) => {
                                     setSchool(e.target.value);
@@ -697,7 +697,7 @@ export const AuthPage: React.FC<AuthPageProps> = ({ initialView = 'login' }) => 
                                 <Building2 size={18} className="absolute left-4 top-1/2 -translate-y-1/2 text-[#94A3B8]" />
                                 <input
                                   type="text"
-                                  placeholder="SMK Negeri 1 Bandung"
+                                  placeholder="SMKN 1 BOJONG"
                                   value={school}
                                   onChange={(e) => {
                                     setSchool(e.target.value);

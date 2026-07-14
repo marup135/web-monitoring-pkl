@@ -67,6 +67,22 @@ export async function markAllAsReadAction() {
   }
 }
 
+export async function deleteNotificationAction(notificationId: string) {
+  try {
+    const userId = await getUserIdFromSession();
+    if (!userId) return { success: false, error: 'Unauthorized' };
+
+    await prisma.notification.deleteMany({
+      where: { id: notificationId, userId }
+    });
+
+    return { success: true };
+  } catch (error: any) {
+    console.error('Error deleting notification:', error);
+    return { success: false, error: error.message };
+  }
+}
+
 // Internal function to create a notification, used by other server actions
 export async function createNotification(userId: string, title: string, message: string, type: string = 'INFO') {
   try {

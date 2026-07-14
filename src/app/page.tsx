@@ -128,16 +128,19 @@ function DashboardContent() {
             NeboTrack
           </span>
         </div>
-        <button
-          onClick={() => setIsUserMenuOpen(true)}
-          className="w-8 h-8 rounded-full bg-blue-100 flex items-center justify-center text-blue-600 font-bold text-xs cursor-pointer min-h-0 min-w-0 overflow-hidden shrink-0 border border-slate-200 dark:border-gray-700"
-        >
-          {currentUser?.profileImage ? (
-            <img src={currentUser.profileImage} alt="Profile" className="w-full h-full object-cover" />
-          ) : (
-            (currentUser?.name || '?').charAt(0).toUpperCase()
-          )}
-        </button>
+        <div className="flex items-center gap-3">
+          <NotificationBell />
+          <button
+            onClick={() => setIsUserMenuOpen(true)}
+            className="w-8 h-8 rounded-full bg-blue-100 flex items-center justify-center text-blue-600 font-bold text-xs cursor-pointer min-h-0 min-w-0 overflow-hidden shrink-0 border border-slate-200 dark:border-gray-700"
+          >
+            {currentUser?.profileImage ? (
+              <img src={currentUser.profileImage} alt="Profile" className="w-full h-full object-cover" />
+            ) : (
+              (currentUser?.name || '?').charAt(0).toUpperCase()
+            )}
+          </button>
+        </div>
       </div>
 
       {/* Mobile Sidebar Drawer */}

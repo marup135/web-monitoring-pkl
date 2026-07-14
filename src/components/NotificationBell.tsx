@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { Bell, Check, Info, AlertCircle, CheckCircle, XCircle } from 'lucide-react';
-import { getNotificationsAction, markAsReadAction, markAllAsReadAction } from '../app/actions/notifications';
+import { Bell, Check, Info, AlertCircle, CheckCircle, XCircle, Trash2 } from 'lucide-react';
+import { getNotificationsAction, markAsReadAction, markAllAsReadAction, deleteNotificationAction } from '../app/actions/notifications';
 
 type Notification = {
   id: string;
@@ -55,6 +55,20 @@ export function NotificationBell() {
     if (res.success) {
       setNotifications(prev => prev.map(n => ({ ...n, isRead: true })));
       setUnreadCount(0);
+    }
+  };
+
+  const handleDelete = async (id: string, e: React.MouseEvent) => {
+    e.stopPropagation();
+    const notification = notifications.find(n => n.id === id);
+    if (!notification) return;
+    
+    const res = await deleteNotificationAction(id);
+    if (res.success) {
+      setNotifications(prev => prev.filter(n => n.id !== id));
+      if (!notification.isRead) {
+        setUnreadCount(prev => Math.max(0, prev - 1));
+      }
     }
   };
 
@@ -119,15 +133,24 @@ export function NotificationBell() {
                         {new Date(notif.createdAt).toLocaleDateString('id-ID', { hour: '2-digit', minute: '2-digit' })}
                       </p>
                     </div>
-                    {!notif.isRead && (
+                    <div className="flex-shrink-0 flex items-start gap-2">
+                      {!notif.isRead && (
+                        <button 
+                          onClick={(e) => handleMarkAsRead(notif.id, e)}
+                          className="text-gray-400 hover:text-primary transition-colors"
+                          title="Tandai dibaca"
+                        >
+                          <Check className="w-4 h-4" />
+                        </button>
+                      )}
                       <button 
-                        onClick={(e) => handleMarkAsRead(notif.id, e)}
-                        className="flex-shrink-0 text-gray-400 hover:text-primary transition-colors"
-                        title="Tandai dibaca"
+                        onClick={(e) => handleDelete(notif.id, e)}
+                        className="text-gray-400 hover:text-red-500 transition-colors"
+                        title="Hapus"
                       >
-                        <Check className="w-4 h-4" />
+                        <Trash2 className="w-4 h-4" />
                       </button>
-                    )}
+                    </div>
                   </div>
                 ))}
               </div>
