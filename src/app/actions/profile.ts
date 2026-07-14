@@ -94,3 +94,38 @@ export async function uploadProfileImageAction(formData: FormData) {
     return { success: false, error: 'Gagal mengunggah foto profil' };
   }
 }
+
+export async function registerFaceAction(descriptorStr: string) {
+  try {
+    const userId = await getUserIdFromSession();
+    if (!userId) return { success: false, error: 'Belum login' };
+
+    await prisma.user.update({
+      where: { id: userId },
+      data: { faceDescriptor: descriptorStr },
+    });
+
+    return { success: true };
+  } catch (error) {
+    console.error('Failed to register face descriptor', error);
+    return { success: false, error: 'Gagal mendaftarkan wajah' };
+  }
+}
+
+export async function getFaceDescriptorAction(userId: string) {
+  try {
+    const user = await prisma.user.findUnique({
+      where: { id: userId },
+      select: { faceDescriptor: true }
+    });
+    
+    if (!user || !user.faceDescriptor) {
+      return { success: false, error: 'Wajah belum terdaftar' };
+    }
+    
+    return { success: true, data: user.faceDescriptor };
+  } catch (error) {
+    console.error('Failed to get face descriptor', error);
+    return { success: false, error: 'Gagal mendapatkan data wajah' };
+  }
+}

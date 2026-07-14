@@ -61,6 +61,7 @@ model User {
   classes               Kelas[]        @relation("AdvisorClasses")
   companies             Perusahaan[]   @relation("MentorCompanies")
   collaboratingCards    Card[]         @relation("CardCollaborators")
+  faceDescriptor        String?        @db.Text
 }
 
 model Card {
@@ -165,6 +166,7 @@ model Attendance {
   checkOutLat   Float?
   checkOutLng   Float?
   checkOutPhoto String?
+  activityNotes String?  @db.Text
   user          User     @relation("UserAttendances", fields: [userId], references: [id], onDelete: Cascade)
 
   @@unique([userId, date])

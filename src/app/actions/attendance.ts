@@ -131,7 +131,7 @@ export async function checkInAction(userId: string, lat?: number, lng?: number, 
   }
 }
 
-export async function checkOutAction(userId: string, lat?: number, lng?: number, photo?: string) {
+export async function checkOutAction(userId: string, lat?: number, lng?: number, photo?: string, notes?: string) {
   try {
     const serverTime = await getServerTimeAction();
     const currentHour = serverTime.hours;
@@ -177,6 +177,7 @@ export async function checkOutAction(userId: string, lat?: number, lng?: number,
         checkOutLat: lat,
         checkOutLng: lng,
         checkOutPhoto: photo,
+        activityNotes: notes,
         status: 'COMPLETED'
       }
     });

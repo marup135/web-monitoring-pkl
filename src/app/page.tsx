@@ -17,7 +17,8 @@ import { PKLCard } from '../types/pkl';
 import { LayoutDashboard, FileSpreadsheet, BarChart3, Building2, UserCheck, RefreshCw, Menu, X, User, Settings, Key, LogOut, Clock } from 'lucide-react';
 import { SettingsPage } from '../components/SettingsPage';
 import { useLanguage } from '../context/LanguageContext';
-import { AttendancePage } from '../components/AttendancePage';
+import dynamic from 'next/dynamic';
+const AttendancePage = dynamic(() => import('../components/AttendancePage').then(mod => mod.AttendancePage), { ssr: false });
 import { NotificationBell } from '../components/NotificationBell';
 import { LandingPage } from '../components/LandingPage';
 import { Footer } from '../components/Footer';
@@ -132,7 +133,7 @@ function DashboardContent() {
           {currentUser?.profileImage ? (
             <img src={currentUser.profileImage} alt="Profile" className="w-full h-full object-cover" />
           ) : (
-            currentUser?.name?.charAt(0).toUpperCase()
+            (currentUser?.name || '?').charAt(0).toUpperCase()
           )}
         </button>
       </div>
@@ -213,7 +214,7 @@ function DashboardContent() {
                     {currentUser?.profileImage ? (
                       <img src={currentUser.profileImage} alt="Profile" className="w-full h-full object-cover" />
                     ) : (
-                      currentUser?.name?.charAt(0).toUpperCase()
+                      (currentUser?.name || '?').charAt(0).toUpperCase()
                     )}
                   </div>
                   <div className="overflow-hidden">
@@ -353,7 +354,7 @@ function DashboardContent() {
                 {currentUser?.profileImage ? (
                   <img src={currentUser.profileImage} alt="Profile" className="w-full h-full object-cover" />
                 ) : (
-                  currentUser?.name?.charAt(0).toUpperCase()
+                  (currentUser?.name || '?').charAt(0).toUpperCase()
                 )}
               </div>
               <span className="text-xs text-[#64748B] dark:text-gray-300">
@@ -373,7 +374,7 @@ function DashboardContent() {
                           /* eslint-disable-next-line @next/next/no-img-element */
                           <img src={currentUser.profileImage} alt="Profile" className="w-full h-full object-cover" />
                         ) : (
-                          currentUser?.name?.charAt(0).toUpperCase()
+                          (currentUser?.name || '?').charAt(0).toUpperCase()
                         )}
                       </div>
                       <div className="overflow-hidden flex flex-col justify-center">
@@ -578,7 +579,7 @@ function DashboardContent() {
                     /* eslint-disable-next-line @next/next/no-img-element */
                     <img src={currentUser.profileImage} alt="Profile" className="w-full h-full object-cover" />
                   ) : (
-                    currentUser?.name?.charAt(0).toUpperCase()
+                    (currentUser?.name || '?').charAt(0).toUpperCase()
                   )}
                 </div>
                 <div className="overflow-hidden flex flex-col justify-center">

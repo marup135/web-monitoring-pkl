@@ -11,7 +11,9 @@ import {
   checkInAction, 
   checkOutAction 
 } from '@/app/actions/attendance';
-import { Clock, Calendar, CheckCircle2, AlertCircle, RefreshCw, UserCheck, Camera, MapPin, X } from 'lucide-react';
+import { getFaceDescriptorAction } from '@/app/actions/profile';
+import * as faceapi from '@vladmandic/face-api';
+import { Clock, Calendar, CheckCircle2, AlertCircle, RefreshCw, UserCheck, Camera, MapPin, X, Upload } from 'lucide-react';
 
 interface AttendanceRecord {
   id: string;
@@ -47,8 +49,15 @@ export function AttendancePage() {
   const [locError, setLocError] = useState('');
   const videoRef = useRef<HTMLVideoElement>(null);
   const canvasRef = useRef<HTMLCanvasElement>(null);
+  const fileInputRef = useRef<HTMLInputElement>(null);
   const [stream, setStream] = useState<MediaStream | null>(null);
   const [photoCaptured, setPhotoCaptured] = useState<string | null>(null);
+  const [activityNotes, setActivityNotes] = useState<string>('');
+  
+  // Face Recognition states
+  const [modelsLoaded, setModelsLoaded] = useState(false);
+  const [verifyingFace, setVerifyingFace] = useState(false);
+  const [savedFaceDescriptor, setSavedFaceDescriptor] = useState<Float32Array | null>(null);
 
   const fetchAttendanceData = async () => {
     if (!currentUser) return;
@@ -86,6 +95,18 @@ export function AttendancePage() {
 
   useEffect(() => {
     fetchAttendanceData();
+    // Load face-api models
+    const loadModels = async () => {
+      try {
+        await faceapi.nets.ssdMobilenetv1.loadFromUri('/models');
+        await faceapi.nets.faceLandmark68Net.loadFromUri('/models');
+        await faceapi.nets.faceRecognitionNet.loadFromUri('/models');
+        setModelsLoaded(true);
+      } catch (e) {
+        console.error('Failed to load face models', e);
+      }
+    };
+    loadModels();
   }, [currentUser]);
 
   // Clock Ticker based on Server Time offset
@@ -186,7 +207,18 @@ export function AttendancePage() {
     }
   };
 
-  const openModal = (mode: 'in' | 'out') => {
+  const handleFileUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      const reader = new FileReader();
+      reader.onload = (event) => {
+        setPhotoCaptured(event.target?.result as string);
+      };
+      reader.readAsDataURL(file);
+    }
+  };
+
+  const openModal = async (mode: 'in' | 'out') => {
     setCameraMode(mode);
     setPhotoCaptured(null);
     setLocation(null);
@@ -209,11 +241,48 @@ export function AttendancePage() {
       setErrorMsg(null);
       setSuccessMsg(null);
       
+      if (cameraMode === 'in') {
+        if (!savedFaceDescriptor) {
+          setErrorMsg('Wajah Anda belum terdaftar. Silakan daftar wajah di menu Pengaturan terlebih dahulu.');
+          setActionLoading(false);
+          return;
+        }
+
+        setVerifyingFace(true);
+        // Create an image element from photoCaptured to run faceapi
+        const img = document.createElement('img');
+        img.src = photoCaptured;
+        await new Promise((resolve) => { img.onload = resolve; });
+
+        const detection = await faceapi.detectSingleFace(img).withFaceLandmarks().withFaceDescriptor();
+        
+        if (!detection) {
+          setErrorMsg('Wajah tidak terdeteksi pada foto. Silakan ulangi.');
+          setVerifyingFace(false);
+          setActionLoading(false);
+          return;
+        }
+
+        const distance = faceapi.euclideanDistance(detection.descriptor, savedFaceDescriptor);
+        setVerifyingFace(false);
+
+        if (distance > 0.5) { // Threshold
+          setErrorMsg(`Wajah tidak cocok dengan data pendaftaran (Distance: ${distance.toFixed(2)}).`);
+          setActionLoading(false);
+          return;
+        }
+      }
+
       let res;
       if (cameraMode === 'in') {
         res = await checkInAction(currentUser.id, location.lat, location.lng, photoCaptured);
       } else {
-        res = await checkOutAction(currentUser.id, location.lat, location.lng, photoCaptured);
+        if (!activityNotes.trim()) {
+           setErrorMsg('Catatan kegiatan wajib diisi untuk absen keluar.');
+           setActionLoading(false);
+           return;
+        }
+        res = await checkOutAction(currentUser.id, location.lat, location.lng, photoCaptured, activityNotes);
       }
 
       if (res.success) {
@@ -222,13 +291,12 @@ export function AttendancePage() {
         await fetchAttendanceData();
       } else {
         setErrorMsg(res.error || `Gagal absen ${cameraMode === 'in' ? 'masuk' : 'pulang'}.`);
-        closeModal();
       }
     } catch (err: any) {
       setErrorMsg(err.message || 'Terjadi kesalahan saat absensi.');
-      closeModal();
     } finally {
       setActionLoading(false);
+      setVerifyingFace(false);
     }
   };
 
@@ -319,13 +387,32 @@ export function AttendancePage() {
                   <>
                     <video ref={videoRef} autoPlay playsInline muted className="w-full h-full object-cover" />
                     <canvas ref={canvasRef} className="hidden" />
-                    <div className="absolute bottom-4 left-0 right-0 flex justify-center">
+                    <div className="absolute bottom-4 left-0 right-0 flex justify-center gap-4">
                       <button 
                         onClick={capturePhoto}
                         className="bg-white text-gray-900 rounded-full w-14 h-14 flex items-center justify-center shadow-lg hover:scale-105 transition active:scale-95"
                       >
                         <Camera size={24} />
                       </button>
+                      
+                      {cameraMode === 'out' && (
+                        <>
+                          <input 
+                            type="file" 
+                            accept="image/*" 
+                            ref={fileInputRef} 
+                            onChange={handleFileUpload}
+                            className="hidden" 
+                          />
+                          <button 
+                            onClick={() => fileInputRef.current?.click()}
+                            className="bg-primary text-white rounded-full w-14 h-14 flex items-center justify-center shadow-lg hover:scale-105 transition active:scale-95"
+                            title="Pilih dari Galeri"
+                          >
+                            <Upload size={24} />
+                          </button>
+                        </>
+                      )}
                     </div>
                   </>
                 ) : (
@@ -333,7 +420,10 @@ export function AttendancePage() {
                     <img src={photoCaptured} alt="Captured" className="w-full h-full object-cover" />
                     <div className="absolute bottom-4 left-0 right-0 flex justify-center gap-3">
                       <button 
-                        onClick={() => setPhotoCaptured(null)}
+                         onClick={() => {
+                          setPhotoCaptured(null);
+                          startCamera();
+                         }}
                         className="bg-gray-800 text-white px-4 py-2 rounded-xl text-sm font-semibold shadow-lg hover:bg-gray-700 transition"
                       >
                         Ulangi Foto
@@ -342,20 +432,38 @@ export function AttendancePage() {
                   </>
                 )}
               </div>
+              
+              {cameraMode === 'in' && !savedFaceDescriptor && (
+                <div className="p-3 bg-red-50 text-red-600 rounded-xl text-sm flex items-center gap-2 font-medium">
+                  <AlertCircle size={16} /> Data wajah belum terdaftar. Silakan ke Pengaturan untuk registrasi.
+                </div>
+              )}
+              
+              {cameraMode === 'out' && photoCaptured && (
+                <div className="mt-2">
+                  <label className="text-xs font-bold text-gray-700 dark:text-gray-300 mb-1 block">Catatan Kegiatan Hari Ini <span className="text-red-500">*</span></label>
+                  <textarea
+                    value={activityNotes}
+                    onChange={(e) => setActivityNotes(e.target.value)}
+                    placeholder="Contoh: Menyelesaikan desain UI login page dan integrasi API..."
+                    className="w-full rounded-xl border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 p-3 text-sm focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none transition resize-none h-24 text-gray-900 dark:text-white"
+                  />
+                </div>
+              )}
             </div>
 
             <div className="p-5 border-t border-gray-100 dark:border-gray-800 bg-gray-50 dark:bg-[#1E293B]">
               <button
                 onClick={handleConfirmAttendance}
-                disabled={!location || !photoCaptured || actionLoading}
+                disabled={!location || !photoCaptured || actionLoading || verifyingFace || (cameraMode === 'in' && !savedFaceDescriptor)}
                 className={`w-full py-3 rounded-xl font-bold transition flex justify-center items-center gap-2 ${
-                  location && photoCaptured
+                  location && photoCaptured && (!cameraMode || savedFaceDescriptor || cameraMode === 'out')
                     ? 'bg-primary hover:bg-primary-hover text-white shadow-md'
                     : 'bg-gray-200 text-gray-400 dark:bg-gray-800 cursor-not-allowed'
                 }`}
               >
-                {actionLoading ? <RefreshCw size={18} className="animate-spin" /> : <CheckCircle2 size={18} />}
-                {actionLoading ? 'Memproses...' : 'Kirim Absensi'}
+                {(actionLoading || verifyingFace) ? <RefreshCw size={18} className="animate-spin" /> : <CheckCircle2 size={18} />}
+                {verifyingFace ? 'Memverifikasi Wajah...' : actionLoading ? 'Memproses...' : 'Kirim Absensi'}
               </button>
             </div>
           </div>

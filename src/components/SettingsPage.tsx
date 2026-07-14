@@ -2,7 +2,7 @@
 
 import React, { useState } from 'react';
 import { usePKL } from '../context/PKLContext';
-import { Moon, Globe, Info, LogOut, ChevronRight, User, Image as ImageIcon, Upload, Trash2, Loader2, Key, Check, Palette, Shield, Settings, ArrowLeft, HelpCircle, Clock, Camera, Mail, Briefcase, GraduationCap, Hash } from 'lucide-react';
+import { Moon, Globe, Info, LogOut, ChevronRight, User, Image as ImageIcon, Upload, Trash2, Loader2, Key, Check, Palette, Shield, Settings, ArrowLeft, HelpCircle, Clock, Camera, Mail, Briefcase, GraduationCap, Hash, X } from 'lucide-react';
 import { useTheme } from 'next-themes';
 import { uploadBoardBackgroundAction, updateBoardBackgroundAction } from '../app/actions/pkl';
 import { changePasswordAction, forgotPasswordAction } from '../app/actions/auth';
@@ -10,6 +10,8 @@ import { updateProfileInfoAction, uploadProfileImageAction } from '../app/action
 import { useLanguage } from '../context/LanguageContext';
 import { PARTICIPANT_ROLES } from '../lib/constants';
 import { Language } from '../i18n/translations';
+import dynamic from 'next/dynamic';
+const FaceRegistrationModal = dynamic(() => import('./FaceRegistrationModal').then(mod => mod.FaceRegistrationModal), { ssr: false });
 
 type WorkspaceTheme = 'ocean' | 'emerald' | 'purple' | 'orange' | 'red' | 'graphite' | 'midnight' | 'forest';
 
@@ -34,6 +36,17 @@ export const SettingsPage: React.FC<SettingsPageProps> = ({
   // Layout States
   const [activeTab, setActiveTab] = useState<'profile' | 'security' | 'appearance' | 'preferences' | 'about'>('profile');
   const [selectedMobileTab, setSelectedMobileTab] = useState<'profile' | 'security' | 'appearance' | 'preferences' | 'about' | null>(null);
+
+  // Info Modal States
+  const [isInfoModalOpen, setIsInfoModalOpen] = useState(false);
+  const [infoModalTitle, setInfoModalTitle] = useState('');
+  const [infoModalContent, setInfoModalContent] = useState('');
+
+  const openInfoModal = (title: string, content: string) => {
+    setInfoModalTitle(title);
+    setInfoModalContent(content);
+    setIsInfoModalOpen(true);
+  };
 
   React.useEffect(() => {
     // eslint-disable-next-line react-hooks/set-state-in-effect
@@ -243,6 +256,8 @@ export const SettingsPage: React.FC<SettingsPageProps> = ({
       }
     }
   };
+
+  const [isFaceRegistrationOpen, setIsFaceRegistrationOpen] = useState(false);
 
   // Scroll to active section if specified
   React.useEffect(() => {
@@ -591,6 +606,25 @@ export const SettingsPage: React.FC<SettingsPageProps> = ({
           </button>
         </div>
 
+        {currentUser?.role && PARTICIPANT_ROLES.includes(currentUser.role) && (
+          <div className="mt-8 pt-6 border-t border-slate-100 dark:border-gray-800">
+            <h3 className="text-lg font-black text-slate-800 dark:text-white mb-4 flex items-center gap-2">
+              <Camera size={20} className="text-primary" /> Registrasi Wajah
+            </h3>
+            <p className="text-xs text-slate-500 dark:text-gray-400 font-medium mb-4">
+              Daftarkan data wajah Anda untuk dapat melakukan absen masuk menggunakan Face Recognition.
+            </p>
+            <button
+              type="button"
+              onClick={() => setIsFaceRegistrationOpen(true)}
+              className="px-6 py-2.5 bg-primary hover:bg-primary-hover text-white rounded-xl text-sm font-bold transition-all shadow-sm flex items-center gap-2"
+            >
+              <Camera size={18} />
+              Mulai Registrasi Wajah
+            </button>
+          </div>
+        )}
+
         <div className="mt-8 pt-6 border-t border-red-100 dark:border-red-900/30">
           <h3 className="text-sm font-bold text-red-600 dark:text-red-400 mb-2">{t('dangerZone')}</h3>
           <button 
@@ -837,7 +871,7 @@ export const SettingsPage: React.FC<SettingsPageProps> = ({
 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-2">
           <button 
-            onClick={() => alert(t('privacyText'))}
+            onClick={() => openInfoModal(t('privacyPolicy'), t('privacyText'))}
             className="flex items-center justify-between p-4 rounded-xl border border-slate-200 dark:border-gray-700 hover:bg-slate-50 dark:hover:bg-gray-800 transition-colors group"
           >
             <div className="flex items-center gap-3">
@@ -848,7 +882,7 @@ export const SettingsPage: React.FC<SettingsPageProps> = ({
           </button>
 
           <button 
-            onClick={() => alert("{t('helpCenterDesc')}")}
+            onClick={() => openInfoModal(t('helpCenter'), t('helpCenterDesc'))}
             className="flex items-center justify-between p-4 rounded-xl border border-slate-200 dark:border-gray-700 hover:bg-slate-50 dark:hover:bg-gray-800 transition-colors group"
           >
             <div className="flex items-center gap-3">
@@ -961,6 +995,43 @@ export const SettingsPage: React.FC<SettingsPageProps> = ({
           </div>
         )}
       </div>
+
+      {/* Information Modal */}
+      {isInfoModalOpen && (
+        <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm animate-in fade-in duration-200">
+          <div className="bg-white dark:bg-[#1E293B] rounded-2xl shadow-xl border border-slate-200 dark:border-gray-700 w-full max-w-md overflow-hidden animate-in zoom-in-95 duration-200">
+            <div className="flex items-center justify-between p-4 border-b border-slate-100 dark:border-gray-800">
+              <h3 className="font-black text-lg text-slate-800 dark:text-white">{infoModalTitle}</h3>
+              <button 
+                onClick={() => setIsInfoModalOpen(false)}
+                className="text-slate-400 hover:text-slate-600 dark:hover:text-gray-300 transition-colors p-1"
+              >
+                <X size={20} />
+              </button>
+            </div>
+            <div className="p-6">
+              <p className="text-sm text-slate-600 dark:text-gray-300 whitespace-pre-line leading-relaxed font-medium">
+                {infoModalContent}
+              </p>
+            </div>
+            <div className="p-4 border-t border-slate-100 dark:border-gray-800 flex justify-end">
+              <button 
+                onClick={() => setIsInfoModalOpen(false)}
+                className="px-6 py-2 bg-primary hover:bg-primary-hover text-white rounded-xl text-sm font-bold shadow-sm transition-all"
+              >
+                Tutup
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {isFaceRegistrationOpen && (
+        <FaceRegistrationModal
+          onClose={() => setIsFaceRegistrationOpen(false)}
+          onSuccess={() => setIsFaceRegistrationOpen(false)}
+        />
+      )}
 
     </div>
   );

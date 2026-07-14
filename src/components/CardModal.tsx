@@ -958,7 +958,7 @@ export const CardModal: React.FC<CardModalProps> = ({ card, onClose, initialEdit
                     <div key={c.id} className="flex justify-between items-center bg-slate-50 dark:bg-gray-800 p-3 rounded-xl border border-slate-200 dark:border-gray-700">
                       <div className="flex items-center gap-3">
                         <div className="w-8 h-8 bg-primary/20 text-primary flex items-center justify-center rounded-full font-bold uppercase">
-                          {c.name.charAt(0)}
+                          {(c.name || '?').charAt(0)}
                         </div>
                         <div>
                           <p className="font-medium text-sm text-slate-700 dark:text-white">{c.name}</p>

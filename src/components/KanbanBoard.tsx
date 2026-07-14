@@ -424,7 +424,7 @@ export const KanbanBoard: React.FC<KanbanBoardProps> = ({ onOpenCard }) => {
                 <label className="text-[11px] text-[#64748B] dark:text-gray-300 font-semibold uppercase tracking-wider">{t('activityTitle')}</label>
                 <input
                   type="text"
-                  placeholder="..."
+                  placeholder={t('activityTitlePlaceholder') || 'Judul Kegiatan'}
                   required
                   value={newTitle}
                   onChange={(e) => setNewTitle(e.target.value)}
