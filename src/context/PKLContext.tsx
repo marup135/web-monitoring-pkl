@@ -105,6 +105,9 @@ export interface StudentMetric {
   completedTasks: number;
   hoursLogged: number;
   completionPercent: number;
+  attendanceStatus?: string;
+  checkIn?: string | null;
+  checkOut?: string | null;
 }
 
 interface PKLContextProps {
@@ -229,8 +232,8 @@ export const PKLProvider: React.FC<{ children: React.ReactNode }> = ({ children 
         const dbState = await getPKLState();
         setState(dbState);
       } else {
-        const activeClassFilter = user.role === 'pembimbing_internal' ? (classId || undefined) : undefined;
-        const activeCompanyFilter = user.role === 'pembimbing_eksternal' ? (companyId || undefined) : undefined;
+        const activeClassFilter = (user.role === 'pembimbing_internal' || user.role === 'INTERNAL_MENTOR') ? (classId || undefined) : undefined;
+        const activeCompanyFilter = (user.role === 'pembimbing_eksternal' || user.role === 'EXTERNAL_MENTOR') ? (companyId || undefined) : undefined;
         const list = await getStudentsAction(activeClassFilter, activeCompanyFilter);
         setStudentsList(list);
 
@@ -284,11 +287,11 @@ export const PKLProvider: React.FC<{ children: React.ReactNode }> = ({ children 
           let initialClassId = null;
           let initialCompanyId = null;
           
-          if (user.role === 'pembimbing_internal' && user.classes && user.classes.length > 0) {
+          if ((user.role === 'pembimbing_internal' || user.role === 'INTERNAL_MENTOR') && user.classes && user.classes.length > 0) {
             initialClassId = user.classes[0].id;
             setSelectedClassIdState(initialClassId);
           }
-          if (user.role === 'pembimbing_eksternal' && user.companies && user.companies.length > 0) {
+          if ((user.role === 'pembimbing_eksternal' || user.role === 'EXTERNAL_MENTOR') && user.companies && user.companies.length > 0) {
             initialCompanyId = user.companies[0].id;
             setSelectedCompanyIdState(initialCompanyId);
           }

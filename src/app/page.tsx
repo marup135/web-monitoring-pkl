@@ -22,6 +22,7 @@ const AttendancePage = dynamic(() => import('../components/AttendancePage').then
 import { NotificationBell } from '../components/NotificationBell';
 import { LandingPage } from '../components/LandingPage';
 import { Footer } from '../components/Footer';
+import { AttendanceReminder } from '../components/AttendanceReminder';
 
 function DashboardContent() {
   const { t } = useLanguage();
@@ -112,6 +113,7 @@ function DashboardContent() {
   // Monitoring student logbook OR Normal student view
   return (
     <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4 md:py-8 flex-1 w-full relative text-[#0F172A] dark:text-gray-200 pb-28 md:pb-8">
+      <AttendanceReminder onGoToAttendance={() => { setActiveTab('attendance'); setIsSettingsActive(false); }} />
       {/* Mobile Sticky Navbar */}
       <div className="sticky top-0 z-40 bg-white/95 dark:bg-gray-900/95 backdrop-blur-sm border-b border-slate-200 dark:border-gray-700 flex md:hidden items-center justify-between px-4 h-14 -mx-4 sm:-mx-6 mb-4 print:hidden shadow-sm">
         <button

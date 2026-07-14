@@ -39,8 +39,6 @@ export async function GET(req: Request) {
     const errors: { studentId: string; error: string | undefined }[] = [];
 
     for (const student of students) {
-      if (!student.email) continue;
-
       // Anti-Spam Check: Pastikan belum dikirim hari ini
       if (student.lastAfternoonReminder === today) {
         continue;
@@ -78,36 +76,40 @@ export async function GET(req: Request) {
         const isMissingCheckOut = !attendance.checkOut;
 
         if (isMissingCheckOut || isMissingLogbook) {
-          console.log(`[CRON] Sending email sore to: ${student.email}`);
-          const res = await sendAttendanceReminder(student.email, student.name, 'sore');
-          if (res.success) {
-            console.log(`[CRON] Email Sent successfully to: ${student.email}`);
-            sentCount++;
-            // Update lastAfternoonReminder
-            await prisma.user.update({
-              where: { id: student.id },
-              data: { lastAfternoonReminder: today }
-            });
+          // Buat notifikasi in-app
+          if (isMissingLogbook) {
+            await createNotification(
+              student.id,
+              'Pengingat Logbook',
+              'Logbook harian Anda belum diisi hari ini.',
+              'WARNING'
+            );
+          }
+          if (isMissingCheckOut) {
+            await createNotification(
+              student.id,
+              'Pengingat Absensi',
+              'Jangan lupa check-out (absen pulang) hari ini.',
+              'WARNING'
+            );
+          }
 
-            if (isMissingLogbook) {
-              await createNotification(
-                student.id,
-                'Pengingat Logbook',
-                'Logbook harian Anda belum diisi hari ini.',
-                'WARNING'
-              );
+          // Update lastAfternoonReminder
+          await prisma.user.update({
+            where: { id: student.id },
+            data: { lastAfternoonReminder: today }
+          });
+
+          if (student.email) {
+            console.log(`[CRON] Sending email sore to: ${student.email}`);
+            const res = await sendAttendanceReminder(student.email, student.name, 'sore');
+            if (res.success) {
+              console.log(`[CRON] Email Sent successfully to: ${student.email}`);
+              sentCount++;
+            } else {
+              console.error(`[CRON] Email Failed to send to: ${student.email}, error: ${res.error}`);
+              errors.push({ studentId: student.id, error: res.error });
             }
-            if (isMissingCheckOut) {
-              await createNotification(
-                student.id,
-                'Pengingat Absensi',
-                'Jangan lupa check-out (absen pulang) hari ini.',
-                'WARNING'
-              );
-            }
-          } else {
-            console.error(`[CRON] Email Failed to send to: ${student.email}, error: ${res.error}`);
-            errors.push({ studentId: student.id, error: res.error });
           }
         }
       }

@@ -1,6 +1,57 @@
 'use server';
 
 import prisma from '@/lib/prisma';
+import { createNotification } from './notifications';
+
+// Helper function to notify mentors
+async function notifyMentorsOnAttendance(userId: string, type: 'masuk' | 'pulang', time: string) {
+  try {
+    const student = await prisma.user.findUnique({
+      where: { id: userId },
+      select: { name: true, classId: true, companyId: true }
+    });
+    
+    if (!student) return;
+
+    // Notify internal mentors (advisors for the class)
+    if (student.classId) {
+      const classData = await prisma.kelas.findUnique({
+        where: { id: student.classId },
+        include: { advisors: true }
+      });
+      if (classData && classData.advisors) {
+        for (const advisor of classData.advisors) {
+          await createNotification(
+            advisor.id,
+            `Absensi ${type === 'masuk' ? 'Masuk' : 'Pulang'}`,
+            `Siswa ${student.name} telah melakukan absensi ${type} pada pukul ${time}.`,
+            'INFO'
+          );
+        }
+      }
+    }
+
+    // Notify external mentors (mentors for the company)
+    if (student.companyId) {
+      const companyData = await prisma.perusahaan.findUnique({
+        where: { id: student.companyId },
+        include: { mentors: true }
+      });
+      if (companyData && companyData.mentors) {
+        for (const mentor of companyData.mentors) {
+          await createNotification(
+            mentor.id,
+            `Absensi ${type === 'masuk' ? 'Masuk' : 'Pulang'}`,
+            `Siswa ${student.name} telah melakukan absensi ${type} pada pukul ${time}.`,
+            'INFO'
+          );
+        }
+      }
+    }
+  } catch (error) {
+    console.error('Error notifying mentors:', error);
+  }
+}
 
 // Helper to get Asia/Jakarta time elements
 export async function getServerTimeAction() {
@@ -124,6 +175,9 @@ export async function checkInAction(userId: string, lat?: number, lng?: number, 
       }
     });
 
+    // Notify mentors
+    await notifyMentorsOnAttendance(userId, 'masuk', serverTime.timeString);
+
     return { success: true, data: attendance };
   } catch (error: any) {
     console.error('Error in checkInAction:', error);
@@ -181,6 +235,9 @@ export async function checkOutAction(userId: string, lat?: number, lng?: number,
         status: 'COMPLETED'
       }
     });
+
+    // Notify mentors
+    await notifyMentorsOnAttendance(userId, 'pulang', serverTime.timeString);
 
     return { success: true, data: attendance };
   } catch (error: any) {

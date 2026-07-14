@@ -1041,11 +1041,7 @@ export async function getStudentsAction(classId?: string, companyId?: string) {
         classId: true,
         companyId: true,
         nisn: true,
-        class: {
-          select: {
-            name: true
-          }
-        }
+        class: { select: { name: true } }, attendances: { where: { date: new Date().toLocaleDateString('en-CA', { timeZone: 'Asia/Jakarta' }) }, select: { status: true, checkIn: true, checkOut: true } }
       },
       orderBy: { name: 'asc' }
     });
@@ -1059,7 +1055,7 @@ export async function getStudentsAction(classId?: string, companyId?: string) {
 
         const totalHours = cards.reduce((sum, c) => sum + calculateDuration(c.startTime, c.endTime), 0);
         const completedCount = cards.filter(c => c.columnId === 'selesai').length;
-        const totalCount = cards.length;
+        const totalCount = cards.length; const todayAttendance = student.attendances?.[0];
 
         return {
           id: student.id,
@@ -1072,7 +1068,7 @@ export async function getStudentsAction(classId?: string, companyId?: string) {
           totalTasks: totalCount,
           completedTasks: completedCount,
           hoursLogged: Math.round(totalHours),
-          completionPercent: totalCount > 0 ? Math.round((completedCount / totalCount) * 100) : 0
+          completionPercent: totalCount > 0 ? Math.round((completedCount / totalCount) * 100) : 0, attendanceStatus: todayAttendance?.status || 'NOT_CHECKED_IN', checkIn: todayAttendance?.checkIn || null, checkOut: todayAttendance?.checkOut || null
         };
       })
     );

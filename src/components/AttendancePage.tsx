@@ -25,7 +25,7 @@ interface AttendanceRecord {
 }
 
 export function AttendancePage() {
-  const { currentUser } = usePKL();
+  const { currentUser, selectedStudentId } = usePKL();
   const { t } = useLanguage();
   const [loading, setLoading] = useState(true);
   const [actionLoading, setActionLoading] = useState(false);
@@ -41,6 +41,17 @@ export function AttendancePage() {
   const [clientTimeOffset, setClientTimeOffset] = useState<number>(0); // ms offset
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
   const [successMsg, setSuccessMsg] = useState<string | null>(null);
+  
+  // Modal for Viewing Proof
+  const [proofModalData, setProofModalData] = useState<{
+    date: string;
+    checkInPhoto?: string | null;
+    checkInLat?: number | null;
+    checkInLng?: number | null;
+    checkOutPhoto?: string | null;
+    checkOutLat?: number | null;
+    checkOutLng?: number | null;
+  } | null>(null);
 
   // --- Camera & Location States ---
   const [isCameraModalOpen, setIsCameraModalOpen] = useState(false);
@@ -60,7 +71,8 @@ export function AttendancePage() {
   const [savedFaceDescriptor, setSavedFaceDescriptor] = useState<Float32Array | null>(null);
 
   const fetchAttendanceData = async () => {
-    if (!currentUser) return;
+    const targetUserId = selectedStudentId || currentUser?.id;
+    if (!targetUserId) return;
     try {
       setLoading(true);
       setErrorMsg(null);
@@ -75,15 +87,28 @@ export function AttendancePage() {
       setClientTimeOffset(serverMs - clientMs);
 
       // Get today's attendance
-      const todayRes = await getAttendanceTodayAction(currentUser.id);
+      const todayRes = await getAttendanceTodayAction(targetUserId);
       if (todayRes.success) {
         setTodayAttendance(todayRes.data as any);
       }
 
       // Get history
-      const historyRes = await getAttendanceHistoryAction(currentUser.id);
+      const historyRes = await getAttendanceHistoryAction(targetUserId);
       if (historyRes.success) {
         setHistory(historyRes.data as any);
+      }
+
+      // Get face descriptor
+      const faceRes = await getFaceDescriptorAction(targetUserId);
+      if (faceRes.success && faceRes.data) {
+        try {
+          const parsedArr = JSON.parse(faceRes.data);
+          setSavedFaceDescriptor(new Float32Array(parsedArr));
+        } catch (e) {
+          console.error("Failed to parse face descriptor", e);
+        }
+      } else {
+        setSavedFaceDescriptor(null);
       }
     } catch (error: any) {
       console.error(error);
@@ -107,7 +132,7 @@ export function AttendancePage() {
       }
     };
     loadModels();
-  }, [currentUser]);
+  }, [currentUser, selectedStudentId]);
 
   // Clock Ticker based on Server Time offset
   const [currentTimeString, setCurrentTimeString] = useState<string>('--:--:--');
@@ -313,7 +338,7 @@ export function AttendancePage() {
     }
   };
 
-  if (!PARTICIPANT_ROLES.includes(currentUser?.role || '')) {
+  if (!PARTICIPANT_ROLES.includes(currentUser?.role || '') && !selectedStudentId) {
     return (
       <div className="flex flex-col items-center justify-center p-8 bg-white dark:bg-[#243447] border border-[#E2E8F0] dark:border-gray-700 rounded-3xl shadow-sm text-center min-h-[300px]">
         <AlertCircle className="w-12 h-12 text-[#64748B] mb-4" />
@@ -518,7 +543,8 @@ export function AttendancePage() {
         </div>
 
         {/* Buttons Action Check-in & Check-out */}
-        <div className="lg:col-span-2 bg-white dark:bg-[#243447] border border-[#E2E8F0] dark:border-gray-700 rounded-3xl p-6 shadow-sm flex flex-col justify-between">
+        {!selectedStudentId && (
+          <div className="lg:col-span-2 bg-white dark:bg-[#243447] border border-[#E2E8F0] dark:border-gray-700 rounded-3xl p-6 shadow-sm flex flex-col justify-between">
           <div>
             <h3 className="text-base font-bold text-[#0F172A] dark:text-white">{t("attendanceDaily")}</h3>
             <p className="text-xs text-[#64748B] dark:text-gray-300 mt-1">
@@ -632,6 +658,7 @@ export function AttendancePage() {
             </p>
           </div>
         </div>
+        )}
 
       </div>
 
@@ -671,9 +698,12 @@ export function AttendancePage() {
                       <td className="p-3.5">{item.checkOut ? `${item.checkOut} WIB` : '-'}</td>
                       <td className="p-3.5">
                         {item.checkInPhoto || item.checkOutPhoto ? (
-                          <span className="text-xs text-primary font-medium flex items-center gap-1">
-                            <CheckCircle2 size={12}/> Terekam
-                          </span>
+                          <button 
+                            onClick={() => setProofModalData(item)}
+                            className="text-xs text-primary font-medium flex items-center gap-1 hover:underline cursor-pointer"
+                          >
+                            <CheckCircle2 size={12}/> Terekam (Lihat)
+                          </button>
                         ) : (
                           <span className="text-xs text-gray-400 italic">-</span>
                         )}
@@ -691,6 +721,75 @@ export function AttendancePage() {
           </div>
         )}
       </div>
+
+      {/* Attendance Proof Modal */}
+      {proofModalData && (
+        <div className="fixed inset-0 z-[9999] bg-black/60 backdrop-blur-sm flex items-center justify-center p-4">
+          <div className="bg-white dark:bg-[#1E293B] rounded-3xl w-full max-w-2xl shadow-2xl overflow-hidden flex flex-col">
+            <div className="flex justify-between items-center p-5 border-b border-gray-100 dark:border-gray-800">
+              <h3 className="font-bold text-gray-800 dark:text-white">
+                Bukti Absensi - {proofModalData.date}
+              </h3>
+              <button onClick={() => setProofModalData(null)} className="p-1.5 rounded-full hover:bg-gray-100 dark:hover:bg-gray-700 text-gray-500 transition">
+                <X size={18} />
+              </button>
+            </div>
+            <div className="p-5 grid grid-cols-1 md:grid-cols-2 gap-6 overflow-y-auto max-h-[80vh]">
+              {/* Check-In Info */}
+              <div className="flex flex-col gap-3">
+                <h4 className="font-bold text-sm text-gray-700 dark:text-gray-300 border-b border-gray-200 dark:border-gray-700 pb-2">Absen Masuk</h4>
+                {proofModalData.checkInPhoto ? (
+                  <>
+                    <img src={proofModalData.checkInPhoto} alt="Bukti Masuk" className="w-full h-48 object-cover rounded-xl border border-gray-200 dark:border-gray-700" />
+                    {proofModalData.checkInLat && proofModalData.checkInLng && (
+                      <a 
+                        href={`https://www.google.com/maps/search/?api=1&query=${proofModalData.checkInLat},${proofModalData.checkInLng}`} 
+                        target="_blank" 
+                        rel="noreferrer"
+                        className="text-xs flex items-center gap-1.5 text-blue-600 dark:text-blue-400 hover:underline mt-1 bg-blue-50 dark:bg-blue-900/30 p-2 rounded-lg"
+                      >
+                        <MapPin size={14} /> Lihat Lokasi di Peta
+                      </a>
+                    )}
+                  </>
+                ) : (
+                  <p className="text-xs text-gray-400 italic">Tidak ada data bukti absen masuk.</p>
+                )}
+              </div>
+
+              {/* Check-Out Info */}
+              <div className="flex flex-col gap-3">
+                <h4 className="font-bold text-sm text-gray-700 dark:text-gray-300 border-b border-gray-200 dark:border-gray-700 pb-2">Absen Pulang</h4>
+                {proofModalData.checkOutPhoto ? (
+                  <>
+                    <img src={proofModalData.checkOutPhoto} alt="Bukti Pulang" className="w-full h-48 object-cover rounded-xl border border-gray-200 dark:border-gray-700" />
+                    {proofModalData.checkOutLat && proofModalData.checkOutLng && (
+                      <a 
+                        href={`https://www.google.com/maps/search/?api=1&query=${proofModalData.checkOutLat},${proofModalData.checkOutLng}`} 
+                        target="_blank" 
+                        rel="noreferrer"
+                        className="text-xs flex items-center gap-1.5 text-blue-600 dark:text-blue-400 hover:underline mt-1 bg-blue-50 dark:bg-blue-900/30 p-2 rounded-lg"
+                      >
+                        <MapPin size={14} /> Lihat Lokasi di Peta
+                      </a>
+                    )}
+                  </>
+                ) : (
+                  <p className="text-xs text-gray-400 italic">Tidak ada data bukti absen pulang.</p>
+                )}
+              </div>
+            </div>
+            <div className="p-4 border-t border-gray-100 dark:border-gray-800 bg-gray-50 dark:bg-[#1E293B] flex justify-end">
+              <button 
+                onClick={() => setProofModalData(null)}
+                className="px-5 py-2 bg-gray-200 dark:bg-gray-700 hover:bg-gray-300 dark:hover:bg-gray-600 text-gray-800 dark:text-gray-200 text-sm font-semibold rounded-xl transition"
+              >
+                Tutup
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
 
     </div>
   );

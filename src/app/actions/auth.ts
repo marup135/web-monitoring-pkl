@@ -23,6 +23,7 @@ export async function registerAction(
   companyEmail?: string,
   institutionCode?: string
 ) {
+  console.log(">>> REGISTER ACTION CALLED:", { username, email, role });
   try {
     // Admin cannot register via the form
     if (role === 'SUPER_ADMIN' || role === 'INSTITUTION_ADMIN') {
@@ -74,7 +75,7 @@ export async function registerAction(
     }
 
     const cleanEmail = email.trim().toLowerCase();
-    const emailRegex = /^[^s@]+@[^s@]+.[^s@]+$/;
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
     if (!emailRegex.test(cleanEmail)) {
       return { success: false, error: 'Format email tidak valid.' };
     }

@@ -36,10 +36,14 @@ interface ErrorState {
   field?: 'username' | 'password' | 'confirmPassword';
 }
 
-export const AuthPage: React.FC = () => {
+interface AuthPageProps {
+  initialView?: 'login' | 'register' | 'forgot-password';
+}
+
+export const AuthPage: React.FC<AuthPageProps> = ({ initialView = 'login' }) => {
   const { login, register, currentUser } = usePKL();
 
-  const [view, setView] = useState<'login' | 'register' | 'forgot-password'>('login');
+  const [view, setView] = useState<'login' | 'register' | 'forgot-password'>(initialView);
   const isLogin = view === 'login';
   const isRegister = view === 'register';
   const isForgotPassword = view === 'forgot-password';

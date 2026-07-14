@@ -3,9 +3,10 @@ import Link from 'next/link';
 
 interface LandingPageProps {
   onLoginClick: () => void;
+  onRegisterClick?: () => void;
 }
 
-export const LandingPage: React.FC<LandingPageProps> = ({ onLoginClick }) => {
+export const LandingPage: React.FC<LandingPageProps> = ({ onLoginClick, onRegisterClick }) => {
   return (
     <div className="min-h-screen bg-gradient-to-br from-[#F0F4FF] via-[#F8FAFC] to-[#EFF6FF] font-sans text-slate-800 dark:from-gray-900 dark:via-gray-900 dark:to-gray-800 dark:text-gray-200 relative overflow-hidden">
       {/* Decorative blobs */}
@@ -36,12 +37,12 @@ export const LandingPage: React.FC<LandingPageProps> = ({ onLoginClick }) => {
           >
             Masuk
           </button>
-          <Link 
-            href="/register-admin"
-            className="hidden sm:flex px-5 py-2.5 text-sm font-bold bg-blue-600 hover:bg-blue-700 text-white rounded-xl transition-colors shadow-md shadow-blue-500/20"
+          <button 
+            onClick={onRegisterClick}
+            className="hidden sm:flex px-5 py-2.5 text-sm font-bold bg-blue-600 hover:bg-blue-700 text-white rounded-xl transition-colors shadow-md shadow-blue-500/20 cursor-pointer"
           >
-            Daftar Institusi
-          </Link>
+            Daftar Siswa
+          </button>
         </div>
       </nav>
 

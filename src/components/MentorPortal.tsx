@@ -231,6 +231,7 @@ export const MentorPortal: React.FC<MentorPortalProps> = ({ onPantau }) => {
                     <th className="py-2.5 px-2">{t('studentNameCol')}</th>
                     <th className="py-2.5 px-2">{t('studentClass')}</th>
                     <th className="py-2.5 px-2 text-center">{t('studentCompletion')}</th>
+                    <th className="py-2.5 px-2 text-center">Kehadiran Hari Ini</th>
                     <th className="py-2.5 px-2 text-center">{t('studentActions')}</th>
                   </tr>
                 </thead>
@@ -248,6 +249,22 @@ export const MentorPortal: React.FC<MentorPortalProps> = ({ onPantau }) => {
                             <div style={{ width: `${student.completionPercent}%` }} className="h-full bg-[#22C55E] rounded-full" />
                           </div>
                           <span className="font-bold text-[#22C55E]">{student.completionPercent}%</span>
+                        </div>
+                      </td>
+                      <td className="py-3 px-2 text-center">
+                        <div className="flex flex-col items-center justify-center gap-1">
+                          {student.attendanceStatus === 'CHECKED_IN' ? (
+                            <span className="bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-400 px-2 py-1 rounded-md text-[10px] font-bold">Masuk</span>
+                          ) : student.attendanceStatus === 'COMPLETED' ? (
+                            <span className="bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-400 px-2 py-1 rounded-md text-[10px] font-bold">Selesai</span>
+                          ) : student.attendanceStatus === 'ABSENT' ? (
+                            <span className="bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-400 px-2 py-1 rounded-md text-[10px] font-bold">Alpha</span>
+                          ) : (
+                            <span className="bg-slate-100 text-slate-800 dark:bg-gray-800 dark:text-gray-400 px-2 py-1 rounded-md text-[10px] font-bold">Belum Absen</span>
+                          )}
+                          {student.checkIn && (
+                            <span className="text-[9px] text-slate-500 dark:text-gray-400">{student.checkIn} {student.checkOut ? `- ${student.checkOut}` : ''}</span>
+                          )}
                         </div>
                       </td>
                       <td className="py-3 px-2 text-center">

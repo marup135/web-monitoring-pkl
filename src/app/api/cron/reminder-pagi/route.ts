@@ -42,8 +42,6 @@ export async function GET(req: Request) {
     const errors: { studentId: string; error: string | undefined }[] = [];
 
     for (const student of students) {
-      if (!student.email) continue; // Skip jika tidak ada email
-
       // Anti-Spam Check: Pastikan belum dikirim hari ini
       if (student.lastMorningReminder === today) {
         continue;
@@ -61,26 +59,30 @@ export async function GET(req: Request) {
 
       // Jika belum ada record attendance (belum absen masuk)
       if (!attendance || !attendance.checkIn) {
-        console.log(`[CRON] Sending email pagi to: ${student.email}`);
-        const res = await sendAttendanceReminder(student.email, student.name, 'pagi');
-        if (res.success) {
-          console.log(`[CRON] Email Sent successfully to: ${student.email}`);
-          sentCount++;
-          // Update lastMorningReminder
-          await prisma.user.update({
-            where: { id: student.id },
-            data: { lastMorningReminder: today }
-          });
-          
-          await createNotification(
-            student.id,
-            'Pengingat Absensi',
-            'Jangan lupa check-in sebelum pukul 08.00 hari ini.',
-            'WARNING'
-          );
-        } else {
-          console.error(`[CRON] Email Failed to send to: ${student.email}, error: ${res.error}`);
-          errors.push({ studentId: student.id, error: res.error });
+        // SELALU buat notifikasi in-app
+        await createNotification(
+          student.id,
+          'Pengingat Absensi',
+          'Waktunya absen! Jangan lupa check-in sebelum pukul 08.00 hari ini.',
+          'WARNING'
+        );
+
+        // Update lastMorningReminder
+        await prisma.user.update({
+          where: { id: student.id },
+          data: { lastMorningReminder: today }
+        });
+
+        if (student.email) {
+          console.log(`[CRON] Sending email pagi to: ${student.email}`);
+          const res = await sendAttendanceReminder(student.email, student.name, 'pagi');
+          if (res.success) {
+            console.log(`[CRON] Email Sent successfully to: ${student.email}`);
+            sentCount++;
+          } else {
+            console.error(`[CRON] Email Failed to send to: ${student.email}, error: ${res.error}`);
+            errors.push({ studentId: student.id, error: res.error });
+          }
         }
       }
     }
