@@ -42,6 +42,7 @@ export const translations = {
     
     // Modals
     activityTitle: "Judul Kegiatan",
+    activityTitlePlaceholder: "Masukkan judul kegiatan...",
     activityDesc: "Deskripsi",
     category: "Kategori",
     dueDate: "Tenggat Waktu",
@@ -444,6 +445,7 @@ export const translations = {
     
     // Modals
     activityTitle: "Activity Title",
+    activityTitlePlaceholder: "Enter activity title...",
     activityDesc: "Description",
     category: "Category",
     dueDate: "Due Date",
