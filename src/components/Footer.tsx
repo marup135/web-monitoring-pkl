@@ -20,10 +20,10 @@ export const Footer: React.FC = () => {
         <div>
           <h4 className="font-bold text-slate-800 dark:text-white mb-4">Navigasi</h4>
           <ul className="flex flex-col gap-3 text-sm text-slate-600 dark:text-gray-400">
-            <li><Link href="/#beranda" className="hover:text-blue-600 dark:hover:text-blue-400 transition-colors">Beranda</Link></li>
+            <li><Link href="/" className="hover:text-blue-600 dark:hover:text-blue-400 transition-colors">Beranda</Link></li>
             <li><Link href="/#fitur-utama" className="hover:text-blue-600 dark:hover:text-blue-400 transition-colors">Fitur Utama</Link></li>
-            <li><Link href="/#beranda" className="hover:text-blue-600 dark:hover:text-blue-400 transition-colors">Panduan Penggunaan</Link></li>
-            <li><Link href="/#beranda" className="hover:text-blue-600 dark:hover:text-blue-400 transition-colors">Tentang Kami</Link></li>
+            <li><Link href="/#panduan" className="hover:text-blue-600 dark:hover:text-blue-400 transition-colors">Panduan Penggunaan</Link></li>
+            <li><Link href="/#tentang" className="hover:text-blue-600 dark:hover:text-blue-400 transition-colors">Tentang Kami</Link></li>
           </ul>
         </div>
 
@@ -41,7 +41,7 @@ export const Footer: React.FC = () => {
                 Masuk Portal
               </Link>
             </li>
-            <li><Link href="/#beranda" className="hover:text-blue-600 dark:hover:text-blue-400 transition-colors">Pusat Bantuan (FAQ)</Link></li>
+            <li><a href="mailto:smkn1bojong@gmail.com?subject=Bantuan%20Aplikasi" className="hover:text-blue-600 dark:hover:text-blue-400 transition-colors">Pusat Bantuan (FAQ)</a></li>
           </ul>
         </div>
 
@@ -77,8 +77,8 @@ export const Footer: React.FC = () => {
           &copy; {new Date().getFullYear()} NeboTrack. Seluruh hak cipta dilindungi.
         </p>
         <div className="flex gap-4">
-          <Link href="/#beranda" className="text-xs text-slate-500 hover:text-blue-600 dark:hover:text-blue-400">Syarat & Ketentuan</Link>
-          <Link href="/#beranda" className="text-xs text-slate-500 hover:text-blue-600 dark:hover:text-blue-400">Kebijakan Privasi</Link>
+          <Link href="/#syarat" className="text-xs text-slate-500 hover:text-blue-600 dark:hover:text-blue-400">Syarat & Ketentuan</Link>
+          <Link href="/#privasi" className="text-xs text-slate-500 hover:text-blue-600 dark:hover:text-blue-400">Kebijakan Privasi</Link>
         </div>
       </div>
     </footer>

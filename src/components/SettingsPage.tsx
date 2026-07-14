@@ -40,9 +40,9 @@ export const SettingsPage: React.FC<SettingsPageProps> = ({
   // Info Modal States
   const [isInfoModalOpen, setIsInfoModalOpen] = useState(false);
   const [infoModalTitle, setInfoModalTitle] = useState('');
-  const [infoModalContent, setInfoModalContent] = useState('');
+  const [infoModalContent, setInfoModalContent] = useState<React.ReactNode>('');
 
-  const openInfoModal = (title: string, content: string) => {
+  const openInfoModal = (title: string, content: React.ReactNode) => {
     setInfoModalTitle(title);
     setInfoModalContent(content);
     setIsInfoModalOpen(true);
@@ -871,7 +871,24 @@ export const SettingsPage: React.FC<SettingsPageProps> = ({
 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-2">
           <button 
-            onClick={() => openInfoModal(t('privacyPolicy'), t('privacyText'))}
+            onClick={() => openInfoModal(t('privacyPolicy'), (
+              <div className="flex flex-col gap-4">
+                <div className="bg-primary/10 p-4 rounded-xl flex items-center justify-center">
+                  <Shield size={48} className="text-primary" />
+                </div>
+                <div className="text-sm text-slate-600 dark:text-gray-300 leading-relaxed space-y-3">
+                  <p>
+                    <strong>Keamanan Data:</strong> Data Anda (termasuk informasi profil, absensi, dan logbook) disimpan dengan standar keamanan yang ketat dan dienkripsi untuk melindungi privasi Anda.
+                  </p>
+                  <p>
+                    <strong>Penggunaan Data:</strong> Data hanya digunakan untuk keperluan monitoring Praktik Kerja Lapangan (PKL) oleh pihak sekolah dan instansi terkait.
+                  </p>
+                  <p>
+                    <strong>Pihak Ketiga:</strong> Kami <strong>tidak pernah</strong> menjual atau membagikan data pribadi Anda kepada pihak ketiga tanpa izin atau di luar kepentingan akademik.
+                  </p>
+                </div>
+              </div>
+            ))}
             className="flex items-center justify-between p-4 rounded-xl border border-slate-200 dark:border-gray-700 hover:bg-slate-50 dark:hover:bg-gray-800 transition-colors group"
           >
             <div className="flex items-center gap-3">
@@ -882,7 +899,41 @@ export const SettingsPage: React.FC<SettingsPageProps> = ({
           </button>
 
           <button 
-            onClick={() => openInfoModal(t('helpCenter'), t('helpCenterDesc'))}
+            onClick={() => openInfoModal(t('helpCenter'), (
+              <div className="flex flex-col gap-4">
+                <div className="bg-blue-500/10 p-4 rounded-xl flex items-center justify-center">
+                  <HelpCircle size={48} className="text-blue-500" />
+                </div>
+                <div className="text-sm text-slate-600 dark:text-gray-300 leading-relaxed space-y-4">
+                  <p>
+                    Jika Anda mengalami kendala teknis saat menggunakan aplikasi NeboTrack, Anda dapat menghubungi pihak berikut:
+                  </p>
+                  <div className="flex flex-col gap-3 text-left">
+                    <div className="flex items-start gap-3 p-3 bg-slate-50 dark:bg-gray-800/50 rounded-lg border border-slate-100 dark:border-gray-700/50">
+                      <div className="mt-0.5 text-blue-500"><GraduationCap size={18} /></div>
+                      <div>
+                        <strong className="block text-slate-800 dark:text-gray-200">Guru Pembimbing Internal</strong>
+                        <span className="text-xs">Terkait nilai, absensi, atau masalah jurnal PKL.</span>
+                      </div>
+                    </div>
+                    <div className="flex items-start gap-3 p-3 bg-slate-50 dark:bg-gray-800/50 rounded-lg border border-slate-100 dark:border-gray-700/50">
+                      <div className="mt-0.5 text-emerald-500"><Briefcase size={18} /></div>
+                      <div>
+                        <strong className="block text-slate-800 dark:text-gray-200">Admin Instansi / Mentor</strong>
+                        <span className="text-xs">Terkait operasional absensi di tempat kerja.</span>
+                      </div>
+                    </div>
+                    <div className="flex items-start gap-3 p-3 bg-slate-50 dark:bg-gray-800/50 rounded-lg border border-slate-100 dark:border-gray-700/50">
+                      <div className="mt-0.5 text-red-500"><Settings size={18} /></div>
+                      <div>
+                        <strong className="block text-slate-800 dark:text-gray-200">Administrator Sekolah</strong>
+                        <span className="text-xs">Terkait error aplikasi, kendala login, atau perubahan data.</span>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            ))}
             className="flex items-center justify-between p-4 rounded-xl border border-slate-200 dark:border-gray-700 hover:bg-slate-50 dark:hover:bg-gray-800 transition-colors group"
           >
             <div className="flex items-center gap-3">
@@ -1009,10 +1060,14 @@ export const SettingsPage: React.FC<SettingsPageProps> = ({
                 <X size={20} />
               </button>
             </div>
-            <div className="p-6">
-              <p className="text-sm text-slate-600 dark:text-gray-300 whitespace-pre-line leading-relaxed font-medium">
-                {infoModalContent}
-              </p>
+            <div className="p-6 max-h-[75vh] overflow-y-auto">
+              {typeof infoModalContent === 'string' ? (
+                <p className="text-sm text-slate-600 dark:text-gray-300 whitespace-pre-line leading-relaxed font-medium">
+                  {infoModalContent}
+                </p>
+              ) : (
+                infoModalContent
+              )}
             </div>
             <div className="p-4 border-t border-slate-100 dark:border-gray-800 flex justify-end">
               <button 
