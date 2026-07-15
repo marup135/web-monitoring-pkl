@@ -7,6 +7,20 @@ import { cookies } from 'next/headers';
 import { hashPassword, signSession, verifySession } from '@/lib/auth';
 import { createClient } from '@supabase/supabase-js';
 
+async function verifyCaptchaToken(token?: string) {
+  if (!token) return false;
+  const secretKey = process.env.RECAPTCHA_SECRET_KEY;
+  if (!secretKey) return true;
+  const url = `https://www.google.com/recaptcha/api/siteverify?secret=${secretKey}&response=${token}`;
+  try {
+    const res = await fetch(url, { method: "POST" });
+    const data = await res.json();
+    return data.success;
+  } catch {
+    return false;
+  }
+}
+
 export async function registerAction(
   username: string,
   email: string,
@@ -21,10 +35,14 @@ export async function registerAction(
   jabatan?: string,
   employeeId?: string,
   companyEmail?: string,
-  institutionCode?: string
+  institutionCode?: string,
+  captchaToken?: string
 ) {
   console.log(">>> REGISTER ACTION CALLED:", { username, email, role });
   try {
+    if (!(await verifyCaptchaToken(captchaToken))) {
+      return { success: false, error: 'Verifikasi CAPTCHA gagal. Silakan coba lagi.' };
+    }
     // Admin cannot register via the form
     if (role === 'SUPER_ADMIN' || role === 'INSTITUTION_ADMIN') {
       return { success: false, error: 'Akun Admin tidak dapat dibuat melalui registrasi biasa.' };
@@ -282,9 +300,13 @@ export async function registerInstitutionAdminAction(
   }
 }
 
-export async function loginAction(identifier: string, password: string) {
+export async function loginAction(identifier: string, password: string, captchaToken?: string) {
   try {
+    if (!(await verifyCaptchaToken(captchaToken))) {
+      return { success: false, error: 'Verifikasi CAPTCHA gagal. Silakan coba lagi.' };
+    }
     const cleanIdentifier = identifier.trim().toLowerCase();
+
     const isEmail = cleanIdentifier.includes('@');
 
     const user = await prisma.user.findFirst({

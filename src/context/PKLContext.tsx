@@ -168,8 +168,8 @@ interface PKLContextProps {
   addAdvisorNote: (text: string) => Promise<void>;
   deleteCard: (cardId: string) => Promise<void>;
   resetState: () => Promise<void>;
-  login: (username: string, password: string) => Promise<{ success: boolean; error?: string }>;
-  register: (username: string, email: string, password: string, name: string, role: string, companyName?: string, className?: string, nisn?: string, nip?: string, school?: string, jabatan?: string, employeeId?: string, companyEmail?: string, institutionCode?: string) => Promise<{ success: boolean; error?: string; pending?: boolean; message?: string }>;
+  login: (username: string, password: string, captchaToken?: string) => Promise<{ success: boolean; error?: string }>;
+  register: (username: string, email: string, password: string, name: string, role: string, companyName?: string, className?: string, nisn?: string, nip?: string, school?: string, jabatan?: string, employeeId?: string, companyEmail?: string, institutionCode?: string, captchaToken?: string) => Promise<{ success: boolean; error?: string; pending?: boolean; message?: string }>;
   logout: () => Promise<void>;
   updateCurrentUserName?: (name: string) => void;
   updateCurrentUserBackground: (url: string | null) => void;
@@ -313,9 +313,9 @@ export const PKLProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  const login = async (username: string, password: string) => {
+  const login = async (username: string, password: string, captchaToken?: string) => {
     try {
-      const res = await loginAction(username, password);
+      const res = await loginAction(username, password, captchaToken);
       if (res.success && res.user) {
         setCurrentUser(res.user as UserProfile);
         setSelectedStudentIdState(null);
@@ -349,10 +349,10 @@ export const PKLProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     }
   };
 
-  const register = async (username: string, email: string, password: string, name: string, role: string, companyName?: string, className?: string, nisn?: string, nip?: string, school?: string, jabatan?: string, employeeId?: string, companyEmail?: string, institutionCode?: string) => {
+  const register = async (username: string, email: string, password: string, name: string, role: string, companyName?: string, className?: string, nisn?: string, nip?: string, school?: string, jabatan?: string, employeeId?: string, companyEmail?: string, institutionCode?: string, captchaToken?: string) => {
     setLoading(true);
     try {
-      const res = await registerAction(username, email, password, name, role, companyName, className, nisn, nip, school, jabatan, employeeId, companyEmail, institutionCode);
+      const res = await registerAction(username, email, password, name, role, companyName, className, nisn, nip, school, jabatan, employeeId, companyEmail, institutionCode, captchaToken);
       if (res.success && res.user) {
         setCurrentUser(res.user as UserProfile);
         setSelectedStudentIdState(null);

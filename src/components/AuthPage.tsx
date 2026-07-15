@@ -18,6 +18,7 @@ import {
   AlertCircle,
   Loader2,
 } from 'lucide-react';
+import ReCAPTCHA from 'react-google-recaptcha';
 
 
 
@@ -54,6 +55,7 @@ export const AuthPage: React.FC<AuthPageProps> = ({ initialView = 'login' }) => 
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [isPendingSuccess, setIsPendingSuccess] = useState(false);
+  const [captchaToken, setCaptchaToken] = useState<string | null>(null);
 
   // Form states
   const [username, setUsername] = useState('');
@@ -116,6 +118,7 @@ export const AuthPage: React.FC<AuthPageProps> = ({ initialView = 'login' }) => 
     setShowPassword(false);
     setShowConfirmPassword(false);
     setIsPendingSuccess(false);
+    setCaptchaToken(null);
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -162,6 +165,10 @@ export const AuthPage: React.FC<AuthPageProps> = ({ initialView = 'login' }) => 
       }
       if (!password) {
         setError('Password wajib diisi.', 'field', 'password');
+        return;
+      }
+      if (!captchaToken) {
+        setError('Silakan verifikasi CAPTCHA.', 'field');
         return;
       }
     } else {
@@ -259,13 +266,18 @@ export const AuthPage: React.FC<AuthPageProps> = ({ initialView = 'login' }) => 
         setError('Kode Institusi wajib diisi.', 'field');
         return;
       }
+
+      if (!captchaToken) {
+        setError('Silakan verifikasi CAPTCHA.', 'field');
+        return;
+      }
     }
 
     setLoading(true);
 
     try {
       if (isLogin) {
-        const res = await login(cleanUsername, password);
+        const res = await login(cleanUsername, password, captchaToken);
         if (res.success) {
           clearError();
           // Signal HomeWrapper to show success toast
@@ -304,7 +316,8 @@ export const AuthPage: React.FC<AuthPageProps> = ({ initialView = 'login' }) => 
           role === 'EXTERNAL_MENTOR' ? jabatan.trim() : undefined,
           role === 'EXTERNAL_MENTOR' ? employeeId.trim() : undefined,
           role === 'EXTERNAL_MENTOR' ? companyEmail.trim() : undefined,
-          institutionCode.trim() ? institutionCode.trim() : undefined
+          institutionCode.trim() ? institutionCode.trim() : undefined,
+          captchaToken
         );
         if (res.success && res.pending) {
           clearError();
@@ -927,6 +940,20 @@ export const AuthPage: React.FC<AuthPageProps> = ({ initialView = 'login' }) => 
                         Saya menyetujui Syarat & Ketentuan serta Kebijakan Privasi yang berlaku untuk penggunaan NeboTrack.
                       </span>
                     </label>
+                  )}
+
+                  {!isForgotPassword && (
+                    <div className="flex justify-center w-full overflow-hidden">
+                      <ReCAPTCHA
+                        sitekey={process.env.NEXT_PUBLIC_RECAPTCHA_SITE_KEY || ""}
+                        onChange={(token) => {
+                          setCaptchaToken(token);
+                          if (errorState && errorState.message === 'Silakan verifikasi CAPTCHA.') {
+                            clearError();
+                          }
+                        }}
+                      />
+                    </div>
                   )}
 
                   <button
