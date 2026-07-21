@@ -8,14 +8,17 @@ import {
   getServerTimeAction, 
   getAttendanceTodayAction, 
   getAttendanceHistoryAction, 
-  checkInAction, 
-  checkOutAction 
+  checkInAction,
+  checkOutAction,
+  requestLeaveAction,
+  approveLeaveAction
 } from '@/app/actions/attendance';
 import { getFaceDescriptorAction } from '@/app/actions/profile';
 import { Clock, Calendar, CheckCircle2, AlertCircle, RefreshCw, UserCheck, Camera, MapPin, X, Upload, Eye, WifiOff } from 'lucide-react';
 import { useFaceApi } from '../hooks/useFaceApi';
 import { useCameraLocation } from '../hooks/useCameraLocation';
 import { useBlinkDetection } from '../hooks/useBlinkDetection';
+import { FaceRegistrationModal } from './FaceRegistrationModal';
 
 interface AttendanceRecord {
   id: string;
@@ -45,6 +48,11 @@ export function AttendancePage() {
   const [successMsg, setSuccessMsg] = useState<string | null>(null);
   const [isOffline, setIsOffline] = useState(false);
   const [syncing, setSyncing] = useState(false);
+  const [isFaceRegistrationModalOpen, setIsFaceRegistrationModalOpen] = useState(false);
+  const [isLeaveModalOpen, setIsLeaveModalOpen] = useState(false);
+  const [leaveType, setLeaveType] = useState<'SICK' | 'EXCUSED'>('SICK');
+  const [leaveReason, setLeaveReason] = useState('');
+  const [leavePhoto, setLeavePhoto] = useState<string | null>(null);
   
   // Modal for Viewing Proof
   const [proofModalData, setProofModalData] = useState<{
@@ -89,6 +97,16 @@ export function AttendancePage() {
     videoRef, 
     isCameraModalOpen && cameraMode === 'in' && !photoCaptured && modelsLoaded
   );
+
+  useEffect(() => {
+    if (successMsg || errorMsg) {
+      const timer = setTimeout(() => {
+        setSuccessMsg(null);
+        setErrorMsg(null);
+      }, 5000);
+      return () => clearTimeout(timer);
+    }
+  }, [successMsg, errorMsg]);
 
   const fetchAttendanceData = async () => {
     const targetUserId = selectedStudentId || currentUser?.id;
@@ -316,6 +334,49 @@ export function AttendancePage() {
     }
   };
 
+  const handleRequestLeave = async () => {
+    if (!currentUser || !leaveReason.trim()) return;
+    try {
+      setActionLoading(true);
+      setErrorMsg(null);
+      setSuccessMsg(null);
+      
+      const res = await requestLeaveAction(currentUser.id, leaveType, leaveReason, leavePhoto || undefined);
+      if (res.success) {
+        setSuccessMsg(`Berhasil mengajukan ${leaveType === 'SICK' ? 'Sakit' : 'Izin'}. Menunggu persetujuan pembimbing.`);
+        setIsLeaveModalOpen(false);
+        setLeaveReason('');
+        setLeavePhoto(null);
+        await fetchAttendanceData();
+      } else {
+        setErrorMsg(res.error || 'Gagal mengajukan izin/sakit.');
+      }
+    } catch (err: any) {
+      setErrorMsg(err.message || 'Terjadi kesalahan.');
+    } finally {
+      setActionLoading(false);
+    }
+  };
+
+  const handleApproveLeave = async (attendanceId: string, isApproved: boolean) => {
+    if (actionLoading) return;
+    try {
+      setActionLoading(true);
+      setErrorMsg(null);
+      const res = await approveLeaveAction(attendanceId, isApproved);
+      if (res.success) {
+        setSuccessMsg(isApproved ? 'Berhasil menyetujui pengajuan.' : 'Pengajuan telah ditolak.');
+        await fetchAttendanceData();
+      } else {
+        setErrorMsg(res.error || 'Gagal merubah status.');
+      }
+    } catch (e: any) {
+      setErrorMsg(e.message || 'Terjadi kesalahan');
+    } finally {
+      setActionLoading(false);
+    }
+  };
+
   const getStatusLabel = (status: string) => {
     switch (status) {
       case 'CHECKED_IN':
@@ -326,6 +387,14 @@ export function AttendancePage() {
         return { label: t('statusHalfDay'), color: 'bg-amber-100 text-amber-800 dark:bg-amber-900/30 dark:text-amber-400' };
       case 'ABSENT':
         return { label: t('statusAbsent'), color: 'bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-400' };
+      case 'SICK':
+        return { label: 'SAKIT', color: 'bg-purple-100 text-purple-800 dark:bg-purple-900/30 dark:text-purple-400' };
+      case 'EXCUSED':
+        return { label: 'IZIN', color: 'bg-cyan-100 text-cyan-800 dark:bg-cyan-900/30 dark:text-cyan-400' };
+      case 'PENDING_SICK':
+        return { label: 'MENUNGGU (SAKIT)', color: 'bg-purple-50 text-purple-600 border border-purple-200 dark:bg-purple-900/10 dark:text-purple-400 dark:border-purple-800' };
+      case 'PENDING_EXCUSED':
+        return { label: 'MENUNGGU (IZIN)', color: 'bg-cyan-50 text-cyan-600 border border-cyan-200 dark:bg-cyan-900/10 dark:text-cyan-400 dark:border-cyan-800' };
       default:
         return { label: t('statusNotCheckedIn'), color: 'bg-slate-100 text-slate-800 dark:bg-gray-800 dark:text-gray-400' };
     }
@@ -485,8 +554,19 @@ export function AttendancePage() {
               </div>
               
               {cameraMode === 'in' && !savedFaceDescriptor && (
-                <div className="p-3 bg-red-50 text-red-600 rounded-xl text-sm flex items-center gap-2 font-medium">
-                  <AlertCircle size={16} /> Data wajah belum terdaftar. Silakan ke Pengaturan untuk registrasi.
+                <div className="p-3 bg-red-50 text-red-600 rounded-xl text-sm flex flex-col gap-2 font-medium">
+                  <div className="flex items-center gap-2">
+                    <AlertCircle size={16} /> Data wajah belum terdaftar.
+                  </div>
+                  <button 
+                    onClick={() => {
+                      closeModal();
+                      setIsFaceRegistrationModalOpen(true);
+                    }} 
+                    className="w-full py-2 bg-red-600 text-white font-bold rounded-lg hover:bg-red-700 transition"
+                  >
+                    Daftar Wajah Sekarang
+                  </button>
                 </div>
               )}
               
@@ -677,8 +757,20 @@ export function AttendancePage() {
 
             </div>
           )}
+            
+          {!todayAttendance?.checkIn && (
+            <div className="mt-4 pt-4 border-t border-slate-100 dark:border-gray-800">
+              <button
+                onClick={() => setIsLeaveModalOpen(true)}
+                disabled={actionLoading}
+                className="w-full py-2.5 px-4 font-bold text-xs rounded-xl transition cursor-pointer flex items-center justify-center gap-2 bg-slate-100 text-slate-700 hover:bg-slate-200 dark:bg-gray-800 dark:text-gray-300 dark:hover:bg-gray-700 shadow-sm"
+              >
+                Ajukan Izin / Sakit
+              </button>
+            </div>
+          )}
 
-          <div className="border-t border-[#E2E8F0] dark:border-gray-700/60 pt-3">
+          <div className="border-t border-[#E2E8F0] dark:border-gray-700/60 pt-3 mt-4">
             <p className="text-[10px] text-slate-400 font-semibold leading-relaxed">
               {t("syncNote")} (Hanya browser/perangkat yang mendukung GPS dan Kamera yang dapat digunakan).
             </p>
@@ -738,6 +830,12 @@ export function AttendancePage() {
                         <span className={`inline-block px-2 py-0.5 rounded-lg text-[10px] font-bold uppercase ${labelInfo.color}`}>
                           {labelInfo.label}
                         </span>
+                        {currentUser && !PARTICIPANT_ROLES.includes(currentUser.role) && (item.status === 'PENDING_SICK' || item.status === 'PENDING_EXCUSED') && (
+                          <div className="flex gap-2 mt-2">
+                            <button onClick={() => handleApproveLeave(item.id, true)} disabled={actionLoading} className="text-[10px] font-bold bg-green-500 text-white px-2 py-1 rounded hover:bg-green-600 shadow-sm transition disabled:opacity-50">Setujui</button>
+                            <button onClick={() => handleApproveLeave(item.id, false)} disabled={actionLoading} className="text-[10px] font-bold bg-red-500 text-white px-2 py-1 rounded hover:bg-red-600 shadow-sm transition disabled:opacity-50">Tolak</button>
+                          </div>
+                        )}
                       </td>
                     </tr>
                   );
@@ -825,6 +923,105 @@ export function AttendancePage() {
         </div>
       )}
 
+      {/* Leave/Sick Request Modal */}
+      {isLeaveModalOpen && (
+        <div className="fixed inset-0 z-[9999] bg-black/60 backdrop-blur-sm flex items-center justify-center p-4">
+          <div className="bg-white dark:bg-[#1E293B] rounded-3xl w-full max-w-md shadow-2xl overflow-hidden flex flex-col">
+            <div className="flex justify-between items-center p-5 border-b border-gray-100 dark:border-gray-800">
+              <h3 className="font-bold text-gray-800 dark:text-white">
+                Pengajuan Izin / Sakit
+              </h3>
+              <button onClick={() => setIsLeaveModalOpen(false)} className="p-1.5 rounded-full hover:bg-gray-100 dark:hover:bg-gray-700 text-gray-500 transition">
+                <X size={18} />
+              </button>
+            </div>
+            
+            <div className="p-5 flex flex-col gap-4">
+              <div>
+                <label className="text-xs font-bold text-gray-700 dark:text-gray-300 mb-1 block">Tipe Pengajuan</label>
+                <div className="grid grid-cols-2 gap-3">
+                  <button 
+                    onClick={() => setLeaveType('SICK')}
+                    className={`py-2 px-3 rounded-xl text-sm font-bold border transition ${leaveType === 'SICK' ? 'bg-purple-100 text-purple-700 border-purple-200 dark:bg-purple-900/30 dark:border-purple-800 dark:text-purple-400' : 'bg-gray-50 text-gray-600 border-gray-200 dark:bg-gray-800 dark:border-gray-700 dark:text-gray-400'}`}
+                  >
+                    Sakit
+                  </button>
+                  <button 
+                    onClick={() => setLeaveType('EXCUSED')}
+                    className={`py-2 px-3 rounded-xl text-sm font-bold border transition ${leaveType === 'EXCUSED' ? 'bg-cyan-100 text-cyan-700 border-cyan-200 dark:bg-cyan-900/30 dark:border-cyan-800 dark:text-cyan-400' : 'bg-gray-50 text-gray-600 border-gray-200 dark:bg-gray-800 dark:border-gray-700 dark:text-gray-400'}`}
+                  >
+                    Izin
+                  </button>
+                </div>
+              </div>
+              
+              <div>
+                <label className="text-xs font-bold text-gray-700 dark:text-gray-300 mb-1 block">Alasan / Keterangan <span className="text-red-500">*</span></label>
+                <textarea
+                  value={leaveReason}
+                  onChange={(e) => setLeaveReason(e.target.value)}
+                  placeholder="Jelaskan alasan izin atau sakit secara singkat..."
+                  className="w-full rounded-xl border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 p-3 text-sm focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none transition resize-none h-24 text-gray-900 dark:text-white"
+                />
+              </div>
+
+              <div>
+                <label className="text-xs font-bold text-gray-700 dark:text-gray-300 mb-1 block">Lampiran Bukti (Opsional)</label>
+                <div className="relative">
+                  <input 
+                    type="file" 
+                    accept="image/*" 
+                    onChange={(e) => {
+                      const file = e.target.files?.[0];
+                      if (file) {
+                        const reader = new FileReader();
+                        reader.onload = (event) => setLeavePhoto(event.target?.result as string);
+                        reader.readAsDataURL(file);
+                      }
+                    }}
+                    className="hidden" 
+                    id="leave-photo-upload"
+                  />
+                  {!leavePhoto ? (
+                    <label 
+                      htmlFor="leave-photo-upload" 
+                      className="flex flex-col items-center justify-center w-full h-24 border-2 border-dashed border-gray-300 dark:border-gray-600 rounded-xl cursor-pointer hover:bg-gray-50 dark:hover:bg-gray-800/50 transition"
+                    >
+                      <Upload size={20} className="text-gray-400 mb-2" />
+                      <span className="text-xs font-medium text-gray-500">Pilih atau Ambil Foto Surat</span>
+                    </label>
+                  ) : (
+                    <div className="relative w-full h-32 rounded-xl overflow-hidden border border-gray-200 dark:border-gray-700">
+                      <img src={leavePhoto} alt="Bukti" className="w-full h-full object-cover" />
+                      <button 
+                        onClick={() => setLeavePhoto(null)} 
+                        className="absolute top-2 right-2 p-1.5 bg-black/50 text-white rounded-full hover:bg-black/70"
+                      >
+                        <X size={14} />
+                      </button>
+                    </div>
+                  )}
+                </div>
+              </div>
+            </div>
+
+            <div className="p-5 border-t border-gray-100 dark:border-gray-800 bg-gray-50 dark:bg-[#1E293B]">
+              <button
+                onClick={handleRequestLeave}
+                disabled={!leaveReason.trim() || actionLoading}
+                className={`w-full py-3 rounded-xl font-bold transition flex justify-center items-center gap-2 ${
+                  leaveReason.trim()
+                    ? 'bg-primary hover:bg-primary-hover text-white shadow-md'
+                    : 'bg-gray-200 text-gray-400 dark:bg-gray-800 cursor-not-allowed'
+                }`}
+              >
+                {actionLoading ? <RefreshCw size={18} className="animate-spin" /> : <CheckCircle2 size={18} />}
+                {actionLoading ? 'Memproses...' : 'Kirim Pengajuan'}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

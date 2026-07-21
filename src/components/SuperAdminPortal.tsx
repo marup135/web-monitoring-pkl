@@ -9,6 +9,7 @@ export const SuperAdminPortal: React.FC = () => {
   const [loading, setLoading] = useState(false);
 
   const fetchPending = async () => {
+    await Promise.resolve();
     setLoading(true);
     const res = await getPendingInstitutionsAction();
     if (res.success && res.data) {

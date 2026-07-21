@@ -251,3 +251,136 @@ export async function checkOutAction(userId: string, lat?: number, lng?: number,
     return { success: false, error: error.message };
   }
 }
+
+export async function requestLeaveAction(userId: string, type: 'SICK' | 'EXCUSED', reason: string, proofPhoto?: string) {
+  try {
+    const serverTime = await getServerTimeAction();
+    
+    const existing = await prisma.attendance.findUnique({
+      where: {
+        userId_date: {
+          userId,
+          date: serverTime.dateString
+        }
+      }
+    });
+
+    if (existing && existing.checkIn && !existing.checkOut) {
+      return { success: false, error: 'Anda sudah melakukan absen masuk hari ini. Tidak dapat mengajukan izin.' };
+    }
+    
+    if (existing && (existing.status === 'PENDING_SICK' || existing.status === 'PENDING_EXCUSED' || existing.status === 'SICK' || existing.status === 'EXCUSED')) {
+      return { success: false, error: 'Anda sudah mengajukan izin/sakit hari ini.' };
+    }
+    
+    const pendingType = type === 'SICK' ? 'PENDING_SICK' : 'PENDING_EXCUSED';
+
+    const attendance = await prisma.attendance.upsert({
+      where: {
+        userId_date: {
+          userId,
+          date: serverTime.dateString
+        }
+      },
+      create: {
+        userId,
+        date: serverTime.dateString,
+        status: pendingType,
+        activityNotes: reason,
+        checkInPhoto: proofPhoto,
+        checkIn: serverTime.timeString // Set as submission time for reference
+      },
+      update: {
+        status: pendingType,
+        activityNotes: reason,
+        checkInPhoto: proofPhoto,
+        checkIn: serverTime.timeString
+      }
+    });
+
+    // Notify mentors for leave request
+    const student = await prisma.user.findUnique({
+      where: { id: userId },
+      select: { name: true, classId: true, companyId: true }
+    });
+    
+    if (student) {
+      const typeLabel = type === 'SICK' ? 'Sakit' : 'Izin';
+      const notifTitle = `Persetujuan ${typeLabel} Dibutuhkan`;
+      const notifMsg = `Siswa ${student.name} mengajukan ${typeLabel} untuk hari ini dan menunggu persetujuan Anda. Alasan: ${reason}`;
+      
+      // Notify internal mentors
+      if (student.classId) {
+        const classData = await prisma.kelas.findUnique({
+          where: { id: student.classId },
+          include: { advisors: true }
+        });
+        if (classData && classData.advisors) {
+          for (const advisor of classData.advisors) {
+            await createNotification(advisor.id, notifTitle, notifMsg, 'INFO');
+          }
+        }
+      }
+  
+      // Notify external mentors
+      if (student.companyId) {
+        const companyData = await prisma.perusahaan.findUnique({
+          where: { id: student.companyId },
+          include: { mentors: true }
+        });
+        if (companyData && companyData.mentors) {
+          for (const mentor of companyData.mentors) {
+            await createNotification(mentor.id, notifTitle, notifMsg, 'INFO');
+          }
+        }
+      }
+    }
+
+    return { success: true, data: attendance };
+  } catch (error: any) {
+    console.error('Error in requestLeaveAction:', error);
+    return { success: false, error: error.message };
+  }
+}
+
+export async function approveLeaveAction(attendanceId: string, isApproved: boolean) {
+  try {
+    const attendance = await prisma.attendance.findUnique({ where: { id: attendanceId }, include: { user: true } });
+    if (!attendance) {
+      return { success: false, error: 'Data absensi tidak ditemukan' };
+    }
+
+    if (attendance.status !== 'PENDING_SICK' && attendance.status !== 'PENDING_EXCUSED') {
+      return { success: false, error: 'Status absensi tidak dalam status menunggu persetujuan.' };
+    }
+
+    let newStatus = 'ABSENT';
+    if (isApproved) {
+      newStatus = attendance.status === 'PENDING_SICK' ? 'SICK' : 'EXCUSED';
+    } else {
+      // If rejected, we just revert to absent or leave it as rejected? 
+      // We will set to ABSENT for now, they can still check-in if it's not late.
+      newStatus = 'NOT_CHECKED_IN';
+    }
+
+    const updated = await prisma.attendance.update({
+      where: { id: attendanceId },
+      data: { status: newStatus }
+    });
+    
+    // Notify student
+    const typeLabel = attendance.status === 'PENDING_SICK' ? 'Sakit' : 'Izin';
+    const statusLabel = isApproved ? 'DISETUJUI' : 'DITOLAK';
+    await createNotification(
+      attendance.userId,
+      `Pengajuan ${typeLabel} ${statusLabel}`,
+      `Pengajuan ${typeLabel} Anda pada tanggal ${attendance.date} telah ${statusLabel} oleh Pembimbing.`,
+      'INFO'
+    );
+
+    return { success: true, data: updated };
+  } catch (error: any) {
+    console.error('Error in approveLeaveAction:', error);
+    return { success: false, error: error.message };
+  }
+}

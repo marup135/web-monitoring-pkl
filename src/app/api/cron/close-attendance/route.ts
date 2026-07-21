@@ -48,12 +48,14 @@ export async function GET(req: Request) {
         });
         updatedCount++;
       } else if (!attendance.checkOut) {
-        // Jika absen masuk tapi belum checkout
-        await prisma.attendance.update({
-          where: { id: attendance.id },
-          data: { status: 'HALF_DAY' }
-        });
-        updatedCount++;
+        // Jika absen masuk tapi belum checkout (dan bukan status izin/sakit)
+        if (attendance.status !== 'SICK' && attendance.status !== 'EXCUSED' && attendance.status !== 'PENDING_SICK' && attendance.status !== 'PENDING_EXCUSED') {
+          await prisma.attendance.update({
+            where: { id: attendance.id },
+            data: { status: 'HALF_DAY' }
+          });
+          updatedCount++;
+        }
       }
     }
 

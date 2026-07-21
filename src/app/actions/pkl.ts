@@ -827,9 +827,9 @@ export async function uploadFileAction(formData: FormData) {
 
     // Sanitize filename & validate extension
     const ext = path.extname(file.name).toLowerCase();
-    const allowedExtensions = ['.jpg', '.jpeg', '.png', '.gif', '.pdf', '.doc', '.docx', '.zip', '.rar'];
+    const allowedExtensions = ['.jpg', '.jpeg', '.png', '.gif', '.pdf', '.doc', '.docx', '.xls', '.xlsx', '.zip', '.rar'];
     if (!allowedExtensions.includes(ext)) {
-      return { success: false, error: 'Tipe berkas tidak diizinkan. Hanya menerima gambar, PDF, Word, atau ZIP.' };
+      return { success: false, error: 'Tipe berkas tidak diizinkan. Hanya menerima gambar, PDF, Word, Excel, atau ZIP/RAR.' };
     }
 
     const bytes = await file.arrayBuffer();
@@ -840,7 +840,8 @@ export async function uploadFileAction(formData: FormData) {
     const mime = file.type.toLowerCase();
     if (mime.startsWith('image/')) type = 'image';
     else if (mime === 'application/pdf') type = 'pdf';
-    else if (mime.includes('word') || mime.includes('officedocument') || ext === '.doc' || ext === '.docx') type = 'doc';
+    else if (mime.includes('word') || mime.includes('officedocument.wordprocessingml') || ext === '.doc' || ext === '.docx') type = 'doc';
+    else if (mime.includes('excel') || mime.includes('spreadsheet') || ext === '.xls' || ext === '.xlsx') type = 'doc';
 
     // Environment Variable Check
     const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL || process.env.SUPABASE_URL;
