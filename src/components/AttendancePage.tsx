@@ -12,8 +12,10 @@ import {
   checkOutAction 
 } from '@/app/actions/attendance';
 import { getFaceDescriptorAction } from '@/app/actions/profile';
-import * as faceapi from '@vladmandic/face-api';
-import { Clock, Calendar, CheckCircle2, AlertCircle, RefreshCw, UserCheck, Camera, MapPin, X, Upload } from 'lucide-react';
+import { Clock, Calendar, CheckCircle2, AlertCircle, RefreshCw, UserCheck, Camera, MapPin, X, Upload, Eye, WifiOff } from 'lucide-react';
+import { useFaceApi } from '../hooks/useFaceApi';
+import { useCameraLocation } from '../hooks/useCameraLocation';
+import { useBlinkDetection } from '../hooks/useBlinkDetection';
 
 interface AttendanceRecord {
   id: string;
@@ -41,6 +43,8 @@ export function AttendancePage() {
   const [clientTimeOffset, setClientTimeOffset] = useState<number>(0); // ms offset
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
   const [successMsg, setSuccessMsg] = useState<string | null>(null);
+  const [isOffline, setIsOffline] = useState(false);
+  const [syncing, setSyncing] = useState(false);
   
   // Modal for Viewing Proof
   const [proofModalData, setProofModalData] = useState<{
@@ -54,22 +58,37 @@ export function AttendancePage() {
     activityNotes?: string | null;
   } | null>(null);
 
-  // --- Camera & Location States ---
-  const [isCameraModalOpen, setIsCameraModalOpen] = useState(false);
-  const [cameraMode, setCameraMode] = useState<'in' | 'out'>('in');
-  const [location, setLocation] = useState<{lat: number, lng: number} | null>(null);
-  const [locError, setLocError] = useState('');
-  const videoRef = useRef<HTMLVideoElement>(null);
-  const canvasRef = useRef<HTMLCanvasElement>(null);
-  const fileInputRef = useRef<HTMLInputElement>(null);
-  const [stream, setStream] = useState<MediaStream | null>(null);
-  const [photoCaptured, setPhotoCaptured] = useState<string | null>(null);
-  const [activityNotes, setActivityNotes] = useState<string>('');
-  
-  // Face Recognition states
-  const [modelsLoaded, setModelsLoaded] = useState(false);
-  const [verifyingFace, setVerifyingFace] = useState(false);
-  const [savedFaceDescriptor, setSavedFaceDescriptor] = useState<Float32Array | null>(null);
+  const {
+    modelsLoaded,
+    verifyingFace,
+    savedFaceDescriptor,
+    loadSavedDescriptor,
+    verifyFace
+  } = useFaceApi();
+
+  const {
+    isCameraModalOpen,
+    cameraMode,
+    location,
+    locError,
+    videoRef,
+    canvasRef,
+    fileInputRef,
+    photoCaptured,
+    setPhotoCaptured,
+    activityNotes,
+    setActivityNotes,
+    capturePhoto,
+    handleFileUpload,
+    openModal,
+    closeModal,
+    startCamera
+  } = useCameraLocation();
+
+  const { hasBlinked, isDetecting, instruction, resetBlink } = useBlinkDetection(
+    videoRef, 
+    isCameraModalOpen && cameraMode === 'in' && !photoCaptured && modelsLoaded
+  );
 
   const fetchAttendanceData = async () => {
     const targetUserId = selectedStudentId || currentUser?.id;
@@ -102,14 +121,7 @@ export function AttendancePage() {
       // Get face descriptor
       const faceRes = await getFaceDescriptorAction(targetUserId);
       if (faceRes.success && faceRes.data) {
-        try {
-          const parsedArr = JSON.parse(faceRes.data);
-          setSavedFaceDescriptor(new Float32Array(parsedArr));
-        } catch (e) {
-          console.error("Failed to parse face descriptor", e);
-        }
-      } else {
-        setSavedFaceDescriptor(null);
+        loadSavedDescriptor(faceRes.data);
       }
     } catch (error: any) {
       console.error(error);
@@ -119,20 +131,67 @@ export function AttendancePage() {
     }
   };
 
+  const syncOfflineAttendance = async () => {
+    if (!currentUser) return;
+    const key = `offline_attendance_${currentUser.id}`;
+    const queued = localStorage.getItem(key);
+    if (!queued) return;
+
+    try {
+      setSyncing(true);
+      const items = JSON.parse(queued);
+      if (!Array.isArray(items) || items.length === 0) return;
+
+      let allSuccess = true;
+      for (const item of items) {
+        let res;
+        if (item.type === 'in') {
+          res = await checkInAction(currentUser.id, item.lat, item.lng, item.photo, item.offlineData);
+        } else {
+          res = await checkOutAction(currentUser.id, item.lat, item.lng, item.photo, item.notes, item.offlineData);
+        }
+        if (!res.success) {
+          allSuccess = false;
+          console.error("Failed to sync item", item, res.error);
+        }
+      }
+
+      if (allSuccess) {
+        localStorage.removeItem(key);
+        setSuccessMsg("Semua data absensi offline berhasil disinkronisasi!");
+        fetchAttendanceData();
+      } else {
+        setErrorMsg("Sebagian data absen offline gagal disinkronisasi. Akan dicoba lagi nanti.");
+      }
+    } catch (e) {
+      console.error(e);
+    } finally {
+      setSyncing(false);
+    }
+  };
+
+  useEffect(() => {
+    setIsOffline(!navigator.onLine);
+    const handleOnline = () => {
+      setIsOffline(false);
+      syncOfflineAttendance();
+    };
+    const handleOffline = () => setIsOffline(true);
+
+    window.addEventListener('online', handleOnline);
+    window.addEventListener('offline', handleOffline);
+    
+    // Initial sync check
+    if (navigator.onLine) syncOfflineAttendance();
+
+    return () => {
+      window.removeEventListener('online', handleOnline);
+      window.removeEventListener('offline', handleOffline);
+    };
+  }, [currentUser]);
+
   useEffect(() => {
     fetchAttendanceData();
-    // Load face-api models
-    const loadModels = async () => {
-      try {
-        await faceapi.nets.ssdMobilenetv1.loadFromUri('/models');
-        await faceapi.nets.faceLandmark68Net.loadFromUri('/models');
-        await faceapi.nets.faceRecognitionNet.loadFromUri('/models');
-        setModelsLoaded(true);
-      } catch (e) {
-        console.error('Failed to load face models', e);
-      }
-    };
-    loadModels();
   }, [currentUser, selectedStudentId]);
 
   // Clock Ticker based on Server Time offset
@@ -176,118 +235,6 @@ export function AttendancePage() {
   const canCheckIn = timeInMinutes >= checkInStart && timeInMinutes <= checkInEnd;
   const canCheckOut = timeInMinutes >= checkOutStart && timeInMinutes <= checkOutEnd;
 
-  // --- Camera & Location Methods ---
-  const startCamera = async () => {
-    try {
-      const mediaStream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: "user" } });
-      setStream(mediaStream);
-      if (videoRef.current) {
-        videoRef.current.srcObject = mediaStream;
-      }
-    } catch (err) {
-      console.error("Camera access denied:", err);
-      setLocError("Akses kamera ditolak atau tidak tersedia.");
-    }
-  };
-
-  const stopCamera = () => {
-    if (stream) {
-      stream.getTracks().forEach(track => track.stop());
-      setStream(null);
-    }
-  };
-
-  const fetchLocation = () => {
-    if (!navigator.geolocation) {
-      setLocError("Geolocation tidak didukung oleh browser ini.");
-      return;
-    }
-    navigator.geolocation.getCurrentPosition(
-      (position) => {
-        setLocation({
-          lat: position.coords.latitude,
-          lng: position.coords.longitude
-        });
-      },
-      (error) => {
-        console.error("Location error:", error);
-        setLocError("Akses lokasi ditolak. Mohon izinkan akses lokasi.");
-      },
-      { enableHighAccuracy: true }
-    );
-  };
-
-  const capturePhoto = () => {
-    if (videoRef.current && canvasRef.current) {
-      const video = videoRef.current;
-      const canvas = canvasRef.current;
-      canvas.width = video.videoWidth;
-      canvas.height = video.videoHeight;
-      const ctx = canvas.getContext('2d');
-      if (ctx) {
-        ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
-        // Compress image to save database space (base64)
-        const dataUrl = canvas.toDataURL('image/jpeg', 0.5);
-        setPhotoCaptured(dataUrl);
-      }
-    }
-  };
-
-  const handleFileUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (file) {
-      const reader = new FileReader();
-      reader.onload = (event) => {
-        const img = new Image();
-        img.onload = () => {
-          const canvas = document.createElement('canvas');
-          const MAX_WIDTH = 800;
-          const MAX_HEIGHT = 800;
-          let width = img.width;
-          let height = img.height;
-
-          if (width > height) {
-            if (width > MAX_WIDTH) {
-              height *= MAX_WIDTH / width;
-              width = MAX_WIDTH;
-            }
-          } else {
-            if (height > MAX_HEIGHT) {
-              width *= MAX_HEIGHT / height;
-              height = MAX_HEIGHT;
-            }
-          }
-
-          canvas.width = width;
-          canvas.height = height;
-          const ctx = canvas.getContext('2d');
-          if (ctx) {
-            ctx.drawImage(img, 0, 0, width, height);
-            const dataUrl = canvas.toDataURL('image/jpeg', 0.5);
-            setPhotoCaptured(dataUrl);
-          }
-        };
-        img.src = event.target?.result as string;
-      };
-      reader.readAsDataURL(file);
-    }
-  };
-
-  const openModal = async (mode: 'in' | 'out') => {
-    setCameraMode(mode);
-    setPhotoCaptured(null);
-    setLocation(null);
-    setLocError('');
-    setIsCameraModalOpen(true);
-    fetchLocation();
-    startCamera();
-  };
-
-  const closeModal = () => {
-    stopCamera();
-    setIsCameraModalOpen(false);
-  };
-
   const handleConfirmAttendance = async () => {
     if (!currentUser || actionLoading || !photoCaptured || !location) return;
     
@@ -297,38 +244,53 @@ export function AttendancePage() {
       setSuccessMsg(null);
       
       if (cameraMode === 'in') {
-        if (!savedFaceDescriptor) {
-          setErrorMsg('Wajah Anda belum terdaftar. Silakan daftar wajah di menu Pengaturan terlebih dahulu.');
-          setActionLoading(false);
-          return;
-        }
-
-        setVerifyingFace(true);
-        // Create an image element from photoCaptured to run faceapi
-        const img = document.createElement('img');
-        img.src = photoCaptured;
-        await new Promise((resolve) => { img.onload = resolve; });
-
-        const detection = await faceapi.detectSingleFace(img).withFaceLandmarks().withFaceDescriptor();
-        
-        if (!detection) {
-          setErrorMsg('Wajah tidak terdeteksi pada foto. Silakan ulangi.');
-          setVerifyingFace(false);
-          setActionLoading(false);
-          return;
-        }
-
-        const distance = faceapi.euclideanDistance(detection.descriptor, savedFaceDescriptor);
-        setVerifyingFace(false);
-
-        if (distance > 0.5) { // Threshold
-          setErrorMsg(`Wajah tidak cocok dengan data pendaftaran (Distance: ${distance.toFixed(2)}).`);
-          setActionLoading(false);
-          return;
+        // Only verify face if we are online, if offline we just trust the client side blink detection
+        if (!isOffline) {
+          const verifyResult = await verifyFace(photoCaptured);
+          if (!verifyResult.success) {
+            setErrorMsg(verifyResult.error || 'Verifikasi wajah gagal.');
+            setActionLoading(false);
+            return;
+          }
         }
       }
 
       let res;
+      if (isOffline) {
+        const key = `offline_attendance_${currentUser.id}`;
+        const existing = JSON.parse(localStorage.getItem(key) || '[]');
+        
+        const currentServerDate = new Date(Date.now() + clientTimeOffset);
+        const y = currentServerDate.getFullYear();
+        const m = String(currentServerDate.getMonth() + 1).padStart(2, '0');
+        const d = String(currentServerDate.getDate()).padStart(2, '0');
+        const h = String(currentServerDate.getHours()).padStart(2, '0');
+        const min = String(currentServerDate.getMinutes()).padStart(2, '0');
+        
+        const offlineData = {
+          timestamp: currentServerDate.getTime(),
+          dateString: `${y}-${m}-${d}`,
+          timeString: `${h}:${min}`
+        };
+
+        const newItem = {
+          type: cameraMode,
+          lat: location.lat,
+          lng: location.lng,
+          photo: photoCaptured,
+          notes: activityNotes,
+          offlineData
+        };
+        
+        existing.push(newItem);
+        localStorage.setItem(key, JSON.stringify(existing));
+        
+        setSuccessMsg(cameraMode === 'in' ? 'Anda sedang offline. Absen masuk disimpan sementara!' : 'Anda sedang offline. Absen pulang disimpan sementara!');
+        closeModal();
+        setActionLoading(false);
+        return;
+      }
+
       if (cameraMode === 'in') {
         res = await checkInAction(currentUser.id, location.lat, location.lng, photoCaptured);
       } else {
@@ -351,7 +313,6 @@ export function AttendancePage() {
       setErrorMsg(err.message || 'Terjadi kesalahan saat absensi.');
     } finally {
       setActionLoading(false);
-      setVerifyingFace(false);
     }
   };
 
@@ -361,6 +322,8 @@ export function AttendancePage() {
         return { label: t('statusCheckedIn'), color: 'bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-400' };
       case 'COMPLETED':
         return { label: t('statusCompleted'), color: 'bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-400' };
+      case 'HALF_DAY':
+        return { label: t('statusHalfDay'), color: 'bg-amber-100 text-amber-800 dark:bg-amber-900/30 dark:text-amber-400' };
       case 'ABSENT':
         return { label: t('statusAbsent'), color: 'bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-400' };
       default:
@@ -382,6 +345,20 @@ export function AttendancePage() {
 
   return (
     <div className="space-y-6">
+      {/* Offline Indicator */}
+      {isOffline && (
+        <div className="bg-amber-100 text-amber-800 p-3 rounded-2xl flex items-center gap-3 text-sm font-bold shadow-sm mb-4 border border-amber-200">
+          <WifiOff size={18} />
+          <span>Anda sedang Offline! Data absen Anda akan tersimpan lokal dan disinkronkan saat terhubung internet.</span>
+        </div>
+      )}
+      {syncing && (
+        <div className="bg-blue-100 text-blue-800 p-3 rounded-2xl flex items-center gap-3 text-sm font-bold shadow-sm mb-4 border border-blue-200">
+          <RefreshCw size={18} className="animate-spin" />
+          <span>Sedang menyinkronisasi data absen offline...</span>
+        </div>
+      )}
+
       {/* Toast Alert */}
       {(errorMsg || successMsg) && (
         <div className="fixed top-4 right-4 z-[9999] animate-in slide-in-from-top-3 fade-in duration-300">
@@ -442,10 +419,28 @@ export function AttendancePage() {
                   <>
                     <video ref={videoRef} autoPlay playsInline muted className="w-full h-full object-cover" />
                     <canvas ref={canvasRef} className="hidden" />
+                    {cameraMode === 'in' && !hasBlinked && (
+                      <div className="absolute top-4 left-4 right-4 z-10">
+                        <div className={`p-3 rounded-xl text-sm font-bold flex items-center justify-center gap-2 shadow-lg transition-colors duration-300 ${isDetecting ? 'bg-amber-400 text-amber-900' : 'bg-gray-800 text-white'}`}>
+                          <Eye size={18} className={isDetecting ? 'animate-pulse' : ''} />
+                          {instruction}
+                        </div>
+                      </div>
+                    )}
+                    {cameraMode === 'in' && hasBlinked && (
+                      <div className="absolute top-4 left-4 right-4 z-10">
+                        <div className="p-3 bg-green-500 text-white rounded-xl text-sm font-bold flex items-center justify-center gap-2 shadow-lg">
+                          <CheckCircle2 size={18} />
+                          {instruction}
+                        </div>
+                      </div>
+                    )}
+
                     <div className="absolute bottom-4 left-0 right-0 flex justify-center gap-4">
                       <button 
                         onClick={capturePhoto}
-                        className="bg-white text-gray-900 rounded-full w-14 h-14 flex items-center justify-center shadow-lg hover:scale-105 transition active:scale-95"
+                        disabled={cameraMode === 'in' && !hasBlinked}
+                        className={`rounded-full w-14 h-14 flex items-center justify-center shadow-lg transition ${cameraMode === 'in' && !hasBlinked ? 'bg-gray-300 text-gray-500 cursor-not-allowed opacity-50' : 'bg-white text-gray-900 hover:scale-105 active:scale-95'}`}
                       >
                         <Camera size={24} />
                       </button>
@@ -477,6 +472,7 @@ export function AttendancePage() {
                       <button 
                          onClick={() => {
                           setPhotoCaptured(null);
+                          resetBlink();
                           startCamera();
                          }}
                         className="bg-gray-800 text-white px-4 py-2 rounded-xl text-sm font-semibold shadow-lg hover:bg-gray-700 transition"

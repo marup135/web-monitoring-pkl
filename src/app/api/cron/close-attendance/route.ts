@@ -51,7 +51,7 @@ export async function GET(req: Request) {
         // Jika absen masuk tapi belum checkout
         await prisma.attendance.update({
           where: { id: attendance.id },
-          data: { status: 'ABSENT' }
+          data: { status: 'HALF_DAY' }
         });
         updatedCount++;
       }

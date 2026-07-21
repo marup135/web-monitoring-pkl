@@ -120,28 +120,31 @@ export async function getAttendanceHistoryAction(userId: string) {
   }
 }
 
-export async function checkInAction(userId: string, lat?: number, lng?: number, photo?: string) {
+export async function checkInAction(userId: string, lat?: number, lng?: number, photo?: string, offlineData?: { timestamp: number, dateString: string, timeString: string }) {
   try {
     const serverTime = await getServerTimeAction();
-    const currentHour = serverTime.hours;
-    const currentMinutes = serverTime.minutes;
+    const useTime = offlineData || serverTime;
+    const currentHour = offlineData ? new Date(offlineData.timestamp).getHours() : serverTime.hours;
+    const currentMinutes = offlineData ? new Date(offlineData.timestamp).getMinutes() : serverTime.minutes;
     const timeInMinutes = currentHour * 60 + currentMinutes;
     const startMinutes = 7 * 60; // 07:00
     const endMinutes = 9 * 60; // 09:00
 
-    if (timeInMinutes < startMinutes) {
-      return { success: false, error: 'Absensi masuk dibuka pukul 07.00 WIB.' };
-    }
+    if (!offlineData) {
+      if (timeInMinutes < startMinutes) {
+        return { success: false, error: 'Absensi masuk dibuka pukul 07.00 WIB.' };
+      }
 
-    if (timeInMinutes > endMinutes) {
-      return { success: false, error: 'Waktu absensi masuk telah berakhir.' };
+      if (timeInMinutes > endMinutes) {
+        return { success: false, error: 'Waktu absensi masuk telah berakhir.' };
+      }
     }
 
     const existing = await prisma.attendance.findUnique({
       where: {
         userId_date: {
           userId,
-          date: serverTime.dateString
+          date: useTime.dateString
         }
       }
     });
@@ -154,20 +157,20 @@ export async function checkInAction(userId: string, lat?: number, lng?: number, 
       where: {
         userId_date: {
           userId,
-          date: serverTime.dateString
+          date: useTime.dateString
         }
       },
       create: {
         userId,
-        date: serverTime.dateString,
-        checkIn: serverTime.timeString,
+        date: useTime.dateString,
+        checkIn: useTime.timeString,
         checkInLat: lat,
         checkInLng: lng,
         checkInPhoto: photo,
         status: 'CHECKED_IN'
       },
       update: {
-        checkIn: serverTime.timeString,
+        checkIn: useTime.timeString,
         checkInLat: lat,
         checkInLng: lng,
         checkInPhoto: photo,
@@ -176,7 +179,7 @@ export async function checkInAction(userId: string, lat?: number, lng?: number, 
     });
 
     // Notify mentors
-    await notifyMentorsOnAttendance(userId, 'masuk', serverTime.timeString);
+    await notifyMentorsOnAttendance(userId, 'masuk', useTime.timeString);
 
     return { success: true, data: attendance };
   } catch (error: any) {
@@ -185,28 +188,31 @@ export async function checkInAction(userId: string, lat?: number, lng?: number, 
   }
 }
 
-export async function checkOutAction(userId: string, lat?: number, lng?: number, photo?: string, notes?: string) {
+export async function checkOutAction(userId: string, lat?: number, lng?: number, photo?: string, notes?: string, offlineData?: { timestamp: number, dateString: string, timeString: string }) {
   try {
     const serverTime = await getServerTimeAction();
-    const currentHour = serverTime.hours;
-    const currentMinutes = serverTime.minutes;
+    const useTime = offlineData || serverTime;
+    const currentHour = offlineData ? new Date(offlineData.timestamp).getHours() : serverTime.hours;
+    const currentMinutes = offlineData ? new Date(offlineData.timestamp).getMinutes() : serverTime.minutes;
     const timeInMinutes = currentHour * 60 + currentMinutes;
     const startMinutes = 16 * 60; // 16:00
     const endMinutes = 18 * 60; // 18:00
 
-    if (timeInMinutes < startMinutes) {
-      return { success: false, error: 'Absensi pulang dibuka pukul 16.00 WIB.' };
-    }
+    if (!offlineData) {
+      if (timeInMinutes < startMinutes) {
+        return { success: false, error: 'Absensi pulang dibuka pukul 16.00 WIB.' };
+      }
 
-    if (timeInMinutes > endMinutes) {
-      return { success: false, error: 'Waktu absensi pulang telah berakhir.' };
+      if (timeInMinutes > endMinutes) {
+        return { success: false, error: 'Waktu absensi pulang telah berakhir.' };
+      }
     }
 
     const existing = await prisma.attendance.findUnique({
       where: {
         userId_date: {
           userId,
-          date: serverTime.dateString
+          date: useTime.dateString
         }
       }
     });
@@ -223,11 +229,11 @@ export async function checkOutAction(userId: string, lat?: number, lng?: number,
       where: {
         userId_date: {
           userId,
-          date: serverTime.dateString
+          date: useTime.dateString
         }
       },
       data: {
-        checkOut: serverTime.timeString,
+        checkOut: useTime.timeString,
         checkOutLat: lat,
         checkOutLng: lng,
         checkOutPhoto: photo,
@@ -237,7 +243,7 @@ export async function checkOutAction(userId: string, lat?: number, lng?: number,
     });
 
     // Notify mentors
-    await notifyMentorsOnAttendance(userId, 'pulang', serverTime.timeString);
+    await notifyMentorsOnAttendance(userId, 'pulang', useTime.timeString);
 
     return { success: true, data: attendance };
   } catch (error: any) {

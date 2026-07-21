@@ -2075,3 +2075,103 @@ export async function manageCollaboratorsAction(
     return { success: false, error: 'Gagal mengelola kolaborator.' };
   }
 }
+
+export async function getMonthlyReportDataAction(classId: string) {
+  try {
+    const currentUser = await getAuthenticatedUser();
+    if (!currentUser) return { success: false, error: 'Unauthorized' };
+
+    // Validasi otorisasi (hanya Guru/Admin yang bisa mengakses)
+    if (currentUser.role !== 'INTERNAL_MENTOR' && currentUser.role !== 'SUPER_ADMIN' && currentUser.role !== 'INSTITUTION_ADMIN') {
+      return { success: false, error: 'Akses ditolak' };
+    }
+
+    // Ambil semua siswa di kelas ini beserta data absensi dan kartu (nilai)
+    const students = await prisma.user.findMany({
+      where: {
+        classId: classId,
+        role: { in: PARTICIPANT_ROLES }
+      },
+      include: {
+        attendances: true,
+        cards: true,
+      },
+      orderBy: {
+        name: 'asc'
+      }
+    });
+
+    const reportData = students.map((student, index) => {
+      // Hitung absensi
+      let totalHadir = 0;
+      let totalAlpha = 0;
+
+      student.attendances.forEach(att => {
+        if (att.status === 'COMPLETED' || att.status === 'HALF_DAY' || att.status === 'CHECKED_IN') {
+          totalHadir++;
+        } else if (att.status === 'ABSENT' || att.status === 'NOT_CHECKED_IN') {
+          totalAlpha++;
+        }
+      });
+
+      // Hitung Rata-rata Nilai Mentor
+      let mentorScoreSum = 0;
+      let mentorScoreCount = 0;
+      
+      // Hitung Rata-rata Nilai Guru
+      let advisorScoreSum = 0;
+      let advisorScoreCount = 0;
+
+      student.cards.forEach(card => {
+        // Mentor
+        if (card.scoreMentor != null) {
+          const avg = (
+            (card.scoreMentor || 0) + 
+            (card.scoreMentorDiscipline || 0) + 
+            (card.scoreMentorSkill || 0) + 
+            (card.scoreMentorAttitude || 0)
+          ) / 4;
+          if (avg > 0) {
+            mentorScoreSum += avg;
+            mentorScoreCount++;
+          }
+        }
+        
+        // Advisor (Guru)
+        if (card.scoreAdvisor != null) {
+          const avg = (
+            (card.scoreAdvisor || 0) + 
+            (card.scoreAdvisorDiscipline || 0) + 
+            (card.scoreAdvisorReport || 0) + 
+            (card.scoreAdvisorCommunication || 0)
+          ) / 4;
+          if (avg > 0) {
+            advisorScoreSum += avg;
+            advisorScoreCount++;
+          }
+        }
+      });
+
+      const avgMentor = mentorScoreCount > 0 ? Math.round(mentorScoreSum / mentorScoreCount) : 0;
+      const avgAdvisor = advisorScoreCount > 0 ? Math.round(advisorScoreSum / advisorScoreCount) : 0;
+
+      return {
+        'No': index + 1,
+        'Nama Siswa': student.name,
+        'NIS/NISN': student.nisn || '-',
+        'Tempat PKL': student.company || '-',
+        'Total Hadir': totalHadir,
+        'Total Alpha': totalAlpha,
+        'Rata-rata Nilai Mentor': avgMentor,
+        'Rata-rata Nilai Guru': avgAdvisor,
+      };
+    });
+
+    return { success: true, data: reportData };
+  } catch (error: any) {
+    console.error('Error fetching monthly report data:', error);
+    return { success: false, error: 'Gagal mengambil data laporan bulanan' };
+  }
+}
+
+

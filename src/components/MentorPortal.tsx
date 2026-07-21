@@ -257,6 +257,8 @@ export const MentorPortal: React.FC<MentorPortalProps> = ({ onPantau }) => {
                             <span className="bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-400 px-2 py-1 rounded-md text-[10px] font-bold">Masuk</span>
                           ) : student.attendanceStatus === 'COMPLETED' ? (
                             <span className="bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-400 px-2 py-1 rounded-md text-[10px] font-bold">Selesai</span>
+                          ) : student.attendanceStatus === 'HALF_DAY' ? (
+                            <span className="bg-amber-100 text-amber-800 dark:bg-amber-900/30 dark:text-amber-400 px-2 py-1 rounded-md text-[10px] font-bold">Hanya Masuk</span>
                           ) : student.attendanceStatus === 'ABSENT' ? (
                             <span className="bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-400 px-2 py-1 rounded-md text-[10px] font-bold">Alpha</span>
                           ) : (

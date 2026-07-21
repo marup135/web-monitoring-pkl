@@ -3,8 +3,9 @@
 import React, { useState, useEffect } from 'react';
 import { usePKL } from '../context/PKLContext';
 import { useLanguage } from '../context/LanguageContext';
-import { getDashboardMetricsAction } from '@/app/actions/pkl';
-import { Users, Calendar, FileSpreadsheet, Award, UserCheck, BarChart3, AlertCircle } from 'lucide-react';
+import { getDashboardMetricsAction, getMonthlyReportDataAction } from '@/app/actions/pkl';
+import { Users, Calendar, FileSpreadsheet, Award, UserCheck, BarChart3, AlertCircle, Download, FileBarChart } from 'lucide-react';
+import * as xlsx from 'xlsx';
 
 interface GuruPortalProps {
   onPantau: (studentId: string) => void;
@@ -56,7 +57,102 @@ export const GuruPortal: React.FC<GuruPortalProps> = ({ onPantau }) => {
   const hasAssignment = currentUser?.classes && currentUser.classes.length > 0;
   const activeClassName = currentUser?.classes?.find((c: { id: string; name: string }) => c.id === selectedClassId)?.name || 'Kelas Aktif';
 
+  const [isExporting, setIsExporting] = useState(false);
+
+  const handleExportMonthly = async () => {
+    if (!selectedClassId) return;
+    try {
+      setIsExporting(true);
+      const res = await getMonthlyReportDataAction(selectedClassId);
+      if (res.success && res.data) {
+        const worksheet = xlsx.utils.json_to_sheet(res.data);
+        
+        // Auto-size columns
+        const wscols = [
+          { wch: 5 }, // No
+          { wch: 25 }, // Nama
+          { wch: 15 }, // NIS
+          { wch: 30 }, // Tempat PKL
+          { wch: 15 }, // Total Hadir
+          { wch: 15 }, // Total Alpha
+          { wch: 20 }, // Rata-rata Nilai Mentor
+          { wch: 20 }, // Rata-rata Nilai Guru
+        ];
+        worksheet['!cols'] = wscols;
+
+        const workbook = xlsx.utils.book_new();
+        xlsx.utils.book_append_sheet(workbook, worksheet, "Rekap Bulanan");
+        
+        const dateStr = new Date().toISOString().split('T')[0];
+        const safeClassName = activeClassName.replace(/[^a-zA-Z0-9]/g, '_');
+        const fileName = `Rekap_Bulanan_${safeClassName}_${dateStr}.xlsx`;
+        
+        xlsx.writeFile(workbook, fileName);
+      } else {
+        alert(res.error || 'Gagal mengambil data laporan bulanan');
+      }
+    } catch (error) {
+      console.error('Export error:', error);
+      alert('Terjadi kesalahan saat mengekspor data.');
+    } finally {
+      setIsExporting(false);
+    }
+  };
+
   // Empty state when no classes are assigned
+  const handleExportExcel = () => {
+    if (!studentsList || studentsList.length === 0) return;
+
+    // Transform studentsList into Excel rows
+    const excelData = studentsList.map((student, index) => {
+      let status = 'Belum Absen';
+      if (student.attendanceStatus === 'CHECKED_IN') status = 'Masuk';
+      if (student.attendanceStatus === 'COMPLETED') status = 'Selesai';
+      if (student.attendanceStatus === 'HALF_DAY') status = 'Hanya Masuk';
+      if (student.attendanceStatus === 'ABSENT') status = 'Alpha';
+
+      let waktuAbsen = '-';
+      if (student.checkIn) {
+        waktuAbsen = student.checkIn;
+        if (student.checkOut) waktuAbsen += ` - ${student.checkOut}`;
+      }
+
+      return {
+        'No': index + 1,
+        'Nama Siswa': student.name,
+        'NIS/NISN': student.nisn || '-',
+        'Tempat PKL': student.company || '-',
+        'Penyelesaian Jurnal (%)': student.completionPercent || 0,
+        'Status Kehadiran Hari Ini': status,
+        'Waktu Absen': waktuAbsen,
+      };
+    });
+
+    const worksheet = xlsx.utils.json_to_sheet(excelData);
+    
+    // Auto-size columns
+    const wscols = [
+      { wch: 5 }, // No
+      { wch: 25 }, // Nama
+      { wch: 15 }, // NIS
+      { wch: 30 }, // Tempat PKL
+      { wch: 22 }, // Jurnal
+      { wch: 25 }, // Status
+      { wch: 20 }, // Waktu
+    ];
+    worksheet['!cols'] = wscols;
+
+    const workbook = xlsx.utils.book_new();
+    xlsx.utils.book_append_sheet(workbook, worksheet, "Laporan PKL");
+    
+    // Generate filename based on class name and date
+    const dateStr = new Date().toISOString().split('T')[0];
+    const safeClassName = activeClassName.replace(/[^a-zA-Z0-9]/g, '_');
+    const fileName = `Laporan_PKL_${safeClassName}_${dateStr}.xlsx`;
+    
+    xlsx.writeFile(workbook, fileName);
+  };
+
   if (!hasAssignment) {
     return (
       <div className="flex flex-col gap-6 text-[#0F172A] dark:text-gray-200">
@@ -90,20 +186,39 @@ export const GuruPortal: React.FC<GuruPortalProps> = ({ onPantau }) => {
           <p className="text-[11px] text-[#64748B] dark:text-gray-300">{t('guruMonitorDesc')}</p>
         </div>
 
-        {currentUser?.classes && currentUser.classes.length > 1 && (
-          <div className="flex items-center gap-2">
-            <span className="text-xs font-semibold text-[#64748B] dark:text-gray-300">{t('selectClass')}</span>
-            <select
-              value={selectedClassId || ''}
-              onChange={(e) => setSelectedClassId(e.target.value)}
-              className="bg-white dark:bg-[#243447] border border-[#E2E8F0] dark:border-gray-700 rounded-xl px-3 py-1.5 text-xs text-[#0F172A] dark:text-gray-200 focus:outline-none focus:border-primary"
-            >
-              {currentUser.classes.map((c: { id: string; name: string }) => (
-                <option key={c.id} value={c.id}>{c.name}</option>
-              ))}
-            </select>
-          </div>
-        )}
+        <div className="flex items-center gap-3">
+          <button 
+            onClick={handleExportMonthly}
+            disabled={isExporting}
+            className={`flex items-center gap-2 ${isExporting ? 'bg-blue-400 cursor-not-allowed' : 'bg-blue-600 hover:bg-blue-700'} text-white px-3 py-1.5 rounded-xl text-xs font-bold transition shadow-sm`}
+          >
+            <FileBarChart size={14} />
+            {isExporting ? 'Memproses...' : 'Rekap Bulanan'}
+          </button>
+
+          <button 
+            onClick={handleExportExcel}
+            className="flex items-center gap-2 bg-green-600 hover:bg-green-700 text-white px-3 py-1.5 rounded-xl text-xs font-bold transition shadow-sm"
+          >
+            <Download size={14} />
+            Ekspor Harian
+          </button>
+          
+          {currentUser?.classes && currentUser.classes.length > 1 && (
+            <div className="flex items-center gap-2">
+              <span className="text-xs font-semibold text-[#64748B] dark:text-gray-300">{t('selectClass')}</span>
+              <select
+                value={selectedClassId || ''}
+                onChange={(e) => setSelectedClassId(e.target.value)}
+                className="bg-white dark:bg-[#243447] border border-[#E2E8F0] dark:border-gray-700 rounded-xl px-3 py-1.5 text-xs text-[#0F172A] dark:text-gray-200 focus:outline-none focus:border-primary"
+              >
+                {currentUser.classes.map((c: { id: string; name: string }) => (
+                  <option key={c.id} value={c.id}>{c.name}</option>
+                ))}
+              </select>
+            </div>
+          )}
+        </div>
       </div>
 
       {/* Metrics Grid */}
