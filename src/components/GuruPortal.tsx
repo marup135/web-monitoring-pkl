@@ -188,15 +188,6 @@ export const GuruPortal: React.FC<GuruPortalProps> = ({ onPantau }) => {
 
         <div className="flex items-center gap-3">
           <button 
-            onClick={handleExportMonthly}
-            disabled={isExporting}
-            className={`flex items-center gap-2 ${isExporting ? 'bg-blue-400 cursor-not-allowed' : 'bg-blue-600 hover:bg-blue-700'} text-white px-3 py-1.5 rounded-xl text-xs font-bold transition shadow-sm`}
-          >
-            <FileBarChart size={14} />
-            {isExporting ? 'Memproses...' : 'Rekap Bulanan'}
-          </button>
-
-          <button 
             onClick={handleExportExcel}
             className="flex items-center gap-2 bg-green-600 hover:bg-green-700 text-white px-3 py-1.5 rounded-xl text-xs font-bold transition shadow-sm"
           >
