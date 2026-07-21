@@ -1022,6 +1022,20 @@ export function AttendancePage() {
           </div>
         </div>
       )}
+
+      {/* Inline Face Registration Modal */}
+      {isFaceRegistrationModalOpen && (
+        <FaceRegistrationModal 
+          onClose={() => setIsFaceRegistrationModalOpen(false)}
+          onSuccess={() => {
+            setIsFaceRegistrationModalOpen(false);
+            fetchAttendanceData();
+            setTimeout(() => {
+              openModal('in');
+            }, 500);
+          }}
+        />
+      )}
     </div>
   );
 }
