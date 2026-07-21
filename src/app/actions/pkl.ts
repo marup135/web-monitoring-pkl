@@ -93,6 +93,10 @@ export async function getPKLState(selectedStudentId?: string): Promise<PKLState>
           if (!targetStudent.classId || !advisorClassIds.includes(targetStudent.classId)) {
             throw new Error('Akses ditolak: Siswa dari kelas lain');
           }
+        } else if (currentUser.role === 'INSTITUTION_ADMIN') {
+          if (targetStudent.institutionId !== currentUser.institutionId) {
+            throw new Error('Akses ditolak: Siswa dari institusi lain');
+          }
         }
 
         targetStudentId = selectedStudentId;
@@ -111,8 +115,12 @@ export async function getPKLState(selectedStudentId?: string): Promise<PKLState>
           });
         } else {
           // Admin role
+          const whereAdmin: any = { role: { in: PARTICIPANT_ROLES } };
+          if (currentUser.role === 'INSTITUTION_ADMIN' && currentUser.institutionId) {
+            whereAdmin.institutionId = currentUser.institutionId;
+          }
           firstStudent = await prisma.user.findFirst({
-            where: { role: { in: PARTICIPANT_ROLES } }
+            where: whereAdmin
           });
         }
 
@@ -121,8 +129,12 @@ export async function getPKLState(selectedStudentId?: string): Promise<PKLState>
         } else {
           if ((currentUser.role === 'SUPER_ADMIN' || currentUser.role === 'INSTITUTION_ADMIN')) {
             await resetDatabaseAction();
+            const whereAdmin: any = { role: { in: PARTICIPANT_ROLES } };
+            if (currentUser.role === 'INSTITUTION_ADMIN' && currentUser.institutionId) {
+              whereAdmin.institutionId = currentUser.institutionId;
+            }
             const seededStudent = await prisma.user.findFirst({
-              where: { role: { in: PARTICIPANT_ROLES } }
+              where: whereAdmin
             });
             targetStudentId = seededStudent ? seededStudent.id : '';
           } else {
@@ -1024,6 +1036,9 @@ export async function getStudentsAction(classId?: string, companyId?: string) {
         whereClause.classId = { in: advisorClassIds };
       }
     } else if ((currentUser.role === 'SUPER_ADMIN' || currentUser.role === 'INSTITUTION_ADMIN')) {
+      if (currentUser.role === 'INSTITUTION_ADMIN' && currentUser.institutionId) {
+        (whereClause as any).institutionId = currentUser.institutionId;
+      }
       if (classId) {
         whereClause.classId = classId;
       }
@@ -1397,7 +1412,13 @@ export async function resetDatabaseAction() {
 // --- Kelas Actions ---
 export async function getClassesAction() {
   try {
+    const currentUser = await getAuthenticatedUser();
+    const whereClause: any = {};
+    if (currentUser && currentUser.role !== 'SUPER_ADMIN' && currentUser.institutionId) {
+      whereClause.institutionId = currentUser.institutionId;
+    }
     return prisma.kelas.findMany({
+      where: whereClause,
       orderBy: { name: 'asc' },
     });
   } catch (error) {
@@ -1415,10 +1436,10 @@ export async function createClassAction(name: string) {
 
     const cleanName = name.trim();
     if (!cleanName) return { success: false, error: 'Nama kelas tidak boleh kosong.' };
-    const existing = await prisma.kelas.findUnique({ where: { name: cleanName } });
+    const existing = await prisma.kelas.findFirst({ where: { name: cleanName, institutionId: currentUser.institutionId } });
     if (existing) return { success: false, error: 'Nama kelas sudah terdaftar.' };
 
-    const kelas = await prisma.kelas.create({ data: { name: cleanName } });
+    const kelas = await prisma.kelas.create({ data: { name: cleanName, institutionId: currentUser.institutionId } });
     return { success: true, classId: kelas.id };
   } catch (error) {
     console.error('Failed to create class', error);
@@ -1436,7 +1457,7 @@ export async function updateClassAction(id: string, name: string) {
     const cleanName = name.trim();
     if (!cleanName) return { success: false, error: 'Nama kelas tidak boleh kosong.' };
     const existing = await prisma.kelas.findFirst({
-      where: { name: cleanName, id: { not: id } }
+      where: { name: cleanName, id: { not: id }, institutionId: currentUser.institutionId }
     });
     if (existing) return { success: false, error: 'Nama kelas sudah terdaftar.' };
 
@@ -1483,7 +1504,13 @@ export async function getCompaniesAction() {
       });
     }
 
+    const whereClause: any = {};
+    if (currentUser && currentUser.role !== 'SUPER_ADMIN' && currentUser.institutionId) {
+      whereClause.institutionId = currentUser.institutionId;
+    }
+
     return prisma.perusahaan.findMany({
+      where: whereClause,
       orderBy: { name: 'asc' },
     });
   } catch (error) {
@@ -1501,10 +1528,10 @@ export async function createCompanyAction(name: string) {
 
     const cleanName = name.trim();
     if (!cleanName) return { success: false, error: 'Nama perusahaan tidak boleh kosong.' };
-    const existing = await prisma.perusahaan.findUnique({ where: { name: cleanName } });
+    const existing = await prisma.perusahaan.findFirst({ where: { name: cleanName, institutionId: currentUser.institutionId } });
     if (existing) return { success: false, error: 'Nama perusahaan sudah terdaftar.' };
 
-    const company = await prisma.perusahaan.create({ data: { name: cleanName } });
+    const company = await prisma.perusahaan.create({ data: { name: cleanName, institutionId: currentUser.institutionId } });
     return { success: true, companyId: company.id };
   } catch (error) {
     console.error('Failed to create company', error);
@@ -1522,7 +1549,7 @@ export async function updateCompanyAction(id: string, name: string) {
     const cleanName = name.trim();
     if (!cleanName) return { success: false, error: 'Nama perusahaan tidak boleh kosong.' };
     const existing = await prisma.perusahaan.findFirst({
-      where: { name: cleanName, id: { not: id } }
+      where: { name: cleanName, id: { not: id }, institutionId: currentUser.institutionId }
     });
     if (existing) return { success: false, error: 'Nama perusahaan sudah terdaftar.' };
 
@@ -1567,12 +1594,12 @@ export async function deleteCompanyAction(id: string) {
 export async function getAllUsersAction() {
   try {
     const currentUser = await getAuthenticatedUser();
-    if (!currentUser || (currentUser.role !== 'SUPER_ADMIN' && currentUser.role !== 'INSTITUTION_ADMIN')) {
+    if (!currentUser || (currentUser.role !== 'SUPER_ADMIN' && currentUser.role !== 'INSTITUTION_ADMIN' && currentUser.role !== 'admin')) {
       return [];
     }
 
     const whereClause: any = {};
-    if (currentUser.role === 'INSTITUTION_ADMIN' && currentUser.institutionId) {
+    if (currentUser.role !== 'SUPER_ADMIN' && currentUser.institutionId) {
       whereClause.institutionId = currentUser.institutionId;
     }
 
@@ -1587,6 +1614,11 @@ export async function getAllUsersAction() {
         classId: true,
         companyId: true,
         nisn: true,
+        nip: true,
+        jabatan: true,
+        employeeId: true,
+        companyEmail: true,
+        companyName: true,
         classes: {
           select: {
             id: true,
@@ -1664,47 +1696,64 @@ export async function assignMentorToCompanyAction(userId: string, companyIds: st
   }
 }
 
-export async function assignSiswaAction(
+export async function updateUserByAdminAction(
   userId: string,
-  classId: string | null,
-  companyId: string | null,
+  classId?: string | null,
+  companyId?: string | null,
   name?: string,
-  nisn?: string
+  nisn?: string,
+  nip?: string,
+  jabatan?: string,
+  employeeId?: string,
+  companyEmail?: string,
+  companyName?: string
 ) {
   try {
     const currentUser = await getAuthenticatedUser();
-    if (!currentUser || (currentUser.role !== 'SUPER_ADMIN' && currentUser.role !== 'INSTITUTION_ADMIN')) {
-      return { success: false, error: 'Hanya admin yang dapat mengubah assignment.' };
+    if (!currentUser || (currentUser.role !== 'SUPER_ADMIN' && currentUser.role !== 'INSTITUTION_ADMIN' && currentUser.role !== 'admin')) {
+      return { success: false, error: 'Hanya admin yang dapat mengubah data pengguna.' };
     }
 
     const targetUser = await prisma.user.findUnique({ where: { id: userId } });
-    if (!targetUser || !PARTICIPANT_ROLES.includes(targetUser.role)) {
-      return { success: false, error: 'User bukan Siswa.' };
+    if (!targetUser) {
+      return { success: false, error: 'User tidak ditemukan.' };
     }
 
-    let finalCompanyName = null;
-    if (companyId) {
-      const dbCompany = await prisma.perusahaan.findUnique({ where: { id: companyId } });
-      if (dbCompany) {
-        finalCompanyName = dbCompany.name;
+    let finalCompanyName = targetUser.company;
+    if (companyId !== undefined) {
+      if (companyId === null) {
+        finalCompanyName = null;
+      } else {
+        const dbCompany = await prisma.perusahaan.findUnique({ where: { id: companyId } });
+        if (dbCompany) {
+          finalCompanyName = dbCompany.name;
+        }
       }
+    }
+    if (companyName !== undefined) {
+      finalCompanyName = companyName ? companyName.trim() : null;
     }
 
     await prisma.user.update({
       where: { id: userId },
       data: {
-        classId: classId || null,
-        companyId: companyId || null,
+        ...(classId !== undefined ? { classId: classId || null } : {}),
+        ...(companyId !== undefined ? { companyId: companyId || null } : {}),
         company: finalCompanyName,
-        name: name !== undefined ? name.trim() : undefined,
-        nisn: nisn !== undefined ? nisn.trim() : undefined
+        companyName: finalCompanyName,
+        ...(name !== undefined ? { name: name.trim() } : {}),
+        ...(nisn !== undefined ? { nisn: nisn.trim() } : {}),
+        ...(nip !== undefined ? { nip: nip.trim() } : {}),
+        ...(jabatan !== undefined ? { jabatan: jabatan.trim(), jobTitle: jabatan.trim() } : {}),
+        ...(employeeId !== undefined ? { employeeId: employeeId.trim() } : {}),
+        ...(companyEmail !== undefined ? { companyEmail: companyEmail.trim() } : {})
       }
     });
 
     return { success: true };
   } catch (error) {
-    console.error('Failed to assign student', error);
-    return { success: false, error: 'Gagal memperbarui assignment siswa.' };
+    console.error('Failed to update user', error);
+    return { success: false, error: 'Gagal memperbarui data pengguna.' };
   }
 }
 
@@ -1756,6 +1805,9 @@ export async function getDashboardMetricsAction(classId?: string, companyId?: st
         whereClause.classId = { in: advisorClassIds };
       }
     } else if ((currentUser.role === 'SUPER_ADMIN' || currentUser.role === 'INSTITUTION_ADMIN')) {
+      if (currentUser.role === 'INSTITUTION_ADMIN' && currentUser.institutionId) {
+        (whereClause as any).institutionId = currentUser.institutionId;
+      }
       if (classId) whereClause.classId = classId;
       if (companyId) whereClause.companyId = companyId;
     }
@@ -2087,12 +2139,17 @@ export async function getMonthlyReportDataAction(classId: string) {
       return { success: false, error: 'Akses ditolak' };
     }
 
+    const whereClause: any = {
+      classId: classId,
+      role: { in: PARTICIPANT_ROLES }
+    };
+    if (currentUser.role === 'INSTITUTION_ADMIN' && currentUser.institutionId) {
+      whereClause.institutionId = currentUser.institutionId;
+    }
+
     // Ambil semua siswa di kelas ini beserta data absensi dan kartu (nilai)
     const students = await prisma.user.findMany({
-      where: {
-        classId: classId,
-        role: { in: PARTICIPANT_ROLES }
-      },
+      where: whereClause,
       include: {
         attendances: true,
         cards: true,

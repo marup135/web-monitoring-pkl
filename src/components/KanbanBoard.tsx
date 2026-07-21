@@ -190,7 +190,7 @@ export const KanbanBoard: React.FC<KanbanBoardProps> = ({ onOpenCard }) => {
   const boardBg = currentUser?.boardBackground;
   const isImageBg = boardBg?.startsWith('http') || boardBg?.startsWith('/');
   const bgStyle = boardBg ? {
-    background: isImageBg ? `url(${boardBg}) center/cover no-repeat fixed` : boardBg
+    background: isImageBg ? `url("${boardBg}") center/cover no-repeat fixed` : boardBg
   } : {};
 
   return (

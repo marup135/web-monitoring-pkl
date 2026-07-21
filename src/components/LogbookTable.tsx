@@ -67,18 +67,20 @@ export const LogbookTable: React.FC<LogbookTableProps> = ({ onOpenCard, onEditCa
         {/* Printable Cover Page */}
         <div className="hidden print:flex flex-col items-center justify-center min-h-[26cm] w-full" style={{ pageBreakAfter: 'always' }}>
           {/* eslint-disable-next-line @next/next/no-img-element */}
-          <img src="/nebo.png" alt="Logo" className="w-48 h-48 object-contain mb-10" />
-          <h1 className="text-3xl font-bold uppercase text-black text-center leading-snug">{t("reportTitle")}</h1>
-          <h1 className="text-3xl font-bold uppercase text-black text-center mb-16 leading-snug">{t("reportSubtitle")}</h1>
+          <img src="/nebo.png" alt="Logo" className="w-48 h-48 object-contain mb-8" />
+          <div className="flex flex-col items-center mb-12">
+            <h1 className="text-2xl font-black uppercase text-black text-center tracking-wide leading-tight">{t("reportTitle")}</h1>
+            <h1 className="text-2xl font-black uppercase text-black text-center tracking-wide leading-tight">{t("reportSubtitle")}</h1>
+          </div>
           
-          <table className="mt-8 text-base font-bold text-black border-none text-left w-full max-w-2xl">
+          <table className="text-base font-bold text-black border-none text-left w-auto mx-auto">
             <tbody>
-              <tr><td className="py-3 pr-4 w-64">{t("studentName")}</td><td className="py-3 px-2 w-4">:</td><td className="py-3">{state.studentName || '-'}</td></tr>
-              <tr><td className="py-3 pr-4">{t("nisn")}</td><td className="py-3 px-2">:</td><td className="py-3">{state.nisn || '-'}</td></tr>
-              <tr><td className="py-3 pr-4">{t("schoolOrigin")}</td><td className="py-3 px-2">:</td><td className="py-3">{(currentUser as any)?.school || '-'}</td></tr>
-              <tr><td className="py-3 pr-4">{t("internCompany")}</td><td className="py-3 px-2">:</td><td className="py-3">{state.companyName || '-'}</td></tr>
-              <tr><td className="py-3 pr-4">{t("externalAdvisor")}</td><td className="py-3 px-2">:</td><td className="py-3">{state.mentorName || '-'}</td></tr>
-              <tr><td className="py-3 pr-4">{t("internalAdvisor")}</td><td className="py-3 px-2">:</td><td className="py-3">{state.advisorName || '-'}</td></tr>
+              <tr><td className="py-2.5 pr-12 whitespace-nowrap">{t("studentName")}</td><td className="py-2.5 px-3">:</td><td className="py-2.5 whitespace-nowrap">{state.studentName || '-'}</td></tr>
+              <tr><td className="py-2.5 pr-12 whitespace-nowrap">{t("nisn")}</td><td className="py-2.5 px-3">:</td><td className="py-2.5 whitespace-nowrap">{state.nisn || '-'}</td></tr>
+              <tr><td className="py-2.5 pr-12 whitespace-nowrap">{t("schoolOrigin")}</td><td className="py-2.5 px-3">:</td><td className="py-2.5 whitespace-nowrap">{(currentUser as any)?.school || '-'}</td></tr>
+              <tr><td className="py-2.5 pr-12 whitespace-nowrap">{t("internCompany")}</td><td className="py-2.5 px-3">:</td><td className="py-2.5 whitespace-nowrap">{state.companyName || '-'}</td></tr>
+              <tr><td className="py-2.5 pr-12 whitespace-nowrap">{t("externalAdvisor")}</td><td className="py-2.5 px-3">:</td><td className="py-2.5 whitespace-nowrap">{state.mentorName || '-'}</td></tr>
+              <tr><td className="py-2.5 pr-12 whitespace-nowrap">{t("internalAdvisor")}</td><td className="py-2.5 px-3">:</td><td className="py-2.5 whitespace-nowrap">{state.advisorName || '-'}</td></tr>
             </tbody>
           </table>
         </div>

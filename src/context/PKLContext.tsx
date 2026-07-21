@@ -29,7 +29,7 @@ import {
   getAllUsersAction,
   assignGuruToClassAction,
   assignMentorToCompanyAction,
-  assignSiswaAction,
+  updateUserByAdminAction,
   getPendingUsersAction,
   verifyUserAction,
   manageCollaboratorsAction,
@@ -91,6 +91,11 @@ export interface UserItem {
   companies: { id: string; name: string }[];
   class?: { id: string; name: string } | null;
   perusahaan?: { id: string; name: string } | null;
+  nip?: string | null;
+  jabatan?: string | null;
+  employeeId?: string | null;
+  companyEmail?: string | null;
+  companyName?: string | null;
 }
 
 export interface StudentMetric {
@@ -136,7 +141,18 @@ interface PKLContextProps {
   deleteCompany: (id: string) => Promise<{ success: boolean; error?: string }>;
   assignGuruToClass: (userId: string, classIds: string[]) => Promise<{ success: boolean; error?: string }>;
   assignMentorToCompany: (userId: string, companyIds: string[]) => Promise<{ success: boolean; error?: string }>;
-  assignSiswa: (userId: string, classId: string | null, companyId: string | null, name?: string, nisn?: string) => Promise<{ success: boolean; error?: string }>;
+  assignSiswa: (
+    userId: string,
+    classId: string | null,
+    companyId: string | null,
+    name?: string | null,
+    nisn?: string | null,
+    nip?: string | null,
+    jabatan?: string | null,
+    employeeId?: string | null,
+    companyEmail?: string | null,
+    companyName?: string | null
+  ) => Promise<{ success: boolean; error?: string }>;
   manageCollaborators: (cardId: string, collaboratorNisns: string[], collaboratorsCanEdit: boolean) => Promise<void>;
   addCard: (title: string, description: string, category: string, dueDate: string, startTime: string, endTime: string, columnId?: PKLCard['columnId'], collaboratorNisns?: string[]) => Promise<void>;
   updateCardColumn: (cardId: string, targetColumn: PKLCard['columnId']) => Promise<void>;
@@ -576,12 +592,17 @@ export const PKLProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     userId: string,
     classId: string | null,
     companyId: string | null,
-    name?: string,
-    nisn?: string
+    name?: string | null,
+    nisn?: string | null,
+    nip?: string | null,
+    jabatan?: string | null,
+    employeeId?: string | null,
+    companyEmail?: string | null,
+    companyName?: string | null
   ) => {
     setLoading(true);
     try {
-      const res = await assignSiswaAction(userId, classId, companyId, name, nisn);
+      const res = await updateUserByAdminAction(userId, classId, companyId, name || undefined, nisn || undefined, nip || undefined, jabatan || undefined, employeeId || undefined, companyEmail || undefined, companyName || undefined);
       if (res.success) {
         await fetchAdminData();
       }

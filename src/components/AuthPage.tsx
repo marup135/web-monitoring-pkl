@@ -34,7 +34,7 @@ type AlertType = 'field' | 'credentials' | 'server';
 interface ErrorState {
   message: string;
   type: AlertType;
-  field?: 'username' | 'password' | 'confirmPassword';
+  field?: 'username' | 'password' | 'confirmPassword' | 'institutionCode';
 }
 
 interface AuthPageProps {
@@ -103,7 +103,7 @@ export const AuthPage: React.FC<AuthPageProps> = ({ initialView = 'login' }) => 
     return () => document.removeEventListener('mousedown', handleClickOutside);
   }, []);
 
-  const setError = (message: string, type: AlertType = 'field', field?: 'username' | 'password' | 'confirmPassword') => {
+  const setError = (message: string, type: AlertType = 'field', field?: 'username' | 'password' | 'confirmPassword' | 'institutionCode') => {
     setErrorState({ message, type, field });
   };
 
@@ -168,7 +168,7 @@ export const AuthPage: React.FC<AuthPageProps> = ({ initialView = 'login' }) => 
         return;
       }
       if (!captchaToken) {
-        setError('Silakan verifikasi CAPTCHA.', 'field');
+        setError('Silakan verifikasi CAPTCHA.', 'server');
         return;
       }
     } else {
@@ -268,7 +268,7 @@ export const AuthPage: React.FC<AuthPageProps> = ({ initialView = 'login' }) => 
       }
 
       if (!captchaToken) {
-        setError('Silakan verifikasi CAPTCHA.', 'field');
+        setError('Silakan verifikasi CAPTCHA.', 'server');
         return;
       }
     }
@@ -334,7 +334,11 @@ export const AuthPage: React.FC<AuthPageProps> = ({ initialView = 'login' }) => 
           setNisn('');
           setNip('');
         } else if (!res.success) {
-          setError(res.error ?? 'Gagal melakukan pendaftaran.', 'server');
+          if (res.error?.includes('Kode Institusi')) {
+            setError(res.error, 'field', 'institutionCode');
+          } else {
+            setError(res.error ?? 'Gagal melakukan pendaftaran.', 'server');
+          }
         }
       }
     } catch {
@@ -353,6 +357,8 @@ export const AuthPage: React.FC<AuthPageProps> = ({ initialView = 'login' }) => 
     errorState?.field === 'password' || errorState?.type === 'credentials';
   const confirmPasswordHasError =
     errorState?.field === 'confirmPassword';
+  const institutionCodeHasError =
+    errorState?.field === 'institutionCode';
 
   // Dynamic input border class
   const inputClass = (hasError: boolean) =>
@@ -811,10 +817,17 @@ export const AuthPage: React.FC<AuthPageProps> = ({ initialView = 'login' }) => 
                               placeholder="KODE-INSTITUSI"
                               value={institutionCode}
                               onChange={(e) => setInstitutionCode(e.target.value)}
-                              className={inputClass(false)}
+                              className={inputClass(institutionCodeHasError)}
                             />
                           </div>
-                          <p className="text-[10px] text-slate-500 mt-0.5">Wajib diisi dengan kode yang diberikan oleh Admin Sekolah Siswa.</p>
+                          {institutionCodeHasError && errorState?.type === 'field' ? (
+                            <p className="text-xs text-red-500 font-medium flex items-center gap-1 mt-1">
+                              <AlertCircle size={14} />
+                              {errorState?.message}
+                            </p>
+                          ) : (
+                            <p className="text-[10px] text-slate-500 mt-0.5">Wajib diisi dengan kode yang diberikan oleh Admin Sekolah Siswa.</p>
+                          )}
                         </div>
                       </div>
                     </div>

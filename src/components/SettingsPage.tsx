@@ -785,8 +785,8 @@ export const SettingsPage: React.FC<SettingsPageProps> = ({
               className="w-full sm:w-[320px] aspect-[4/3] rounded-2xl shadow-inner border-2 border-slate-100 dark:border-gray-800 bg-slate-100 dark:bg-gray-900 bg-cover bg-center overflow-hidden flex items-center justify-center relative mt-2"
               style={{ 
                 background: currentUser?.boardBackground 
-                  ? (currentUser.boardBackground.startsWith('http') || currentUser.boardBackground.startsWith('/') 
-                    ? `url(${currentUser.boardBackground})` 
+                  ? (currentUser.boardBackground.startsWith('http') || currentUser.boardBackground.startsWith('data:') || currentUser.boardBackground.startsWith('/') 
+                    ? `url("${currentUser.boardBackground}") center/cover no-repeat` 
                     : currentUser.boardBackground)
                   : undefined
               }}

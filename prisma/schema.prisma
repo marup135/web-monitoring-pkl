@@ -133,22 +133,26 @@ model AdvisorNote {
 
 model Kelas {
   id            String       @id @default(uuid())
-  name          String       @unique @db.VarChar(255)
+  name          String       @db.VarChar(255)
   createdAt     DateTime     @default(now())
   institutionId String?      @db.VarChar(255)
   institution   Institution? @relation("InstitutionClasses", fields: [institutionId], references: [id])
   students      User[]       @relation("StudentClass")
   advisors      User[]       @relation("AdvisorClasses")
+
+  @@unique([name, institutionId])
 }
 
 model Perusahaan {
   id            String       @id @default(uuid())
-  name          String       @unique @db.VarChar(255)
+  name          String       @db.VarChar(255)
   createdAt     DateTime     @default(now())
   institutionId String?      @db.VarChar(255)
   institution   Institution? @relation("InstitutionCompanies", fields: [institutionId], references: [id])
   students      User[]       @relation("StudentCompany")
   mentors       User[]       @relation("MentorCompanies")
+
+  @@unique([name, institutionId])
 }
 
 model Attendance {

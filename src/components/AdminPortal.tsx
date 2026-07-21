@@ -138,22 +138,33 @@ export const AdminPortal: React.FC = () => {
   const handleSiswaClassChange = async (userId: string, classId: string) => {
     const user = allUsersList.find((u: any) => u.id === userId);
     const companyId = user?.companyId || null;
-    const res = await assignSiswa(userId, classId || null, companyId, user?.name, user?.nisn || undefined);
+    const res = await assignSiswa(userId, classId || null, companyId, user?.name, user?.nisn, user?.nip, user?.jabatan, user?.employeeId, user?.companyEmail, user?.companyName);
     if (!res.success) alert(res.error);
   };
 
   const handleSiswaCompanyChange = async (userId: string, companyId: string) => {
     const user = allUsersList.find((u: any) => u.id === userId);
     const classId = user?.classId || null;
-    const res = await assignSiswa(userId, classId, companyId || null, user?.name, user?.nisn || undefined);
+    const res = await assignSiswa(userId, classId, companyId || null, user?.name, user?.nisn, user?.nip, user?.jabatan, user?.employeeId, user?.companyEmail, user?.companyName);
     if (!res.success) alert(res.error);
   };
 
-  const handleSiswaProfileUpdate = async (userId: string, name: string, nisn: string) => {
+  const handleUserProfileUpdate = async (
+    userId: string, 
+    updates: { name?: string; nisn?: string; nip?: string; jabatan?: string; employeeId?: string; companyEmail?: string; companyName?: string }
+  ) => {
     const user = allUsersList.find((u: any) => u.id === userId);
     const classId = user?.classId || null;
     const companyId = user?.companyId || null;
-    const res = await assignSiswa(userId, classId, companyId, name, nisn);
+    const name = updates.name !== undefined ? updates.name : user?.name;
+    const nisn = updates.nisn !== undefined ? updates.nisn : user?.nisn;
+    const nip = updates.nip !== undefined ? updates.nip : user?.nip;
+    const jabatan = updates.jabatan !== undefined ? updates.jabatan : user?.jabatan;
+    const employeeId = updates.employeeId !== undefined ? updates.employeeId : user?.employeeId;
+    const companyEmail = updates.companyEmail !== undefined ? updates.companyEmail : user?.companyEmail;
+    const companyName = updates.companyName !== undefined ? updates.companyName : user?.companyName;
+    
+    const res = await assignSiswa(userId, classId, companyId, name, nisn, nip, jabatan, employeeId, companyEmail, companyName);
     if (!res.success) alert(res.error);
   };
 
@@ -560,11 +571,31 @@ export const AdminPortal: React.FC = () => {
                     const currentClassIds = guru.classes?.map((c: any) => c.id) || [];
                     return (
                       <div key={guru.id} className="bg-white dark:bg-[#243447] border border-[#E2E8F0] dark:border-gray-700 p-3 rounded-lg flex flex-col md:flex-row justify-between md:items-center gap-3">
-                        <div>
-                          <p className="font-bold text-slate-800 dark:text-gray-200 text-sm md:text-xs">{guru.name}</p>
-                          <p className="text-[10px] text-slate-400 font-medium">{t('usernameLabel')} {guru.username}</p>
+                        <div className="flex-1 w-full md:w-auto">
+                          <div className="flex flex-col sm:flex-row gap-3 mb-2">
+                            <div className="flex flex-col gap-1 flex-1">
+                              <label className="text-[9px] uppercase tracking-wider text-slate-400 font-bold">{t('fullNameLabel')}</label>
+                              <input
+                                type="text"
+                                defaultValue={guru.name}
+                                onBlur={(e) => handleUserProfileUpdate(guru.id, { name: e.target.value })}
+                                className="bg-slate-50 dark:bg-gray-800/50 border border-slate-200 dark:border-gray-700 rounded-lg px-2 py-1 text-xs text-slate-800 dark:text-gray-200 focus:outline-none"
+                              />
+                            </div>
+                            <div className="flex flex-col gap-1 flex-1">
+                              <label className="text-[9px] uppercase tracking-wider text-slate-400 font-bold">NIP</label>
+                              <input
+                                type="text"
+                                defaultValue={guru.nip || ''}
+                                placeholder={t('notFilled')}
+                                onBlur={(e) => handleUserProfileUpdate(guru.id, { nip: e.target.value })}
+                                className="bg-slate-50 dark:bg-gray-800/50 border border-slate-200 dark:border-gray-700 rounded-lg px-2 py-1 text-xs text-slate-800 dark:text-gray-200 focus:outline-none"
+                              />
+                            </div>
+                          </div>
+                          <p className="text-[10px] text-slate-400 font-medium mb-2">{t('usernameLabel')} {guru.username}</p>
                         </div>
-                        <div className="flex flex-wrap gap-2">
+                        <div className="flex flex-wrap gap-2 md:max-w-[60%]">
                           {classesList.map(c => {
                             const isAssigned = currentClassIds.includes(c.id);
                             return (
@@ -601,11 +632,45 @@ export const AdminPortal: React.FC = () => {
                     const currentCompIds = mentor.companies?.map((c: any) => c.id) || [];
                     return (
                       <div key={mentor.id} className="bg-white dark:bg-[#243447] border border-[#E2E8F0] dark:border-gray-700 p-3 rounded-lg flex flex-col md:flex-row justify-between md:items-center gap-3">
-                        <div>
-                          <p className="font-bold text-slate-800 dark:text-gray-200 text-sm md:text-xs">{mentor.name}</p>
-                          <p className="text-[10px] text-slate-400 font-medium">{t('usernameLabel')} {mentor.username}</p>
+                        <div className="flex-1 w-full md:w-auto">
+                          <div className="flex flex-col gap-2 mb-2">
+                            <div className="flex flex-col sm:flex-row gap-2">
+                              <div className="flex flex-col gap-1 flex-1">
+                                <label className="text-[9px] uppercase tracking-wider text-slate-400 font-bold">{t('fullNameLabel')}</label>
+                                <input
+                                  type="text"
+                                  defaultValue={mentor.name}
+                                  onBlur={(e) => handleUserProfileUpdate(mentor.id, { name: e.target.value })}
+                                  className="bg-slate-50 dark:bg-gray-800/50 border border-slate-200 dark:border-gray-700 rounded-lg px-2 py-1 text-xs text-slate-800 dark:text-gray-200 focus:outline-none"
+                                />
+                              </div>
+                              <div className="flex flex-col gap-1 flex-1">
+                                <label className="text-[9px] uppercase tracking-wider text-slate-400 font-bold">ID Karyawan</label>
+                                <input
+                                  type="text"
+                                  defaultValue={mentor.employeeId || ''}
+                                  placeholder={t('notFilled')}
+                                  onBlur={(e) => handleUserProfileUpdate(mentor.id, { employeeId: e.target.value })}
+                                  className="bg-slate-50 dark:bg-gray-800/50 border border-slate-200 dark:border-gray-700 rounded-lg px-2 py-1 text-xs text-slate-800 dark:text-gray-200 focus:outline-none"
+                                />
+                              </div>
+                            </div>
+                            <div className="flex flex-col sm:flex-row gap-2">
+                              <div className="flex flex-col gap-1 flex-1">
+                                <label className="text-[9px] uppercase tracking-wider text-slate-400 font-bold">Jabatan</label>
+                                <input
+                                  type="text"
+                                  defaultValue={mentor.jabatan || ''}
+                                  placeholder={t('notFilled')}
+                                  onBlur={(e) => handleUserProfileUpdate(mentor.id, { jabatan: e.target.value })}
+                                  className="bg-slate-50 dark:bg-gray-800/50 border border-slate-200 dark:border-gray-700 rounded-lg px-2 py-1 text-xs text-slate-800 dark:text-gray-200 focus:outline-none"
+                                />
+                              </div>
+                            </div>
+                          </div>
+                          <p className="text-[10px] text-slate-400 font-medium mb-2">{t('usernameLabel')} {mentor.username}</p>
                         </div>
-                        <div className="flex flex-wrap gap-2">
+                        <div className="flex flex-col md:flex-row flex-wrap gap-2 md:max-w-[60%]">
                           {companiesList.map(co => {
                             const isAssigned = currentCompIds.includes(co.id);
                             return (
@@ -648,7 +713,7 @@ export const AdminPortal: React.FC = () => {
                               <input
                                 type="text"
                                 defaultValue={siswa.name}
-                                onBlur={(e) => handleSiswaProfileUpdate(siswa.id, e.target.value, siswa.nisn || '')}
+                                onBlur={(e) => handleUserProfileUpdate(siswa.id, { name: e.target.value })}
                                 className="bg-slate-50 dark:bg-gray-800/50 border border-slate-200 dark:border-gray-700 rounded-xl md:rounded-lg px-3 py-2 md:p-1.5 text-sm md:text-xs text-slate-800 dark:text-gray-200 focus:outline-none min-h-[48px] md:min-h-0"
                               />
                             </div>
@@ -658,7 +723,7 @@ export const AdminPortal: React.FC = () => {
                                 type="text"
                                 defaultValue={siswa.nisn || ''}
                                 placeholder={t('notFilled')}
-                                onBlur={(e) => handleSiswaProfileUpdate(siswa.id, siswa.name, e.target.value)}
+                                onBlur={(e) => handleUserProfileUpdate(siswa.id, { nisn: e.target.value })}
                                 className="bg-slate-50 dark:bg-gray-800/50 border border-slate-200 dark:border-gray-700 rounded-xl md:rounded-lg px-3 py-2 md:p-1.5 text-sm md:text-xs text-slate-800 dark:text-gray-200 focus:outline-none min-h-[48px] md:min-h-0"
                               />
                             </div>

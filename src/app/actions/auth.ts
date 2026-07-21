@@ -134,7 +134,7 @@ export async function registerAction(
     let resolvedClassId = null;
     if (PARTICIPANT_ROLES.includes(role) && className) {
       const trimmedClass = className.trim();
-      let dbClass = await prisma.kelas.findUnique({ where: { name: trimmedClass } });
+      let dbClass = await prisma.kelas.findFirst({ where: { name: trimmedClass, institutionId: resolvedInstitutionId } });
       if (!dbClass) {
         dbClass = await prisma.kelas.create({ data: { name: trimmedClass, institutionId: resolvedInstitutionId } });
       }
@@ -145,7 +145,7 @@ export async function registerAction(
     let finalCompany = null;
     if ((PARTICIPANT_ROLES.includes(role) || role === 'EXTERNAL_MENTOR') && companyName) {
       finalCompany = companyName.trim();
-      let dbCompany = await prisma.perusahaan.findUnique({ where: { name: finalCompany } });
+      let dbCompany = await prisma.perusahaan.findFirst({ where: { name: finalCompany, institutionId: resolvedInstitutionId } });
       if (!dbCompany) {
         dbCompany = await prisma.perusahaan.create({ data: { name: finalCompany, institutionId: resolvedInstitutionId } });
       }
