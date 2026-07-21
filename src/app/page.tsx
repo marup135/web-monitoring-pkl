@@ -730,7 +730,7 @@ function HomeWrapper() {
             </button>
             <AuthPage initialView={authView} />
           </div>
-          <Footer />
+          <Footer onLoginClick={() => { setAuthView('login'); setShowLogin(true); }} />
         </div>
       );
     }
@@ -742,7 +742,7 @@ function HomeWrapper() {
             onRegisterClick={() => { setAuthView('register'); setShowLogin(true); }}
           />
         </div>
-        <Footer />
+        <Footer onLoginClick={() => { setAuthView('login'); setShowLogin(true); }} />
       </div>
     );
   }

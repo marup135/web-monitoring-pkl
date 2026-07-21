@@ -1,7 +1,7 @@
 import React from 'react';
 import Link from 'next/link';
 
-export const Footer: React.FC = () => {
+export const Footer: React.FC<{ onLoginClick?: () => void }> = ({ onLoginClick }) => {
   return (
     <footer className="w-full bg-white dark:bg-gray-900 border-t border-slate-200 dark:border-gray-800 pt-16 pb-8 px-6 md:px-12 mt-auto print:hidden">
       <div className="max-w-6xl mx-auto grid grid-cols-1 md:grid-cols-4 gap-10 md:gap-8 mb-12">
@@ -37,9 +37,15 @@ export const Footer: React.FC = () => {
               </Link>
             </li>
             <li>
-              <Link href="/" className="hover:text-blue-600 dark:hover:text-blue-400 transition-colors cursor-pointer text-left">
-                Masuk Portal
-              </Link>
+              {onLoginClick ? (
+                <button onClick={onLoginClick} className="hover:text-blue-600 dark:hover:text-blue-400 transition-colors cursor-pointer text-left">
+                  Masuk Portal
+                </button>
+              ) : (
+                <Link href="/" className="hover:text-blue-600 dark:hover:text-blue-400 transition-colors cursor-pointer text-left">
+                  Masuk Portal
+                </Link>
+              )}
             </li>
             <li><a href="mailto:smkn1bojong@gmail.com?subject=Bantuan%20Aplikasi" className="hover:text-blue-600 dark:hover:text-blue-400 transition-colors">Pusat Bantuan (FAQ)</a></li>
           </ul>
@@ -77,8 +83,8 @@ export const Footer: React.FC = () => {
           &copy; {new Date().getFullYear()} NeboTrack. Seluruh hak cipta dilindungi.
         </p>
         <div className="flex gap-4">
-          <Link href="/#syarat" className="text-xs text-slate-500 hover:text-blue-600 dark:hover:text-blue-400">Syarat & Ketentuan</Link>
-          <Link href="/#privasi" className="text-xs text-slate-500 hover:text-blue-600 dark:hover:text-blue-400">Kebijakan Privasi</Link>
+          <Link href="/terms" className="text-xs text-slate-500 hover:text-blue-600 dark:hover:text-blue-400">Syarat & Ketentuan</Link>
+          <Link href="/privacy" className="text-xs text-slate-500 hover:text-blue-600 dark:hover:text-blue-400">Kebijakan Privasi</Link>
         </div>
       </div>
     </footer>
