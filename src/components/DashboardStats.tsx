@@ -5,9 +5,11 @@ import { usePKL } from '../context/PKLContext';
 import { Clock, CheckSquare, Award, MessageSquare, Plus, FileText, Calendar } from 'lucide-react';
 import { calculateDuration } from '@/utils/time';
 import { useLanguage } from '../context/LanguageContext';
+import { SecretNotesPanel } from './SecretNotesPanel';
+import { PARTICIPANT_ROLES } from '@/lib/constants';
 
 export const DashboardStats: React.FC = () => {
-  const { state, addAdvisorNote } = usePKL();
+  const { state, addAdvisorNote, currentUser, selectedStudentId } = usePKL();
   const { t } = useLanguage();
   const [newNoteText, setNewNoteText] = useState('');
 
@@ -235,6 +237,14 @@ export const DashboardStats: React.FC = () => {
             </div>
 
           </div>
+
+          {/* Secret Notes Panel (Only for Mentors/Gurus/Admin) */}
+          {currentUser && !PARTICIPANT_ROLES.includes(currentUser.role) && (
+            <SecretNotesPanel 
+              studentId={selectedStudentId || (PARTICIPANT_ROLES.includes(currentUser.role) ? currentUser.id : '')} 
+            />
+          )}
+
         </div>
 
       </div>

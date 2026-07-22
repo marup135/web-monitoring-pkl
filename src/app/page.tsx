@@ -23,6 +23,8 @@ import { NotificationBell } from '../components/NotificationBell';
 import { LandingPage } from '../components/LandingPage';
 import { Footer } from '../components/Footer';
 import { AttendanceReminder } from '../components/AttendanceReminder';
+import { PrivateNotepad } from '../components/PrivateNotepad';
+import { AnnouncementBoard } from '../components/AnnouncementBoard';
 
 function DashboardContent() {
   const { t } = useLanguage();
@@ -74,11 +76,11 @@ function DashboardContent() {
               />
               <div>
                 <h1 className="text-xl md:text-2xl font-black text-[#0F172A] dark:text-white tracking-tight">
-                  PORTAL PEMBIMBING - NEBOTRACK
+                  {PARTICIPANT_ROLES.includes(currentUser.role) ? 'PORTAL SISWA - NEBOTRACK' : 'PORTAL PEMBIMBING - NEBOTRACK'}
                 </h1>
                 <p className="text-[10px] md:text-xs text-[#64748B] dark:text-gray-300 font-medium mt-0.5">
                   Selamat datang, <span className="text-primary font-bold">{currentUser.name}</span> (Peran:{' '}
-                  {currentUser.role === 'SUPER_ADMIN' ? 'Super Admin' : currentUser.role === 'INSTITUTION_ADMIN' ? 'Admin Institusi' : currentUser.role === 'INTERNAL_MENTOR' ? 'Pembimbing Internal' : 'Pembimbing Eksternal'}
+                  {PARTICIPANT_ROLES.includes(currentUser.role) ? 'Peserta / Siswa' : currentUser.role === 'SUPER_ADMIN' ? 'Super Admin' : currentUser.role === 'INSTITUTION_ADMIN' ? 'Admin Institusi' : currentUser.role === 'INTERNAL_MENTOR' ? 'Pembimbing Internal' : 'Pembimbing Eksternal'}
                   )
                 </p>
               </div>
@@ -426,7 +428,7 @@ function DashboardContent() {
 
           <span className="text-[#E2E8F0] hidden sm:inline">|</span>
 
-          {currentUser?.role === 'siswa' && (
+          {currentUser && PARTICIPANT_ROLES.includes(currentUser.role) && (
             <button 
               onClick={() => {
                 if (confirm(t('confirmResetDbAlert'))) {
@@ -523,6 +525,8 @@ function DashboardContent() {
           {t('settings')}
         </button>
       </div>
+
+      <AnnouncementBoard />
 
       {/* Render Active View Tab */}
       <div className="min-h-[500px]">
@@ -751,6 +755,7 @@ function HomeWrapper() {
     <>
       <LoginSuccessToast visible={showToast} />
       <DashboardContent />
+      <PrivateNotepad />
     </>
   );
 }

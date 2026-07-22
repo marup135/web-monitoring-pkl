@@ -5,13 +5,15 @@ import { usePKL } from '../context/PKLContext';
 import { PARTICIPANT_ROLES } from '../lib/constants';
 import { useLanguage } from '../context/LanguageContext';
 import { 
-  getServerTimeAction, 
   getAttendanceTodayAction, 
   getAttendanceHistoryAction, 
-  checkInAction,
-  checkOutAction,
-  requestLeaveAction,
-  approveLeaveAction
+  checkInAction, 
+  checkOutAction, 
+  getServerTimeAction, 
+  requestLeaveAction, 
+  approveLeaveAction,
+  approveWfhAction,
+  rejectWfhAction
 } from '@/app/actions/attendance';
 import { getFaceDescriptorAction } from '@/app/actions/profile';
 import { Clock, Calendar, CheckCircle2, AlertCircle, RefreshCw, UserCheck, Camera, MapPin, X, Upload, Eye, WifiOff } from 'lucide-react';
@@ -26,6 +28,7 @@ interface AttendanceRecord {
   checkIn: string | null;
   checkOut: string | null;
   status: string;
+  locationStatus?: string;
   createdAt: Date;
 }
 
@@ -53,6 +56,7 @@ export function AttendancePage() {
   const [leaveType, setLeaveType] = useState<'SICK' | 'EXCUSED'>('SICK');
   const [leaveReason, setLeaveReason] = useState('');
   const [leavePhoto, setLeavePhoto] = useState<string | null>(null);
+  const [showWfhPrompt, setShowWfhPrompt] = useState<{distance: number} | null>(null);
   
   // Modal for Viewing Proof
   const [proofModalData, setProofModalData] = useState<{
@@ -325,10 +329,36 @@ export function AttendancePage() {
         closeModal();
         await fetchAttendanceData();
       } else {
-        setErrorMsg(res.error || `Gagal absen ${cameraMode === 'in' ? 'masuk' : 'pulang'}.`);
+        if (res.error === 'OUT_OF_RANGE') {
+          setShowWfhPrompt({ distance: (res as any).distance || 0 });
+        } else if (res.error === 'OUT_OF_RANGE_CHECKOUT') {
+          setErrorMsg(`Gagal absen pulang. Jarak Anda ${(res as any).distance}m dari lokasi PKL (Maks: 50m).`);
+        } else {
+          setErrorMsg(res.error || `Gagal absen ${cameraMode === 'in' ? 'masuk' : 'pulang'}.`);
+        }
       }
     } catch (err: any) {
       setErrorMsg(err.message || 'Terjadi kesalahan saat absensi.');
+    } finally {
+      setActionLoading(false);
+    }
+  };
+
+  const handleWfhConfirm = async () => {
+    if (!currentUser || !location || !photoCaptured) return;
+    try {
+      setActionLoading(true);
+      setShowWfhPrompt(null);
+      const res = await checkInAction(currentUser.id, location.lat, location.lng, photoCaptured, undefined, true);
+      if (res.success) {
+        setSuccessMsg('Absen masuk WFH berhasil diajukan! Menunggu persetujuan pembimbing.');
+        closeModal();
+        await fetchAttendanceData();
+      } else {
+        setErrorMsg(res.error || 'Gagal absen masuk WFH.');
+      }
+    } catch (err: any) {
+      setErrorMsg(err.message || 'Terjadi kesalahan.');
     } finally {
       setActionLoading(false);
     }
@@ -377,7 +407,33 @@ export function AttendancePage() {
     }
   };
 
-  const getStatusLabel = (status: string) => {
+  const handleApproveWfh = async (attendanceId: string, isApproved: boolean) => {
+    if (actionLoading) return;
+    try {
+      setActionLoading(true);
+      setErrorMsg(null);
+      const res = isApproved ? await approveWfhAction(attendanceId) : await rejectWfhAction(attendanceId);
+      if (res.success) {
+        setSuccessMsg(isApproved ? 'Berhasil menyetujui WFH.' : 'Pengajuan WFH telah ditolak.');
+        await fetchAttendanceData();
+      } else {
+        setErrorMsg(res.error || 'Gagal merubah status WFH.');
+      }
+    } catch (e: any) {
+      setErrorMsg(e.message || 'Terjadi kesalahan');
+    } finally {
+      setActionLoading(false);
+    }
+  };
+
+  const getStatusLabel = (status: string, locationStatus?: string) => {
+    if (locationStatus === 'PENDING') {
+      return { label: 'MENUNGGU WFH', color: 'bg-amber-50 text-amber-600 border border-amber-200 dark:bg-amber-900/10 dark:text-amber-400 dark:border-amber-800' };
+    }
+    if (locationStatus === 'REJECTED') {
+      return { label: 'WFH DITOLAK', color: 'bg-red-50 text-red-600 border border-red-200 dark:bg-red-900/10 dark:text-red-400 dark:border-red-800' };
+    }
+    
     switch (status) {
       case 'CHECKED_IN':
         return { label: t('statusCheckedIn'), color: 'bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-400' };
@@ -640,8 +696,8 @@ export function AttendancePage() {
               <div className="h-10 bg-slate-100 dark:bg-gray-800 animate-pulse rounded-xl" />
             ) : (
               <div className="flex items-center gap-3">
-                <div className={`px-3.5 py-2 rounded-xl text-xs font-extrabold tracking-wide uppercase shadow-sm ${getStatusLabel(todayAttendance?.status || 'NOT_CHECKED_IN').color}`}>
-                  {getStatusLabel(todayAttendance?.status || 'NOT_CHECKED_IN').label}
+                <div className={`px-3.5 py-2 rounded-xl text-xs font-extrabold tracking-wide uppercase shadow-sm ${getStatusLabel(todayAttendance?.status || 'NOT_CHECKED_IN', todayAttendance?.locationStatus).color}`}>
+                  {getStatusLabel(todayAttendance?.status || 'NOT_CHECKED_IN', todayAttendance?.locationStatus).label}
                 </div>
               </div>
             )}
@@ -672,7 +728,6 @@ export function AttendancePage() {
                   <span className="text-xs font-bold text-[#0F172A] dark:text-white block">{t("checkInBox")}</span>
                   <span className="text-[10px] text-[#64748B] dark:text-gray-300 block mt-0.5">{t("morningSession")}</span>
                   
-                  {/* Status Indicator inside box */}
                   {todayAttendance?.checkIn && (
                     <span className="inline-flex items-center gap-1 mt-2 text-xs font-semibold text-green-600 dark:text-green-400">
                       <UserCheck size={14} /> {t("checkedInAt").replace("{time}", todayAttendance.checkIn as string)}
@@ -808,7 +863,7 @@ export function AttendancePage() {
               </thead>
               <tbody className="divide-y divide-slate-100 dark:divide-gray-800">
                 {history.map((item: any) => {
-                  const labelInfo = getStatusLabel(item.status);
+                  const statusUI = getStatusLabel(item.status, item.locationStatus);
                   return (
                     <tr key={item.id} className="hover:bg-slate-50/50 dark:hover:bg-gray-800/20 text-[#0F172A] dark:text-gray-200">
                       <td className="p-3.5 font-medium">{item.date}</td>
@@ -827,13 +882,19 @@ export function AttendancePage() {
                         )}
                       </td>
                       <td className="p-3.5">
-                        <span className={`inline-block px-2 py-0.5 rounded-lg text-[10px] font-bold uppercase ${labelInfo.color}`}>
-                          {labelInfo.label}
+                        <span className={`inline-block px-2 py-0.5 rounded-lg text-[10px] font-bold uppercase ${statusUI.color}`}>
+                          {statusUI.label}
                         </span>
                         {currentUser && !PARTICIPANT_ROLES.includes(currentUser.role) && (item.status === 'PENDING_SICK' || item.status === 'PENDING_EXCUSED') && (
                           <div className="flex gap-2 mt-2">
-                            <button onClick={() => handleApproveLeave(item.id, true)} disabled={actionLoading} className="text-[10px] font-bold bg-green-500 text-white px-2 py-1 rounded hover:bg-green-600 shadow-sm transition disabled:opacity-50">Setujui</button>
+                            <button onClick={() => handleApproveLeave(item.id, true)} disabled={actionLoading} className="text-[10px] font-bold bg-green-500 text-white px-2 py-1 rounded hover:bg-green-600 shadow-sm transition disabled:opacity-50">Setujui Izin</button>
                             <button onClick={() => handleApproveLeave(item.id, false)} disabled={actionLoading} className="text-[10px] font-bold bg-red-500 text-white px-2 py-1 rounded hover:bg-red-600 shadow-sm transition disabled:opacity-50">Tolak</button>
+                          </div>
+                        )}
+                        {currentUser && !PARTICIPANT_ROLES.includes(currentUser.role) && item.locationStatus === 'PENDING' && (
+                          <div className="flex gap-2 mt-2">
+                            <button onClick={() => handleApproveWfh(item.id, true)} disabled={actionLoading} className="text-[10px] font-bold bg-blue-500 text-white px-2 py-1 rounded hover:bg-blue-600 shadow-sm transition disabled:opacity-50">Setujui WFH</button>
+                            <button onClick={() => handleApproveWfh(item.id, false)} disabled={actionLoading} className="text-[10px] font-bold bg-red-500 text-white px-2 py-1 rounded hover:bg-red-600 shadow-sm transition disabled:opacity-50">Tolak</button>
                           </div>
                         )}
                       </td>
@@ -1017,6 +1078,39 @@ export function AttendancePage() {
               >
                 {actionLoading ? <RefreshCw size={18} className="animate-spin" /> : <CheckCircle2 size={18} />}
                 {actionLoading ? 'Memproses...' : 'Kirim Pengajuan'}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* WFH Prompt Modal */}
+      {showWfhPrompt && (
+        <div className="fixed inset-0 z-[9999] bg-black/60 backdrop-blur-sm flex items-center justify-center p-4">
+          <div className="bg-white dark:bg-[#1E293B] rounded-3xl w-full max-w-sm shadow-2xl p-6 text-center">
+            <div className="w-16 h-16 bg-amber-100 text-amber-500 rounded-full flex items-center justify-center mx-auto mb-4">
+              <MapPin size={32} />
+            </div>
+            <h3 className="text-xl font-bold text-gray-800 dark:text-white mb-2">Lokasi di Luar Radius</h3>
+            <p className="text-sm text-gray-600 dark:text-gray-300 mb-6">
+              Jarak Anda dengan kantor adalah <strong>{showWfhPrompt.distance} meter</strong> (Maks: 50m). 
+              Apakah Anda sedang WFH / Tugas Luar hari ini?
+            </p>
+            <div className="flex gap-3">
+              <button 
+                onClick={() => setShowWfhPrompt(null)}
+                disabled={actionLoading}
+                className="flex-1 py-2.5 rounded-xl font-bold border border-gray-200 text-gray-600 dark:border-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-800 transition"
+              >
+                Batal
+              </button>
+              <button 
+                onClick={handleWfhConfirm}
+                disabled={actionLoading}
+                className="flex-1 py-2.5 rounded-xl font-bold bg-primary hover:bg-primary-hover text-white transition flex items-center justify-center gap-2"
+              >
+                {actionLoading ? <RefreshCw size={16} className="animate-spin" /> : null}
+                Ya, WFH
               </button>
             </div>
           </div>

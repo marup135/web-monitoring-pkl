@@ -74,6 +74,8 @@ export interface ClassItem {
 export interface CompanyItem {
   id: string;
   name: string;
+  latitude?: number | null;
+  longitude?: number | null;
   createdAt: Date;
 }
 
@@ -136,8 +138,8 @@ interface PKLContextProps {
   createClass: (name: string) => Promise<{ success: boolean; error?: string }>;
   updateClass: (id: string, name: string) => Promise<{ success: boolean; error?: string }>;
   deleteClass: (id: string) => Promise<{ success: boolean; error?: string }>;
-  createCompany: (name: string) => Promise<{ success: boolean; error?: string }>;
-  updateCompany: (id: string, name: string) => Promise<{ success: boolean; error?: string }>;
+  createCompany: (name: string, latitude?: number, longitude?: number) => Promise<{ success: boolean; error?: string }>;
+  updateCompany: (id: string, name: string, latitude?: number, longitude?: number) => Promise<{ success: boolean; error?: string }>;
   deleteCompany: (id: string) => Promise<{ success: boolean; error?: string }>;
   assignGuruToClass: (userId: string, classIds: string[]) => Promise<{ success: boolean; error?: string }>;
   assignMentorToCompany: (userId: string, companyIds: string[]) => Promise<{ success: boolean; error?: string }>;
@@ -187,6 +189,7 @@ interface PKLContextProps {
   login: (username: string, password: string, captchaToken?: string) => Promise<{ success: boolean; error?: string }>;
   register: (username: string, email: string, password: string, name: string, role: string, companyName?: string, className?: string, nisn?: string, nip?: string, school?: string, jabatan?: string, employeeId?: string, companyEmail?: string, institutionCode?: string, captchaToken?: string) => Promise<{ success: boolean; error?: string; pending?: boolean; message?: string }>;
   logout: () => Promise<void>;
+  refreshCurrentUser: () => Promise<void>;
   updateCurrentUserName?: (name: string) => void;
   updateCurrentUserBackground: (url: string | null) => void;
   updateProfileContext: (updates: Partial<UserProfile>) => void;
@@ -232,6 +235,13 @@ export const PKLProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     if (currentUser?.role === 'admin' || currentUser?.role === 'SUPER_ADMIN' || currentUser?.role === 'INSTITUTION_ADMIN') {
       const u = await getAllUsersAction();
       setAllUsersList(u);
+    }
+  };
+
+  const refreshCurrentUser = async () => {
+    const userRes = await getCurrentUserAction();
+    if (userRes) {
+      setCurrentUser(userRes);
     }
   };
 
@@ -513,10 +523,10 @@ export const PKLProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     }
   };
 
-  const createCompany = async (name: string) => {
+  const createCompany = async (name: string, latitude?: number, longitude?: number) => {
     setLoading(true);
     try {
-      const res = await createCompanyAction(name);
+      const res = await createCompanyAction(name, latitude, longitude);
       if (res.success) {
         await fetchAdminData();
       }
@@ -528,10 +538,10 @@ export const PKLProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     }
   };
 
-  const updateCompany = async (id: string, name: string) => {
+  const updateCompany = async (id: string, name: string, latitude?: number, longitude?: number) => {
     setLoading(true);
     try {
-      const res = await updateCompanyAction(id, name);
+      const res = await updateCompanyAction(id, name, latitude, longitude);
       if (res.success) {
         await fetchAdminData();
       }
@@ -942,6 +952,7 @@ export const PKLProvider: React.FC<{ children: React.ReactNode }> = ({ children 
         updateProfileContext,
         getPendingUsers,
         verifyUser,
+        refreshCurrentUser,
       }}
     >
       {children}

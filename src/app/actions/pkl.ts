@@ -1519,7 +1519,7 @@ export async function getCompaniesAction() {
   }
 }
 
-export async function createCompanyAction(name: string) {
+export async function createCompanyAction(name: string, latitude?: number, longitude?: number) {
   try {
     const currentUser = await requireAdmin();
     if (!currentUser) {
@@ -1531,7 +1531,7 @@ export async function createCompanyAction(name: string) {
     const existing = await prisma.perusahaan.findFirst({ where: { name: cleanName, institutionId: currentUser.institutionId } });
     if (existing) return { success: false, error: 'Nama perusahaan sudah terdaftar.' };
 
-    const company = await prisma.perusahaan.create({ data: { name: cleanName, institutionId: currentUser.institutionId } });
+    const company = await prisma.perusahaan.create({ data: { name: cleanName, institutionId: currentUser.institutionId, latitude, longitude } });
     return { success: true, companyId: company.id };
   } catch (error) {
     console.error('Failed to create company', error);
@@ -1539,7 +1539,7 @@ export async function createCompanyAction(name: string) {
   }
 }
 
-export async function updateCompanyAction(id: string, name: string) {
+export async function updateCompanyAction(id: string, name: string, latitude?: number, longitude?: number) {
   try {
     const currentUser = await requireAdmin();
     if (!currentUser) {
@@ -1555,7 +1555,7 @@ export async function updateCompanyAction(id: string, name: string) {
 
     await prisma.perusahaan.update({
       where: { id },
-      data: { name: cleanName }
+      data: { name: cleanName, latitude, longitude }
     });
 
     // Sync company text strings for compatibility

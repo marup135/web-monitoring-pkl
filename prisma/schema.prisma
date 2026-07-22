@@ -51,8 +51,12 @@ model User {
   lastMorningReminder   String?        @db.VarChar(10)
   institutionId         String?        @db.VarChar(255)
   faceDescriptor        String?
+  privateNote           String?
   writtenNotes          AdvisorNote[]  @relation("AdvisorNotes")
   advisorNotes          AdvisorNote[]  @relation("StudentNotes")
+  secretNotesReceived   SecretNote[]   @relation("StudentSecretNotes")
+  secretNotesWritten    SecretNote[]   @relation("AuthorSecretNotes")
+  studentNotes          StudentNote[]  @relation("UserStudentNotes")
   attendances           Attendance[]   @relation("UserAttendances")
   cards                 Card[]         @relation("StudentCards")
   notifications         Notification[] @relation("UserNotifications")
@@ -62,6 +66,7 @@ model User {
   classes               Kelas[]        @relation("AdvisorClasses")
   collaboratingCards    Card[]         @relation("CardCollaborators")
   companies             Perusahaan[]   @relation("MentorCompanies")
+  announcements         Announcement[] @relation("AuthorAnnouncements")
 }
 
 model Card {
@@ -138,7 +143,8 @@ model Kelas {
   institutionId String?      @db.VarChar(255)
   institution   Institution? @relation("InstitutionClasses", fields: [institutionId], references: [id])
   students      User[]       @relation("StudentClass")
-  advisors      User[]       @relation("AdvisorClasses")
+  advisors      User[]         @relation("AdvisorClasses")
+  announcements Announcement[] @relation("ClassAnnouncements")
 
   @@unique([name, institutionId])
 }
@@ -151,6 +157,9 @@ model Perusahaan {
   institution   Institution? @relation("InstitutionCompanies", fields: [institutionId], references: [id])
   students      User[]       @relation("StudentCompany")
   mentors       User[]       @relation("MentorCompanies")
+  latitude      Float?
+  longitude     Float?
+  announcements Announcement[] @relation("CompanyAnnouncements")
 
   @@unique([name, institutionId])
 }
@@ -159,6 +168,7 @@ model Attendance {
   id            String   @id @default(uuid())
   date          String
   status        String   @default("NOT_CHECKED_IN") @db.VarChar(50)
+  locationStatus String  @default("VALID") @db.VarChar(50)
   createdAt     DateTime @default(now())
   checkIn       String?
   checkOut      String?
@@ -188,6 +198,49 @@ model Notification {
   user      User     @relation("UserNotifications", fields: [userId], references: [id], onDelete: Cascade)
 
   @@index([userId])
+}
+
+model SecretNote {
+  id          String   @id @default(uuid())
+  text        String   @db.Text
+  authorName  String   @db.VarChar(255)
+  authorRole  String   @db.VarChar(50)
+  createdAt   DateTime @default(now())
+  studentId   String
+  authorId    String
+
+  student     User     @relation("StudentSecretNotes", fields: [studentId], references: [id], onDelete: Cascade)
+  author      User     @relation("AuthorSecretNotes", fields: [authorId], references: [id], onDelete: Cascade)
+
+  @@index([studentId])
+  @@index([authorId])
+}
+
+model StudentNote {
+  id        String   @id @default(uuid())
+  text      String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  userId    String
+  user      User     @relation("UserStudentNotes", fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+}
+
+model Announcement {
+  id        String      @id @default(uuid())
+  text      String      @db.Text
+  createdAt DateTime    @default(now())
+  updatedAt DateTime    @updatedAt
+  authorId  String
+  author    User        @relation("AuthorAnnouncements", fields: [authorId], references: [id])
+  classId   String?
+  class     Kelas?      @relation("ClassAnnouncements", fields: [classId], references: [id], onDelete: Cascade)
+  companyId String?
+  company   Perusahaan? @relation("CompanyAnnouncements", fields: [companyId], references: [id], onDelete: Cascade)
+
+  @@index([classId])
+  @@index([companyId])
 }
 
 enum InstitutionType {

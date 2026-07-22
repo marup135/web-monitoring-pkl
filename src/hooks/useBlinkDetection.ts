@@ -1,8 +1,8 @@
 import { useState, useEffect, useCallback, useRef } from 'react';
 import * as faceapi from '@vladmandic/face-api';
 
-const EAR_THRESHOLD = 0.25; // Adjusted threshold to a more standard value for closed eyes
-const CONSECUTIVE_FRAMES = 2; // Increased to 2 to avoid false positives from noise
+const EAR_THRESHOLD = 0.30; // Adjusted threshold to a more standard value for closed eyes
+const CONSECUTIVE_FRAMES = 1; // Decreased to 1 to make it more sensitive
 
 function getEuclideanDistance(p1: faceapi.Point, p2: faceapi.Point) {
   return Math.sqrt(Math.pow(p1.x - p2.x, 2) + Math.pow(p1.y - p2.y, 2));

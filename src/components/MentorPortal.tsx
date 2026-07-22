@@ -5,6 +5,7 @@ import { usePKL } from '../context/PKLContext';
 import { useLanguage } from '../context/LanguageContext';
 import { getDashboardMetricsAction } from '@/app/actions/pkl';
 import { Users, Calendar, FileSpreadsheet, Award, Building2, BarChart3, AlertCircle } from 'lucide-react';
+import { AnnouncementEditor } from './AnnouncementEditor';
 
 interface MentorPortalProps {
   onPantau: (studentId: string) => void;
@@ -163,6 +164,15 @@ export const MentorPortal: React.FC<MentorPortalProps> = ({ onPantau }) => {
           </div>
         </div>
       </div>
+
+      {/* Announcement Editor */}
+      {selectedCompanyId && (
+        <AnnouncementEditor 
+          type="company" 
+          targetId={selectedCompanyId} 
+          targetName={activeCompanyName}
+        />
+      )}
 
       {/* Activity distribution and student list columns */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">

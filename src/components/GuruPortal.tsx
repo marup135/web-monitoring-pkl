@@ -6,6 +6,7 @@ import { useLanguage } from '../context/LanguageContext';
 import { getDashboardMetricsAction, getMonthlyReportDataAction } from '@/app/actions/pkl';
 import { Users, Calendar, FileSpreadsheet, Award, UserCheck, BarChart3, AlertCircle, Download, FileBarChart } from 'lucide-react';
 import * as xlsx from 'xlsx';
+import { AnnouncementEditor } from './AnnouncementEditor';
 
 interface GuruPortalProps {
   onPantau: (studentId: string) => void;
@@ -269,6 +270,15 @@ export const GuruPortal: React.FC<GuruPortalProps> = ({ onPantau }) => {
           </div>
         </div>
       </div>
+
+      {/* Announcement Editor */}
+      {selectedClassId && (
+        <AnnouncementEditor 
+          type="class" 
+          targetId={selectedClassId} 
+          targetName={activeClassName}
+        />
+      )}
 
       {/* Activity distribution and student list columns */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">

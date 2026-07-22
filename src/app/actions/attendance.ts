@@ -3,6 +3,22 @@
 import prisma from '@/lib/prisma';
 import { createNotification } from './notifications';
 
+// Helper function to calculate distance using Haversine formula
+function calculateDistance(lat1: number, lon1: number, lat2: number, lon2: number): number {
+  const R = 6371e3; // metres
+  const φ1 = lat1 * Math.PI/180;
+  const φ2 = lat2 * Math.PI/180;
+  const Δφ = (lat2-lat1) * Math.PI/180;
+  const Δλ = (lon2-lon1) * Math.PI/180;
+
+  const a = Math.sin(Δφ/2) * Math.sin(Δφ/2) +
+            Math.cos(φ1) * Math.cos(φ2) *
+            Math.sin(Δλ/2) * Math.sin(Δλ/2);
+  const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
+
+  return R * c; // in metres
+}
+
 // Helper function to notify mentors
 async function notifyMentorsOnAttendance(userId: string, type: 'masuk' | 'pulang', time: string) {
   try {
@@ -120,7 +136,7 @@ export async function getAttendanceHistoryAction(userId: string) {
   }
 }
 
-export async function checkInAction(userId: string, lat?: number, lng?: number, photo?: string, offlineData?: { timestamp: number, dateString: string, timeString: string }) {
+export async function checkInAction(userId: string, lat?: number, lng?: number, photo?: string, offlineData?: { timestamp: number, dateString: string, timeString: string }, isWfh: boolean = false) {
   try {
     const serverTime = await getServerTimeAction();
     const useTime = offlineData || serverTime;
@@ -153,6 +169,26 @@ export async function checkInAction(userId: string, lat?: number, lng?: number, 
       return { success: false, error: 'Anda sudah melakukan absen masuk hari ini.' };
     }
 
+    // Distance checking logic
+    let locStatus = 'VALID';
+    if (!isWfh && lat && lng) {
+      const student = await prisma.user.findUnique({
+        where: { id: userId },
+        include: { perusahaan: true }
+      });
+      
+      if (student?.perusahaan?.latitude != null && student?.perusahaan?.longitude != null) {
+        const distance = calculateDistance(lat, lng, student.perusahaan.latitude, student.perusahaan.longitude);
+        if (distance > 50) {
+          return { success: false, error: 'OUT_OF_RANGE', distance: Math.round(distance) };
+        }
+      } else {
+        return { success: false, error: 'Koordinat perusahaan belum diatur. Minta Admin untuk mengisinya di portal Admin.' };
+      }
+    } else if (isWfh) {
+      locStatus = 'PENDING'; // WFH requires approval
+    }
+
     const attendance = await prisma.attendance.upsert({
       where: {
         userId_date: {
@@ -167,14 +203,16 @@ export async function checkInAction(userId: string, lat?: number, lng?: number, 
         checkInLat: lat,
         checkInLng: lng,
         checkInPhoto: photo,
-        status: 'CHECKED_IN'
+        status: 'CHECKED_IN',
+        locationStatus: locStatus
       },
       update: {
         checkIn: useTime.timeString,
         checkInLat: lat,
         checkInLng: lng,
         checkInPhoto: photo,
-        status: 'CHECKED_IN'
+        status: 'CHECKED_IN',
+        locationStatus: locStatus
       }
     });
 
@@ -223,6 +261,24 @@ export async function checkOutAction(userId: string, lat?: number, lng?: number,
 
     if (existing.checkOut) {
       return { success: false, error: 'Anda sudah melakukan absen pulang hari ini.' };
+    }
+
+    // Distance checking logic for checkout
+    // Only check if they are NOT WFH (i.e. their locStatus from checkIn was VALID)
+    if (lat && lng && existing.locationStatus === 'VALID') {
+      const student = await prisma.user.findUnique({
+        where: { id: userId },
+        include: { perusahaan: true }
+      });
+      
+      if (student?.perusahaan?.latitude != null && student?.perusahaan?.longitude != null) {
+        const distance = calculateDistance(lat, lng, student.perusahaan.latitude, student.perusahaan.longitude);
+        if (distance > 50) {
+          return { success: false, error: 'OUT_OF_RANGE_CHECKOUT', distance: Math.round(distance) };
+        }
+      } else {
+        return { success: false, error: 'Koordinat perusahaan belum diatur. Minta Admin untuk mengisinya di portal Admin.' };
+      }
     }
 
     const attendance = await prisma.attendance.update({
@@ -380,7 +436,49 @@ export async function approveLeaveAction(attendanceId: string, isApproved: boole
 
     return { success: true, data: updated };
   } catch (error: any) {
-    console.error('Error in approveLeaveAction:', error);
+    console.error('Error approving leave:', error);
+    return { success: false, error: error.message };
+  }
+}
+
+export async function approveWfhAction(attendanceId: string) {
+  try {
+    const attendance = await prisma.attendance.update({
+      where: { id: attendanceId },
+      data: { locationStatus: 'APPROVED' }
+    });
+    
+    await createNotification(
+      attendance.userId,
+      'Absensi WFH Disetujui',
+      `Pengajuan absensi WFH (Tugas Luar) Anda pada tanggal ${attendance.date} telah disetujui.`,
+      'SUCCESS'
+    );
+    
+    return { success: true, data: attendance };
+  } catch (error: any) {
+    console.error('Error approving WFH:', error);
+    return { success: false, error: error.message };
+  }
+}
+
+export async function rejectWfhAction(attendanceId: string) {
+  try {
+    const attendance = await prisma.attendance.update({
+      where: { id: attendanceId },
+      data: { locationStatus: 'REJECTED' }
+    });
+    
+    await createNotification(
+      attendance.userId,
+      'Absensi WFH Ditolak',
+      `Pengajuan absensi WFH (Tugas Luar) Anda pada tanggal ${attendance.date} telah ditolak. Silakan hubungi pembimbing.`,
+      'ERROR'
+    );
+    
+    return { success: true, data: attendance };
+  } catch (error: any) {
+    console.error('Error rejecting WFH:', error);
     return { success: false, error: error.message };
   }
 }

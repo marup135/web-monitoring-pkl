@@ -5,6 +5,7 @@ import { usePKL } from '../context/PKLContext';
 import { getAttendanceTodayAction, getServerTimeAction } from '../app/actions/attendance';
 import { Clock, X } from 'lucide-react';
 import { useLanguage } from '../context/LanguageContext';
+import { PARTICIPANT_ROLES } from '@/lib/constants';
 
 export function AttendanceReminder({ onGoToAttendance }: { onGoToAttendance: () => void }) {
   const { currentUser } = usePKL();
@@ -13,7 +14,7 @@ export function AttendanceReminder({ onGoToAttendance }: { onGoToAttendance: () 
   const [reminderType, setReminderType] = useState<'masuk' | 'pulang' | null>(null);
 
   useEffect(() => {
-    if (!currentUser || currentUser.role !== 'siswa') return;
+    if (!currentUser || !PARTICIPANT_ROLES.includes(currentUser.role)) return;
 
     const checkReminder = async () => {
       try {

@@ -39,10 +39,14 @@ export const AdminPortal: React.FC = () => {
   // Input states
   const [newClassName, setNewClassName] = useState('');
   const [newCompanyName, setNewCompanyName] = useState('');
+  const [newCompanyLat, setNewCompanyLat] = useState('');
+  const [newCompanyLng, setNewCompanyLng] = useState('');
   
   // Edit states
   const [editingId, setEditingId] = useState<string | null>(null);
   const [editText, setEditText] = useState('');
+  const [editLat, setEditLat] = useState('');
+  const [editLng, setEditLng] = useState('');
 
   // Overview metrics state
   const [overallMetrics, setOverallMetrics] = useState<any>(null);
@@ -85,9 +89,13 @@ export const AdminPortal: React.FC = () => {
   const handleAddCompany = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!newCompanyName.trim()) return;
-    const res = await createCompany(newCompanyName);
+    const lat = parseFloat(newCompanyLat) || undefined;
+    const lng = parseFloat(newCompanyLng) || undefined;
+    const res = await createCompany(newCompanyName, lat, lng);
     if (res.success) {
       setNewCompanyName('');
+      setNewCompanyLat('');
+      setNewCompanyLng('');
     } else {
       alert(res.error || t('errAddCompany'));
     }
@@ -95,10 +103,20 @@ export const AdminPortal: React.FC = () => {
 
   const handleUpdate = async (type: 'class' | 'company', id: string) => {
     if (!editText.trim()) return;
-    const res = type === 'class' ? await updateClass(id, editText) : await updateCompany(id, editText);
+    let res;
+    if (type === 'class') {
+      res = await updateClass(id, editText);
+    } else {
+      const lat = parseFloat(editLat) || undefined;
+      const lng = parseFloat(editLng) || undefined;
+      res = await updateCompany(id, editText, lat, lng);
+    }
+    
     if (res.success) {
       setEditingId(null);
       setEditText('');
+      setEditLat('');
+      setEditLng('');
     } else {
       alert(res.error || t('errUpdateData'));
     }
@@ -472,14 +490,32 @@ export const AdminPortal: React.FC = () => {
           <div className="flex flex-col gap-6">
             {/* Add Company Form */}
             <form onSubmit={handleAddCompany} className="flex flex-col sm:flex-row gap-2">
-              <input
-                type="text"
-                required
-                placeholder={t('addCompanyPlaceholder')}
-                value={newCompanyName}
-                onChange={(e) => setNewCompanyName(e.target.value)}
-                className="bg-white dark:bg-[#243447] border border-[#E2E8F0] dark:border-gray-700 rounded-xl px-3 py-2.5 text-sm flex-1 text-[#0F172A] dark:text-gray-200 focus:outline-none focus:border-primary dark:focus:border-blue-500 min-h-[48px] md:min-h-0 md:py-2 md:text-xs"
-              />
+              <div className="flex-1 grid grid-cols-1 md:grid-cols-3 gap-2">
+                <input
+                  type="text"
+                  required
+                  placeholder={t('addCompanyPlaceholder')}
+                  value={newCompanyName}
+                  onChange={(e) => setNewCompanyName(e.target.value)}
+                  className="bg-white dark:bg-[#243447] border border-[#E2E8F0] dark:border-gray-700 rounded-xl px-3 py-2.5 text-sm text-[#0F172A] dark:text-gray-200 focus:outline-none focus:border-primary dark:focus:border-blue-500 min-h-[48px] md:min-h-0 md:py-2 md:text-xs"
+                />
+                <input
+                  type="number"
+                  step="any"
+                  placeholder="Latitude (Cth: -6.1754)"
+                  value={newCompanyLat}
+                  onChange={(e) => setNewCompanyLat(e.target.value)}
+                  className="bg-white dark:bg-[#243447] border border-[#E2E8F0] dark:border-gray-700 rounded-xl px-3 py-2.5 text-sm text-[#0F172A] dark:text-gray-200 focus:outline-none focus:border-primary dark:focus:border-blue-500 min-h-[48px] md:min-h-0 md:py-2 md:text-xs"
+                />
+                <input
+                  type="number"
+                  step="any"
+                  placeholder="Longitude (Cth: 106.8272)"
+                  value={newCompanyLng}
+                  onChange={(e) => setNewCompanyLng(e.target.value)}
+                  className="bg-white dark:bg-[#243447] border border-[#E2E8F0] dark:border-gray-700 rounded-xl px-3 py-2.5 text-sm text-[#0F172A] dark:text-gray-200 focus:outline-none focus:border-primary dark:focus:border-blue-500 min-h-[48px] md:min-h-0 md:py-2 md:text-xs"
+                />
+              </div>
               <button 
                 type="submit"
                 className="px-4 py-2.5 bg-primary hover:bg-primary-hover text-white font-bold text-sm md:text-xs rounded-xl flex items-center justify-center gap-1 transition cursor-pointer shadow-sm min-h-[48px] md:min-h-0 w-full sm:w-auto"
@@ -495,6 +531,7 @@ export const AdminPortal: React.FC = () => {
                 <thead>
                   <tr className="bg-slate-50 dark:bg-gray-800/50 border-b border-[#E2E8F0] dark:border-gray-700 text-slate-500 dark:text-gray-300 font-semibold">
                     <th className="py-2.5 px-4">{t('companyNameCol')}</th>
+                    <th className="py-2.5 px-4">Koordinat (Lat, Lng)</th>
                     <th className="py-2.5 px-4 text-right">{t('studentActions')}</th>
                   </tr>
                 </thead>
@@ -507,10 +544,36 @@ export const AdminPortal: React.FC = () => {
                             type="text"
                             value={editText}
                             onChange={(e) => setEditText(e.target.value)}
-                            className="bg-white dark:bg-[#243447] border border-[#E2E8F0] dark:border-gray-700 rounded-xl px-3 text-sm text-[#0F172A] dark:text-gray-200 focus:outline-none focus:border-primary min-h-[44px] py-2"
+                            className="bg-white dark:bg-[#243447] border border-[#E2E8F0] dark:border-gray-700 rounded-xl px-3 w-full text-sm text-[#0F172A] dark:text-gray-200 focus:outline-none focus:border-primary min-h-[44px] py-2"
                           />
                         ) : (
                           co.name
+                        )}
+                      </td>
+                      <td className="py-3 px-4 text-slate-500 dark:text-gray-400">
+                        {editingId === co.id ? (
+                          <div className="flex gap-2">
+                            <input
+                              type="number"
+                              step="any"
+                              placeholder="Lat"
+                              value={editLat}
+                              onChange={(e) => setEditLat(e.target.value)}
+                              className="bg-white dark:bg-[#243447] border border-[#E2E8F0] dark:border-gray-700 rounded-xl px-2 w-24 text-sm text-[#0F172A] dark:text-gray-200 focus:outline-none focus:border-primary min-h-[44px] py-2"
+                            />
+                            <input
+                              type="number"
+                              step="any"
+                              placeholder="Lng"
+                              value={editLng}
+                              onChange={(e) => setEditLng(e.target.value)}
+                              className="bg-white dark:bg-[#243447] border border-[#E2E8F0] dark:border-gray-700 rounded-xl px-2 w-24 text-sm text-[#0F172A] dark:text-gray-200 focus:outline-none focus:border-primary min-h-[44px] py-2"
+                            />
+                          </div>
+                        ) : (
+                          <span className="text-xs">
+                            {co.latitude && co.longitude ? `${co.latitude}, ${co.longitude}` : '-'}
+                          </span>
                         )}
                       </td>
                       <td className="py-3 px-4 text-right">
@@ -532,7 +595,12 @@ export const AdminPortal: React.FC = () => {
                         ) : (
                           <div className="flex gap-2 justify-end text-slate-500 dark:text-gray-300">
                             <button
-                              onClick={() => { setEditingId(co.id); setEditText(co.name); }}
+                              onClick={() => { 
+                                setEditingId(co.id); 
+                                setEditText(co.name); 
+                                setEditLat(co.latitude?.toString() || '');
+                                setEditLng(co.longitude?.toString() || '');
+                              }}
                               className="p-2.5 hover:text-primary hover:bg-primary/10 rounded transition cursor-pointer min-h-[40px] min-w-[40px] flex items-center justify-center"
                             >
                               <Edit2 size={14} />
