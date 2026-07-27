@@ -1079,7 +1079,7 @@ export const AuthPage: React.FC<AuthPageProps> = ({ initialView = 'login' }) => 
                   </h4>
                   <ul className="flex flex-col gap-2 bg-slate-50 dark:bg-gray-900/50 p-4 rounded-2xl border border-slate-100 dark:border-gray-800 font-mono text-xs text-slate-500 dark:text-gray-400">
                     {[
-                      { role: 'Siswa', user: 'marup', pass: 'pppppp' },
+                      { role: 'Siswa', user: 'siswa', pass: 'pppppp' },
                       { role: 'Pem. Eksternal', user: 'manajer', pass: 'pppppp' },
                       { role: 'Pem. Internal', user: 'ibuguru', pass: 'pppppp' },
                       { role: 'Admin', user: 'adminnebo', pass: 'pppppp' },
