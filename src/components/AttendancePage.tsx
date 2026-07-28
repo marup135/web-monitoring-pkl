@@ -332,7 +332,7 @@ export function AttendancePage() {
         if (res.error === 'OUT_OF_RANGE') {
           setShowWfhPrompt({ distance: (res as any).distance || 0 });
         } else if (res.error === 'OUT_OF_RANGE_CHECKOUT') {
-          setErrorMsg(`Gagal absen pulang. Jarak Anda ${(res as any).distance}m dari lokasi PKL (Maks: 50m).`);
+          setErrorMsg(`Gagal absen pulang. Jarak Anda ${(res as any).distance}m dari lokasi PKL (Maks: 100m).`);
         } else {
           setErrorMsg(res.error || `Gagal absen ${cameraMode === 'in' ? 'masuk' : 'pulang'}.`);
         }
@@ -1093,7 +1093,7 @@ export function AttendancePage() {
             </div>
             <h3 className="text-xl font-bold text-gray-800 dark:text-white mb-2">Lokasi di Luar Radius</h3>
             <p className="text-sm text-gray-600 dark:text-gray-300 mb-6">
-              Jarak Anda dengan kantor adalah <strong>{showWfhPrompt.distance} meter</strong> (Maks: 50m). 
+              Jarak Anda dengan kantor adalah <strong>{showWfhPrompt.distance} meter</strong> (Maks: 100m). 
               Apakah Anda sedang WFH / Tugas Luar hari ini?
             </p>
             <div className="flex gap-3">
