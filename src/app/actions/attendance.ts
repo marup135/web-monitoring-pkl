@@ -179,7 +179,7 @@ export async function checkInAction(userId: string, lat?: number, lng?: number, 
       
       if (student?.perusahaan?.latitude != null && student?.perusahaan?.longitude != null) {
         const distance = calculateDistance(lat, lng, student.perusahaan.latitude, student.perusahaan.longitude);
-        if (distance > 50) {
+        if (distance > 100) {
           return { success: false, error: 'OUT_OF_RANGE', distance: Math.round(distance) };
         }
       } else {
@@ -273,7 +273,7 @@ export async function checkOutAction(userId: string, lat?: number, lng?: number,
       
       if (student?.perusahaan?.latitude != null && student?.perusahaan?.longitude != null) {
         const distance = calculateDistance(lat, lng, student.perusahaan.latitude, student.perusahaan.longitude);
-        if (distance > 50) {
+        if (distance > 100) {
           return { success: false, error: 'OUT_OF_RANGE_CHECKOUT', distance: Math.round(distance) };
         }
       } else {
