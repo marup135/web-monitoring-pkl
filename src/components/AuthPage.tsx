@@ -79,6 +79,7 @@ export const AuthPage: React.FC<AuthPageProps> = ({ initialView = 'login' }) => 
   const [isClassDropdownOpen, setIsClassDropdownOpen] = useState(false);
   const roleDropdownRef = useRef<HTMLDivElement>(null);
   const classDropdownRef = useRef<HTMLDivElement>(null);
+  const recaptchaRef = useRef<ReCAPTCHA>(null);
 
   // If user is already logged in, the parent HomeWrapper will redirect automatically.
   // We guard here too as extra safety.
@@ -286,6 +287,9 @@ export const AuthPage: React.FC<AuthPageProps> = ({ initialView = 'login' }) => 
           }
           // HomeWrapper will automatically switch to DashboardContent because currentUser is now set
         } else {
+          recaptchaRef.current?.reset();
+          setCaptchaToken(null);
+          
           const errMsg = res.error ?? '';
           if (
             errMsg.toLowerCase().includes('database') ||
@@ -334,6 +338,9 @@ export const AuthPage: React.FC<AuthPageProps> = ({ initialView = 'login' }) => 
           setNisn('');
           setNip('');
         } else if (!res.success) {
+          recaptchaRef.current?.reset();
+          setCaptchaToken(null);
+          
           if (res.error?.includes('Kode Institusi')) {
             setError(res.error, 'field', 'institutionCode');
           } else {
@@ -958,6 +965,7 @@ export const AuthPage: React.FC<AuthPageProps> = ({ initialView = 'login' }) => 
                   {!isForgotPassword && (
                     <div className="flex justify-center w-full overflow-hidden">
                       <ReCAPTCHA
+                        ref={recaptchaRef}
                         sitekey={process.env.NEXT_PUBLIC_RECAPTCHA_SITE_KEY || ""}
                         onChange={(token) => {
                           setCaptchaToken(token);

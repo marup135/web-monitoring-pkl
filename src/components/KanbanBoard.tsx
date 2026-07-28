@@ -385,7 +385,7 @@ export const KanbanBoard: React.FC<KanbanBoardProps> = ({ onOpenCard }) => {
       {activeRole === 'Mahasiswa' && (
         <button
           onClick={() => setIsAddModalOpen(true)}
-          className="md:hidden fixed bottom-24 right-5 z-40 w-14 h-14 bg-primary hover:bg-primary-hover rounded-full flex items-center justify-center text-white shadow-md shadow-primary/40 active:scale-90 transition-transform duration-200"
+          className="md:hidden fixed bottom-44 right-4 z-40 w-14 h-14 bg-primary hover:bg-primary-hover rounded-full flex items-center justify-center text-white shadow-md shadow-primary/40 active:scale-90 transition-transform duration-200"
         >
           <Plus size={24} />
         </button>

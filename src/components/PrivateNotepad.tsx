@@ -83,7 +83,7 @@ export function PrivateNotepad() {
       {/* Floating Button */}
       <button
         onClick={() => setIsOpen(!isOpen)}
-        className="fixed bottom-6 right-6 z-50 p-4 bg-yellow-400 hover:bg-yellow-500 text-yellow-900 rounded-full shadow-xl hover:shadow-2xl hover:scale-110 active:scale-95 transition-all duration-200"
+        className="fixed bottom-24 md:bottom-6 right-4 md:right-6 z-50 p-4 bg-yellow-400 hover:bg-yellow-500 text-yellow-900 rounded-full shadow-xl hover:shadow-2xl hover:scale-110 active:scale-95 transition-all duration-200"
         title="Catatan Pribadi"
       >
         <StickyNote size={24} />
@@ -91,7 +91,7 @@ export function PrivateNotepad() {
 
       {/* Notepad Panel */}
       <div 
-        className={`fixed bottom-24 right-6 z-50 w-[380px] max-w-[calc(100vw-48px)] transition-all duration-300 transform origin-bottom-right ${
+        className={`fixed bottom-[160px] md:bottom-24 right-4 md:right-6 z-50 w-[380px] max-w-[calc(100vw-32px)] transition-all duration-300 transform origin-bottom-right ${
           isOpen ? 'scale-100 opacity-100 translate-y-0' : 'scale-95 opacity-0 translate-y-8 pointer-events-none'
         }`}
       >
