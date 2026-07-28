@@ -2,7 +2,7 @@ export const translations = {
   id: {
     // Navigation
     dashboard: "Dashboard (Statistik)",
-    board: "Kanban Board",
+    board: "Board Kegiatan",
     logbook: "Jurnal Harian",
     users: "Users",
     settings: "Pengaturan Aplikasi",

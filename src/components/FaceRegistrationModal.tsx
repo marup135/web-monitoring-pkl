@@ -1,6 +1,7 @@
 'use client';
 
 import React, { useState, useEffect, useRef } from 'react';
+import { createPortal } from 'react-dom';
 import * as faceapi from '@vladmandic/face-api';
 import { Camera, RefreshCw, CheckCircle2, AlertCircle, X } from 'lucide-react';
 import { registerFaceAction } from '../app/actions/profile';
@@ -11,7 +12,12 @@ interface FaceRegistrationModalProps {
 }
 
 export function FaceRegistrationModal({ onClose, onSuccess }: FaceRegistrationModalProps) {
+  const [mounted, setMounted] = useState(false);
   const [loadingModels, setLoadingModels] = useState(true);
+
+  useEffect(() => {
+    setMounted(true);
+  }, []);
   const [detecting, setDetecting] = useState(false);
   const [errorMsg, setErrorMsg] = useState('');
   const [successMsg, setSuccessMsg] = useState('');
@@ -104,7 +110,9 @@ export function FaceRegistrationModal({ onClose, onSuccess }: FaceRegistrationMo
     }
   };
 
-  return (
+  if (!mounted || typeof document === 'undefined') return null;
+
+  return createPortal(
     <div className="fixed inset-0 z-[9999] bg-black/60 backdrop-blur-sm flex items-center justify-center p-4">
       <div className="bg-white dark:bg-[#1E293B] rounded-3xl w-full max-w-md shadow-2xl overflow-hidden flex flex-col">
         <div className="flex justify-between items-center p-5 border-b border-gray-100 dark:border-gray-800">
@@ -159,6 +167,7 @@ export function FaceRegistrationModal({ onClose, onSuccess }: FaceRegistrationMo
           </button>
         </div>
       </div>
-    </div>
+    </div>,
+    document.body
   );
 }

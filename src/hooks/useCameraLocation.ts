@@ -1,6 +1,8 @@
 import { useState, useRef, useCallback } from 'react';
+import { usePKL } from '../context/PKLContext';
 
 export function useCameraLocation() {
+  const { currentUser } = usePKL();
   const [isCameraModalOpen, setIsCameraModalOpen] = useState(false);
   const [cameraMode, setCameraMode] = useState<'in' | 'out'>('in');
   const [location, setLocation] = useState<{lat: number, lng: number} | null>(null);
@@ -58,16 +60,57 @@ export function useCameraLocation() {
     );
   };
 
+  const addWatermark = (ctx: CanvasRenderingContext2D, width: number, height: number) => {
+    const dateStr = new Date().toLocaleString('id-ID');
+    const locStr = location ? `Lat: ${location.lat.toFixed(5)}, Lng: ${location.lng.toFixed(5)}` : 'Lokasi tidak tersedia';
+    const nameStr = currentUser?.name || 'User';
+
+    ctx.fillStyle = 'rgba(0, 0, 0, 0.6)';
+    ctx.fillRect(width - 260, height - 70, 260, 70);
+
+    ctx.fillStyle = 'white';
+    ctx.font = '13px Arial';
+    ctx.textAlign = 'right';
+    ctx.fillText(nameStr, width - 10, height - 50);
+    ctx.fillText(dateStr, width - 10, height - 32);
+    ctx.font = '11px Arial';
+    ctx.fillText(locStr, width - 10, height - 15);
+  };
+
   const capturePhoto = () => {
     if (videoRef.current && canvasRef.current) {
       const video = videoRef.current;
       const canvas = canvasRef.current;
-      canvas.width = video.videoWidth;
-      canvas.height = video.videoHeight;
+      
+      const MAX_WIDTH = 800;
+      const MAX_HEIGHT = 800;
+      let width = video.videoWidth;
+      let height = video.videoHeight;
+
+      if (width > height) {
+        if (width > MAX_WIDTH) {
+          height *= MAX_WIDTH / width;
+          width = MAX_WIDTH;
+        }
+      } else {
+        if (height > MAX_HEIGHT) {
+          width *= MAX_HEIGHT / height;
+          height = MAX_HEIGHT;
+        }
+      }
+
+      canvas.width = width;
+      canvas.height = height;
       const ctx = canvas.getContext('2d');
       if (ctx) {
-        ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
-        const dataUrl = canvas.toDataURL('image/jpeg', 0.5);
+        ctx.drawImage(video, 0, 0, width, height);
+        addWatermark(ctx, width, height);
+        
+        const dataUrl = canvas.toDataURL('image/jpeg', 0.6);
+        if (dataUrl.length * 0.75 > 1048576) {
+           alert("Ukuran foto melebihi 1MB meskipun telah dikompres. Silakan coba lagi.");
+           return;
+        }
         setPhotoCaptured(dataUrl);
       }
     }
@@ -103,7 +146,13 @@ export function useCameraLocation() {
           const ctx = canvas.getContext('2d');
           if (ctx) {
             ctx.drawImage(img, 0, 0, width, height);
-            const dataUrl = canvas.toDataURL('image/jpeg', 0.5);
+            addWatermark(ctx, width, height);
+            
+            const dataUrl = canvas.toDataURL('image/jpeg', 0.6);
+            if (dataUrl.length * 0.75 > 1048576) {
+               alert("Ukuran foto melebihi 1MB meskipun telah dikompres. Silakan pilih foto dengan ukuran lebih kecil.");
+               return;
+            }
             setPhotoCaptured(dataUrl);
           }
         };

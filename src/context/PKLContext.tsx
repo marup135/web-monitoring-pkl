@@ -1,13 +1,14 @@
 'use client';
 
 import React, { createContext, useContext, useState, useEffect } from 'react';
-import { PKLState, PKLCard, PKLRole } from '../types/pkl';
+import { PKLState, PKLCard, PKLRole, Subtask, PriorityLevel } from '../types/pkl';
 import { PARTICIPANT_ROLES } from '../lib/constants';
 import {
   getPKLState,
   createCardAction,
   updateCardColumnAction,
   updateCardDetailsAction,
+  updateSubtasksAction,
   addCommentAction,
   gradeCardAction,
   gradeCardByMentorAction,
@@ -155,9 +156,10 @@ interface PKLContextProps {
     companyEmail?: string | null,
     companyName?: string | null
   ) => Promise<{ success: boolean; error?: string }>;
-  manageCollaborators: (cardId: string, collaboratorNisns: string[], collaboratorsCanEdit: boolean) => Promise<void>;
-  addCard: (title: string, description: string, category: string, dueDate: string, startTime: string, endTime: string, columnId?: PKLCard['columnId'], collaboratorNisns?: string[]) => Promise<void>;
+  manageCollaborators: (cardId: string, collaboratorNisns: string[], editorIds: string[]) => Promise<void>;
+  addCard: (title: string, description: string, category: string, dueDate: string, startTime: string, endTime: string, columnId?: PKLCard['columnId'], collaboratorNisns?: string[], priority?: PriorityLevel) => Promise<void>;
   updateCardColumn: (cardId: string, targetColumn: PKLCard['columnId']) => Promise<void>;
+  updateSubtasks: (cardId: string, subtasks: Subtask[]) => Promise<void>;
   updateCardDetails: (
     cardId: string,
     title: string,
@@ -175,7 +177,8 @@ interface PKLContextProps {
     scoreAdvisorDiscipline?: number | null,
     scoreAdvisorReport?: number | null,
     scoreAdvisorCommunication?: number | null,
-    feedbackAdvisor?: string | null
+    feedbackAdvisor?: string | null,
+    priority?: PriorityLevel
   ) => Promise<void>;
   addComment: (cardId: string, text: string) => Promise<void>;
   gradeCard: (cardId: string, score: number, feedback: string) => Promise<void>;
@@ -624,10 +627,10 @@ export const PKLProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     }
   };
 
-  const manageCollaborators = async (cardId: string, collaboratorNisns: string[], collaboratorsCanEdit: boolean) => {
+  const manageCollaborators = async (cardId: string, collaboratorNisns: string[], editorIds: string[]) => {
     setLoading(true);
     try {
-      const res = await manageCollaboratorsAction(cardId, collaboratorNisns, collaboratorsCanEdit);
+      const res = await manageCollaboratorsAction(cardId, collaboratorNisns, editorIds);
       if (res.success) {
         alert("Berhasil memperbarui kolaborator.");
         await fetchState();
@@ -641,10 +644,10 @@ export const PKLProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     }
   };
 
-  const addCard = async (title: string, description: string, category: string, dueDate: string, startTime: string, endTime: string, columnId?: PKLCard['columnId'], collaboratorNisns: string[] = []) => {
+  const addCard = async (title: string, description: string, category: string, dueDate: string, startTime: string, endTime: string, columnId?: PKLCard['columnId'], collaboratorNisns: string[] = [], priority: PriorityLevel = 'medium') => {
     setLoading(true);
     try {
-      const res = await createCardAction(title, description, category, dueDate, state.studentName, activeRole, columnId, startTime, endTime, collaboratorNisns);
+      const res = await createCardAction(title, description, category, dueDate, state.studentName, activeRole, columnId, startTime, endTime, collaboratorNisns, priority);
       if (res && !res.success) {
         throw new Error(res.error || 'Gagal membuat kegiatan.');
       }
@@ -686,6 +689,33 @@ export const PKLProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     }
   };
 
+  const updateSubtasks = async (cardId: string, subtasks: Subtask[]) => {
+    const originalCards = state.cards;
+    setState(prev => ({
+      ...prev,
+      cards: prev.cards.map(card => {
+        if (card.id === cardId) {
+          return {
+            ...card,
+            subtasks,
+          };
+        }
+        return card;
+      }),
+    }));
+
+    try {
+      const res = await updateSubtasksAction(cardId, subtasks);
+      if (res && !res.success) {
+        throw new Error(res.error);
+      }
+    } catch (e) {
+      console.error(e);
+      setState(prev => ({ ...prev, cards: originalCards }));
+      alert((e as Error).message || 'Gagal memperbarui checklist.');
+    }
+  };
+
   const updateCardDetails = async (
     cardId: string,
     title: string,
@@ -703,7 +733,8 @@ export const PKLProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     scoreAdvisorDiscipline?: number | null,
     scoreAdvisorReport?: number | null,
     scoreAdvisorCommunication?: number | null,
-    feedbackAdvisor?: string | null
+    feedbackAdvisor?: string | null,
+    priority?: PriorityLevel
   ) => {
     setLoading(true);
     try {
@@ -727,7 +758,8 @@ export const PKLProvider: React.FC<{ children: React.ReactNode }> = ({ children 
         scoreAdvisorDiscipline,
         scoreAdvisorReport,
         scoreAdvisorCommunication,
-        feedbackAdvisor
+        feedbackAdvisor,
+        priority
       );
       if (res && !res.success) {
         throw new Error(res.error || 'Gagal memperbarui rincian kegiatan.');
@@ -935,6 +967,7 @@ export const PKLProvider: React.FC<{ children: React.ReactNode }> = ({ children 
         addCard,
         updateCardColumn,
         updateCardDetails,
+        updateSubtasks,
         addComment,
         gradeCard,
         gradeCardByMentor,

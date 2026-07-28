@@ -289,7 +289,7 @@ export const AuthPage: React.FC<AuthPageProps> = ({ initialView = 'login' }) => 
         } else {
           recaptchaRef.current?.reset();
           setCaptchaToken(null);
-          
+
           const errMsg = res.error ?? '';
           if (
             errMsg.toLowerCase().includes('database') ||
@@ -340,7 +340,7 @@ export const AuthPage: React.FC<AuthPageProps> = ({ initialView = 'login' }) => 
         } else if (!res.success) {
           recaptchaRef.current?.reset();
           setCaptchaToken(null);
-          
+
           if (res.error?.includes('Kode Institusi')) {
             setError(res.error, 'field', 'institutionCode');
           } else {

@@ -3,7 +3,7 @@ export const translations: Record<string, Record<string, string>> = {
     // General
     dashboard: "Dashboard",
     stats: "Statistik",
-    board: "Kanban Board",
+    board: "Board Kegiatan",
     logbook: "Jurnal Harian",
     settings: "Pengaturan",
     profile: "Profil Saya",

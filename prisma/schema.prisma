@@ -90,8 +90,11 @@ model Card {
   scoreAdvisorCommunication Int?
   feedbackAdvisor           String?
   attachmentsJson           String?
+  subtasksJson              String?
+  priority                  String?       @default("medium")
   studentId                 String
   collaboratorsCanEdit      Boolean       @default(false)
+  editorIds                 String        @default("[]")
   student                   User          @relation("StudentCards", fields: [studentId], references: [id], onDelete: Cascade)
   comments                  Comment[]
   history                   HistoryItem[]
@@ -181,6 +184,8 @@ model Attendance {
   checkOutLng   Float?
   checkOutPhoto String?
   activityNotes String?
+  isVerified    Boolean  @default(false)
+  verifiedBy    String?
   user          User     @relation("UserAttendances", fields: [userId], references: [id], onDelete: Cascade)
 
   @@unique([userId, date])

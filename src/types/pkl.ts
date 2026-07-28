@@ -22,20 +22,34 @@ export interface Attachment {
   type: string;
 }
 
+export interface Subtask {
+  id: string;
+  text: string;
+  isCompleted: boolean;
+}
+
+export type PriorityLevel = 'low' | 'medium' | 'high' | 'urgent';
+
 export interface PKLCard {
   id: string;
   title: string;
   description: string;
-  columnId: 'rencana' | 'progres' | 'review' | 'selesai';
+  columnId: 'rencana' | 'progres' | 'review' | 'selesai' | string;
   category: string;
+  priority?: PriorityLevel;
   startTime: string;
   endTime: string;
   dueDate: string;
   createdAt: string;
   studentId: string;
   collaborators?: { id: string; name: string; nisn?: string; profileImage?: string }[];
+  owner?: { id: string; name: string; nisn?: string; profileImage?: string };
   collaboratorsCanEdit?: boolean;
+  editorIds?: string[];
   
+  // Sub-tasks / Checklist
+  subtasks?: Subtask[];
+
   // Mentor (Pembimbing Eksternal) grades
   scoreMentor?: number;
   scoreMentorDiscipline?: number;

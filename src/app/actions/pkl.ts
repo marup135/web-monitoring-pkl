@@ -4,7 +4,7 @@ import { PARTICIPANT_ROLES } from '@/lib/constants';
 
 
 import prisma from '@/lib/prisma';
-import { PKLCard, AdvisorNote, TaskCategory, PKLRole, PKLState } from '@/types/pkl';
+import { PKLCard, AdvisorNote, TaskCategory, PKLRole, PKLState, PriorityLevel } from '@/types/pkl';
 import { cookies } from 'next/headers';
 import { verifySession, hashPassword } from '@/lib/auth';
 import { createNotification } from './notifications';
@@ -168,6 +168,14 @@ export async function getPKLState(selectedStudentId?: string): Promise<PKLState>
         ]
       },
       include: {
+        student: {
+          select: {
+            id: true,
+            name: true,
+            nisn: true,
+            profileImage: true
+          }
+        },
         collaborators: {
           select: {
             id: true,
@@ -206,12 +214,15 @@ export async function getPKLState(selectedStudentId?: string): Promise<PKLState>
       description: c.description,
       columnId: c.columnId as PKLCard['columnId'],
       category: c.category,
+      priority: (c.priority || 'medium') as PKLCard['priority'],
       startTime: c.startTime,
       endTime: c.endTime,
       dueDate: c.dueDate,
       createdAt: c.createdAt.toISOString(),
       studentId: c.studentId,
+      owner: c.student,
       collaboratorsCanEdit: c.collaboratorsCanEdit || false,
+      editorIds: (() => { try { return JSON.parse(c.editorIds || '[]'); } catch { return []; } })(),
 
       scoreMentor: c.scoreMentor ?? undefined,
       scoreMentorDiscipline: c.scoreMentorDiscipline ?? undefined,
@@ -225,7 +236,8 @@ export async function getPKLState(selectedStudentId?: string): Promise<PKLState>
       scoreAdvisorCommunication: c.scoreAdvisorCommunication ?? undefined,
       feedbackAdvisor: c.feedbackAdvisor ?? undefined,
 
-      attachments: JSON.parse(c.attachmentsJson || '[]'),
+      attachments: (() => { try { return JSON.parse(c.attachmentsJson || '[]'); } catch { return []; } })(),
+      subtasks: (() => { try { return JSON.parse(c.subtasksJson || '[]'); } catch { return []; } })(),
 
       // Legacy compatibility mapping
       score: c.scoreMentor ?? undefined,
@@ -337,7 +349,8 @@ export async function createCardAction(
   columnId: PKLCard['columnId'] = 'rencana',
   startTime: string = '',
   endTime: string = '',
-  collaboratorNisns: string[] = []
+  collaboratorNisns: string[] = [],
+  priority: PriorityLevel = 'medium'
 ) {
   try {
     const currentUser = await getAuthenticatedUser();
@@ -353,8 +366,7 @@ export async function createCardAction(
     if (collaboratorNisns && collaboratorNisns.length > 0) {
       const users = await prisma.user.findMany({
         where: {
-          nisn: { in: collaboratorNisns },
-          role: { in: PARTICIPANT_ROLES }
+          nisn: { in: collaboratorNisns }
         },
         select: { id: true }
       });
@@ -367,6 +379,7 @@ export async function createCardAction(
         title,
         description,
         category,
+        priority,
         dueDate,
         startTime,
         endTime,
@@ -431,7 +444,13 @@ export async function updateCardColumnAction(
     // RBAC validation
     if (PARTICIPANT_ROLES.includes(currentUser.role)) {
       const isOwner = card.studentId === currentUser.id;
-      const isCollabWithPermission = card.collaboratorsCanEdit && card.collaborators.some(c => c.id === currentUser.id);
+      let cardEditorIds: string[] = [];
+      try {
+        cardEditorIds = JSON.parse(card.editorIds || '[]');
+      } catch {
+        cardEditorIds = [];
+      }
+      const isCollabWithPermission = card.collaborators.some(c => c.id === currentUser.id) && (card.collaboratorsCanEdit || cardEditorIds.includes(currentUser.id));
       
       if (!isOwner && !isCollabWithPermission) {
         return { success: false, error: 'Akses ditolak: Anda bukan pemilik kegiatan ini dan belum diizinkan.' };
@@ -448,7 +467,7 @@ export async function updateCardColumnAction(
       }
     }
 
-    const columnNameIndonesian = {
+    const columnNameIndonesian: Record<string, string> = {
       rencana: 'Rencana Kegiatan',
       progres: 'Sedang Dikerjakan',
       review: 'Butuh Review',
@@ -456,7 +475,7 @@ export async function updateCardColumnAction(
     };
 
     const displayRole = PARTICIPANT_ROLES.includes(currentUser.role) ? 'Mahasiswa' : currentUser.role === 'EXTERNAL_MENTOR' ? 'Mentor' : 'Dosen Pembimbing';
-    const text = `Status dipindahkan dari [${columnNameIndonesian[card.columnId as PKLCard['columnId']]}] ke [${columnNameIndonesian[targetColumn]}] oleh ${currentUser.name} (${displayRole})`;
+    const text = `Status dipindahkan dari [${columnNameIndonesian[card.columnId] || card.columnId}] ke [${columnNameIndonesian[targetColumn] || targetColumn}] oleh ${currentUser.name} (${displayRole})`;
 
     await prisma.$transaction(async (tx) => {
       await tx.card.update({
@@ -514,7 +533,8 @@ export async function updateCardDetailsAction(
   scoreAdvisorDiscipline?: number | null,
   scoreAdvisorReport?: number | null,
   scoreAdvisorCommunication?: number | null,
-  feedbackAdvisor?: string | null
+  feedbackAdvisor?: string | null,
+  priority?: string
 ) {
   try {
     const currentUser = await getAuthenticatedUser();
@@ -534,6 +554,7 @@ export async function updateCardDetailsAction(
       title: string;
       description: string;
       category: string;
+      priority?: string;
       dueDate: string;
       startTime: string;
       endTime: string;
@@ -555,6 +576,9 @@ export async function updateCardDetailsAction(
       startTime,
       endTime,
     };
+    if (priority) {
+      updateData.priority = priority;
+    }
 
     // Role-based field restrictions and auth verification
     if (PARTICIPANT_ROLES.includes(currentUser.role)) {
@@ -612,6 +636,67 @@ export async function updateCardDetailsAction(
   }
 }
 
+export async function updateSubtasksAction(
+  cardId: string,
+  subtasks: { id: string; text: string; isCompleted: boolean }[]
+) {
+  try {
+    const currentUser = await getAuthenticatedUser();
+    if (!currentUser) {
+      return { success: false, error: 'Sesi tidak sah.' };
+    }
+
+    const card = await prisma.card.findUnique({
+      where: { id: cardId },
+      include: { collaborators: true }
+    });
+
+    if (!card) {
+      return { success: false, error: 'Kegiatan tidak ditemukan.' };
+    }
+
+    if (PARTICIPANT_ROLES.includes(currentUser.role)) {
+      const isOwner = card.studentId === currentUser.id;
+      const isCollab = card.collaborators.some(c => c.id === currentUser.id);
+      if (!isOwner && !isCollab) {
+        return { success: false, error: 'Akses ditolak.' };
+      }
+    }
+
+    const completedCount = subtasks.filter(s => s.isCompleted).length;
+    let historyText = `Sub-tugas diperbarui oleh ${currentUser.name} (${completedCount}/${subtasks.length} selesai)`;
+
+    // Automation rule: Auto-move to 'review' if all subtasks are 100% completed
+    let autoMoveToReview = false;
+    if (subtasks.length > 0 && completedCount === subtasks.length && (card.columnId === 'rencana' || card.columnId === 'progres')) {
+      autoMoveToReview = true;
+      historyText = `⚡ Otomatisasi: Seluruh sub-tugas diselesaikan (100%), status dipindahkan ke Butuh Review`;
+    }
+
+    await prisma.$transaction(async (tx) => {
+      await tx.card.update({
+        where: { id: cardId },
+        data: {
+          subtasksJson: JSON.stringify(subtasks),
+          ...(autoMoveToReview ? { columnId: 'review' } : {})
+        }
+      });
+
+      await tx.historyItem.create({
+        data: {
+          cardId,
+          text: historyText
+        }
+      });
+    });
+
+    return { success: true };
+  } catch (error) {
+    console.error('Failed to update subtasks', error);
+    return { success: false, error: 'Gagal memperbarui checklist sub-tugas.' };
+  }
+}
+
 export async function addCommentAction(
   cardId: string,
   text: string,
@@ -625,7 +710,11 @@ export async function addCommentAction(
     }
 
     const card = await prisma.card.findUnique({
-      where: { id: cardId }
+      where: { id: cardId },
+      include: {
+        student: true,
+        collaborators: true
+      }
     });
 
     if (!card) {
@@ -634,7 +723,7 @@ export async function addCommentAction(
 
     // Auth verification
     if (PARTICIPANT_ROLES.includes(currentUser.role)) {
-      if (card.studentId !== currentUser.id) {
+      if (card.studentId !== currentUser.id && !card.collaborators.some(c => c.id === currentUser.id)) {
         return { success: false, error: 'Akses ditolak.' };
       }
     } else if (currentUser.role === 'EXTERNAL_MENTOR') {
@@ -669,6 +758,19 @@ export async function addCommentAction(
         },
       });
     });
+
+    // Notify mentioned users
+    const candidateUsers = [card.student, ...(card.collaborators || [])];
+    for (const u of candidateUsers) {
+      if (u.id !== currentUser.id && text.toLowerCase().includes(`@${u.name.toLowerCase()}`)) {
+        await createNotification(
+          u.id,
+          'Disebut dalam Komentar',
+          `${currentUser.name} menyebut Anda dalam komentar pada kegiatan "${card.title}".`,
+          'INFO'
+        );
+      }
+    }
 
     return { success: true };
   } catch (error) {
@@ -2083,7 +2185,7 @@ export async function verifyUserAction(userId: string, status: string) {
 export async function manageCollaboratorsAction(
   cardId: string,
   collaboratorNisns: string[],
-  collaboratorsCanEdit: boolean
+  editorIds: string[]
 ) {
   try {
     const currentUser = await getAuthenticatedUser();
@@ -2096,16 +2198,26 @@ export async function manageCollaboratorsAction(
 
     if (!card) return { success: false, error: 'Kegiatan tidak ditemukan.' };
     
-    if (card.studentId !== currentUser.id) {
-      return { success: false, error: 'Hanya pemilik kegiatan yang dapat mengelola kolaborator.' };
+    const isOwner = card.studentId === currentUser.id;
+    let cardEditorIds: string[] = [];
+    try {
+      cardEditorIds = JSON.parse(card.editorIds || '[]');
+    } catch {
+      cardEditorIds = [];
+    }
+
+    const isCollaborator = card.collaborators.some(c => c.id === currentUser.id);
+    const userCanEdit = isOwner || (isCollaborator && (card.collaboratorsCanEdit || cardEditorIds.includes(currentUser.id)));
+
+    if (!userCanEdit) {
+      return { success: false, error: 'Anda tidak memiliki izin untuk mengelola kolaborator pada kegiatan ini.' };
     }
 
     let connectCollaborators: { id: string }[] = [];
     if (collaboratorNisns.length > 0) {
       const users = await prisma.user.findMany({
         where: {
-          nisn: { in: collaboratorNisns },
-          role: { in: PARTICIPANT_ROLES }
+          nisn: { in: collaboratorNisns }
         },
         select: { id: true }
       });
@@ -2115,10 +2227,10 @@ export async function manageCollaboratorsAction(
     await prisma.card.update({
       where: { id: cardId },
       data: {
-        collaboratorsCanEdit,
         collaborators: {
           set: connectCollaborators
-        }
+        },
+        editorIds: JSON.stringify(editorIds)
       }
     });
     

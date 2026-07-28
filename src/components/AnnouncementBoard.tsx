@@ -37,11 +37,11 @@ export function AnnouncementBoard() {
               <Megaphone size={18} className="text-amber-600 dark:text-amber-400" />
             </div>
             <div>
-              <div className="flex items-center gap-2 mb-1">
+              <div className="flex flex-wrap items-center justify-between gap-1.5 mb-1 pr-8">
                 <h4 className="text-xs font-bold uppercase tracking-wider text-amber-800 dark:text-amber-300">
                   Pengumuman Kelas (Dari {item.author?.name || 'Guru'})
                 </h4>
-                <span className="text-[10px] text-amber-600/70 dark:text-amber-400/70 font-semibold">
+                <span className="text-[10px] text-amber-600/80 dark:text-amber-400/80 font-semibold whitespace-nowrap">
                   {new Date(item.createdAt).toLocaleDateString('id-ID', { day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' })}
                 </span>
               </div>
@@ -63,11 +63,11 @@ export function AnnouncementBoard() {
               <Megaphone size={18} className="text-blue-600 dark:text-blue-400" />
             </div>
             <div>
-              <div className="flex items-center gap-2 mb-1">
+              <div className="flex flex-wrap items-center justify-between gap-1.5 mb-1 pr-8">
                 <h4 className="text-xs font-bold uppercase tracking-wider text-blue-800 dark:text-blue-300">
                   Pengumuman Perusahaan (Dari {item.author?.name || 'Mentor'})
                 </h4>
-                <span className="text-[10px] text-blue-600/70 dark:text-blue-400/70 font-semibold">
+                <span className="text-[10px] text-blue-600/80 dark:text-blue-400/80 font-semibold whitespace-nowrap">
                   {new Date(item.createdAt).toLocaleDateString('id-ID', { day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' })}
                 </span>
               </div>

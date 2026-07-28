@@ -2,6 +2,21 @@
 
 import prisma from '@/lib/prisma';
 import { createNotification } from './notifications';
+import { cookies } from 'next/headers';
+import { verifySession } from '@/lib/auth';
+
+async function getAuthenticatedUser() {
+  const cookieStore = await cookies();
+  const sessionCookie = cookieStore.get('session');
+  if (!sessionCookie) return null;
+
+  const userId = verifySession(sessionCookie.value);
+  if (!userId) return null;
+
+  return prisma.user.findUnique({
+    where: { id: userId }
+  });
+}
 
 // Helper function to calculate distance using Haversine formula
 function calculateDistance(lat1: number, lon1: number, lat2: number, lon2: number): number {
@@ -479,6 +494,78 @@ export async function rejectWfhAction(attendanceId: string) {
     return { success: true, data: attendance };
   } catch (error: any) {
     console.error('Error rejecting WFH:', error);
+    return { success: false, error: error.message };
+  }
+}
+
+export async function verifyAttendanceAction(attendanceId: string) {
+  try {
+    const currentUser = await getAuthenticatedUser();
+    if (!currentUser || !['pembimbing_sekolah', 'pembimbing_industri', 'guru'].includes(currentUser.role)) {
+      return { success: false, error: 'Akses ditolak.' };
+    }
+
+    const attendance = await prisma.attendance.update({
+      where: { id: attendanceId },
+      data: {
+        isVerified: true,
+        verifiedBy: currentUser.id
+      }
+    });
+
+    await createNotification(
+      attendance.userId,
+      'Absensi Diverifikasi',
+      `Data absensi Anda pada tanggal ${attendance.date} telah diverifikasi oleh Pembimbing.`,
+      'SUCCESS'
+    );
+
+    return { success: true, data: attendance };
+  } catch (error: any) {
+    console.error('Error verifying attendance:', error);
+    return { success: false, error: error.message };
+  }
+}
+
+export async function editAttendanceAction(
+  attendanceId: string,
+  data: {
+    checkInPhoto?: string | null;
+    checkOutPhoto?: string | null;
+    activityNotes?: string;
+  }
+) {
+  try {
+    const currentUser = await getAuthenticatedUser();
+    if (!currentUser || currentUser.role !== 'siswa') {
+      return { success: false, error: 'Akses ditolak.' };
+    }
+
+    const existing = await prisma.attendance.findUnique({
+      where: { id: attendanceId }
+    });
+
+    if (!existing || existing.userId !== currentUser.id) {
+      return { success: false, error: 'Absensi tidak ditemukan.' };
+    }
+
+    if (existing.isVerified) {
+      return { success: false, error: 'Tidak dapat mengedit absensi yang sudah diverifikasi.' };
+    }
+
+    const updateData: any = {};
+    if (data.checkInPhoto !== undefined) updateData.checkInPhoto = data.checkInPhoto;
+    if (data.checkOutPhoto !== undefined) updateData.checkOutPhoto = data.checkOutPhoto;
+    if (data.activityNotes !== undefined) updateData.activityNotes = data.activityNotes;
+
+    const updated = await prisma.attendance.update({
+      where: { id: attendanceId },
+      data: updateData
+    });
+
+    return { success: true, data: updated };
+  } catch (error: any) {
+    console.error('Error editing attendance:', error);
     return { success: false, error: error.message };
   }
 }

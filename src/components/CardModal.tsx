@@ -2,8 +2,8 @@
 
 import React, { useState } from 'react';
 import { usePKL } from '../context/PKLContext';
-import { PKLCard } from '../types/pkl';
-import { X, Calendar, Clock, MessageSquare, Award, Trash2, Edit2, Send, History, CheckCircle, File, FileText, Image as ImageIcon, Paperclip, Loader2, Plus, ChevronDown, Users } from 'lucide-react';
+import { PKLCard, Subtask, PriorityLevel } from '../types/pkl';
+import { X, Calendar, Clock, MessageSquare, Award, Trash2, Edit2, Send, History, CheckCircle, CheckSquare, File, FileText, Image as ImageIcon, Paperclip, Loader2, Plus, ChevronDown, Users, Tag, AtSign } from 'lucide-react';
 import { useLanguage } from '../context/LanguageContext';
 
 interface CardModalProps {
@@ -24,6 +24,7 @@ export const CardModal: React.FC<CardModalProps> = ({ card, onClose, initialEdit
     deleteAttachment,
     deleteCard,
     updateCardColumn,
+    updateSubtasks,
     manageCollaborators,
     currentUser
   } = usePKL();
@@ -34,6 +35,7 @@ export const CardModal: React.FC<CardModalProps> = ({ card, onClose, initialEdit
   const [isEditing, setIsEditing] = useState(initialEdit || false);
   const [editTitle, setEditTitle] = useState(card.title);
   const [editDesc, setEditDesc] = useState(card.description);
+  const [editPriority, setEditPriority] = useState<PriorityLevel>(card.priority || 'medium');
   
   // Custom Category states
   const [selectCategory, setSelectCategory] = useState(
@@ -43,6 +45,7 @@ export const CardModal: React.FC<CardModalProps> = ({ card, onClose, initialEdit
     ['Coding', 'Design', 'Laporan', 'Networking'].includes(card.category) ? '' : card.category
   );
   const [isCategoryDropdownOpen, setIsCategoryDropdownOpen] = useState(false);
+  const [isPriorityDropdownOpen, setIsPriorityDropdownOpen] = useState(false);
 
   const [editDueDate, setEditDueDate] = useState(card.dueDate);
   const [editStartTime, setEditStartTime] = useState(card.startTime || '');
@@ -66,11 +69,55 @@ export const CardModal: React.FC<CardModalProps> = ({ card, onClose, initialEdit
   // File Upload states
   const [uploading, setUploading] = useState(false);
   const [validationError, setValidationError] = useState<string | null>(null);
+
+  // Revision Request States (for Mentor/Advisor)
+  const [isRevisionBoxOpen, setIsRevisionBoxOpen] = useState(false);
+  const [revisionNote, setRevisionNote] = useState('');
+
+  const handleRequestRevision = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!revisionNote.trim()) return;
+    try {
+      await addComment(card.id, `⚠️ MINTA REVISI dari ${currentUser?.name} (${activeRole}): ${revisionNote.trim()}`);
+      await updateCardColumn(card.id, 'progres');
+      onClose();
+    } catch (err) {
+      setValidationError((err as Error).message || 'Gagal mengirim revisi.');
+    }
+  };
   
   // Collaborator management states
   const [newCollabNisn, setNewCollabNisn] = useState('');
   const [collaborators, setCollaborators] = useState(card.collaborators || []);
   const [canEdit, setCanEdit] = useState(card.collaboratorsCanEdit || false);
+  const [editors, setEditors] = useState<string[]>(card.editorIds || []);
+
+  // Sub-tasks checklist state & handlers
+  const [newSubtaskText, setNewSubtaskText] = useState('');
+  const subtasks = card.subtasks || [];
+
+  const handleAddSubtask = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!newSubtaskText.trim()) return;
+    const newSubtask: Subtask = {
+      id: 'sub-' + Date.now() + '-' + Math.random().toString(36).substring(2, 6),
+      text: newSubtaskText.trim(),
+      isCompleted: false,
+    };
+    const updated = [...subtasks, newSubtask];
+    setNewSubtaskText('');
+    await updateSubtasks(card.id, updated);
+  };
+
+  const handleToggleSubtask = async (subtaskId: string) => {
+    const updated = subtasks.map(st => st.id === subtaskId ? { ...st, isCompleted: !st.isCompleted } : st);
+    await updateSubtasks(card.id, updated);
+  };
+
+  const handleDeleteSubtask = async (subtaskId: string) => {
+    const updated = subtasks.filter(st => st.id !== subtaskId);
+    await updateSubtasks(card.id, updated);
+  };
 
   const handleSaveDetails = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -101,7 +148,18 @@ export const CardModal: React.FC<CardModalProps> = ({ card, onClose, initialEdit
         finalCategory,
         editDueDate,
         editStartTime,
-        editEndTime
+        editEndTime,
+        undefined,
+        undefined,
+        undefined,
+        undefined,
+        undefined,
+        undefined,
+        undefined,
+        undefined,
+        undefined,
+        undefined,
+        editPriority
       );
       setIsEditing(false);
     } catch (err) {
@@ -227,9 +285,9 @@ export const CardModal: React.FC<CardModalProps> = ({ card, onClose, initialEdit
 
   const isStudent = activeRole === 'Mahasiswa';
   const isMentor = activeRole === 'Mentor';
-  const isOwner = currentUser?.id === card.studentId;
+  const isOwner = !currentUser || currentUser?.id === card.studentId;
   const isCollaborator = card.collaborators?.some(c => c.id === currentUser?.id);
-  const userCanEdit = isOwner || (isCollaborator && card.collaboratorsCanEdit);
+  const userCanEdit = isOwner || (isCollaborator && (card.collaboratorsCanEdit || (currentUser && editors.includes(currentUser.id))));
 
   return (
     <div className="fixed inset-0 z-50 flex items-end md:items-center justify-center p-0 md:p-4 bg-slate-900/40 backdrop-blur-sm">
@@ -237,7 +295,7 @@ export const CardModal: React.FC<CardModalProps> = ({ card, onClose, initialEdit
         
         {/* Modal Header */}
         <div className="flex items-center justify-between p-6 border-b border-[#E2E8F0] dark:border-gray-700">
-          <div className="flex items-center gap-3">
+          <div className="flex flex-wrap items-center gap-2">
             <span className={`text-[10px] uppercase font-bold tracking-wider px-2 py-0.5 rounded border ${
               card.columnId === 'selesai' ? 'bg-green-50 text-green-700 border-green-100' :
               card.columnId === 'review' ? 'bg-yellow-50 text-yellow-700 border-yellow-100' :
@@ -250,8 +308,127 @@ export const CardModal: React.FC<CardModalProps> = ({ card, onClose, initialEdit
                t('statusPlan')}
             </span>
             <span className="text-xs text-gray-300">•</span>
-            <span className="text-xs text-[#64748B] dark:text-gray-300 font-medium">{card.category === 'Laporan' ? t('report') : card.category === 'Lainnya' ? t('others') : card.category}</span>
+
+            {/* Quick Category / Label Change Button */}
+            <div className="relative">
+              <button
+                type="button"
+                onClick={() => setIsCategoryDropdownOpen(!isCategoryDropdownOpen)}
+                className="text-xs text-slate-700 dark:text-gray-200 font-semibold px-2 py-0.5 rounded-lg border border-slate-200 dark:border-gray-700 bg-slate-50 dark:bg-gray-800 hover:bg-slate-100 dark:hover:bg-gray-700 flex items-center gap-1 cursor-pointer transition"
+                title="Klik untuk ganti label/kategori"
+              >
+                <span>🏷️ {card.category === 'Laporan' ? t('report') : card.category === 'Lainnya' ? t('others') : card.category}</span>
+                <ChevronDown size={12} className="text-slate-400" />
+              </button>
+
+              {isCategoryDropdownOpen && (
+                <div className="absolute left-0 mt-2 w-48 bg-white dark:bg-[#243447] border border-[#E2E8F0] dark:border-gray-700 rounded-xl shadow-xl z-50 overflow-hidden py-1 animate-in fade-in zoom-in-95 duration-150">
+                  <div className="px-3 py-1.5 text-[10px] font-bold text-slate-400 dark:text-gray-400 uppercase tracking-wider border-b border-slate-100 dark:border-gray-700/60 mb-1">
+                    Ganti Label / Kategori
+                  </div>
+                  {['Coding', 'Design', 'Laporan', 'Networking'].map((cat) => (
+                    <button
+                      key={cat}
+                      type="button"
+                      onClick={async () => {
+                        setIsCategoryDropdownOpen(false);
+                        try {
+                          await updateCardDetails(
+                            card.id,
+                            card.title,
+                            card.description,
+                            cat,
+                            card.dueDate,
+                            card.startTime || '',
+                            card.endTime || '',
+                            undefined, undefined, undefined, undefined, undefined,
+                            undefined, undefined, undefined, undefined, undefined,
+                            card.priority
+                          );
+                        } catch (err) {
+                          console.error(err);
+                        }
+                      }}
+                      className={`w-full text-left px-3 py-2 text-xs flex items-center justify-between hover:bg-slate-50 dark:hover:bg-[#2D435E] transition-colors cursor-pointer ${
+                        card.category === cat ? 'bg-primary/10 text-primary font-bold' : 'text-slate-700 dark:text-gray-200'
+                      }`}
+                    >
+                      <span>{cat === 'Laporan' ? t('report') : cat}</span>
+                      {card.category === cat && <span className="text-primary text-xs">✓</span>}
+                    </button>
+                  ))}
+                </div>
+              )}
+            </div>
+
+            <span className="text-xs text-gray-300">•</span>
+
+            {/* Quick Priority Change Button */}
+            <div className="relative">
+              <button
+                type="button"
+                onClick={() => setIsPriorityDropdownOpen(!isPriorityDropdownOpen)}
+                className="text-xs font-semibold px-2 py-0.5 rounded-lg border border-slate-200 dark:border-gray-700 bg-slate-50 dark:bg-gray-800 hover:bg-slate-100 dark:hover:bg-gray-700 flex items-center gap-1 cursor-pointer transition"
+                title="Klik untuk ganti prioritas"
+              >
+                <span>
+                  {card.priority === 'urgent'
+                    ? '⚡ Mendesak'
+                    : card.priority === 'high'
+                    ? '🔥 Tinggi'
+                    : card.priority === 'low'
+                    ? '🟢 Rendah'
+                    : '🟡 Sedang'}
+                </span>
+                <ChevronDown size={12} className="text-slate-400" />
+              </button>
+
+              {isPriorityDropdownOpen && (
+                <div className="absolute left-0 mt-2 w-44 bg-white dark:bg-[#243447] border border-[#E2E8F0] dark:border-gray-700 rounded-xl shadow-xl z-50 overflow-hidden py-1 animate-in fade-in zoom-in-95 duration-150">
+                  <div className="px-3 py-1.5 text-[10px] font-bold text-slate-400 dark:text-gray-400 uppercase tracking-wider border-b border-slate-100 dark:border-gray-700/60 mb-1">
+                    Ganti Prioritas
+                  </div>
+                  {[
+                    { id: 'low', label: '🟢 Rendah' },
+                    { id: 'medium', label: '🟡 Sedang' },
+                    { id: 'high', label: '🔥 Tinggi' },
+                    { id: 'urgent', label: '⚡ Mendesak' },
+                  ].map((p) => (
+                    <button
+                      key={p.id}
+                      type="button"
+                      onClick={async () => {
+                        setIsPriorityDropdownOpen(false);
+                        try {
+                          await updateCardDetails(
+                            card.id,
+                            card.title,
+                            card.description,
+                            card.category,
+                            card.dueDate,
+                            card.startTime || '',
+                            card.endTime || '',
+                            undefined, undefined, undefined, undefined, undefined,
+                            undefined, undefined, undefined, undefined, undefined,
+                            p.id as PriorityLevel
+                          );
+                        } catch (err) {
+                          console.error(err);
+                        }
+                      }}
+                      className={`w-full text-left px-3 py-2 text-xs flex items-center justify-between hover:bg-slate-50 dark:hover:bg-[#2D435E] transition-colors cursor-pointer ${
+                        (card.priority || 'medium') === p.id ? 'bg-primary/10 text-primary font-bold' : 'text-slate-700 dark:text-gray-200'
+                      }`}
+                    >
+                      <span>{p.label}</span>
+                      {(card.priority || 'medium') === p.id && <span className="text-primary text-xs">✓</span>}
+                    </button>
+                  ))}
+                </div>
+              )}
+            </div>
           </div>
+
           <button
             onClick={onClose}
             className="p-1.5 rounded-lg bg-slate-50 dark:bg-gray-800/50 hover:bg-slate-100 dark:bg-gray-800 text-slate-500 dark:text-gray-300 hover:text-slate-700 transition cursor-pointer min-h-[44px] min-w-[44px] flex items-center justify-center"
@@ -303,6 +480,84 @@ export const CardModal: React.FC<CardModalProps> = ({ card, onClose, initialEdit
                   <div className="p-3.5 bg-red-50 border border-red-200 text-[#EF4444] rounded-xl text-xs font-semibold flex items-center justify-between animate-in fade-in duration-200">
                     <span>{validationError}</span>
                     <button onClick={() => setValidationError(null)} className="text-red-400 hover:text-red-600 dark:text-red-500 font-bold ml-2 text-sm cursor-pointer">×</button>
+                  </div>
+                )}
+
+                {/* Approval & Review Status Banner */}
+                {card.columnId === 'review' && (
+                  <div className="p-4 rounded-xl border bg-purple-50 dark:bg-purple-950/30 border-purple-200 dark:border-purple-800/60 flex flex-col gap-3">
+                    <div className="flex items-center justify-between gap-3">
+                      <div className="flex items-center gap-2">
+                        <Award className="text-purple-600 dark:text-purple-400 shrink-0" size={18} />
+                        <div>
+                          <h4 className="text-xs font-bold text-purple-900 dark:text-purple-200">
+                            ⏳ Menunggu Persetujuan & Penilaian Pembimbing
+                          </h4>
+                          <p className="text-[11px] text-purple-700 dark:text-purple-300">
+                            {isStudent
+                              ? 'Kegiatan ini telah diajukan. Hanya Dosen Pembimbing atau Mentor Industri yang dapat menyetujui & memindahkan ke kolom Selesai.'
+                              : 'Sebagai Guru/Mentor, Anda dapat memberikan penilaian & persetujuan atau meminta revisi.'}
+                          </p>
+                        </div>
+                      </div>
+                      {(activeRole === 'Dosen Pembimbing' || activeRole === 'Mentor') && (
+                        <div className="flex items-center gap-2 shrink-0">
+                          <button
+                            type="button"
+                            onClick={() => setIsRevisionBoxOpen(!isRevisionBoxOpen)}
+                            className="px-3 py-1.5 bg-red-100 hover:bg-red-200 text-red-700 dark:bg-red-900/40 dark:text-red-300 text-xs font-bold rounded-lg transition cursor-pointer"
+                          >
+                            🔴 Minta Revisi
+                          </button>
+                        </div>
+                      )}
+                    </div>
+
+                    {/* Inline Revision Request Box */}
+                    {isRevisionBoxOpen && (
+                      <form onSubmit={handleRequestRevision} className="flex flex-col gap-2 pt-2 border-t border-purple-200 dark:border-purple-800/60">
+                        <label className="text-[11px] font-bold text-red-700 dark:text-red-300">Catatan/Alasan Revisi untuk Mahasiswa:</label>
+                        <textarea
+                          required
+                          rows={2}
+                          value={revisionNote}
+                          onChange={(e) => setRevisionNote(e.target.value)}
+                          placeholder="Jelaskan bagian mana yang perlu diperbaiki oleh mahasiswa..."
+                          className="w-full bg-white dark:bg-gray-900 border border-red-300 rounded-lg p-2 text-xs text-slate-800 dark:text-gray-200 focus:outline-none"
+                        />
+                        <div className="flex justify-end gap-2">
+                          <button
+                            type="button"
+                            onClick={() => setIsRevisionBoxOpen(false)}
+                            className="px-3 py-1 text-xs text-slate-500 font-bold cursor-pointer"
+                          >
+                            Batal
+                          </button>
+                          <button
+                            type="submit"
+                            className="px-3 py-1 bg-red-600 hover:bg-red-700 text-white text-xs font-bold rounded-lg shadow-sm cursor-pointer"
+                          >
+                            Kirim Revisi & Kembalikan Kartu
+                          </button>
+                        </div>
+                      </form>
+                    )}
+                  </div>
+                )}
+
+                {card.columnId === 'selesai' && (
+                  <div className="p-3.5 rounded-xl border bg-emerald-50 dark:bg-emerald-950/30 border-emerald-200 dark:border-emerald-800/60 flex items-center justify-between gap-3">
+                    <div className="flex items-center gap-2">
+                      <CheckCircle className="text-emerald-600 dark:text-emerald-400 shrink-0" size={18} />
+                      <div>
+                        <h4 className="text-xs font-bold text-emerald-900 dark:text-emerald-200">
+                          ✅ Telah Disetujui & Dinilai oleh Pembimbing
+                        </h4>
+                        <p className="text-[11px] text-emerald-700 dark:text-emerald-300">
+                          Kegiatan ini telah resmi diverifikasi. Nilai & masukan telah dicatat dalam sistem monitoring PKL.
+                        </p>
+                      </div>
+                    </div>
                   </div>
                 )}
 
@@ -392,6 +647,32 @@ export const CardModal: React.FC<CardModalProps> = ({ card, onClose, initialEdit
                         </div>
                       )}
 
+                      {/* Priority Level Selector */}
+                      <div className="flex flex-col gap-1">
+                        <label className="text-[10px] text-[#64748B] dark:text-gray-300 font-semibold uppercase">Tingkat Prioritas</label>
+                        <div className="grid grid-cols-4 gap-2">
+                          {[
+                            { id: 'low', label: '🟢 Rendah' },
+                            { id: 'medium', label: '🟡 Sedang' },
+                            { id: 'high', label: '🔥 Tinggi' },
+                            { id: 'urgent', label: '⚡ Mendesak' },
+                          ].map((p) => (
+                            <button
+                              key={p.id}
+                              type="button"
+                              onClick={() => setEditPriority(p.id as PriorityLevel)}
+                              className={`py-1.5 px-1 text-xs rounded-lg border font-bold transition-all text-center ${
+                                editPriority === p.id
+                                  ? 'border-primary bg-primary/10 text-primary shadow-sm'
+                                  : 'border-slate-200 dark:border-gray-700 bg-white dark:bg-[#243447] text-slate-600 dark:text-gray-300 hover:bg-slate-50'
+                              }`}
+                            >
+                              {p.label}
+                            </button>
+                          ))}
+                        </div>
+                      </div>
+
                       <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
                         <div>
                           <label className="text-[10px] text-[#64748B] dark:text-gray-300 font-semibold uppercase">{t('start')}</label>
@@ -472,6 +753,88 @@ export const CardModal: React.FC<CardModalProps> = ({ card, onClose, initialEdit
                         {card.description}
                       </p>
                     </div>
+                  )}
+                </div>
+
+                {/* Sub-tasks & Checklist Section */}
+                <div className="bg-[#F1F5F9] dark:bg-gray-800/50 border border-[#E2E8F0] dark:border-gray-700 rounded-xl p-4 flex flex-col gap-4">
+                  <div className="flex justify-between items-center">
+                    <div className="flex items-center gap-2">
+                      <CheckSquare size={16} className="text-primary" />
+                      <h4 className="text-xs font-bold text-[#64748B] dark:text-gray-300 uppercase tracking-wider">
+                        Sub-tugas & Checklist ({subtasks.filter(s => s.isCompleted).length}/{subtasks.length})
+                      </h4>
+                    </div>
+                    {subtasks.length > 0 && (
+                      <span className="text-xs font-semibold text-primary">
+                        {Math.round((subtasks.filter(s => s.isCompleted).length / subtasks.length) * 100)}%
+                      </span>
+                    )}
+                  </div>
+
+                  {/* Progress Bar */}
+                  {subtasks.length > 0 && (
+                    <div className="w-full bg-slate-200 dark:bg-gray-700 h-2 rounded-full overflow-hidden">
+                      <div 
+                        className="bg-primary h-full transition-all duration-300 rounded-full"
+                        style={{ width: `${(subtasks.filter(s => s.isCompleted).length / subtasks.length) * 100}%` }}
+                      />
+                    </div>
+                  )}
+
+                  {/* List of Subtasks */}
+                  <div className="flex flex-col gap-2">
+                    {subtasks.map((st) => (
+                      <div key={st.id} className="flex items-center justify-between gap-3 p-2 bg-white dark:bg-[#243447] border border-[#E2E8F0] dark:border-gray-700 rounded-lg text-xs group">
+                        <label className="flex items-center gap-2.5 flex-1 cursor-pointer select-none">
+                          <input
+                            type="checkbox"
+                            checked={st.isCompleted}
+                            onChange={() => handleToggleSubtask(st.id)}
+                            disabled={!userCanEdit}
+                            className="w-4 h-4 text-primary rounded border-gray-300 focus:ring-primary cursor-pointer accent-primary"
+                          />
+                          <span className={`${st.isCompleted ? 'line-through text-slate-400 dark:text-gray-500' : 'text-slate-700 dark:text-gray-200 font-medium'}`}>
+                            {st.text}
+                          </span>
+                        </label>
+                        {userCanEdit && (
+                          <button
+                            type="button"
+                            onClick={() => handleDeleteSubtask(st.id)}
+                            className="text-slate-400 hover:text-red-500 transition p-1 opacity-0 group-hover:opacity-100 cursor-pointer"
+                            title="Hapus Sub-tugas"
+                          >
+                            <Trash2 size={13} />
+                          </button>
+                        )}
+                      </div>
+                    ))}
+
+                    {subtasks.length === 0 && (
+                      <p className="text-xs text-slate-400 dark:text-gray-400 italic">Belum ada sub-tugas. Tambahkan langkah-langkah kerja di bawah.</p>
+                    )}
+                  </div>
+
+                  {/* Add New Subtask Input */}
+                  {userCanEdit && (
+                    <form onSubmit={handleAddSubtask} className="flex gap-2">
+                      <input
+                        type="text"
+                        placeholder="Tambah sub-tugas baru..."
+                        value={newSubtaskText}
+                        onChange={(e) => setNewSubtaskText(e.target.value)}
+                        className="flex-1 bg-white dark:bg-[#243447] border border-[#E2E8F0] dark:border-gray-700 rounded-lg px-3 py-1.5 text-xs text-slate-700 dark:text-gray-200 focus:outline-none focus:border-primary"
+                      />
+                      <button
+                        type="submit"
+                        disabled={!newSubtaskText.trim()}
+                        className="px-3 py-1.5 bg-primary hover:bg-primary-hover text-white rounded-lg text-xs font-semibold flex items-center gap-1 transition disabled:opacity-50 cursor-pointer"
+                      >
+                        <Plus size={13} />
+                        <span>Tambah</span>
+                      </button>
+                    </form>
                   )}
                 </div>
 
@@ -808,16 +1171,46 @@ export const CardModal: React.FC<CardModalProps> = ({ card, onClose, initialEdit
                               {new Date(comment.createdAt).toLocaleDateString('id-ID', { hour: '2-digit', minute: '2-digit' })}
                             </span>
                           </div>
-                          <p className="text-xs text-slate-600 leading-relaxed whitespace-pre-wrap">{comment.text}</p>
+                          <p className="text-xs text-slate-600 dark:text-gray-300 leading-relaxed whitespace-pre-wrap">
+                            {comment.text.split(/(@[A-Za-z0-9_'\s]+?)(?=\s|$)/g).map((part, i) => {
+                              if (part.startsWith('@')) {
+                                return (
+                                  <span key={i} className="inline-flex items-center gap-0.5 px-1.5 py-0.5 rounded-md bg-primary/10 text-primary font-bold text-[11px] border border-blue-200 dark:border-blue-800/60 mx-0.5">
+                                    {part}
+                                  </span>
+                                );
+                              }
+                              return part;
+                            })}
+                          </p>
                         </div>
                       ))
                     )}
                   </div>
 
+                  {/* Quick Mention Pills */}
+                  {((card.collaborators && card.collaborators.length > 0) || currentUser) && (
+                    <div className="flex items-center gap-1.5 overflow-x-auto pb-1 scrollbar-none pt-1">
+                      <span className="text-[10px] text-slate-400 font-bold uppercase tracking-wider shrink-0 flex items-center gap-1">
+                        <AtSign size={11} className="text-primary" /> Tag:
+                      </span>
+                      {card.collaborators?.map(c => (
+                        <button
+                          key={c.id}
+                          type="button"
+                          onClick={() => setCommentText(prev => (prev ? prev.trim() + ' ' : '') + `@${c.name.split(' ')[0]} `)}
+                          className="text-[10px] font-bold px-2 py-0.5 bg-slate-100 dark:bg-gray-800 text-slate-600 dark:text-gray-300 hover:bg-primary/10 hover:text-primary rounded-md border border-slate-200 dark:border-gray-700 transition cursor-pointer shrink-0 flex items-center gap-0.5"
+                        >
+                          <span>@{c.name.split(' ')[0]}</span>
+                        </button>
+                      ))}
+                    </div>
+                  )}
+
                   <form onSubmit={handlePostComment} className="flex gap-2">
                     <input
                       type="text"
-                      placeholder="Tulis tanggapan atau saran..."
+                      placeholder="Tulis komentar... (gunakan @Nama untuk mention)"
                       value={commentText}
                       onChange={(e) => setCommentText(e.target.value)}
                       className="flex-1 bg-white dark:bg-[#243447] border border-[#E2E8F0] dark:border-gray-700 rounded-xl px-4 text-sm text-[#0F172A] dark:text-gray-200 focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary min-h-[48px] py-3 md:min-h-0 md:py-2 md:text-xs"
@@ -923,27 +1316,67 @@ export const CardModal: React.FC<CardModalProps> = ({ card, onClose, initialEdit
           ) : activeTab === 'history' ? (
             /* History Log Tab */
             <div className="flex flex-col gap-4">
-              <div className="flex flex-col gap-3">
-                {card.history.map((log, index) => (
-                  <div key={log.id} className="flex gap-4 items-start relative pb-6 group">
-                    {/* Vertical connecting line */}
-                    {index < card.history.length - 1 && (
-                      <div className="absolute left-2.5 top-6 bottom-0 w-0.5 bg-slate-200 group-hover:bg-primary/10 transition" />
-                    )}
-                    {/* Indicator Dot */}
-                    <div className="w-5 h-5 rounded-full bg-primary/10 border border-blue-200 flex items-center justify-center shrink-0 z-10 mt-0.5">
-                      <div className="w-1.5 h-1.5 rounded-full bg-primary" />
-                    </div>
-                    {/* Text content */}
-                    <div className="flex-1">
-                      <p className="text-xs text-slate-800 dark:text-gray-200 leading-normal">{log.text}</p>
-                      <span className="text-[10px] text-slate-400">
-                        {new Date(log.createdAt).toLocaleString('id-ID')}
-                      </span>
-                    </div>
-                  </div>
-                ))}
+              <div className="flex items-center justify-between border-b border-slate-100 dark:border-gray-700 pb-3">
+                <h3 className="font-bold text-sm text-slate-800 dark:text-white flex items-center gap-2">
+                  <History size={16} className="text-primary" />
+                  <span>Riwayat Aktivitas Kegiatan</span>
+                </h3>
+                <span className="text-xs text-slate-400">
+                  Total {card.history?.length || 0} entri
+                </span>
               </div>
+
+              {(!card.history || card.history.length === 0) ? (
+                <div className="flex flex-col items-center justify-center p-8 text-center bg-slate-50 dark:bg-gray-800/40 rounded-2xl border border-dashed border-slate-200 dark:border-gray-700 text-slate-400">
+                  <Clock size={32} className="opacity-40 mb-2" />
+                  <p className="text-xs font-semibold">Belum ada riwayat aktivitas pada kegiatan ini.</p>
+                </div>
+              ) : (
+                <div className="flex flex-col gap-3 relative pl-2">
+                  {card.history.map((log, index) => {
+                    let icon = '📌';
+                    if (log.text.includes('dibuat')) icon = '✨';
+                    else if (log.text.includes('dipindahkan') || log.text.includes('Status')) icon = '🔄';
+                    else if (log.text.includes('komentar')) icon = '💬';
+                    else if (log.text.includes('Sub-tugas')) icon = '☑️';
+                    else if (log.text.includes('diperbarui') || log.text.includes('Detail')) icon = '✏️';
+
+                    const dateObj = new Date(log.createdAt);
+                    const formattedDate = dateObj.toLocaleDateString('id-ID', {
+                      day: 'numeric',
+                      month: 'short',
+                      year: 'numeric'
+                    });
+                    const formattedTime = dateObj.toLocaleTimeString('id-ID', {
+                      hour: '2-digit',
+                      minute: '2-digit'
+                    });
+
+                    return (
+                      <div key={log.id || index} className="flex gap-3.5 items-start relative pb-5 group">
+                        {/* Vertical connecting line */}
+                        {index < card.history.length - 1 && (
+                          <div className="absolute left-3.5 top-7 bottom-0 w-0.5 bg-slate-200 dark:bg-gray-700 group-hover:bg-primary/30 transition" />
+                        )}
+                        
+                        {/* Indicator Icon Badge */}
+                        <div className="w-7 h-7 rounded-xl bg-slate-100 dark:bg-gray-800 border border-slate-200 dark:border-gray-700 flex items-center justify-center shrink-0 z-10 text-xs shadow-sm">
+                          {icon}
+                        </div>
+
+                        {/* Log Text & Timestamp */}
+                        <div className="flex-1 bg-slate-50/70 dark:bg-gray-800/40 border border-slate-100 dark:border-gray-700/60 rounded-xl p-3">
+                          <p className="text-xs font-medium text-slate-800 dark:text-gray-200 leading-relaxed">{log.text}</p>
+                          <div className="flex items-center gap-1.5 text-[10px] text-slate-400 mt-1.5 font-semibold">
+                            <Clock size={10} />
+                            <span>{formattedDate} • {formattedTime} WIB</span>
+                          </div>
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
+              )}
             </div>
           ) : activeTab === 'collaborators' ? (
             /* Collaborators Tab */
@@ -951,24 +1384,94 @@ export const CardModal: React.FC<CardModalProps> = ({ card, onClose, initialEdit
               <h3 className="font-semibold text-lg text-slate-800 dark:text-white">Anggota Kegiatan (Kolaborator)</h3>
               
               <div className="flex flex-col gap-2">
-                {collaborators.length === 0 ? (
-                  <p className="text-sm text-slate-500">Belum ada kolaborator yang ditambahkan.</p>
-                ) : (
-                  collaborators.map(c => (
-                    <div key={c.id} className="flex justify-between items-center bg-slate-50 dark:bg-gray-800 p-3 rounded-xl border border-slate-200 dark:border-gray-700">
-                      <div className="flex items-center gap-3">
-                        <div className="w-8 h-8 bg-primary/20 text-primary flex items-center justify-center rounded-full font-bold uppercase">
-                          {(c.name || '?').charAt(0)}
-                        </div>
-                        <div>
-                          <p className="font-medium text-sm text-slate-700 dark:text-white">{c.name}</p>
-                          <p className="text-xs text-slate-500">NISN: {c.nisn || '-'}</p>
-                        </div>
+                {/* Tampilkan Pembuat Kegiatan */}
+                {card.owner && (
+                  <div key={card.owner.id} className="flex justify-between items-center bg-slate-50 dark:bg-gray-800 p-3 rounded-xl border border-blue-200 dark:border-blue-800/30">
+                    <div className="flex items-center gap-3">
+                      <div className="w-8 h-8 bg-blue-500/20 text-blue-600 flex items-center justify-center rounded-full font-bold uppercase">
+                        {(card.owner.name || '?').charAt(0)}
                       </div>
-                      {isOwner && (
+                      <div>
+                        <p className="font-medium text-sm text-slate-700 dark:text-white flex items-center gap-2">
+                          {card.owner.name}
+                          <span className="text-[10px] px-1.5 py-0.5 rounded-md bg-blue-100 text-blue-700 dark:bg-blue-900/40 dark:text-blue-300 border border-blue-200 dark:border-blue-800">Pembuat</span>
+                        </p>
+                        <p className="text-xs text-slate-500">NISN: {card.owner.nisn || '-'}</p>
+                      </div>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <button
+                        type="button"
+                        onClick={() => {
+                          setCommentText(prev => (prev ? prev.trim() + ' ' : '') + `@${card.owner!.name.split(' ')[0]} `);
+                          setActiveTab('details');
+                        }}
+                        className="px-2.5 py-1 text-xs font-bold text-primary bg-primary/10 hover:bg-primary/20 rounded-lg transition flex items-center gap-1 cursor-pointer"
+                        title={`Mention ${card.owner.name}`}
+                      >
+                        <AtSign size={12} />
+                        <span>Mention</span>
+                      </button>
+                    </div>
+                  </div>
+                )}
+
+                {/* Tampilkan Kolaborator */}
+                {collaborators.length === 0 && !card.owner && (
+                  <p className="text-sm text-slate-500">Belum ada kolaborator yang ditambahkan.</p>
+                )}
+                {collaborators.map(c => {
+                  const isUserEditor = canEdit || editors.includes(c.id);
+                  return (
+                  <div key={c.id} className="flex justify-between items-center bg-slate-50 dark:bg-gray-800 p-3 rounded-xl border border-slate-200 dark:border-gray-700">
+                    <div className="flex items-center gap-3">
+                      <div className="w-8 h-8 bg-primary/20 text-primary flex items-center justify-center rounded-full font-bold uppercase">
+                        {(c.name || '?').charAt(0)}
+                      </div>
+                      <div>
+                        <p className="font-medium text-sm text-slate-700 dark:text-white flex items-center gap-2">
+                          {c.name}
+                          <span className={`text-[10px] px-1.5 py-0.5 rounded-md border ${isUserEditor ? 'bg-purple-100 text-purple-700 dark:bg-purple-900/40 dark:text-purple-300 border-purple-200 dark:border-purple-800' : 'bg-slate-200 text-slate-700 dark:bg-gray-700 dark:text-gray-300 border-slate-300 dark:border-gray-600'}`}>
+                            {isUserEditor ? 'Editor' : 'Kolaborator'}
+                          </span>
+                        </p>
+                        <p className="text-xs text-slate-500">NISN: {c.nisn || '-'}</p>
+                      </div>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <button
+                        type="button"
+                        onClick={() => {
+                          setCommentText(prev => (prev ? prev.trim() + ' ' : '') + `@${c.name.split(' ')[0]} `);
+                          setActiveTab('details');
+                        }}
+                        className="px-2.5 py-1 text-xs font-bold text-primary bg-primary/10 hover:bg-primary/20 rounded-lg transition flex items-center gap-1 cursor-pointer"
+                        title={`Mention ${c.name}`}
+                      >
+                        <AtSign size={12} />
+                        <span>Mention</span>
+                      </button>
+                      {userCanEdit && (
+                        <button
+                          type="button"
+                          onClick={() => {
+                            if (editors.includes(c.id)) {
+                              setEditors(prev => prev.filter(id => id !== c.id));
+                            } else {
+                              setEditors(prev => [...prev, c.id]);
+                            }
+                          }}
+                          className={`px-2 py-1 text-[10px] font-bold rounded-lg transition border ${isUserEditor ? 'bg-slate-100 text-slate-500 hover:bg-slate-200 border-slate-200' : 'bg-purple-100 text-purple-600 hover:bg-purple-200 border-purple-200'}`}
+                          title={isUserEditor ? 'Cabut Akses Editor' : 'Jadikan Editor'}
+                        >
+                          {isUserEditor ? 'Cabut Akses' : 'Jadikan Editor'}
+                        </button>
+                      )}
+                      {userCanEdit && (
                         <button 
                           onClick={() => {
                             setCollaborators(prev => prev.filter(collab => collab.id !== c.id));
+                            setEditors(prev => prev.filter(id => id !== c.id));
                           }}
                           className="text-red-500 hover:text-red-600 p-2 cursor-pointer"
                         >
@@ -976,50 +1479,41 @@ export const CardModal: React.FC<CardModalProps> = ({ card, onClose, initialEdit
                         </button>
                       )}
                     </div>
-                  ))
-                )}
+                  </div>
+                )})}
               </div>
               
-              {isOwner && (
-                <div className="mt-4 flex flex-col gap-3 p-4 border border-slate-200 dark:border-gray-700 rounded-xl bg-slate-50 dark:bg-gray-800/50">
-                  <h4 className="font-semibold text-sm">Tambah Anggota Baru</h4>
-                  <div className="flex gap-2">
-                    <input 
-                      type="text" 
-                      id="new-collab-nisn"
-                      placeholder="Masukkan NISN siswa"
-                      className="flex-1 px-3 py-2 text-sm border border-slate-200 dark:border-gray-700 rounded-lg bg-white dark:bg-gray-900 focus:outline-none focus:border-primary"
-                    />
-                    <button 
-                      onClick={() => {
-                        const input = document.getElementById('new-collab-nisn') as HTMLInputElement;
-                        const nisn = input.value.trim();
-                        if (!nisn) return;
-                        setCollaborators(prev => [...prev, { id: 'temp-' + Date.now(), name: 'User ' + nisn, nisn }]);
-                        input.value = '';
-                      }}
-                      className="px-4 py-2 bg-primary text-white text-sm font-semibold rounded-lg hover:bg-primary/90 transition cursor-pointer"
-                    >
-                      Tambah
-                    </button>
-                  </div>
+              {userCanEdit && (
+                <div className="mt-4 flex flex-col gap-4 p-4 border border-slate-200 dark:border-gray-700 rounded-xl bg-slate-50 dark:bg-gray-800/50">
                   
-                  <div className="flex items-center gap-2 mt-2">
-                    <input 
-                      type="checkbox" 
-                      id="collab-can-edit"
-                      checked={canEdit}
-                      onChange={(e) => setCanEdit(e.target.checked)}
-                      className="w-4 h-4 text-primary rounded border-slate-300 focus:ring-primary"
-                    />
-                    <label htmlFor="collab-can-edit" className="text-sm text-slate-600 dark:text-gray-300">
-                      Izinkan anggota memindahkan dan mengedit kegiatan ini?
-                    </label>
+                  {/* Tambah Anggota Section */}
+                  <div>
+                    <h4 className="font-semibold text-sm mb-2">Tambah Anggota Baru</h4>
+                    <div className="flex gap-2">
+                      <input 
+                        type="text" 
+                        id="new-collab-nisn"
+                        placeholder="Masukkan NISN siswa"
+                        className="flex-1 px-3 py-2 text-sm border border-slate-200 dark:border-gray-700 rounded-lg bg-white dark:bg-gray-900 focus:outline-none focus:border-primary"
+                      />
+                      <button 
+                        onClick={() => {
+                          const input = document.getElementById('new-collab-nisn') as HTMLInputElement;
+                          const nisn = input.value.trim();
+                          if (!nisn) return;
+                          setCollaborators(prev => [...prev, { id: 'temp-' + Date.now(), name: 'User ' + nisn, nisn }]);
+                          input.value = '';
+                        }}
+                        className="px-4 py-2 bg-primary text-white text-sm font-semibold rounded-lg hover:bg-primary/90 transition cursor-pointer"
+                      >
+                        Tambah
+                      </button>
+                    </div>
                   </div>
                   
                   <button 
                     onClick={() => {
-                      manageCollaborators(card.id, collaborators.map(c => c.nisn).filter(Boolean) as string[], canEdit);
+                      manageCollaborators(card.id, collaborators.map(c => c.nisn).filter(Boolean) as string[], editors);
                     }}
                     className="mt-2 w-full py-2 bg-primary text-white text-sm font-semibold rounded-lg hover:bg-primary/90 transition cursor-pointer"
                   >

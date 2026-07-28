@@ -17,9 +17,10 @@ export const SuperAdminPortal: React.FC = () => {
     }
     setLoading(false);
   };
-
   useEffect(() => {
-    fetchPending();
+    setTimeout(() => {
+      fetchPending();
+    }, 0);
   }, []);
 
   const handleApprove = async (id: string) => {

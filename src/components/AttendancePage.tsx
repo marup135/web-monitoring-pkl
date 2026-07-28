@@ -13,10 +13,13 @@ import {
   requestLeaveAction, 
   approveLeaveAction,
   approveWfhAction,
-  rejectWfhAction
+  rejectWfhAction,
+  editAttendanceAction
 } from '@/app/actions/attendance';
 import { getFaceDescriptorAction } from '@/app/actions/profile';
-import { Clock, Calendar, CheckCircle2, AlertCircle, RefreshCw, UserCheck, Camera, MapPin, X, Upload, Eye, WifiOff } from 'lucide-react';
+import { Clock, Calendar, CheckCircle2, AlertCircle, RefreshCw, UserCheck, Camera, MapPin, X, Upload, Eye, WifiOff, Download, Edit } from 'lucide-react';
+import { jsPDF } from 'jspdf';
+import autoTable from 'jspdf-autotable';
 import { useFaceApi } from '../hooks/useFaceApi';
 import { useCameraLocation } from '../hooks/useCameraLocation';
 import { useBlinkDetection } from '../hooks/useBlinkDetection';
@@ -29,6 +32,8 @@ interface AttendanceRecord {
   checkOut: string | null;
   status: string;
   locationStatus?: string;
+  isVerified?: boolean;
+  verifiedBy?: string | null;
   createdAt: Date;
 }
 
@@ -60,7 +65,9 @@ export function AttendancePage() {
   
   // Modal for Viewing Proof
   const [proofModalData, setProofModalData] = useState<{
+    id: string;
     date: string;
+    isVerified?: boolean;
     checkInPhoto?: string | null;
     checkInLat?: number | null;
     checkInLng?: number | null;
@@ -69,6 +76,11 @@ export function AttendancePage() {
     checkOutLng?: number | null;
     activityNotes?: string | null;
   } | null>(null);
+
+  const [isEditingNotes, setIsEditingNotes] = useState(false);
+  const [editNotesText, setEditNotesText] = useState("");
+  const [editingAttendanceId, setEditingAttendanceId] = useState<string | null>(null);
+  const [modalError, setModalError] = useState<string | null>(null);
 
   const {
     modelsLoaded,
@@ -93,9 +105,15 @@ export function AttendancePage() {
     capturePhoto,
     handleFileUpload,
     openModal,
-    closeModal,
+    closeModal: originalCloseModal,
     startCamera
   } = useCameraLocation();
+
+  const closeModal = () => {
+    setEditingAttendanceId(null);
+    setModalError(null);
+    originalCloseModal();
+  };
 
   const { hasBlinked, isDetecting, instruction, resetBlink } = useBlinkDetection(
     videoRef, 
@@ -111,6 +129,61 @@ export function AttendancePage() {
       return () => clearTimeout(timer);
     }
   }, [successMsg, errorMsg]);
+
+  const handleDownloadPDF = () => {
+    const doc = new jsPDF();
+    doc.setFontSize(16);
+    doc.text("Rekap Absensi Siswa", 14, 20);
+    
+    doc.setFontSize(10);
+    doc.text(`Dicetak pada: ${new Date().toLocaleString('id-ID')}`, 14, 30);
+    
+    const tableColumn = ["Tanggal", "Masuk", "Pulang", "Status"];
+    const tableRows: any[] = [];
+    
+    history.forEach(item => {
+      const rowData = [
+        item.date,
+        item.checkIn ? `${item.checkIn} WIB` : '-',
+        item.checkOut ? `${item.checkOut} WIB` : '-',
+        item.status === 'PRESENT' ? 'Hadir' : item.status === 'LATE' ? 'Terlambat' : item.status === 'ABSENT' ? 'Alpa' : item.status
+      ];
+      tableRows.push(rowData);
+    });
+    
+    autoTable(doc, {
+      head: [tableColumn],
+      body: tableRows,
+      startY: 40,
+      theme: 'grid'
+    });
+    
+    doc.save(`Rekap_Absensi_${selectedStudentId || 'Siswa'}.pdf`);
+  };
+
+  const handleDownloadImage = (dataUrl: string, filename: string) => {
+    const link = document.createElement('a');
+    link.href = dataUrl;
+    link.download = filename;
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+  };
+
+  const handleSaveNotes = async () => {
+    if (!proofModalData || actionLoading) return;
+    setActionLoading(true);
+    const res = await editAttendanceAction(proofModalData.id, { activityNotes: editNotesText });
+    if (res.success) {
+      setSuccessMsg('Catatan berhasil diperbarui!');
+      setProofModalData({ ...proofModalData, activityNotes: editNotesText });
+      setIsEditingNotes(false);
+      fetchAttendanceData();
+    } else {
+      setErrorMsg(res.error || 'Gagal memperbarui catatan.');
+    }
+    setActionLoading(false);
+  };
 
   const fetchAttendanceData = async () => {
     const targetUserId = selectedStudentId || currentUser?.id;
@@ -270,7 +343,10 @@ export function AttendancePage() {
         if (!isOffline) {
           const verifyResult = await verifyFace(photoCaptured);
           if (!verifyResult.success) {
-            setErrorMsg(verifyResult.error || 'Verifikasi wajah gagal.');
+            setModalError(verifyResult.error || 'Verifikasi wajah gagal. Silakan ulangi dengan wajah Anda sendiri.');
+            setPhotoCaptured(null);
+            resetBlink();
+            startCamera();
             setActionLoading(false);
             return;
           }
@@ -309,6 +385,23 @@ export function AttendancePage() {
         
         setSuccessMsg(cameraMode === 'in' ? 'Anda sedang offline. Absen masuk disimpan sementara!' : 'Anda sedang offline. Absen pulang disimpan sementara!');
         closeModal();
+        setActionLoading(false);
+        return;
+      }
+
+      if (editingAttendanceId) {
+        const updateData = cameraMode === 'in' 
+          ? { checkInPhoto: photoCaptured } 
+          : { checkOutPhoto: photoCaptured, activityNotes };
+        res = await editAttendanceAction(editingAttendanceId, updateData);
+        if (res.success) {
+          setSuccessMsg('Absensi berhasil diperbarui!');
+          setEditingAttendanceId(null);
+          closeModal();
+          await fetchAttendanceData();
+        } else {
+          setErrorMsg(res.error || 'Gagal memperbarui absensi.');
+        }
         setActionLoading(false);
         return;
       }
@@ -525,6 +618,19 @@ export function AttendancePage() {
             </div>
             
             <div className="p-5 flex flex-col gap-4">
+              {/* Modal Specific Error */}
+              {modalError && (
+                <div className="p-3 bg-red-50 text-red-700 dark:bg-red-900/30 dark:text-red-300 rounded-xl text-xs flex items-center justify-between gap-2 font-medium border border-red-200 dark:border-red-800 animate-in fade-in duration-200">
+                  <div className="flex items-center gap-2">
+                    <AlertCircle size={18} className="shrink-0 text-red-500" />
+                    <span>{modalError}</span>
+                  </div>
+                  <button onClick={() => setModalError(null)} className="p-1 text-red-400 hover:text-red-600">
+                    <X size={14} />
+                  </button>
+                </div>
+              )}
+
               {/* Location Status */}
               <div className={`p-3 rounded-xl flex items-start gap-3 text-sm ${location ? 'bg-green-50 text-green-700 dark:bg-green-900/30 dark:text-green-400' : 'bg-amber-50 text-amber-700 dark:bg-amber-900/30 dark:text-amber-400'}`}>
                 <MapPin size={20} className="shrink-0 mt-0.5" />
@@ -837,7 +943,17 @@ export function AttendancePage() {
 
       {/* Attendance History Section */}
       <div className="bg-white dark:bg-[#243447] border border-[#E2E8F0] dark:border-gray-700 rounded-3xl p-6 shadow-sm">
-        <h3 className="text-base font-bold text-[#0F172A] dark:text-white mb-4">{t("attendanceHistory")}</h3>
+        <div className="flex justify-between items-center mb-4">
+          <h3 className="text-base font-bold text-[#0F172A] dark:text-white">{t("attendanceHistory")}</h3>
+          {currentUser && !PARTICIPANT_ROLES.includes(currentUser.role) && history.length > 0 && (
+            <button
+              onClick={handleDownloadPDF}
+              className="flex items-center gap-1.5 px-3 py-1.5 bg-blue-50 text-blue-600 hover:bg-blue-100 dark:bg-blue-900/30 dark:text-blue-400 dark:hover:bg-blue-900/50 rounded-xl text-xs font-bold transition"
+            >
+              <Download size={14} /> Rekap PDF
+            </button>
+          )}
+        </div>
         
         {loading ? (
           <div className="space-y-3">
@@ -871,12 +987,14 @@ export function AttendancePage() {
                       <td className="p-3.5">{item.checkOut ? `${item.checkOut} WIB` : '-'}</td>
                       <td className="p-3.5">
                         {item.checkInPhoto || item.checkOutPhoto ? (
-                          <button 
-                            onClick={() => setProofModalData(item)}
-                            className="text-xs text-primary font-medium flex items-center gap-1 hover:underline cursor-pointer"
-                          >
-                            <CheckCircle2 size={12}/> Terekam (Lihat)
-                          </button>
+                          <div className="flex items-center gap-2">
+                            <button 
+                              onClick={() => setProofModalData(item)}
+                              className="text-[11px] px-2 py-1 bg-slate-100 hover:bg-slate-200 dark:bg-gray-700 dark:hover:bg-gray-600 text-slate-700 dark:text-gray-200 rounded-lg font-medium flex items-center gap-1 transition"
+                            >
+                              <Eye size={12}/> Lihat
+                            </button>
+                          </div>
                         ) : (
                           <span className="text-xs text-gray-400 italic">-</span>
                         )}
@@ -912,12 +1030,14 @@ export function AttendancePage() {
         <div className="fixed inset-0 z-[9999] bg-black/60 backdrop-blur-sm flex items-center justify-center p-4">
           <div className="bg-white dark:bg-[#1E293B] rounded-3xl w-full max-w-2xl shadow-2xl overflow-hidden flex flex-col">
             <div className="flex justify-between items-center p-5 border-b border-gray-100 dark:border-gray-800">
-              <h3 className="font-bold text-gray-800 dark:text-white">
+              <h3 className="font-bold text-gray-800 dark:text-white flex items-center gap-2">
                 Bukti Absensi - {proofModalData.date}
               </h3>
-              <button onClick={() => setProofModalData(null)} className="p-1.5 rounded-full hover:bg-gray-100 dark:hover:bg-gray-700 text-gray-500 transition">
-                <X size={18} />
-              </button>
+              <div className="flex items-center gap-2">
+                <button onClick={() => setProofModalData(null)} className="p-1.5 rounded-full hover:bg-gray-100 dark:hover:bg-gray-700 text-gray-500 transition">
+                  <X size={18} />
+                </button>
+              </div>
             </div>
             <div className="p-5 grid grid-cols-1 md:grid-cols-2 gap-6 overflow-y-auto max-h-[80vh]">
               {/* Check-In Info */}
@@ -925,17 +1045,24 @@ export function AttendancePage() {
                 <h4 className="font-bold text-sm text-gray-700 dark:text-gray-300 border-b border-gray-200 dark:border-gray-700 pb-2">Absen Masuk</h4>
                 {proofModalData.checkInPhoto ? (
                   <>
-                    <img src={proofModalData.checkInPhoto} alt="Bukti Masuk" className="w-full h-48 object-cover rounded-xl border border-gray-200 dark:border-gray-700" />
-                    {proofModalData.checkInLat && proofModalData.checkInLng && (
-                      <a 
-                        href={`https://www.google.com/maps/search/?api=1&query=${proofModalData.checkInLat},${proofModalData.checkInLng}`} 
-                        target="_blank" 
-                        rel="noreferrer"
-                        className="text-xs flex items-center gap-1.5 text-blue-600 dark:text-blue-400 hover:underline mt-1 bg-blue-50 dark:bg-blue-900/30 p-2 rounded-lg"
-                      >
-                        <MapPin size={14} /> Lihat Lokasi di Peta
-                      </a>
-                    )}
+                    <div className="relative group">
+                      <img src={proofModalData.checkInPhoto} alt="Bukti Masuk" className="w-full h-48 object-cover rounded-xl border border-gray-200 dark:border-gray-700" />
+                      <button onClick={() => handleDownloadImage(proofModalData.checkInPhoto!, `Masuk_${proofModalData.date}.jpg`)} className="absolute bottom-2 right-2 p-2 bg-black/50 hover:bg-black/70 text-white rounded-lg backdrop-blur-sm opacity-0 group-hover:opacity-100 transition-opacity">
+                        <Download size={16} />
+                      </button>
+                    </div>
+                    <div className="flex gap-2">
+                      {proofModalData.checkInLat && proofModalData.checkInLng && (
+                        <a 
+                          href={`https://www.google.com/maps/search/?api=1&query=${proofModalData.checkInLat},${proofModalData.checkInLng}`} 
+                          target="_blank" 
+                          rel="noreferrer"
+                          className="flex-1 text-[11px] flex items-center justify-center gap-1.5 text-blue-600 dark:text-blue-400 hover:bg-blue-100 transition mt-1 bg-blue-50 dark:bg-blue-900/30 p-2 rounded-lg font-medium"
+                        >
+                          <MapPin size={14} /> Peta
+                        </a>
+                      )}
+                    </div>
                   </>
                 ) : (
                   <p className="text-xs text-gray-400 italic">Tidak ada data bukti absen masuk.</p>
@@ -947,25 +1074,58 @@ export function AttendancePage() {
                 <h4 className="font-bold text-sm text-gray-700 dark:text-gray-300 border-b border-gray-200 dark:border-gray-700 pb-2">Absen Pulang</h4>
                 {proofModalData.checkOutPhoto ? (
                   <>
-                    <img src={proofModalData.checkOutPhoto} alt="Bukti Pulang" className="w-full h-48 object-cover rounded-xl border border-gray-200 dark:border-gray-700" />
-                    {proofModalData.checkOutLat && proofModalData.checkOutLng && (
-                      <a 
-                        href={`https://www.google.com/maps/search/?api=1&query=${proofModalData.checkOutLat},${proofModalData.checkOutLng}`} 
-                        target="_blank" 
-                        rel="noreferrer"
-                        className="text-xs flex items-center gap-1.5 text-blue-600 dark:text-blue-400 hover:underline mt-1 bg-blue-50 dark:bg-blue-900/30 p-2 rounded-lg"
-                      >
-                        <MapPin size={14} /> Lihat Lokasi di Peta
-                      </a>
-                    )}
-                    {proofModalData.activityNotes && (
-                      <div className="mt-2 bg-slate-50 dark:bg-gray-800 p-3 rounded-xl border border-slate-100 dark:border-gray-700">
-                        <span className="text-[10px] font-bold uppercase text-slate-400 block mb-1">Catatan Kegiatan</span>
-                        <p className="text-xs text-[#0F172A] dark:text-gray-200 leading-relaxed whitespace-pre-wrap">
-                          {proofModalData.activityNotes}
-                        </p>
+                    <div className="relative group">
+                      <img src={proofModalData.checkOutPhoto} alt="Bukti Pulang" className="w-full h-48 object-cover rounded-xl border border-gray-200 dark:border-gray-700" />
+                      <button onClick={() => handleDownloadImage(proofModalData.checkOutPhoto!, `Pulang_${proofModalData.date}.jpg`)} className="absolute bottom-2 right-2 p-2 bg-black/50 hover:bg-black/70 text-white rounded-lg backdrop-blur-sm opacity-0 group-hover:opacity-100 transition-opacity">
+                        <Download size={16} />
+                      </button>
+                    </div>
+                    <div className="flex gap-2">
+                      {proofModalData.checkOutLat && proofModalData.checkOutLng && (
+                        <a 
+                          href={`https://www.google.com/maps/search/?api=1&query=${proofModalData.checkOutLat},${proofModalData.checkOutLng}`} 
+                          target="_blank" 
+                          rel="noreferrer"
+                          className="flex-1 text-[11px] flex items-center justify-center gap-1.5 text-blue-600 dark:text-blue-400 hover:bg-blue-100 transition mt-1 bg-blue-50 dark:bg-blue-900/30 p-2 rounded-lg font-medium"
+                        >
+                          <MapPin size={14} /> Peta
+                        </a>
+                      )}
+                    </div>
+                    
+                    <div className="mt-2 bg-slate-50 dark:bg-gray-800 p-3 rounded-xl border border-slate-100 dark:border-gray-700 relative group">
+                      <div className="flex justify-between items-center mb-1">
+                        <span className="text-[10px] font-bold uppercase text-slate-400 block">Catatan Kegiatan</span>
+                        {currentUser && currentUser.role === 'siswa' && proofModalData.date === serverTimeInfo?.dateString && !isEditingNotes && (
+                          <button 
+                            onClick={() => { setIsEditingNotes(true); setEditNotesText(proofModalData.activityNotes || ''); }} 
+                            className="text-[10px] text-orange-500 hover:underline flex items-center gap-1 bg-orange-50 dark:bg-orange-900/20 px-2 py-0.5 rounded"
+                          >
+                            <Edit size={10}/> Edit Catatan
+                          </button>
+                        )}
                       </div>
-                    )}
+                      
+                      {isEditingNotes ? (
+                        <div className="flex flex-col gap-2 mt-2">
+                          <textarea 
+                            value={editNotesText} 
+                            onChange={(e) => setEditNotesText(e.target.value)}
+                            className="w-full text-xs p-2 rounded-lg border border-gray-300 dark:bg-gray-900 dark:border-gray-700 dark:text-white outline-none focus:border-primary shadow-inner"
+                            rows={4}
+                            placeholder="Tuliskan kegiatan yang dilakukan hari ini..."
+                          />
+                          <div className="flex gap-2 justify-end">
+                            <button onClick={() => setIsEditingNotes(false)} className="text-[10px] font-bold px-3 py-1.5 bg-gray-200 text-gray-700 dark:bg-gray-700 dark:text-gray-300 rounded-lg hover:bg-gray-300">Batal</button>
+                            <button onClick={handleSaveNotes} disabled={actionLoading} className="text-[10px] font-bold px-3 py-1.5 bg-primary text-white rounded-lg hover:bg-primary-hover disabled:opacity-50">Simpan Catatan</button>
+                          </div>
+                        </div>
+                      ) : (
+                        <p className="text-xs text-[#0F172A] dark:text-gray-200 leading-relaxed whitespace-pre-wrap mt-1">
+                          {proofModalData.activityNotes || <span className="italic text-gray-400">Tidak ada catatan kegiatan.</span>}
+                        </p>
+                      )}
+                    </div>
                   </>
                 ) : (
                   <p className="text-xs text-gray-400 italic">Tidak ada data bukti absen pulang.</p>

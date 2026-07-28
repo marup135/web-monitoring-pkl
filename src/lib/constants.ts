@@ -1,1 +1,1 @@
-export const PARTICIPANT_ROLES = ['siswa', 'mahasiswa', 'murid', 'peserta', 'PARTICIPANT'];
+export const PARTICIPANT_ROLES = ['siswa', 'mahasiswa', 'murid', 'peserta', 'PARTICIPANT', 'Mahasiswa', 'Siswa', 'Murid', 'Peserta'];

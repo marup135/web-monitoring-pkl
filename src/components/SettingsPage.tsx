@@ -1,6 +1,7 @@
 'use client';
 
 import React, { useState } from 'react';
+import { createPortal } from 'react-dom';
 import { usePKL } from '../context/PKLContext';
 import { Moon, Globe, Info, LogOut, ChevronRight, User, Image as ImageIcon, Upload, Trash2, Loader2, Key, Check, Palette, Shield, Settings, ArrowLeft, HelpCircle, Clock, Camera, Mail, Briefcase, GraduationCap, Hash, X } from 'lucide-react';
 import { useTheme } from 'next-themes';
@@ -66,6 +67,7 @@ export const SettingsPage: React.FC<SettingsPageProps> = ({
   // Board Background States
   const [isUploadingBackground, setIsUploadingBackground] = useState(false);
   const [uploadError, setUploadError] = useState('');
+  const [customBgInput, setCustomBgInput] = useState('');
 
   const handleBackgroundUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -263,9 +265,11 @@ export const SettingsPage: React.FC<SettingsPageProps> = ({
   React.useEffect(() => {
     let timer: NodeJS.Timeout;
     if (activeSection === 'profile') {
-      setActiveTab('profile');
-      setSelectedMobileTab('profile');
-      timer = setTimeout(() => setIsEditingProfile(true), 0);
+      timer = setTimeout(() => {
+        setActiveTab('profile');
+        setSelectedMobileTab('profile');
+        setIsEditingProfile(true);
+      }, 0);
     }
     if (activeSection && onClearActiveSection) {
       onClearActiveSection();
@@ -757,6 +761,68 @@ export const SettingsPage: React.FC<SettingsPageProps> = ({
               ))}
             </div>
 
+            {/* Nature Wallpapers */}
+            <div className="flex flex-wrap gap-2">
+              {(
+                [
+                  { id: 'mountain', label: 'Gunung', url: 'https://images.unsplash.com/photo-1477346611705-65d1883cee1e?auto=format&fit=crop&w=1600&q=80' },
+                  { id: 'beach', label: 'Pantai', url: 'https://images.unsplash.com/photo-1507525428034-b723cf961d3e?auto=format&fit=crop&w=1600&q=80' },
+                  { id: 'space', label: 'Bintang', url: 'https://images.unsplash.com/photo-1519681393784-d120267933ba?auto=format&fit=crop&w=1600&q=80' },
+                  { id: 'forest', label: 'Hutan', url: 'https://images.unsplash.com/photo-1470071459604-3b5ec3a7fe05?auto=format&fit=crop&w=1600&q=80' },
+                ] as const
+              ).map(wp => (
+                <button
+                  key={wp.id}
+                  onClick={() => handleSetBuiltinBackground(wp.url)}
+                  className={`w-20 h-12 rounded-xl transition-all duration-200 hover:scale-110 flex items-center justify-center relative overflow-hidden group ${currentUser?.boardBackground === wp.url ? 'ring-2 ring-offset-2 ring-primary scale-105' : ''}`}
+                >
+                  <img
+                    src={wp.url}
+                    alt={wp.label}
+                    className="w-full h-full object-cover"
+                  />
+                  <div className="absolute inset-0 bg-black/30 flex items-center justify-center p-1">
+                    <span className="text-[9px] font-bold text-white drop-shadow-md">
+                      {wp.label}
+                    </span>
+                  </div>
+                  {currentUser?.boardBackground === wp.url && (
+                    <div className="absolute inset-0 bg-black/40 flex items-center justify-center">
+                      <Check size={16} className="text-white drop-shadow-md" />
+                    </div>
+                  )}
+                </button>
+              ))}
+            </div>
+
+            {/* Custom URL */}
+            <div className="w-full sm:w-[320px]">
+              <form
+                onSubmit={(e) => {
+                  e.preventDefault();
+                  if (customBgInput.trim()) {
+                    handleSetBuiltinBackground(customBgInput.trim());
+                    setCustomBgInput('');
+                  }
+                }}
+                className="flex gap-2"
+              >
+                <input
+                  type="url"
+                  placeholder="URL Gambar Kustom (https://...)"
+                  value={customBgInput}
+                  onChange={(e) => setCustomBgInput(e.target.value)}
+                  className="flex-1 px-4 py-2.5 text-sm rounded-xl border border-slate-200 dark:border-gray-700 bg-slate-50 dark:bg-gray-800 text-slate-800 dark:text-gray-200 focus:outline-none focus:ring-2 focus:ring-primary/20 transition-all"
+                />
+                <button
+                  type="submit"
+                  className="px-4 py-2.5 bg-primary text-white font-bold text-sm rounded-xl hover:bg-primary-hover transition cursor-pointer shadow-sm"
+                >
+                  Pakai
+                </button>
+              </form>
+            </div>
+
             <div className="flex gap-3">
               <label className="flex items-center justify-center gap-2 px-5 py-2.5 bg-white dark:bg-[#1E293B] hover:bg-slate-50 text-slate-700 dark:text-gray-200 rounded-xl cursor-pointer transition-all border border-slate-200 dark:border-gray-700 text-sm font-bold shadow-sm">
                 <Upload size={16} />
@@ -1048,8 +1114,8 @@ export const SettingsPage: React.FC<SettingsPageProps> = ({
       </div>
 
       {/* Information Modal */}
-      {isInfoModalOpen && (
-        <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm animate-in fade-in duration-200">
+      {isInfoModalOpen && mounted && typeof document !== 'undefined' && createPortal(
+        <div className="fixed inset-0 z-[9999] flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm animate-in fade-in duration-200">
           <div className="bg-white dark:bg-[#1E293B] rounded-2xl shadow-xl border border-slate-200 dark:border-gray-700 w-full max-w-md overflow-hidden animate-in zoom-in-95 duration-200">
             <div className="flex items-center justify-between p-4 border-b border-slate-100 dark:border-gray-800">
               <h3 className="font-black text-lg text-slate-800 dark:text-white">{infoModalTitle}</h3>
@@ -1078,7 +1144,8 @@ export const SettingsPage: React.FC<SettingsPageProps> = ({
               </button>
             </div>
           </div>
-        </div>
+        </div>,
+        document.body
       )}
 
       {isFaceRegistrationOpen && (
