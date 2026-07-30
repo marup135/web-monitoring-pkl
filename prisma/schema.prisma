@@ -184,6 +184,7 @@ model Attendance {
   checkOutLng   Float?
   checkOutPhoto String?
   activityNotes String?
+  activityPhoto String?
   isVerified    Boolean  @default(false)
   verifiedBy    String?
   user          User     @relation("UserAttendances", fields: [userId], references: [id], onDelete: Cascade)

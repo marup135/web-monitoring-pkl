@@ -241,7 +241,7 @@ export async function checkInAction(userId: string, lat?: number, lng?: number, 
   }
 }
 
-export async function checkOutAction(userId: string, lat?: number, lng?: number, photo?: string, notes?: string, offlineData?: { timestamp: number, dateString: string, timeString: string }) {
+export async function checkOutAction(userId: string, lat?: number, lng?: number, photo?: string, notes?: string, offlineData?: { timestamp: number, dateString: string, timeString: string }, activityPhoto?: string) {
   try {
     const serverTime = await getServerTimeAction();
     const useTime = offlineData || serverTime;
@@ -309,6 +309,7 @@ export async function checkOutAction(userId: string, lat?: number, lng?: number,
         checkOutLng: lng,
         checkOutPhoto: photo,
         activityNotes: notes,
+        activityPhoto: activityPhoto || null,
         status: 'COMPLETED'
       }
     });
@@ -533,6 +534,7 @@ export async function editAttendanceAction(
     checkInPhoto?: string | null;
     checkOutPhoto?: string | null;
     activityNotes?: string;
+    activityPhoto?: string | null;
   }
 ) {
   try {
@@ -553,10 +555,21 @@ export async function editAttendanceAction(
       return { success: false, error: 'Tidak dapat mengedit absensi yang sudah diverifikasi.' };
     }
 
+    // Check 21:00 WIB edit limit
+    const now = new Date();
+    const jakartaDateString = new Intl.DateTimeFormat('en-CA', { timeZone: 'Asia/Jakarta' }).format(now);
+    const jakartaTimeParts = new Intl.DateTimeFormat('en-GB', { timeZone: 'Asia/Jakarta', hour: '2-digit', minute: '2-digit', hour12: false }).formatToParts(now);
+    const currentHour = parseInt(jakartaTimeParts.find(p => p.type === 'hour')?.value || '0', 10);
+
+    if (existing.date < jakartaDateString || (existing.date === jakartaDateString && currentHour >= 21)) {
+      return { success: false, error: 'Batas waktu pengeditan absensi untuk hari ini telah ditutup (maksimal jam 21:00 WIB).' };
+    }
+
     const updateData: any = {};
     if (data.checkInPhoto !== undefined) updateData.checkInPhoto = data.checkInPhoto;
     if (data.checkOutPhoto !== undefined) updateData.checkOutPhoto = data.checkOutPhoto;
     if (data.activityNotes !== undefined) updateData.activityNotes = data.activityNotes;
+    if (data.activityPhoto !== undefined) updateData.activityPhoto = data.activityPhoto;
 
     const updated = await prisma.attendance.update({
       where: { id: attendanceId },

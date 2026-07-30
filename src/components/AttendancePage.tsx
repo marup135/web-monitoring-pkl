@@ -24,6 +24,7 @@ import { useFaceApi } from '../hooks/useFaceApi';
 import { useCameraLocation } from '../hooks/useCameraLocation';
 import { useBlinkDetection } from '../hooks/useBlinkDetection';
 import { FaceRegistrationModal } from './FaceRegistrationModal';
+import { applyWatermark } from '../utils/watermark';
 
 interface AttendanceRecord {
   id: string;
@@ -35,6 +36,17 @@ interface AttendanceRecord {
   isVerified?: boolean;
   verifiedBy?: string | null;
   createdAt: Date;
+}
+
+export function parseActivityPhotos(raw: string | null | undefined): string[] {
+  if (!raw) return [];
+  try {
+    const parsed = JSON.parse(raw);
+    if (Array.isArray(parsed)) return parsed.filter((item): item is string => typeof item === 'string' && Boolean(item));
+  } catch (e) {
+    // fallback for single photo
+  }
+  return typeof raw === 'string' && raw.trim() !== '' ? [raw] : [];
 }
 
 export function AttendancePage() {
@@ -67,6 +79,8 @@ export function AttendancePage() {
   const [proofModalData, setProofModalData] = useState<{
     id: string;
     date: string;
+    checkIn?: string | null;
+    checkOut?: string | null;
     isVerified?: boolean;
     checkInPhoto?: string | null;
     checkInLat?: number | null;
@@ -75,12 +89,18 @@ export function AttendancePage() {
     checkOutLat?: number | null;
     checkOutLng?: number | null;
     activityNotes?: string | null;
+    activityPhoto?: string | null;
   } | null>(null);
 
   const [isEditingNotes, setIsEditingNotes] = useState(false);
   const [editNotesText, setEditNotesText] = useState("");
+  const [editActivityPhotos, setEditActivityPhotos] = useState<string[]>([]);
+  const [activityPhotos, setActivityPhotos] = useState<string[]>([]);
   const [editingAttendanceId, setEditingAttendanceId] = useState<string | null>(null);
   const [modalError, setModalError] = useState<string | null>(null);
+
+  const activityFileInputRef = useRef<HTMLInputElement>(null);
+  const editActivityFileInputRef = useRef<HTMLInputElement>(null);
 
   const {
     modelsLoaded,
@@ -112,12 +132,13 @@ export function AttendancePage() {
   const closeModal = () => {
     setEditingAttendanceId(null);
     setModalError(null);
+    setActivityPhotos([]);
     originalCloseModal();
   };
 
   const { hasBlinked, isDetecting, instruction, resetBlink } = useBlinkDetection(
     videoRef, 
-    isCameraModalOpen && cameraMode === 'in' && !photoCaptured && modelsLoaded
+    isCameraModalOpen && (cameraMode === 'in' || cameraMode === 'out') && !photoCaptured && modelsLoaded
   );
 
   useEffect(() => {
@@ -170,13 +191,103 @@ export function AttendancePage() {
     document.body.removeChild(link);
   };
 
+  const isEditAllowed = (attendanceDate: string) => {
+    if (!serverTimeInfo) return false;
+    if (attendanceDate !== serverTimeInfo.dateString) return false;
+    if (serverTimeInfo.hours >= 21) return false;
+    return true;
+  };
+
+  const processImageFile = (file: File): Promise<string> => {
+    return new Promise((resolve) => {
+      const reader = new FileReader();
+      reader.onload = (event) => {
+        const img = new Image();
+        img.onload = () => {
+          const canvas = document.createElement('canvas');
+          const MAX_WIDTH = 800;
+          const MAX_HEIGHT = 800;
+          let width = img.width;
+          let height = img.height;
+
+          if (width > height) {
+            if (width > MAX_WIDTH) {
+              height *= MAX_WIDTH / width;
+              width = MAX_WIDTH;
+            }
+          } else {
+            if (height > MAX_HEIGHT) {
+              width *= MAX_HEIGHT / height;
+              height = MAX_HEIGHT;
+            }
+          }
+
+          canvas.width = width;
+          canvas.height = height;
+          const ctx = canvas.getContext('2d');
+          if (ctx) {
+            ctx.drawImage(img, 0, 0, width, height);
+            applyWatermark(canvas, {
+              type: 'Bukti Kegiatan',
+              userName: currentUser?.name || 'User',
+              lat: location?.lat,
+              lng: location?.lng
+            });
+            resolve(canvas.toDataURL('image/jpeg', 0.6));
+          } else {
+            resolve('');
+          }
+        };
+        img.src = event.target?.result as string;
+      };
+      reader.readAsDataURL(file);
+    });
+  };
+
+  const handleActivityPhotoUpload = async (e: React.ChangeEvent<HTMLInputElement>, isEdit = false) => {
+    const files = Array.from(e.target.files || []);
+    if (files.length === 0) return;
+
+    const currentList = isEdit ? editActivityPhotos : activityPhotos;
+    const remainingSlots = 5 - currentList.length;
+
+    if (remainingSlots <= 0) {
+      alert("Maksimal 5 foto bukti kegiatan.");
+      return;
+    }
+
+    const filesToProcess = files.slice(0, remainingSlots);
+    const newPhotos = await Promise.all(filesToProcess.map(processImageFile));
+    const validPhotos = newPhotos.filter(Boolean);
+
+    if (isEdit) {
+      setEditActivityPhotos((prev) => [...prev, ...validPhotos]);
+    } else {
+      setActivityPhotos((prev) => [...prev, ...validPhotos]);
+    }
+
+    if (e.target) e.target.value = '';
+  };
+
+  const removeActivityPhoto = (index: number, isEdit = false) => {
+    if (isEdit) {
+      setEditActivityPhotos((prev) => prev.filter((_, i) => i !== index));
+    } else {
+      setActivityPhotos((prev) => prev.filter((_, i) => i !== index));
+    }
+  };
+
   const handleSaveNotes = async () => {
     if (!proofModalData || actionLoading) return;
     setActionLoading(true);
-    const res = await editAttendanceAction(proofModalData.id, { activityNotes: editNotesText });
+    const activityPhotoPayload = editActivityPhotos.length > 0 ? JSON.stringify(editActivityPhotos) : null;
+    const res = await editAttendanceAction(proofModalData.id, { 
+      activityNotes: editNotesText,
+      activityPhoto: activityPhotoPayload
+    });
     if (res.success) {
-      setSuccessMsg('Catatan berhasil diperbarui!');
-      setProofModalData({ ...proofModalData, activityNotes: editNotesText });
+      setSuccessMsg('Catatan & foto kegiatan berhasil diperbarui!');
+      setProofModalData({ ...proofModalData, activityNotes: editNotesText, activityPhoto: activityPhotoPayload });
       setIsEditingNotes(false);
       fetchAttendanceData();
     } else {
@@ -338,9 +449,9 @@ export function AttendancePage() {
       setErrorMsg(null);
       setSuccessMsg(null);
       
-      if (cameraMode === 'in') {
-        // Only verify face if we are online, if offline we just trust the client side blink detection
-        if (!isOffline) {
+      if (cameraMode === 'in' || cameraMode === 'out') {
+        // Only verify face if we are online and face is registered
+        if (!isOffline && savedFaceDescriptor) {
           const verifyResult = await verifyFace(photoCaptured);
           if (!verifyResult.success) {
             setModalError(verifyResult.error || 'Verifikasi wajah gagal. Silakan ulangi dengan wajah Anda sendiri.');
@@ -354,6 +465,8 @@ export function AttendancePage() {
       }
 
       let res;
+      const activityPhotoPayload = activityPhotos.length > 0 ? JSON.stringify(activityPhotos) : null;
+
       if (isOffline) {
         const key = `offline_attendance_${currentUser.id}`;
         const existing = JSON.parse(localStorage.getItem(key) || '[]');
@@ -377,6 +490,7 @@ export function AttendancePage() {
           lng: location.lng,
           photo: photoCaptured,
           notes: activityNotes,
+          activityPhoto: activityPhotoPayload,
           offlineData
         };
         
@@ -392,7 +506,7 @@ export function AttendancePage() {
       if (editingAttendanceId) {
         const updateData = cameraMode === 'in' 
           ? { checkInPhoto: photoCaptured } 
-          : { checkOutPhoto: photoCaptured, activityNotes };
+          : { checkOutPhoto: photoCaptured, activityNotes, activityPhoto: activityPhotoPayload };
         res = await editAttendanceAction(editingAttendanceId, updateData);
         if (res.success) {
           setSuccessMsg('Absensi berhasil diperbarui!');
@@ -414,7 +528,7 @@ export function AttendancePage() {
            setActionLoading(false);
            return;
         }
-        res = await checkOutAction(currentUser.id, location.lat, location.lng, photoCaptured, activityNotes);
+        res = await checkOutAction(currentUser.id, location.lat, location.lng, photoCaptured, activityNotes, undefined, activityPhotoPayload || undefined);
       }
 
       if (res.success) {
@@ -607,8 +721,8 @@ export function AttendancePage() {
       {/* Camera & Location Modal Overlay */}
       {isCameraModalOpen && (
         <div className="fixed inset-0 z-[9999] bg-black/60 backdrop-blur-sm flex items-center justify-center p-4">
-          <div className="bg-white dark:bg-[#1E293B] rounded-3xl w-full max-w-md shadow-2xl overflow-hidden flex flex-col">
-            <div className="flex justify-between items-center p-5 border-b border-gray-100 dark:border-gray-800">
+          <div className="bg-white dark:bg-[#1E293B] rounded-3xl w-full max-w-md shadow-2xl overflow-hidden flex flex-col max-h-[90vh]">
+            <div className="flex justify-between items-center p-5 border-b border-gray-100 dark:border-gray-800 shrink-0">
               <h3 className="font-bold text-gray-800 dark:text-white">
                 {cameraMode === 'in' ? 'Verifikasi Absen Masuk' : 'Verifikasi Absen Pulang'}
               </h3>
@@ -617,7 +731,7 @@ export function AttendancePage() {
               </button>
             </div>
             
-            <div className="p-5 flex flex-col gap-4">
+            <div className="p-5 flex flex-col gap-4 overflow-y-auto flex-1 min-h-0">
               {/* Modal Specific Error */}
               {modalError && (
                 <div className="p-3 bg-red-50 text-red-700 dark:bg-red-900/30 dark:text-red-300 rounded-xl text-xs flex items-center justify-between gap-2 font-medium border border-red-200 dark:border-red-800 animate-in fade-in duration-200">
@@ -650,7 +764,7 @@ export function AttendancePage() {
                   <>
                     <video ref={videoRef} autoPlay playsInline muted className="w-full h-full object-cover" />
                     <canvas ref={canvasRef} className="hidden" />
-                    {cameraMode === 'in' && !hasBlinked && (
+                    {(cameraMode === 'in' || cameraMode === 'out') && !hasBlinked && (
                       <div className="absolute top-4 left-4 right-4 z-10">
                         <div className={`p-3 rounded-xl text-sm font-bold flex items-center justify-center gap-2 shadow-lg transition-colors duration-300 ${isDetecting ? 'bg-amber-400 text-amber-900' : 'bg-gray-800 text-white'}`}>
                           <Eye size={18} className={isDetecting ? 'animate-pulse' : ''} />
@@ -658,7 +772,7 @@ export function AttendancePage() {
                         </div>
                       </div>
                     )}
-                    {cameraMode === 'in' && hasBlinked && (
+                    {(cameraMode === 'in' || cameraMode === 'out') && hasBlinked && (
                       <div className="absolute top-4 left-4 right-4 z-10">
                         <div className="p-3 bg-green-500 text-white rounded-xl text-sm font-bold flex items-center justify-center gap-2 shadow-lg">
                           <CheckCircle2 size={18} />
@@ -669,31 +783,12 @@ export function AttendancePage() {
 
                     <div className="absolute bottom-4 left-0 right-0 flex justify-center gap-4">
                       <button 
-                        onClick={capturePhoto}
-                        disabled={cameraMode === 'in' && !hasBlinked}
-                        className={`rounded-full w-14 h-14 flex items-center justify-center shadow-lg transition ${cameraMode === 'in' && !hasBlinked ? 'bg-gray-300 text-gray-500 cursor-not-allowed opacity-50' : 'bg-white text-gray-900 hover:scale-105 active:scale-95'}`}
+                        onClick={() => capturePhoto(cameraMode === 'in' ? 'Absen Masuk' : 'Absen Pulang')}
+                        disabled={Boolean((cameraMode === 'in' || cameraMode === 'out') && savedFaceDescriptor && !hasBlinked)}
+                        className={`rounded-full w-14 h-14 flex items-center justify-center shadow-lg transition ${(cameraMode === 'in' || cameraMode === 'out') && savedFaceDescriptor && !hasBlinked ? 'bg-gray-300 text-gray-500 cursor-not-allowed opacity-50' : 'bg-white text-gray-900 hover:scale-105 active:scale-95'}`}
                       >
                         <Camera size={24} />
                       </button>
-                      
-                      {cameraMode === 'out' && (
-                        <>
-                          <input 
-                            type="file" 
-                            accept="image/*" 
-                            ref={fileInputRef} 
-                            onChange={handleFileUpload}
-                            className="hidden" 
-                          />
-                          <button 
-                            onClick={() => fileInputRef.current?.click()}
-                            className="bg-primary text-white rounded-full w-14 h-14 flex items-center justify-center shadow-lg hover:scale-105 transition active:scale-95"
-                            title="Pilih dari Galeri"
-                          >
-                            <Upload size={24} />
-                          </button>
-                        </>
-                      )}
                     </div>
                   </>
                 ) : (
@@ -733,19 +828,67 @@ export function AttendancePage() {
               )}
               
               {cameraMode === 'out' && photoCaptured && (
-                <div className="mt-2">
-                  <label className="text-xs font-bold text-gray-700 dark:text-gray-300 mb-1 block">Catatan Kegiatan Hari Ini <span className="text-red-500">*</span></label>
-                  <textarea
-                    value={activityNotes}
-                    onChange={(e) => setActivityNotes(e.target.value)}
-                    placeholder="Contoh: Menyelesaikan desain UI login page dan integrasi API..."
-                    className="w-full rounded-xl border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 p-3 text-sm focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none transition resize-none h-24 text-gray-900 dark:text-white"
-                  />
+                <div className="mt-3 space-y-3 bg-slate-50 dark:bg-gray-800/50 p-4 rounded-2xl border border-slate-200 dark:border-gray-700">
+                  <div>
+                    <div className="flex justify-between items-center mb-2">
+                      <label className="text-xs font-bold text-gray-700 dark:text-gray-300">
+                        Foto Bukti Kegiatan ({activityPhotos.length}/5)
+                      </label>
+                      <span className="text-[10px] text-slate-500 font-medium">Dapat pilih beberapa foto</span>
+                    </div>
+
+                    <div className="grid grid-cols-3 gap-2">
+                      {activityPhotos.map((photo, idx) => (
+                        <div key={idx} className="relative group rounded-xl overflow-hidden border border-gray-200 dark:border-gray-700 bg-slate-900 aspect-square shadow-sm">
+                          <img src={photo} alt={`Bukti ${idx + 1}`} className="w-full h-full object-cover" />
+                          <button 
+                            type="button"
+                            onClick={() => removeActivityPhoto(idx, false)} 
+                            className="absolute top-1 right-1 p-1 bg-red-600/90 text-white rounded-full hover:bg-red-600 transition shadow-md"
+                            title="Hapus foto"
+                          >
+                            <X size={12} />
+                          </button>
+                        </div>
+                      ))}
+
+                      {activityPhotos.length < 5 && (
+                        <div>
+                          <input 
+                            type="file" 
+                            accept="image/*" 
+                            multiple
+                            ref={activityFileInputRef} 
+                            onChange={(e) => handleActivityPhotoUpload(e, false)} 
+                            className="hidden" 
+                          />
+                          <button 
+                            type="button" 
+                            onClick={() => activityFileInputRef.current?.click()}
+                            className="w-full h-full min-h-[80px] border border-dashed border-gray-300 dark:border-gray-600 hover:border-primary rounded-xl text-xs text-gray-600 dark:text-gray-300 flex flex-col items-center justify-center gap-1 hover:bg-gray-100 dark:hover:bg-gray-800 transition font-medium p-2"
+                          >
+                            <Upload size={18} className="text-primary" />
+                            <span className="text-[10px] text-center">{activityPhotos.length > 0 ? '+ Tambah' : 'Upload Foto'}</span>
+                          </button>
+                        </div>
+                      )}
+                    </div>
+                  </div>
+
+                  <div>
+                    <label className="text-xs font-bold text-gray-700 dark:text-gray-300 mb-1 block">Catatan Kegiatan Hari Ini <span className="text-red-500">*</span></label>
+                    <textarea
+                      value={activityNotes}
+                      onChange={(e) => setActivityNotes(e.target.value)}
+                      placeholder="Contoh: Menyelesaikan desain UI login page dan integrasi API..."
+                      className="w-full rounded-xl border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 p-3 text-sm focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none transition resize-none h-24 text-gray-900 dark:text-white"
+                    />
+                  </div>
                 </div>
               )}
             </div>
 
-            <div className="p-5 border-t border-gray-100 dark:border-gray-800 bg-gray-50 dark:bg-[#1E293B]">
+            <div className="p-5 border-t border-gray-100 dark:border-gray-800 bg-gray-50 dark:bg-[#1E293B] shrink-0">
               <button
                 onClick={handleConfirmAttendance}
                 disabled={!location || !photoCaptured || actionLoading || verifyingFace || (cameraMode === 'in' && !savedFaceDescriptor)}
@@ -1028,114 +1171,259 @@ export function AttendancePage() {
       {/* Attendance Proof Modal */}
       {proofModalData && (
         <div className="fixed inset-0 z-[9999] bg-black/60 backdrop-blur-sm flex items-center justify-center p-4">
-          <div className="bg-white dark:bg-[#1E293B] rounded-3xl w-full max-w-2xl shadow-2xl overflow-hidden flex flex-col">
-            <div className="flex justify-between items-center p-5 border-b border-gray-100 dark:border-gray-800">
-              <h3 className="font-bold text-gray-800 dark:text-white flex items-center gap-2">
-                Bukti Absensi - {proofModalData.date}
-              </h3>
-              <div className="flex items-center gap-2">
-                <button onClick={() => setProofModalData(null)} className="p-1.5 rounded-full hover:bg-gray-100 dark:hover:bg-gray-700 text-gray-500 transition">
-                  <X size={18} />
-                </button>
+          <div className="bg-white dark:bg-[#1E293B] rounded-3xl w-full max-w-3xl shadow-2xl overflow-hidden flex flex-col max-h-[90vh]">
+            {/* Header */}
+            <div className="flex justify-between items-center px-6 py-4 border-b border-gray-100 dark:border-gray-800 shrink-0 bg-slate-50/50 dark:bg-gray-800/50">
+              <div className="flex items-center gap-3">
+                <div className="p-2 bg-primary/10 text-primary rounded-xl">
+                  <Calendar size={18} />
+                </div>
+                <div>
+                  <h3 className="font-bold text-gray-900 dark:text-white text-base">
+                    Bukti & Laporan Absensi
+                  </h3>
+                  <p className="text-xs text-slate-500 dark:text-gray-400">
+                    Tanggal: <span className="font-semibold text-slate-700 dark:text-gray-200">{proofModalData.date}</span>
+                  </p>
+                </div>
               </div>
+              <button onClick={() => setProofModalData(null)} className="p-2 rounded-full hover:bg-gray-200 dark:hover:bg-gray-700 text-gray-500 transition">
+                <X size={18} />
+              </button>
             </div>
-            <div className="p-5 grid grid-cols-1 md:grid-cols-2 gap-6 overflow-y-auto max-h-[80vh]">
-              {/* Check-In Info */}
-              <div className="flex flex-col gap-3">
-                <h4 className="font-bold text-sm text-gray-700 dark:text-gray-300 border-b border-gray-200 dark:border-gray-700 pb-2">Absen Masuk</h4>
-                {proofModalData.checkInPhoto ? (
-                  <>
-                    <div className="relative group">
-                      <img src={proofModalData.checkInPhoto} alt="Bukti Masuk" className="w-full h-48 object-cover rounded-xl border border-gray-200 dark:border-gray-700" />
-                      <button onClick={() => handleDownloadImage(proofModalData.checkInPhoto!, `Masuk_${proofModalData.date}.jpg`)} className="absolute bottom-2 right-2 p-2 bg-black/50 hover:bg-black/70 text-white rounded-lg backdrop-blur-sm opacity-0 group-hover:opacity-100 transition-opacity">
-                        <Download size={16} />
-                      </button>
-                    </div>
-                    <div className="flex gap-2">
-                      {proofModalData.checkInLat && proofModalData.checkInLng && (
-                        <a 
-                          href={`https://www.google.com/maps/search/?api=1&query=${proofModalData.checkInLat},${proofModalData.checkInLng}`} 
-                          target="_blank" 
-                          rel="noreferrer"
-                          className="flex-1 text-[11px] flex items-center justify-center gap-1.5 text-blue-600 dark:text-blue-400 hover:bg-blue-100 transition mt-1 bg-blue-50 dark:bg-blue-900/30 p-2 rounded-lg font-medium"
-                        >
-                          <MapPin size={14} /> Peta
-                        </a>
+
+            {/* Content Body */}
+            <div className="p-6 overflow-y-auto flex-1 space-y-6">
+              {/* Grid 2 Column for Attendance Cards */}
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-5 items-stretch">
+                
+                {/* Card 1: Absen Masuk */}
+                <div className="bg-slate-50/80 dark:bg-gray-800/40 rounded-2xl p-4 border border-slate-200/80 dark:border-gray-700/60 flex flex-col justify-between space-y-3">
+                  <div>
+                    <div className="flex items-center justify-between border-b border-slate-200/60 dark:border-gray-700/60 pb-2.5 mb-3">
+                      <span className="text-xs font-bold text-slate-800 dark:text-slate-200 flex items-center gap-1.5">
+                        <span className="w-2 h-2 rounded-full bg-emerald-500"></span> Absen Masuk
+                      </span>
+                      {proofModalData.checkIn && (
+                        <span className="text-[11px] font-semibold text-emerald-600 dark:text-emerald-400 bg-emerald-50 dark:bg-emerald-950/40 px-2 py-0.5 rounded-md border border-emerald-200/50">
+                          {proofModalData.checkIn} WIB
+                        </span>
                       )}
                     </div>
-                  </>
-                ) : (
-                  <p className="text-xs text-gray-400 italic">Tidak ada data bukti absen masuk.</p>
-                )}
+
+                    {proofModalData.checkInPhoto ? (
+                      <div className="relative group rounded-xl overflow-hidden border border-slate-200 dark:border-gray-700 shadow-sm bg-slate-900">
+                        <span className="absolute top-2 left-2 z-10 text-[10px] font-semibold text-white bg-black/60 backdrop-blur-md px-2 py-0.5 rounded-md">
+                          Foto Wajah Masuk
+                        </span>
+                        <img src={proofModalData.checkInPhoto} alt="Bukti Masuk" className="w-full h-44 object-cover" />
+                        <button onClick={() => handleDownloadImage(proofModalData.checkInPhoto!, `Masuk_${proofModalData.date}.jpg`)} className="absolute bottom-2 right-2 p-2 bg-black/60 hover:bg-black/80 text-white rounded-lg backdrop-blur-sm opacity-0 group-hover:opacity-100 transition-opacity">
+                          <Download size={14} />
+                        </button>
+                      </div>
+                    ) : (
+                      <div className="h-44 rounded-xl border border-dashed border-slate-200 dark:border-gray-700 flex flex-col items-center justify-center text-slate-400 p-4 text-center">
+                        <AlertCircle size={20} className="mb-1 opacity-50" />
+                        <p className="text-xs italic">Tidak ada foto absen masuk</p>
+                      </div>
+                    )}
+                  </div>
+
+                  {proofModalData.checkInLat && proofModalData.checkInLng ? (
+                    <a 
+                      href={`https://www.google.com/maps/search/?api=1&query=${proofModalData.checkInLat},${proofModalData.checkInLng}`} 
+                      target="_blank" 
+                      rel="noreferrer"
+                      className="w-full text-xs flex items-center justify-center gap-1.5 text-blue-600 dark:text-blue-400 hover:bg-blue-100/80 dark:hover:bg-blue-900/50 transition bg-blue-50 dark:bg-blue-900/30 py-2.5 px-3 rounded-xl font-semibold border border-blue-100 dark:border-blue-800/50 shadow-sm"
+                    >
+                      <MapPin size={14} /> Peta Lokasi Masuk
+                    </a>
+                  ) : null}
+                </div>
+
+                {/* Card 2: Absen Pulang */}
+                <div className="bg-slate-50/80 dark:bg-gray-800/40 rounded-2xl p-4 border border-slate-200/80 dark:border-gray-700/60 flex flex-col justify-between space-y-3">
+                  <div>
+                    <div className="flex items-center justify-between border-b border-slate-200/60 dark:border-gray-700/60 pb-2.5 mb-3">
+                      <span className="text-xs font-bold text-slate-800 dark:text-slate-200 flex items-center gap-1.5">
+                        <span className="w-2 h-2 rounded-full bg-blue-500"></span> Absen Pulang & Foto Bukti
+                      </span>
+                      {proofModalData.checkOut && (
+                        <span className="text-[11px] font-semibold text-blue-600 dark:text-blue-400 bg-blue-50 dark:bg-blue-950/40 px-2 py-0.5 rounded-md border border-blue-200/50">
+                          {proofModalData.checkOut} WIB
+                        </span>
+                      )}
+                    </div>
+
+                    {(() => {
+                      const parsedPhotos = parseActivityPhotos(proofModalData.activityPhoto);
+                      const hasPhotos = proofModalData.checkOutPhoto || parsedPhotos.length > 0;
+
+                      if (!hasPhotos) {
+                        return (
+                          <div className="h-44 rounded-xl border border-dashed border-slate-200 dark:border-gray-700 flex flex-col items-center justify-center text-slate-400 p-4 text-center">
+                            <AlertCircle size={20} className="mb-1 opacity-50" />
+                            <p className="text-xs italic">Belum melakukan absen pulang</p>
+                          </div>
+                        );
+                      }
+
+                      return (
+                        <div className="grid grid-cols-2 gap-2 max-h-56 overflow-y-auto pr-1">
+                          {proofModalData.checkOutPhoto && (
+                            <div className="relative group rounded-xl overflow-hidden border border-slate-200 dark:border-gray-700 shadow-sm bg-slate-900 aspect-square">
+                              <span className="absolute top-1.5 left-1.5 z-10 text-[9px] font-semibold text-white bg-black/60 backdrop-blur-md px-1.5 py-0.5 rounded-md truncate max-w-[90%]">
+                                Wajah Pulang
+                              </span>
+                              <img src={proofModalData.checkOutPhoto} alt="Bukti Pulang" className="w-full h-full object-cover" />
+                              <button onClick={() => handleDownloadImage(proofModalData.checkOutPhoto!, `Pulang_Wajah_${proofModalData.date}.jpg`)} className="absolute bottom-1.5 right-1.5 p-1.5 bg-black/60 hover:bg-black/80 text-white rounded-lg backdrop-blur-sm opacity-0 group-hover:opacity-100 transition-opacity">
+                                <Download size={12} />
+                              </button>
+                            </div>
+                          )}
+
+                          {parsedPhotos.map((photo, pIdx) => (
+                            <div key={pIdx} className="relative group rounded-xl overflow-hidden border border-slate-200 dark:border-gray-700 shadow-sm bg-slate-900 aspect-square">
+                              <span className="absolute top-1.5 left-1.5 z-10 text-[9px] font-semibold text-white bg-black/60 backdrop-blur-md px-1.5 py-0.5 rounded-md truncate max-w-[90%]">
+                                Bukti #{pIdx + 1}
+                              </span>
+                              <img src={photo} alt={`Bukti Kegiatan ${pIdx + 1}`} className="w-full h-full object-cover" />
+                              <button onClick={() => handleDownloadImage(photo, `Bukti_Kegiatan_${pIdx + 1}_${proofModalData.date}.jpg`)} className="absolute bottom-1.5 right-1.5 p-1.5 bg-black/60 hover:bg-black/80 text-white rounded-lg backdrop-blur-sm opacity-0 group-hover:opacity-100 transition-opacity">
+                                <Download size={12} />
+                              </button>
+                            </div>
+                          ))}
+                        </div>
+                      );
+                    })()}
+                  </div>
+
+                  {proofModalData.checkOutLat && proofModalData.checkOutLng ? (
+                    <a 
+                      href={`https://www.google.com/maps/search/?api=1&query=${proofModalData.checkOutLat},${proofModalData.checkOutLng}`} 
+                      target="_blank" 
+                      rel="noreferrer"
+                      className="w-full text-xs flex items-center justify-center gap-1.5 text-blue-600 dark:text-blue-400 hover:bg-blue-100/80 dark:hover:bg-blue-900/50 transition bg-blue-50 dark:bg-blue-900/30 py-2.5 px-3 rounded-xl font-semibold border border-blue-100 dark:border-blue-800/50 shadow-sm"
+                    >
+                      <MapPin size={14} /> Peta Lokasi Pulang
+                    </a>
+                  ) : null}
+                </div>
+
               </div>
 
-              {/* Check-Out Info */}
-              <div className="flex flex-col gap-3">
-                <h4 className="font-bold text-sm text-gray-700 dark:text-gray-300 border-b border-gray-200 dark:border-gray-700 pb-2">Absen Pulang</h4>
-                {proofModalData.checkOutPhoto ? (
-                  <>
-                    <div className="relative group">
-                      <img src={proofModalData.checkOutPhoto} alt="Bukti Pulang" className="w-full h-48 object-cover rounded-xl border border-gray-200 dark:border-gray-700" />
-                      <button onClick={() => handleDownloadImage(proofModalData.checkOutPhoto!, `Pulang_${proofModalData.date}.jpg`)} className="absolute bottom-2 right-2 p-2 bg-black/50 hover:bg-black/70 text-white rounded-lg backdrop-blur-sm opacity-0 group-hover:opacity-100 transition-opacity">
-                        <Download size={16} />
+              {/* Full-width Card 3: Catatan & Laporan Kegiatan Harian */}
+              <div className="bg-slate-50/80 dark:bg-gray-800/40 rounded-2xl p-5 border border-slate-200/80 dark:border-gray-700/60 shadow-sm">
+                <div className="flex justify-between items-center mb-3">
+                  <div className="flex items-center gap-2">
+                    <span className="text-sm font-bold text-slate-800 dark:text-slate-100">
+                      📝 Catatan & Laporan Kegiatan Harian
+                    </span>
+                  </div>
+                  {currentUser && currentUser.role === 'siswa' && !isEditingNotes && (
+                    isEditAllowed(proofModalData.date) ? (
+                      <button 
+                        onClick={() => { 
+                          setIsEditingNotes(true); 
+                          setEditNotesText(proofModalData.activityNotes || ''); 
+                          setEditActivityPhotos(parseActivityPhotos(proofModalData.activityPhoto));
+                        }} 
+                        className="text-xs text-orange-600 dark:text-orange-400 hover:bg-orange-100 dark:hover:bg-orange-950/50 flex items-center gap-1.5 bg-orange-50 dark:bg-orange-900/20 px-3 py-1 rounded-lg font-bold border border-orange-200/60 dark:border-orange-800/50 transition"
+                      >
+                        <Edit size={13}/> Edit Catatan & Foto
                       </button>
+                    ) : (
+                      <span className="text-[11px] text-gray-500 italic bg-gray-200/70 dark:bg-gray-700/60 px-2.5 py-1 rounded-md font-medium">
+                        Pengeditan Ditutup (Maks 21:00 WIB)
+                      </span>
+                    )
+                  )}
+                </div>
+
+                {isEditingNotes ? (
+                  <div className="flex flex-col gap-4 mt-2">
+                    <div>
+                      <label className="text-xs font-bold text-gray-700 dark:text-gray-300 mb-1.5 block">Teks Catatan Kegiatan</label>
+                      <textarea 
+                        value={editNotesText} 
+                        onChange={(e) => setEditNotesText(e.target.value)}
+                        className="w-full text-xs p-3 rounded-xl border border-gray-300 dark:bg-gray-900 dark:border-gray-700 dark:text-white outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary shadow-inner"
+                        rows={4}
+                        placeholder="Tuliskan detail kegiatan yang Anda kerjakan..."
+                      />
                     </div>
-                    <div className="flex gap-2">
-                      {proofModalData.checkOutLat && proofModalData.checkOutLng && (
-                        <a 
-                          href={`https://www.google.com/maps/search/?api=1&query=${proofModalData.checkOutLat},${proofModalData.checkOutLng}`} 
-                          target="_blank" 
-                          rel="noreferrer"
-                          className="flex-1 text-[11px] flex items-center justify-center gap-1.5 text-blue-600 dark:text-blue-400 hover:bg-blue-100 transition mt-1 bg-blue-50 dark:bg-blue-900/30 p-2 rounded-lg font-medium"
-                        >
-                          <MapPin size={14} /> Peta
-                        </a>
-                      )}
-                    </div>
-                    
-                    <div className="mt-2 bg-slate-50 dark:bg-gray-800 p-3 rounded-xl border border-slate-100 dark:border-gray-700 relative group">
-                      <div className="flex justify-between items-center mb-1">
-                        <span className="text-[10px] font-bold uppercase text-slate-400 block">Catatan Kegiatan</span>
-                        {currentUser && currentUser.role === 'siswa' && proofModalData.date === serverTimeInfo?.dateString && !isEditingNotes && (
-                          <button 
-                            onClick={() => { setIsEditingNotes(true); setEditNotesText(proofModalData.activityNotes || ''); }} 
-                            className="text-[10px] text-orange-500 hover:underline flex items-center gap-1 bg-orange-50 dark:bg-orange-900/20 px-2 py-0.5 rounded"
-                          >
-                            <Edit size={10}/> Edit Catatan
-                          </button>
-                        )}
+
+                    <div>
+                      <div className="flex justify-between items-center mb-1.5">
+                        <label className="text-xs font-bold text-gray-700 dark:text-gray-300">
+                          Foto Bukti Kegiatan ({editActivityPhotos.length}/5)
+                        </label>
                       </div>
                       
-                      {isEditingNotes ? (
-                        <div className="flex flex-col gap-2 mt-2">
-                          <textarea 
-                            value={editNotesText} 
-                            onChange={(e) => setEditNotesText(e.target.value)}
-                            className="w-full text-xs p-2 rounded-lg border border-gray-300 dark:bg-gray-900 dark:border-gray-700 dark:text-white outline-none focus:border-primary shadow-inner"
-                            rows={4}
-                            placeholder="Tuliskan kegiatan yang dilakukan hari ini..."
-                          />
-                          <div className="flex gap-2 justify-end">
-                            <button onClick={() => setIsEditingNotes(false)} className="text-[10px] font-bold px-3 py-1.5 bg-gray-200 text-gray-700 dark:bg-gray-700 dark:text-gray-300 rounded-lg hover:bg-gray-300">Batal</button>
-                            <button onClick={handleSaveNotes} disabled={actionLoading} className="text-[10px] font-bold px-3 py-1.5 bg-primary text-white rounded-lg hover:bg-primary-hover disabled:opacity-50">Simpan Catatan</button>
+                      <div className="grid grid-cols-4 gap-2 mb-2">
+                        {editActivityPhotos.map((photo, pIdx) => (
+                          <div key={pIdx} className="relative group rounded-xl overflow-hidden border border-gray-200 dark:border-gray-700 bg-slate-900 aspect-square shadow-sm">
+                            <img src={photo} alt={`Bukti Edit ${pIdx + 1}`} className="w-full h-full object-cover" />
+                            <button 
+                              type="button" 
+                              onClick={() => removeActivityPhoto(pIdx, true)} 
+                              className="absolute top-1 right-1 p-1 bg-red-600/90 text-white rounded-full hover:bg-red-600 transition shadow-md"
+                              title="Hapus foto ini"
+                            >
+                              <X size={12} />
+                            </button>
                           </div>
-                        </div>
-                      ) : (
-                        <p className="text-xs text-[#0F172A] dark:text-gray-200 leading-relaxed whitespace-pre-wrap mt-1">
-                          {proofModalData.activityNotes || <span className="italic text-gray-400">Tidak ada catatan kegiatan.</span>}
-                        </p>
-                      )}
+                        ))}
+
+                        {editActivityPhotos.length < 5 && (
+                          <div>
+                            <input 
+                              type="file" 
+                              accept="image/*" 
+                              multiple
+                              ref={editActivityFileInputRef} 
+                              onChange={(e) => handleActivityPhotoUpload(e, true)} 
+                              className="hidden" 
+                            />
+                            <button 
+                              type="button" 
+                              onClick={() => editActivityFileInputRef.current?.click()}
+                              className="w-full h-full min-h-[70px] border border-dashed border-gray-300 dark:border-gray-700 rounded-xl text-xs text-gray-600 dark:text-gray-300 flex flex-col items-center justify-center gap-1 hover:bg-gray-100 dark:hover:bg-gray-800 transition font-medium p-1.5"
+                            >
+                              <Upload size={16} className="text-primary" />
+                              <span className="text-[9px] text-center">{editActivityPhotos.length > 0 ? '+ Tambah' : 'Unggah Foto'}</span>
+                            </button>
+                          </div>
+                        )}
+                      </div>
                     </div>
-                  </>
+
+                    <div className="flex gap-2 justify-end pt-2 border-t border-gray-200 dark:border-gray-700">
+                      <button onClick={() => setIsEditingNotes(false)} className="text-xs font-bold px-4 py-2 bg-gray-200 text-gray-700 dark:bg-gray-700 dark:text-gray-300 rounded-xl hover:bg-gray-300 transition">Batal</button>
+                      <button onClick={handleSaveNotes} disabled={actionLoading} className="text-xs font-bold px-4 py-2 bg-primary text-white rounded-xl hover:bg-primary-hover shadow-md disabled:opacity-50 transition">Simpan Perubahan</button>
+                    </div>
+                  </div>
                 ) : (
-                  <p className="text-xs text-gray-400 italic">Tidak ada data bukti absen pulang.</p>
+                  <div className="bg-white dark:bg-[#1E293B] p-4 rounded-xl border border-slate-200/80 dark:border-gray-700 shadow-sm">
+                    {proofModalData.activityNotes ? (
+                      <p className="text-xs text-slate-800 dark:text-slate-100 leading-relaxed whitespace-pre-wrap font-medium">
+                        {proofModalData.activityNotes}
+                      </p>
+                    ) : (
+                      <p className="text-xs text-slate-400 italic">
+                        Belum ada catatan kegiatan yang diisi.
+                      </p>
+                    )}
+                  </div>
                 )}
               </div>
             </div>
-            <div className="p-4 border-t border-gray-100 dark:border-gray-800 bg-gray-50 dark:bg-[#1E293B] flex justify-end">
+
+            {/* Footer */}
+            <div className="px-6 py-4 border-t border-gray-100 dark:border-gray-800 bg-slate-50 dark:bg-[#1E293B] flex justify-end shrink-0">
               <button 
                 onClick={() => setProofModalData(null)}
-                className="px-5 py-2 bg-gray-200 dark:bg-gray-700 hover:bg-gray-300 dark:hover:bg-gray-600 text-gray-800 dark:text-gray-200 text-sm font-semibold rounded-xl transition"
+                className="px-6 py-2.5 bg-gray-200 dark:bg-gray-700 hover:bg-gray-300 dark:hover:bg-gray-600 text-gray-800 dark:text-gray-200 text-xs font-bold rounded-xl transition shadow-sm"
               >
                 Tutup
               </button>

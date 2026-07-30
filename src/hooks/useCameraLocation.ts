@@ -1,5 +1,6 @@
 import { useState, useRef, useCallback } from 'react';
 import { usePKL } from '../context/PKLContext';
+import { applyWatermark } from '../utils/watermark';
 
 export function useCameraLocation() {
   const { currentUser } = usePKL();
@@ -60,24 +61,7 @@ export function useCameraLocation() {
     );
   };
 
-  const addWatermark = (ctx: CanvasRenderingContext2D, width: number, height: number) => {
-    const dateStr = new Date().toLocaleString('id-ID');
-    const locStr = location ? `Lat: ${location.lat.toFixed(5)}, Lng: ${location.lng.toFixed(5)}` : 'Lokasi tidak tersedia';
-    const nameStr = currentUser?.name || 'User';
-
-    ctx.fillStyle = 'rgba(0, 0, 0, 0.6)';
-    ctx.fillRect(width - 260, height - 70, 260, 70);
-
-    ctx.fillStyle = 'white';
-    ctx.font = '13px Arial';
-    ctx.textAlign = 'right';
-    ctx.fillText(nameStr, width - 10, height - 50);
-    ctx.fillText(dateStr, width - 10, height - 32);
-    ctx.font = '11px Arial';
-    ctx.fillText(locStr, width - 10, height - 15);
-  };
-
-  const capturePhoto = () => {
+  const capturePhoto = (overrideType?: string) => {
     if (videoRef.current && canvasRef.current) {
       const video = videoRef.current;
       const canvas = canvasRef.current;
@@ -104,7 +88,12 @@ export function useCameraLocation() {
       const ctx = canvas.getContext('2d');
       if (ctx) {
         ctx.drawImage(video, 0, 0, width, height);
-        addWatermark(ctx, width, height);
+        applyWatermark(canvas, {
+          type: overrideType || (cameraMode === 'in' ? 'Absen Masuk' : 'Absen Pulang'),
+          userName: currentUser?.name || 'User',
+          lat: location?.lat,
+          lng: location?.lng
+        });
         
         const dataUrl = canvas.toDataURL('image/jpeg', 0.6);
         if (dataUrl.length * 0.75 > 1048576) {
@@ -116,7 +105,7 @@ export function useCameraLocation() {
     }
   };
 
-  const handleFileUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleFileUpload = (e: React.ChangeEvent<HTMLInputElement>, overrideType?: string) => {
     const file = e.target.files?.[0];
     if (file) {
       const reader = new FileReader();
@@ -146,7 +135,12 @@ export function useCameraLocation() {
           const ctx = canvas.getContext('2d');
           if (ctx) {
             ctx.drawImage(img, 0, 0, width, height);
-            addWatermark(ctx, width, height);
+            applyWatermark(canvas, {
+              type: overrideType || (cameraMode === 'in' ? 'Absen Masuk' : 'Bukti Kegiatan'),
+              userName: currentUser?.name || 'User',
+              lat: location?.lat,
+              lng: location?.lng
+            });
             
             const dataUrl = canvas.toDataURL('image/jpeg', 0.6);
             if (dataUrl.length * 0.75 > 1048576) {
