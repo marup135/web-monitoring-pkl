@@ -23,7 +23,7 @@
   --color-indigo-950: #0f172a;
 }
 
-@variant dark (&:is(.dark, .dark *));
+@custom-variant dark (&:where(.dark, .dark *));
 
 :root {
   --background: #F8FAFC;

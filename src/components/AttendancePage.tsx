@@ -93,6 +93,7 @@ export function AttendancePage() {
   } | null>(null);
 
   const [isEditingNotes, setIsEditingNotes] = useState(false);
+  const [previewImage, setPreviewImage] = useState<{ url: string; title: string } | null>(null);
   const [editNotesText, setEditNotesText] = useState("");
   const [editActivityPhotos, setEditActivityPhotos] = useState<string[]>([]);
   const [activityPhotos, setActivityPhotos] = useState<string[]>([]);
@@ -1170,13 +1171,13 @@ export function AttendancePage() {
 
       {/* Attendance Proof Modal */}
       {proofModalData && (
-        <div className="fixed inset-0 z-[9999] bg-black/60 backdrop-blur-sm flex items-center justify-center p-4">
-          <div className="bg-white dark:bg-[#1E293B] rounded-3xl w-full max-w-3xl shadow-2xl overflow-hidden flex flex-col max-h-[90vh]">
+        <div className="fixed inset-0 z-[9999] bg-black/60 backdrop-blur-sm flex items-center justify-center p-4 sm:p-6 animate-in fade-in duration-200">
+          <div className="bg-white dark:bg-[#1E293B] rounded-3xl w-full max-w-3xl shadow-2xl overflow-hidden flex flex-col max-h-[90vh] border border-gray-100 dark:border-gray-800">
             {/* Header */}
-            <div className="flex justify-between items-center px-6 py-4 border-b border-gray-100 dark:border-gray-800 shrink-0 bg-slate-50/50 dark:bg-gray-800/50">
+            <div className="flex justify-between items-center px-6 py-4 border-b border-gray-100 dark:border-gray-800 shrink-0 bg-slate-50/70 dark:bg-gray-800/50">
               <div className="flex items-center gap-3">
-                <div className="p-2 bg-primary/10 text-primary rounded-xl">
-                  <Calendar size={18} />
+                <div className="p-2.5 bg-primary/10 text-primary rounded-2xl">
+                  <Calendar size={20} />
                 </div>
                 <div>
                   <h3 className="font-bold text-gray-900 dark:text-white text-base">
@@ -1187,14 +1188,18 @@ export function AttendancePage() {
                   </p>
                 </div>
               </div>
-              <button onClick={() => setProofModalData(null)} className="p-2 rounded-full hover:bg-gray-200 dark:hover:bg-gray-700 text-gray-500 transition">
+              <button 
+                onClick={() => setProofModalData(null)} 
+                className="p-2 rounded-full hover:bg-gray-200 dark:hover:bg-gray-700 text-gray-500 transition"
+              >
                 <X size={18} />
               </button>
             </div>
 
             {/* Content Body */}
-            <div className="p-6 overflow-y-auto flex-1 space-y-6">
-              {/* Grid 2 Column for Attendance Cards */}
+            <div className="p-6 overflow-y-auto flex-1 space-y-6 custom-scrollbar">
+              
+              {/* Section 1: Presensi Masuk & Pulang (Equal 2 Columns) */}
               <div className="grid grid-cols-1 md:grid-cols-2 gap-5 items-stretch">
                 
                 {/* Card 1: Absen Masuk */}
@@ -1202,28 +1207,36 @@ export function AttendancePage() {
                   <div>
                     <div className="flex items-center justify-between border-b border-slate-200/60 dark:border-gray-700/60 pb-2.5 mb-3">
                       <span className="text-xs font-bold text-slate-800 dark:text-slate-200 flex items-center gap-1.5">
-                        <span className="w-2 h-2 rounded-full bg-emerald-500"></span> Absen Masuk
+                        <span className="w-2.5 h-2.5 rounded-full bg-emerald-500"></span> Absen Masuk
                       </span>
-                      {proofModalData.checkIn && (
-                        <span className="text-[11px] font-semibold text-emerald-600 dark:text-emerald-400 bg-emerald-50 dark:bg-emerald-950/40 px-2 py-0.5 rounded-md border border-emerald-200/50">
+                      {proofModalData.checkIn ? (
+                        <span className="text-[11px] font-semibold text-emerald-600 dark:text-emerald-400 bg-emerald-50 dark:bg-emerald-950/40 px-2.5 py-0.5 rounded-md border border-emerald-200/50">
                           {proofModalData.checkIn} WIB
                         </span>
+                      ) : (
+                        <span className="text-[11px] text-gray-400 italic">Belum Masuk</span>
                       )}
                     </div>
 
                     {proofModalData.checkInPhoto ? (
-                      <div className="relative group rounded-xl overflow-hidden border border-slate-200 dark:border-gray-700 shadow-sm bg-slate-900">
-                        <span className="absolute top-2 left-2 z-10 text-[10px] font-semibold text-white bg-black/60 backdrop-blur-md px-2 py-0.5 rounded-md">
+                      <div className="relative group rounded-xl overflow-hidden border border-slate-200 dark:border-gray-700 shadow-sm bg-slate-900 cursor-pointer" onClick={() => setPreviewImage({ url: proofModalData.checkInPhoto!, title: `Wajah Absen Masuk (${proofModalData.date})` })}>
+                        <span className="absolute top-2 left-2 z-10 text-[10px] font-semibold text-white bg-black/60 backdrop-blur-md px-2.5 py-1 rounded-lg">
                           Foto Wajah Masuk
                         </span>
-                        <img src={proofModalData.checkInPhoto} alt="Bukti Masuk" className="w-full h-44 object-cover" />
-                        <button onClick={() => handleDownloadImage(proofModalData.checkInPhoto!, `Masuk_${proofModalData.date}.jpg`)} className="absolute bottom-2 right-2 p-2 bg-black/60 hover:bg-black/80 text-white rounded-lg backdrop-blur-sm opacity-0 group-hover:opacity-100 transition-opacity">
-                          <Download size={14} />
-                        </button>
+                        <img src={proofModalData.checkInPhoto} alt="Bukti Masuk" className="w-full h-48 object-cover group-hover:scale-105 transition-transform duration-300" />
+                        <div className="absolute inset-0 bg-black/30 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center gap-2">
+                          <button 
+                            onClick={(e) => { e.stopPropagation(); handleDownloadImage(proofModalData.checkInPhoto!, `Masuk_${proofModalData.date}.jpg`); }} 
+                            className="p-2 bg-white/90 text-gray-800 hover:bg-white rounded-xl shadow-lg transition"
+                            title="Unduh Foto"
+                          >
+                            <Download size={14} />
+                          </button>
+                        </div>
                       </div>
                     ) : (
-                      <div className="h-44 rounded-xl border border-dashed border-slate-200 dark:border-gray-700 flex flex-col items-center justify-center text-slate-400 p-4 text-center">
-                        <AlertCircle size={20} className="mb-1 opacity-50" />
+                      <div className="h-48 rounded-xl border border-dashed border-slate-200 dark:border-gray-700 flex flex-col items-center justify-center text-slate-400 p-4 text-center">
+                        <AlertCircle size={22} className="mb-1.5 opacity-50" />
                         <p className="text-xs italic">Tidak ada foto absen masuk</p>
                       </div>
                     )}
@@ -1234,7 +1247,7 @@ export function AttendancePage() {
                       href={`https://www.google.com/maps/search/?api=1&query=${proofModalData.checkInLat},${proofModalData.checkInLng}`} 
                       target="_blank" 
                       rel="noreferrer"
-                      className="w-full text-xs flex items-center justify-center gap-1.5 text-blue-600 dark:text-blue-400 hover:bg-blue-100/80 dark:hover:bg-blue-900/50 transition bg-blue-50 dark:bg-blue-900/30 py-2.5 px-3 rounded-xl font-semibold border border-blue-100 dark:border-blue-800/50 shadow-sm"
+                      className="w-full text-xs flex items-center justify-center gap-1.5 text-blue-600 dark:text-blue-400 hover:bg-blue-100/80 dark:hover:bg-blue-900/50 transition bg-blue-50 dark:bg-blue-900/30 py-2.5 px-3 rounded-xl font-semibold border border-blue-100 dark:border-blue-800/50 shadow-sm mt-auto"
                     >
                       <MapPin size={14} /> Peta Lokasi Masuk
                     </a>
@@ -1246,56 +1259,39 @@ export function AttendancePage() {
                   <div>
                     <div className="flex items-center justify-between border-b border-slate-200/60 dark:border-gray-700/60 pb-2.5 mb-3">
                       <span className="text-xs font-bold text-slate-800 dark:text-slate-200 flex items-center gap-1.5">
-                        <span className="w-2 h-2 rounded-full bg-blue-500"></span> Absen Pulang & Foto Bukti
+                        <span className="w-2.5 h-2.5 rounded-full bg-blue-500"></span> Absen Pulang
                       </span>
-                      {proofModalData.checkOut && (
-                        <span className="text-[11px] font-semibold text-blue-600 dark:text-blue-400 bg-blue-50 dark:bg-blue-950/40 px-2 py-0.5 rounded-md border border-blue-200/50">
+                      {proofModalData.checkOut ? (
+                        <span className="text-[11px] font-semibold text-blue-600 dark:text-blue-400 bg-blue-50 dark:bg-blue-950/40 px-2.5 py-0.5 rounded-md border border-blue-200/50">
                           {proofModalData.checkOut} WIB
                         </span>
+                      ) : (
+                        <span className="text-[11px] text-gray-400 italic">Belum Pulang</span>
                       )}
                     </div>
 
-                    {(() => {
-                      const parsedPhotos = parseActivityPhotos(proofModalData.activityPhoto);
-                      const hasPhotos = proofModalData.checkOutPhoto || parsedPhotos.length > 0;
-
-                      if (!hasPhotos) {
-                        return (
-                          <div className="h-44 rounded-xl border border-dashed border-slate-200 dark:border-gray-700 flex flex-col items-center justify-center text-slate-400 p-4 text-center">
-                            <AlertCircle size={20} className="mb-1 opacity-50" />
-                            <p className="text-xs italic">Belum melakukan absen pulang</p>
-                          </div>
-                        );
-                      }
-
-                      return (
-                        <div className="grid grid-cols-2 gap-2 max-h-56 overflow-y-auto pr-1">
-                          {proofModalData.checkOutPhoto && (
-                            <div className="relative group rounded-xl overflow-hidden border border-slate-200 dark:border-gray-700 shadow-sm bg-slate-900 aspect-square">
-                              <span className="absolute top-1.5 left-1.5 z-10 text-[9px] font-semibold text-white bg-black/60 backdrop-blur-md px-1.5 py-0.5 rounded-md truncate max-w-[90%]">
-                                Wajah Pulang
-                              </span>
-                              <img src={proofModalData.checkOutPhoto} alt="Bukti Pulang" className="w-full h-full object-cover" />
-                              <button onClick={() => handleDownloadImage(proofModalData.checkOutPhoto!, `Pulang_Wajah_${proofModalData.date}.jpg`)} className="absolute bottom-1.5 right-1.5 p-1.5 bg-black/60 hover:bg-black/80 text-white rounded-lg backdrop-blur-sm opacity-0 group-hover:opacity-100 transition-opacity">
-                                <Download size={12} />
-                              </button>
-                            </div>
-                          )}
-
-                          {parsedPhotos.map((photo, pIdx) => (
-                            <div key={pIdx} className="relative group rounded-xl overflow-hidden border border-slate-200 dark:border-gray-700 shadow-sm bg-slate-900 aspect-square">
-                              <span className="absolute top-1.5 left-1.5 z-10 text-[9px] font-semibold text-white bg-black/60 backdrop-blur-md px-1.5 py-0.5 rounded-md truncate max-w-[90%]">
-                                Bukti #{pIdx + 1}
-                              </span>
-                              <img src={photo} alt={`Bukti Kegiatan ${pIdx + 1}`} className="w-full h-full object-cover" />
-                              <button onClick={() => handleDownloadImage(photo, `Bukti_Kegiatan_${pIdx + 1}_${proofModalData.date}.jpg`)} className="absolute bottom-1.5 right-1.5 p-1.5 bg-black/60 hover:bg-black/80 text-white rounded-lg backdrop-blur-sm opacity-0 group-hover:opacity-100 transition-opacity">
-                                <Download size={12} />
-                              </button>
-                            </div>
-                          ))}
+                    {proofModalData.checkOutPhoto ? (
+                      <div className="relative group rounded-xl overflow-hidden border border-slate-200 dark:border-gray-700 shadow-sm bg-slate-900 cursor-pointer" onClick={() => setPreviewImage({ url: proofModalData.checkOutPhoto!, title: `Wajah Absen Pulang (${proofModalData.date})` })}>
+                        <span className="absolute top-2 left-2 z-10 text-[10px] font-semibold text-white bg-black/60 backdrop-blur-md px-2.5 py-1 rounded-lg">
+                          Foto Wajah Pulang
+                        </span>
+                        <img src={proofModalData.checkOutPhoto} alt="Bukti Pulang" className="w-full h-48 object-cover group-hover:scale-105 transition-transform duration-300" />
+                        <div className="absolute inset-0 bg-black/30 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center gap-2">
+                          <button 
+                            onClick={(e) => { e.stopPropagation(); handleDownloadImage(proofModalData.checkOutPhoto!, `Pulang_Wajah_${proofModalData.date}.jpg`); }} 
+                            className="p-2 bg-white/90 text-gray-800 hover:bg-white rounded-xl shadow-lg transition"
+                            title="Unduh Foto"
+                          >
+                            <Download size={14} />
+                          </button>
                         </div>
-                      );
-                    })()}
+                      </div>
+                    ) : (
+                      <div className="h-48 rounded-xl border border-dashed border-slate-200 dark:border-gray-700 flex flex-col items-center justify-center text-slate-400 p-4 text-center">
+                        <AlertCircle size={22} className="mb-1.5 opacity-50" />
+                        <p className="text-xs italic">Belum ada foto absen pulang</p>
+                      </div>
+                    )}
                   </div>
 
                   {proofModalData.checkOutLat && proofModalData.checkOutLng ? (
@@ -1303,7 +1299,7 @@ export function AttendancePage() {
                       href={`https://www.google.com/maps/search/?api=1&query=${proofModalData.checkOutLat},${proofModalData.checkOutLng}`} 
                       target="_blank" 
                       rel="noreferrer"
-                      className="w-full text-xs flex items-center justify-center gap-1.5 text-blue-600 dark:text-blue-400 hover:bg-blue-100/80 dark:hover:bg-blue-900/50 transition bg-blue-50 dark:bg-blue-900/30 py-2.5 px-3 rounded-xl font-semibold border border-blue-100 dark:border-blue-800/50 shadow-sm"
+                      className="w-full text-xs flex items-center justify-center gap-1.5 text-blue-600 dark:text-blue-400 hover:bg-blue-100/80 dark:hover:bg-blue-900/50 transition bg-blue-50 dark:bg-blue-900/30 py-2.5 px-3 rounded-xl font-semibold border border-blue-100 dark:border-blue-800/50 shadow-sm mt-auto"
                     >
                       <MapPin size={14} /> Peta Lokasi Pulang
                     </a>
@@ -1312,7 +1308,52 @@ export function AttendancePage() {
 
               </div>
 
-              {/* Full-width Card 3: Catatan & Laporan Kegiatan Harian */}
+              {/* Section 2: Dedicated Activity Photos (Foto Bukti Kegiatan) */}
+              {(() => {
+                const parsedPhotos = parseActivityPhotos(proofModalData.activityPhoto);
+                if (parsedPhotos.length === 0 && !isEditingNotes) return null;
+
+                return (
+                  <div className="bg-slate-50/80 dark:bg-gray-800/40 rounded-2xl p-4 border border-slate-200/80 dark:border-gray-700/60 shadow-sm">
+                    <div className="flex items-center justify-between mb-3 border-b border-slate-200/60 dark:border-gray-700/60 pb-2.5">
+                      <span className="text-xs font-bold text-slate-800 dark:text-slate-200 flex items-center gap-2">
+                        <span>📸</span> Dokumentasi & Foto Bukti Kegiatan
+                      </span>
+                      <span className="text-[11px] font-semibold text-slate-500 dark:text-gray-400 bg-slate-200/60 dark:bg-gray-700 px-2.5 py-0.5 rounded-full">
+                        {isEditingNotes ? editActivityPhotos.length : parsedPhotos.length} Foto
+                      </span>
+                    </div>
+
+                    {!isEditingNotes ? (
+                      <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3">
+                        {parsedPhotos.map((photo, pIdx) => (
+                          <div 
+                            key={pIdx} 
+                            className="relative group rounded-xl overflow-hidden border border-slate-200 dark:border-gray-700 bg-slate-900 aspect-video sm:aspect-square shadow-sm cursor-pointer"
+                            onClick={() => setPreviewImage({ url: photo, title: `Bukti Kegiatan #${pIdx + 1} (${proofModalData.date})` })}
+                          >
+                            <span className="absolute top-1.5 left-1.5 z-10 text-[9px] font-semibold text-white bg-black/60 backdrop-blur-md px-2 py-0.5 rounded-md">
+                              Bukti #{pIdx + 1}
+                            </span>
+                            <img src={photo} alt={`Bukti Kegiatan ${pIdx + 1}`} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300" />
+                            <div className="absolute inset-0 bg-black/30 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
+                              <button 
+                                onClick={(e) => { e.stopPropagation(); handleDownloadImage(photo, `Bukti_Kegiatan_${pIdx + 1}_${proofModalData.date}.jpg`); }} 
+                                className="p-2 bg-white/90 text-gray-800 hover:bg-white rounded-xl shadow-lg transition"
+                                title="Unduh Foto"
+                              >
+                                <Download size={14} />
+                              </button>
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                    ) : null}
+                  </div>
+                );
+              })()}
+
+              {/* Section 3: Catatan & Laporan Kegiatan Harian */}
               <div className="bg-slate-50/80 dark:bg-gray-800/40 rounded-2xl p-5 border border-slate-200/80 dark:border-gray-700/60 shadow-sm">
                 <div className="flex justify-between items-center mb-3">
                   <div className="flex items-center gap-2">
@@ -1356,18 +1397,18 @@ export function AttendancePage() {
                     <div>
                       <div className="flex justify-between items-center mb-1.5">
                         <label className="text-xs font-bold text-gray-700 dark:text-gray-300">
-                          Foto Bukti Kegiatan ({editActivityPhotos.length}/5)
+                          Kelola Foto Bukti Kegiatan ({editActivityPhotos.length}/5)
                         </label>
                       </div>
                       
-                      <div className="grid grid-cols-4 gap-2 mb-2">
+                      <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-5 gap-2.5 mb-2">
                         {editActivityPhotos.map((photo, pIdx) => (
                           <div key={pIdx} className="relative group rounded-xl overflow-hidden border border-gray-200 dark:border-gray-700 bg-slate-900 aspect-square shadow-sm">
                             <img src={photo} alt={`Bukti Edit ${pIdx + 1}`} className="w-full h-full object-cover" />
                             <button 
                               type="button" 
                               onClick={() => removeActivityPhoto(pIdx, true)} 
-                              className="absolute top-1 right-1 p-1 bg-red-600/90 text-white rounded-full hover:bg-red-600 transition shadow-md"
+                              className="absolute top-1 right-1 p-1 bg-red-600/90 text-white rounded-full hover:bg-red-600 transition shadow-md z-10"
                               title="Hapus foto ini"
                             >
                               <X size={12} />
@@ -1388,10 +1429,10 @@ export function AttendancePage() {
                             <button 
                               type="button" 
                               onClick={() => editActivityFileInputRef.current?.click()}
-                              className="w-full h-full min-h-[70px] border border-dashed border-gray-300 dark:border-gray-700 rounded-xl text-xs text-gray-600 dark:text-gray-300 flex flex-col items-center justify-center gap-1 hover:bg-gray-100 dark:hover:bg-gray-800 transition font-medium p-1.5"
+                              className="w-full h-full min-h-[80px] border border-dashed border-gray-300 dark:border-gray-700 rounded-xl text-xs text-gray-600 dark:text-gray-300 flex flex-col items-center justify-center gap-1 hover:bg-gray-100 dark:hover:bg-gray-800 transition font-medium p-1.5"
                             >
-                              <Upload size={16} className="text-primary" />
-                              <span className="text-[9px] text-center">{editActivityPhotos.length > 0 ? '+ Tambah' : 'Unggah Foto'}</span>
+                              <Upload size={18} className="text-primary" />
+                              <span className="text-[10px] text-center">{editActivityPhotos.length > 0 ? '+ Tambah' : 'Unggah Foto'}</span>
                             </button>
                           </div>
                         )}
@@ -1427,6 +1468,41 @@ export function AttendancePage() {
               >
                 Tutup
               </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Full-Screen Image Lightbox Preview Modal */}
+      {previewImage && (
+        <div 
+          className="fixed inset-0 z-[10000] bg-black/80 backdrop-blur-md flex items-center justify-center p-4 animate-in fade-in duration-150"
+          onClick={() => setPreviewImage(null)}
+        >
+          <div 
+            className="relative max-w-4xl w-full bg-slate-900 rounded-2xl overflow-hidden shadow-2xl border border-gray-700 flex flex-col max-h-[90vh]"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <div className="flex justify-between items-center px-4 py-3 bg-slate-800 border-b border-gray-700 text-white">
+              <span className="text-xs font-semibold">{previewImage.title}</span>
+              <div className="flex items-center gap-2">
+                <button 
+                  onClick={() => handleDownloadImage(previewImage.url, `${previewImage.title}.jpg`)} 
+                  className="p-1.5 bg-gray-700 hover:bg-gray-600 text-white rounded-lg transition"
+                  title="Unduh Foto"
+                >
+                  <Download size={16} />
+                </button>
+                <button 
+                  onClick={() => setPreviewImage(null)} 
+                  className="p-1.5 bg-gray-700 hover:bg-gray-600 text-white rounded-lg transition"
+                >
+                  <X size={16} />
+                </button>
+              </div>
+            </div>
+            <div className="p-2 flex items-center justify-center overflow-auto flex-1 bg-black/50">
+              <img src={previewImage.url} alt="Preview" className="max-h-[75vh] w-auto object-contain rounded-lg" />
             </div>
           </div>
         </div>
