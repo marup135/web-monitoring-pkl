@@ -10,11 +10,11 @@ export default function PrivacyPage() {
             &larr; Kembali ke Beranda
           </Link>
         </div>
-        
+
         <h1 className="text-3xl font-black text-slate-900 dark:text-white mb-6">Kebijakan Privasi</h1>
         <div className="prose prose-slate dark:prose-invert max-w-none text-slate-600 dark:text-gray-300 space-y-4">
           <p>Terakhir diperbarui: {new Date().toLocaleDateString('id-ID')}</p>
-          
+
           <h2 className="text-xl font-bold text-slate-800 dark:text-gray-100 mt-6">1. Informasi yang Kami Kumpulkan</h2>
           <p>Kami mengumpulkan informasi pribadi yang Anda berikan secara langsung kepada kami, seperti nama, alamat email, asal sekolah/institusi, dan data terkait pelaksanaan PKL. Kami juga mungkin menggunakan pengenalan wajah (Face API) khusus untuk fitur absensi.</p>
 
@@ -28,7 +28,7 @@ export default function PrivacyPage() {
           <p>Kami tidak akan menjual atau menyewakan informasi pribadi Anda. Informasi Anda hanya dibagikan kepada pihak sekolah, institusi, atau perusahaan yang secara sah terhubung dengan kegiatan PKL Anda di platform ini.</p>
 
           <h2 className="text-xl font-bold text-slate-800 dark:text-gray-100 mt-6">5. Kontak Kami</h2>
-          <p>Jika Anda memiliki pertanyaan tentang Kebijakan Privasi ini, silakan hubungi kami melalui email di smkn1bojong@gmail.com.</p>
+          <p>Jika Anda memiliki pertanyaan tentang Kebijakan Privasi ini, silakan hubungi kami melalui email di support@nebotrac.my.id</p>
         </div>
       </div>
     </div>
