@@ -1122,14 +1122,15 @@ export async function addAdvisorNoteAction(text: string, advisorName: string, st
 export async function deleteAdvisorNoteAction(noteId: string) {
   try {
     const currentUser = await getAuthenticatedUser();
-    if (!currentUser || currentUser.role !== 'INTERNAL_MENTOR') {
+    const userRole = currentUser?.role as string;
+    if (!currentUser || (userRole !== 'INTERNAL_MENTOR' && userRole !== 'SUPER_ADMIN')) {
       return { success: false, error: 'Akses ditolak: Hanya Guru Pembimbing yang dapat menghapus catatan.' };
     }
 
     const note = await prisma.advisorNote.findUnique({ where: { id: noteId } });
     if (!note) return { success: false, error: 'Catatan tidak ditemukan.' };
     
-    if (note.advisorId !== currentUser.id && currentUser.role !== 'SUPER_ADMIN') {
+    if (note.advisorId !== currentUser.id && userRole !== 'SUPER_ADMIN') {
       return { success: false, error: 'Akses ditolak: Anda hanya dapat menghapus catatan Anda sendiri.' };
     }
 

@@ -896,7 +896,7 @@ export const PKLProvider: React.FC<{ children: React.ReactNode }> = ({ children 
       if (!res.success) {
         throw new Error(res.error);
       }
-      refreshState();
+      fetchState();
     } catch (err: any) {
       console.error(err);
       throw err;
