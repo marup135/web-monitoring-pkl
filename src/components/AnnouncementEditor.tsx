@@ -25,10 +25,6 @@ export function AnnouncementEditor({ type, targetId, targetName }: AnnouncementE
 
   const [deletingId, setDeletingId] = useState<string | null>(null);
 
-  useEffect(() => {
-    loadAnnouncements();
-  }, [targetId]);
-
   const loadAnnouncements = async () => {
     setIsLoading(true);
     const res = await getTargetAnnouncementsAction(type, targetId);
@@ -37,6 +33,10 @@ export function AnnouncementEditor({ type, targetId, targetName }: AnnouncementE
     }
     setIsLoading(false);
   };
+
+  useEffect(() => {
+    loadAnnouncements();
+  }, [targetId]);
 
   const handleAdd = async () => {
     if (!newText.trim()) return;

@@ -7,8 +7,6 @@ function SystemThemeHandler() {
   const { theme, resolvedTheme } = useTheme();
 
   React.useEffect(() => {
-    let observer: MutationObserver;
-    
     const enforceSystemTheme = () => {
       try {
         const storedTheme = localStorage.getItem('theme') || theme;
@@ -31,7 +29,7 @@ function SystemThemeHandler() {
 
     enforceSystemTheme();
 
-    observer = new MutationObserver(() => {
+    const observer = new MutationObserver(() => {
       enforceSystemTheme();
     });
 

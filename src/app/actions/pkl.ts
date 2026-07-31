@@ -55,6 +55,30 @@ function canAdvisorAccessStudent(
   return Boolean(student.classId && advisorClassIds.includes(student.classId));
 }
 
+async function canMentorAccessCard(currentUser: AuthenticatedUser, card: any) {
+  const student = await prisma.user.findUnique({ where: { id: card.studentId } });
+  if (student && canMentorAccessStudent(currentUser, student)) return true;
+  if (card.collaborators) {
+    for (const collab of card.collaborators) {
+      const cUser = await prisma.user.findUnique({ where: { id: collab.id } });
+      if (cUser && canMentorAccessStudent(currentUser, cUser)) return true;
+    }
+  }
+  return false;
+}
+
+async function canAdvisorAccessCard(currentUser: AuthenticatedUser, card: any) {
+  const student = await prisma.user.findUnique({ where: { id: card.studentId } });
+  if (student && canAdvisorAccessStudent(currentUser, student)) return true;
+  if (card.collaborators) {
+    for (const collab of card.collaborators) {
+      const cUser = await prisma.user.findUnique({ where: { id: collab.id } });
+      if (cUser && canAdvisorAccessStudent(currentUser, cUser)) return true;
+    }
+  }
+  return false;
+}
+
 async function requireAdmin() {
   const currentUser = await getAuthenticatedUser();
   if (!currentUser || (currentUser.role !== 'SUPER_ADMIN' && currentUser.role !== 'INSTITUTION_ADMIN')) {
@@ -455,13 +479,11 @@ export async function updateCardColumnAction(
         return { success: false, error: 'Akses ditolak: Anda bukan pemilik kegiatan ini dan belum diizinkan.' };
       }
     } else if (currentUser.role === 'EXTERNAL_MENTOR') {
-      const student = await prisma.user.findUnique({ where: { id: card.studentId } });
-      if (!student || !canMentorAccessStudent(currentUser, student)) {
+      if (!(await canMentorAccessCard(currentUser, card))) {
         return { success: false, error: 'Akses ditolak: Siswa ini bukan dari perusahaan Anda.' };
       }
     } else if (currentUser.role === 'INTERNAL_MENTOR') {
-      const student = await prisma.user.findUnique({ where: { id: card.studentId } });
-      if (!student || !canAdvisorAccessStudent(currentUser, student)) {
+      if (!(await canAdvisorAccessCard(currentUser, card))) {
         return { success: false, error: 'Akses ditolak: Siswa dari kelas lain.' };
       }
     }
@@ -542,7 +564,8 @@ export async function updateCardDetailsAction(
     }
 
     const card = await prisma.card.findUnique({
-      where: { id: cardId }
+      where: { id: cardId },
+      include: { collaborators: true }
     });
 
     if (!card) {
@@ -586,8 +609,7 @@ export async function updateCardDetailsAction(
       }
       // Siswa cannot change scores or feedback. They remain untouched.
     } else if (currentUser.role === 'EXTERNAL_MENTOR') {
-      const student = await prisma.user.findUnique({ where: { id: card.studentId } });
-      if (!student || !canMentorAccessStudent(currentUser, student)) {
+      if (!(await canMentorAccessCard(currentUser, card))) {
         return { success: false, error: 'Akses ditolak: Siswa dari perusahaan lain.' };
       }
       // Only external mentor can update mentor grades
@@ -597,8 +619,7 @@ export async function updateCardDetailsAction(
       if (scoreMentorAttitude !== undefined) updateData.scoreMentorAttitude = scoreMentorAttitude;
       if (feedbackMentor !== undefined) updateData.feedbackMentor = feedbackMentor;
     } else if (currentUser.role === 'INTERNAL_MENTOR') {
-      const student = await prisma.user.findUnique({ where: { id: card.studentId } });
-      if (!student || !canAdvisorAccessStudent(currentUser, student)) {
+      if (!(await canAdvisorAccessCard(currentUser, card))) {
         return { success: false, error: 'Akses ditolak: Siswa dari kelas lain.' };
       }
       // Only internal advisor can update advisor grades
@@ -733,13 +754,11 @@ export async function addCommentAction(
         return { success: false, error: 'Akses ditolak.' };
       }
     } else if (currentUser.role === 'EXTERNAL_MENTOR') {
-      const student = await prisma.user.findUnique({ where: { id: card.studentId } });
-      if (!student || !canMentorAccessStudent(currentUser, student)) {
+      if (!(await canMentorAccessCard(currentUser, card))) {
         return { success: false, error: 'Akses ditolak.' };
       }
     } else if (currentUser.role === 'INTERNAL_MENTOR') {
-      const student = await prisma.user.findUnique({ where: { id: card.studentId } });
-      if (!student || !canAdvisorAccessStudent(currentUser, student)) {
+      if (!(await canAdvisorAccessCard(currentUser, card))) {
         return { success: false, error: 'Akses ditolak.' };
       }
     }
@@ -800,15 +819,15 @@ export async function gradeCardByMentorAction(
     }
 
     const card = await prisma.card.findUnique({
-      where: { id: cardId }
+      where: { id: cardId },
+      include: { collaborators: true }
     });
 
     if (!card) {
       return { success: false, error: 'Kegiatan tidak ditemukan.' };
     }
 
-    const student = await prisma.user.findUnique({ where: { id: card.studentId } });
-    if (!student || !canMentorAccessStudent(currentUser, student)) {
+    if (!(await canMentorAccessCard(currentUser, card))) {
       return { success: false, error: 'Akses ditolak: Siswa ini bukan dari perusahaan Anda.' };
     }
 
@@ -867,15 +886,15 @@ export async function gradeCardByAdvisorAction(
     }
 
     const card = await prisma.card.findUnique({
-      where: { id: cardId }
+      where: { id: cardId },
+      include: { collaborators: true }
     });
 
     if (!card) {
       return { success: false, error: 'Kegiatan tidak ditemukan.' };
     }
 
-    const student = await prisma.user.findUnique({ where: { id: card.studentId } });
-    if (!student || !canAdvisorAccessStudent(currentUser, student)) {
+    if (!(await canAdvisorAccessCard(currentUser, card))) {
       return { success: false, error: 'Akses ditolak: Siswa dari kelas lain.' };
     }
 

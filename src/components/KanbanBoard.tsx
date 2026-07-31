@@ -638,7 +638,7 @@ export const KanbanBoard: React.FC<KanbanBoardProps> = ({ onOpenCard }) => {
                       return (
                         <div
                           key={card.id}
-                          draggable={activeRole !== 'Dosen Pembimbing' && !(activeRole === 'Mahasiswa' && card.columnId === 'selesai') && !isStudentWithoutPermission}
+                          draggable={!(activeRole === 'Mahasiswa' && card.columnId === 'selesai') && !isStudentWithoutPermission}
                           onDragStart={(e) => handleDragStart(e, card.id)}
                           onClick={() => onOpenCard(card)}
                           className={`bg-white/95 dark:bg-[#243447]/95 backdrop-blur-sm border rounded-xl p-3.5 cursor-pointer relative shadow-xs hover:border-slate-300 dark:hover:border-gray-500 hover:shadow-md hover:-translate-y-0.5 transition duration-200 group ${

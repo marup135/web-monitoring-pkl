@@ -37,7 +37,7 @@ export default function ResetPasswordPage() {
     } else {
       setErrorState({ message: t('errResetLinkNotFound'), type: 'server' });
     }
-  }, []);
+  }, [t]);
 
   const setError = (message: string, type: 'field' | 'server' = 'field', field?: 'password' | 'confirmPassword') => {
     setErrorState({ message, type, field });
