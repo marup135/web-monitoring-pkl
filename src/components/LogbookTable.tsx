@@ -42,6 +42,18 @@ export const LogbookTable: React.FC<LogbookTableProps> = ({ onOpenCard, onEditCa
     }
   };
 
+  const formatTitleCase = (str?: string) => {
+    if (!str || str === '-' || str === '____________________') return str || '-';
+    return str
+      .split(' ')
+      .map((word) => {
+        if (!word) return '';
+        if (word === word.toUpperCase() && word.length <= 4) return word;
+        return word.charAt(0).toUpperCase() + word.slice(1).toLowerCase();
+      })
+      .join(' ');
+  };
+
   return (
     <div className="flex flex-col gap-6 text-[#0F172A] dark:text-gray-200 font-sans">
       
@@ -65,28 +77,42 @@ export const LogbookTable: React.FC<LogbookTableProps> = ({ onOpenCard, onEditCa
         
         
         {/* Printable Cover Page */}
-        <div className="hidden print:flex flex-col items-center justify-center min-h-[26cm] w-full" style={{ pageBreakAfter: 'always' }}>
-          {/* eslint-disable-next-line @next/next/no-img-element */}
-          <img src="/nebo.png" alt="Logo" className="w-48 h-48 object-contain mb-8" />
-          <div className="flex flex-col items-center mb-12">
-            <h1 className="text-2xl font-black uppercase text-black text-center tracking-wide leading-tight">{t("reportTitle")}</h1>
-            <h1 className="text-2xl font-black uppercase text-black text-center tracking-wide leading-tight">{t("reportSubtitle")}</h1>
+        <div className="hidden print:flex flex-col items-center justify-between min-h-[25cm] w-full py-8 px-6 text-black box-border" style={{ pageBreakAfter: 'always' }}>
+          {/* Top Logo & Title */}
+          <div className="flex flex-col items-center text-center w-full mt-4">
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img src="/nebo.png" alt="Logo" className="w-36 h-36 object-contain mb-6" />
+            <div className="border-b-2 border-black pb-4 mb-2 w-full max-w-xl">
+              <h1 className="text-2xl font-black uppercase text-black tracking-wide leading-snug">{t("reportTitle")}</h1>
+              <h2 className="text-xl font-bold uppercase text-black/80 tracking-wide mt-1">{t("reportSubtitle")}</h2>
+            </div>
           </div>
-          
-          <table className="text-base font-bold text-black border-none text-left w-auto mx-auto">
-            <tbody>
-              <tr><td className="py-2.5 pr-12 whitespace-nowrap">{t("studentName")}</td><td className="py-2.5 px-3">:</td><td className="py-2.5 whitespace-nowrap">{state.studentName || '-'}</td></tr>
-              <tr><td className="py-2.5 pr-12 whitespace-nowrap">{t("nisn")}</td><td className="py-2.5 px-3">:</td><td className="py-2.5 whitespace-nowrap">{state.nisn || '-'}</td></tr>
-              <tr><td className="py-2.5 pr-12 whitespace-nowrap">{t("schoolOrigin")}</td><td className="py-2.5 px-3">:</td><td className="py-2.5 whitespace-nowrap">{(currentUser as any)?.school || '-'}</td></tr>
-              <tr><td className="py-2.5 pr-12 whitespace-nowrap">{t("internCompany")}</td><td className="py-2.5 px-3">:</td><td className="py-2.5 whitespace-nowrap">{state.companyName || '-'}</td></tr>
-              <tr><td className="py-2.5 pr-12 whitespace-nowrap">{t("externalAdvisor")}</td><td className="py-2.5 px-3">:</td><td className="py-2.5 whitespace-nowrap">{state.mentorName || '-'}</td></tr>
-              <tr><td className="py-2.5 pr-12 whitespace-nowrap">{t("internalAdvisor")}</td><td className="py-2.5 px-3">:</td><td className="py-2.5 whitespace-nowrap">{state.advisorName || '-'}</td></tr>
-            </tbody>
-          </table>
+
+          {/* Middle Info Box */}
+          <div className="w-full max-w-xl bg-slate-50/50 p-6 rounded-xl border border-black/20 my-auto shadow-none">
+            <table className="text-sm font-semibold text-black border-none text-left w-full">
+              <tbody>
+                <tr className="border-b border-gray-200/80"><td className="py-2.5 pr-6 text-black/70 w-44">{t("studentName")}</td><td className="py-2.5 px-2">:</td><td className="py-2.5 font-bold">{formatTitleCase(state.studentName)}</td></tr>
+                <tr className="border-b border-gray-200/80"><td className="py-2.5 pr-6 text-black/70">{t("nisn")}</td><td className="py-2.5 px-2">:</td><td className="py-2.5 font-bold">{state.nisn || '-'}</td></tr>
+                <tr className="border-b border-gray-200/80"><td className="py-2.5 pr-6 text-black/70">{t("schoolOrigin")}</td><td className="py-2.5 px-2">:</td><td className="py-2.5 font-bold">{formatTitleCase((currentUser as any)?.school || '-')}</td></tr>
+                <tr className="border-b border-gray-200/80"><td className="py-2.5 pr-6 text-black/70">{t("internCompany")}</td><td className="py-2.5 px-2">:</td><td className="py-2.5 font-bold">{state.companyName || '-'}</td></tr>
+                <tr className="border-b border-gray-200/80"><td className="py-2.5 pr-6 text-black/70">{t("externalAdvisor")}</td><td className="py-2.5 px-2">:</td><td className="py-2.5 font-bold">{formatTitleCase(state.mentorName)}</td></tr>
+                <tr><td className="py-2.5 pr-6 text-black/70">{t("internalAdvisor")}</td><td className="py-2.5 px-2">:</td><td className="py-2.5 font-bold">{formatTitleCase(state.advisorName)}</td></tr>
+              </tbody>
+            </table>
+          </div>
+
+          {/* Bottom Location & Academic Year Footer */}
+          <div className="flex flex-col items-center text-center text-xs font-semibold text-black/70 mb-4">
+            <p className="uppercase tracking-wider font-bold text-sm text-black">
+              {formatTitleCase((currentUser as any)?.school || 'SMKN 1 BOJONG')}
+            </p>
+            <p className="mt-1">Tahun {new Date().getFullYear()}</p>
+          </div>
         </div>
 
         {/* Printable Header Info */}
-        <div className="hidden print:block mb-6 border-b-[3px] border-black pb-4 mt-8">
+        <div className="hidden print:block mb-6 border-b-[3px] border-black pb-4 mt-4">
           <div className="text-center">
             <h2 className="text-xl font-bold text-black uppercase tracking-wide">
               {t('logbookTitle')}
@@ -347,35 +373,35 @@ export const LogbookTable: React.FC<LogbookTableProps> = ({ onOpenCard, onEditCa
 
         
         {/* Printable Signature Lines */}
-        <div className="hidden print:grid grid-cols-3 gap-8 mt-24 text-[11px] text-black" style={{ pageBreakInside: 'avoid' }}>
+        <div className="hidden print:grid grid-cols-3 gap-6 mt-16 text-[11px] text-black" style={{ pageBreakInside: 'avoid', breakInside: 'avoid' }}>
           <div className="flex flex-col items-center text-center">
             <span>{t("signatureAcknowledged")}</span>
             <span className="font-bold mt-1">Pembimbing Eksternal (Perusahaan)</span>
-            <div className="h-24" />
-            <span className="font-bold underline">{state.mentorName || '____________________'}</span>
+            <div className="h-20" />
+            <span className="font-bold underline">{formatTitleCase(state.mentorName) !== '-' ? formatTitleCase(state.mentorName) : '____________________'}</span>
             <span className="mt-1">{t("positionSignature")} ____________________</span>
           </div>
           <div className="flex flex-col items-center text-center">
             <span>{t("signatureAcknowledged")}</span>
             <span className="font-bold mt-1">Pembimbing Internal (Sekolah)</span>
-            <div className="h-24" />
-            <span className="font-bold underline">{state.advisorName || '____________________'}</span>
+            <div className="h-20" />
+            <span className="font-bold underline">{formatTitleCase(state.advisorName) !== '-' ? formatTitleCase(state.advisorName) : '____________________'}</span>
             <span className="mt-1">{t("nipSignature")} ____________________</span>
           </div>
           <div className="flex flex-col items-center text-center">
             <span>Bojong, {new Date().toLocaleDateString('id-ID', { day: 'numeric', month: 'long', year: 'numeric' })}</span>
             <span className="font-bold mt-1">{t("studentSignature")}</span>
-            <div className="h-24" />
-            <span className="font-bold underline">{state.studentName || '____________________'}</span>
+            <div className="h-20" />
+            <span className="font-bold underline">{formatTitleCase(state.studentName) !== '-' ? formatTitleCase(state.studentName) : '____________________'}</span>
             <span className="mt-1">{state.nisn ? `NIS/NISN: ${state.nisn}` : 'NIS/NISN: ____________________'}</span>
           </div>
         </div>
 
         {/* Print Footer Elements */}
-        <div className="hidden print:block fixed bottom-0 left-0 right-0 text-[10px] text-black pt-2 pb-2 mt-16">
-           <div className="border-t-[1.5px] border-black pt-2 flex justify-between items-center">
+        <div className="hidden print:block fixed bottom-0 left-0 right-0 text-[10px] text-black pt-2 pb-2 mt-16 bg-white z-50">
+           <div className="border-t-[1.5px] border-black pt-2 flex justify-between items-center px-4">
              <div>
-               {t("printedVia")} <strong>NeboTrack</strong> - https://nebotrack.vercel.app
+               {t("printedVia")} <strong>NeboTrack</strong> - https://www.nebotrack.my.id
              </div>
              <div>
                {t("printDate")} {new Date().toLocaleDateString('id-ID', { day: 'numeric', month: 'long', year: 'numeric' })} | Halaman <span className="pageNumber"></span> {t("of")} <span className="totalPages"></span>
@@ -387,11 +413,17 @@ export const LogbookTable: React.FC<LogbookTableProps> = ({ onOpenCard, onEditCa
       {/* Tailwind print helper styles */}
       <style jsx global>{`
         @media print {
+          @page {
+            size: A4 portrait;
+            margin: 12mm 15mm 15mm 15mm;
+          }
           body {
             background: white !important;
             color: black !important;
             font-size: 11px !important;
             line-height: 1.5 !important;
+            margin: 0 !important;
+            padding: 0 !important;
           }
           /* Hide non-printable elements */
           nav, header, footer:not(.print\\:block), button, .print\\:hidden, [role="button"] {
@@ -429,14 +461,15 @@ export const LogbookTable: React.FC<LogbookTableProps> = ({ onOpenCard, onEditCa
             position: fixed !important;
             bottom: 0 !important;
           }
-          
-          /* Page margins and layout */
-          @page {
-            size: A4 portrait;
-            margin: 2cm;
+          /* Page counter pseudo-elements */
+          .pageNumber::after {
+            content: counter(page);
+          }
+          .totalPages::after {
+            content: counter(pages);
           }
         }
       `}</style>
-</div>
+    </div>
   );
 };

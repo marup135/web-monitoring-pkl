@@ -544,11 +544,18 @@ export async function updatePasswordAction(accessToken: string, newPassword: str
     }
 
     // Hash and Update password in Prisma DB
+    const cleanEmail = user.email.toLowerCase();
     const hashedPassword = hashPassword(newPassword);
-    await prisma.user.updateMany({
-      where: { email: user.email },
+    
+    const updateResult = await prisma.user.updateMany({
+      where: { email: cleanEmail },
       data: { password: hashedPassword }
     });
+
+    if (updateResult.count === 0) {
+      console.warn(`User with email ${cleanEmail} not found in Prisma DB. Trying username fallback or failing.`);
+      return { success: false, error: 'Pengguna tidak ditemukan di database utama.' };
+    }
 
     return { success: true };
   } catch (error: unknown) {
