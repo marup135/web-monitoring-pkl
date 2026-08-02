@@ -536,7 +536,7 @@ export const AuthPage: React.FC<AuthPageProps> = ({ initialView = 'login' }) => 
                             <User size={18} className="absolute left-4 top-1/2 -translate-y-1/2 text-[#94A3B8]" />
                             <input
                               type="text"
-                              placeholder="Siswa "
+                              placeholder="Nama Anda "
                               value={name}
                               onChange={(e) => setName(e.target.value)}
                               className={inputClass(false)}
@@ -553,7 +553,7 @@ export const AuthPage: React.FC<AuthPageProps> = ({ initialView = 'login' }) => 
                             <User size={18} className="absolute left-4 top-1/2 -translate-y-1/2 text-[#94A3B8]" />
                             <input
                               type="email"
-                              placeholder="siswa@gmail.com"
+                              placeholder="emailanda@gmail.com"
                               value={email}
                               onChange={(e) => {
                                 setEmail(e.target.value.toLowerCase().replace(/\s+/g, ''));
@@ -573,7 +573,7 @@ export const AuthPage: React.FC<AuthPageProps> = ({ initialView = 'login' }) => 
                             <User size={18} className={`absolute left-4 top-1/2 -translate-y-1/2 ${usernameHasError ? 'text-red-400' : 'text-[#94A3B8]'}`} />
                             <input
                               type="text"
-                              placeholder="siswa123"
+                              placeholder="usernameanda123"
                               value={username}
                               onChange={(e) => {
                                 setUsername(e.target.value.toLowerCase().replace(/\s+/g, ''));
@@ -860,7 +860,7 @@ export const AuthPage: React.FC<AuthPageProps> = ({ initialView = 'login' }) => 
                         <User size={18} className={`absolute left-4 top-1/2 -translate-y-1/2 ${usernameHasError ? 'text-red-400' : 'text-[#94A3B8]'}`} />
                         <input
                           type="text"
-                          placeholder="siswa@gmail.com"
+                          placeholder="emailanda@gmail.com"
                           value={username}
                           onChange={(e) => {
                             setUsername(e.target.value.toLowerCase().replace(/\s+/g, ''));
@@ -941,7 +941,7 @@ export const AuthPage: React.FC<AuthPageProps> = ({ initialView = 'login' }) => 
                         <User size={18} className={`absolute left-4 top-1/2 -translate-y-1/2 ${errorState?.type === 'field' ? 'text-red-400' : 'text-[#94A3B8]'}`} />
                         <input
                           type="email"
-                          placeholder="siswa@gmail.com"
+                          placeholder="emailanda@gmail.com"
                           value={email}
                           onChange={(e) => {
                             setEmail(e.target.value.toLowerCase().replace(/\s+/g, ''));
