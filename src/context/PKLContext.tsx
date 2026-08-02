@@ -31,6 +31,7 @@ import {
   getAllUsersAction,
   assignGuruToClassAction,
   assignMentorToCompanyAction,
+  linkExternalMentorAction,
   updateUserByAdminAction,
   getPendingUsersAction,
   verifyUserAction,
@@ -145,6 +146,7 @@ interface PKLContextProps {
   deleteCompany: (id: string) => Promise<{ success: boolean; error?: string }>;
   assignGuruToClass: (userId: string, classIds: string[]) => Promise<{ success: boolean; error?: string }>;
   assignMentorToCompany: (userId: string, companyIds: string[]) => Promise<{ success: boolean; error?: string }>;
+  linkExternalMentor: (identifier: string, companyId: string) => Promise<{ success: boolean; error?: string; message?: string }>;
   assignSiswa: (
     userId: string,
     classId: string | null,
@@ -603,6 +605,21 @@ export const PKLProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     }
   };
 
+  const linkExternalMentor = async (identifier: string, companyId: string) => {
+    setLoading(true);
+    try {
+      const res = await linkExternalMentorAction(identifier, companyId);
+      if (res.success) {
+        await fetchAdminData();
+      }
+      return res;
+    } catch {
+      return { success: false, error: 'Terjadi kesalahan sistem' };
+    } finally {
+      setLoading(false);
+    }
+  };
+
   const assignSiswa = async (
     userId: string,
     classId: string | null,
@@ -977,6 +994,7 @@ export const PKLProvider: React.FC<{ children: React.ReactNode }> = ({ children 
         deleteCompany,
         assignGuruToClass,
         assignMentorToCompany,
+        linkExternalMentor,
         assignSiswa,
         manageCollaborators,
         addCard,

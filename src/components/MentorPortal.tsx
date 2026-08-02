@@ -229,9 +229,12 @@ export const MentorPortal: React.FC<MentorPortalProps> = ({ onPantau }) => {
           </h3>
 
           {studentsList.length === 0 ? (
-            <div className="flex flex-col items-center justify-center py-12 text-center text-[#64748B] dark:text-gray-300">
-              <Users size={32} className="mb-2 text-gray-300 animate-bounce" />
-              <p className="text-xs">{t('noStudentMentor')}</p>
+            <div className="flex flex-col items-center justify-center py-12 text-center text-[#64748B] dark:text-gray-300 px-4">
+              <Users size={36} className="mb-3 text-slate-300 dark:text-gray-600" />
+              <p className="text-sm font-bold text-slate-700 dark:text-gray-200 mb-1">Belum Ada Siswa / Mahasiswa Ditugaskan</p>
+              <p className="text-xs text-slate-500 dark:text-gray-400 max-w-md leading-relaxed">
+                Berikan ID Karyawan / NIK Anda (<span className="font-bold text-primary">{currentUser?.employeeId || currentUser?.email || '-'}</span>) kepada Admin Sekolah atau Admin Kampus untuk menghubungkan data siswa/mahasiswa bimbingan ke akun Anda.
+              </p>
             </div>
           ) : (
             <div className="overflow-x-auto w-full">
@@ -250,7 +253,7 @@ export const MentorPortal: React.FC<MentorPortalProps> = ({ onPantau }) => {
                     <tr key={student.id} className="hover:bg-[#F8FAFC] dark:bg-gray-900 transition duration-150">
                       <td className="py-3 px-2 font-semibold">
                         <div>{student.name}</div>
-                        {student.nisn && <div className="text-[10px] text-slate-400 font-normal">NIS/NISN: {student.nisn}</div>}
+                        {student.nisn && <div className="text-[10px] text-slate-400 font-normal">NISN: {student.nisn}</div>}
                       </td>
                       <td className="py-3 px-2">{student.className || '-'}</td>
                       <td className="py-3 px-2">

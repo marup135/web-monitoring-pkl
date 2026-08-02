@@ -67,9 +67,9 @@ export async function registerAction(
 
     let status = 'PENDING';
 
-    if (PARTICIPANT_ROLES.includes(role)) {
+    if (PARTICIPANT_ROLES.includes(role) || role === 'EXTERNAL_MENTOR') {
       status = 'ACTIVE';
-      if (!className || !className.trim()) {
+      if (PARTICIPANT_ROLES.includes(role) && (!className || !className.trim())) {
         return { success: false, error: 'Kelas / Program Studi wajib diisi.' };
       }
     } else if (role === 'INTERNAL_MENTOR') {
@@ -114,20 +114,29 @@ export async function registerAction(
       return { success: false, error: 'Username sudah digunakan.' };
     }
     
-    if (!institutionCode || !institutionCode.trim()) {
-      return { success: false, error: 'Kode Institusi wajib diisi.' };
-    }
+    let resolvedInstitutionId = null;
+    let resolvedSchoolName = null;
 
-    const inst = await prisma.institution.findUnique({
-      where: { code: institutionCode.trim() }
-    });
+    if (role !== 'EXTERNAL_MENTOR' || (institutionCode && institutionCode.trim())) {
+      if (role !== 'EXTERNAL_MENTOR' && (!institutionCode || !institutionCode.trim())) {
+        return { success: false, error: 'Kode Institusi wajib diisi.' };
+      }
 
-    if (!inst) {
-      return { success: false, error: 'Kode Institusi tidak ditemukan atau tidak valid.' };
+      if (institutionCode && institutionCode.trim()) {
+        const inst = await prisma.institution.findUnique({
+          where: { code: institutionCode.trim() }
+        });
+
+        if (!inst && role !== 'EXTERNAL_MENTOR') {
+          return { success: false, error: 'Kode Institusi tidak ditemukan atau tidak valid.' };
+        }
+        
+        if (inst) {
+          resolvedInstitutionId = inst.id;
+          resolvedSchoolName = inst.name;
+        }
+      }
     }
-    
-    const resolvedInstitutionId = inst.id;
-    const resolvedSchoolName = inst.name;
 
     const hashedPassword = hashPassword(password);
 
@@ -145,9 +154,13 @@ export async function registerAction(
     let finalCompany = null;
     if ((PARTICIPANT_ROLES.includes(role) || role === 'EXTERNAL_MENTOR') && companyName) {
       finalCompany = companyName.trim();
-      let dbCompany = await prisma.perusahaan.findFirst({ where: { name: finalCompany, institutionId: resolvedInstitutionId } });
+      let dbCompany = await prisma.perusahaan.findFirst({ 
+        where: { name: { equals: finalCompany, mode: 'insensitive' } } 
+      });
       if (!dbCompany) {
-        dbCompany = await prisma.perusahaan.create({ data: { name: finalCompany, institutionId: resolvedInstitutionId } });
+        dbCompany = await prisma.perusahaan.create({ 
+          data: { name: finalCompany, institutionId: resolvedInstitutionId } 
+        });
       }
       resolvedCompanyId = dbCompany.id;
     }
@@ -164,7 +177,7 @@ export async function registerAction(
         nisn: PARTICIPANT_ROLES.includes(role) ? (nisn?.trim() || null) : null,
         nip: role === 'INTERNAL_MENTOR' ? (nip?.trim() || null) : null,
         jabatan: role === 'EXTERNAL_MENTOR' ? (jabatan?.trim() || null) : null,
-        school: resolvedSchoolName,
+        school: resolvedSchoolName || undefined,
         status,
         companyName: finalCompany,
         jobTitle: role === 'EXTERNAL_MENTOR' ? (jabatan?.trim() || null) : null,
@@ -172,9 +185,7 @@ export async function registerAction(
         companyEmail: role === 'EXTERNAL_MENTOR' ? (companyEmail?.trim() || null) : null,
         classId: resolvedClassId,
         companyId: PARTICIPANT_ROLES.includes(role) ? resolvedCompanyId : null,
-        companies: role === 'EXTERNAL_MENTOR' && resolvedCompanyId ? {
-          connect: { id: resolvedCompanyId }
-        } : undefined,
+        companies: undefined,
       }
     });
 

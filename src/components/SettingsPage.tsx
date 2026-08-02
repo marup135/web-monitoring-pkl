@@ -10,6 +10,7 @@ import { changePasswordAction, forgotPasswordAction } from '../app/actions/auth'
 import { updateProfileInfoAction, uploadProfileImageAction } from '../app/actions/profile';
 import { useLanguage } from '../context/LanguageContext';
 import { PARTICIPANT_ROLES } from '../lib/constants';
+import { getRoleLabel, getIdLabel } from '../lib/role-mapper';
 import { Language } from '../i18n/translations';
 import dynamic from 'next/dynamic';
 const FaceRegistrationModal = dynamic(() => import('./FaceRegistrationModal').then(mod => mod.FaceRegistrationModal), { ssr: false });
@@ -320,7 +321,7 @@ export const SettingsPage: React.FC<SettingsPageProps> = ({
               </div>
               <div className="text-center">
                 <span className="inline-block px-3 py-1 bg-blue-50 dark:bg-blue-500/10 text-blue-600 dark:text-blue-400 font-bold text-[10px] uppercase tracking-wider rounded-lg border border-blue-100 dark:border-blue-500/20">
-                  {currentUser?.role?.replace('_', ' ')}
+                  {getRoleLabel(currentUser?.role || '', (currentUser as any)?.institution?.type)}
                 </span>
               </div>
               <button onClick={() => setIsEditingProfile(true)} className="mt-2 px-5 py-2.5 w-full bg-primary hover:bg-primary-hover text-white rounded-xl text-sm font-bold shadow-sm transition-all duration-200">
@@ -372,7 +373,7 @@ export const SettingsPage: React.FC<SettingsPageProps> = ({
                     </div>
                   </div>
                   <div>
-                    <label className="block text-xs font-bold text-slate-500 dark:text-gray-400 uppercase tracking-wide mb-2">NIS / NISN</label>
+                    <label className="block text-xs font-bold text-slate-500 dark:text-gray-400 uppercase tracking-wide mb-2">{getIdLabel((currentUser as any)?.institution?.type)}</label>
                     <div className="flex items-center gap-3 px-4 py-3 rounded-xl border border-transparent bg-slate-50 dark:bg-gray-800/50">
                       <Hash size={18} className="text-slate-400" />
                       <span className="font-semibold">{state?.nisn || currentUser?.nisn || '-'}</span>

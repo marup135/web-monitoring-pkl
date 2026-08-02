@@ -121,7 +121,7 @@ export const GuruPortal: React.FC<GuruPortalProps> = ({ onPantau }) => {
       return {
         'No': index + 1,
         'Nama Siswa': student.name,
-        'NIS/NISN': student.nisn || '-',
+        'NISN': student.nisn || '-',
         'Tempat PKL': student.company || '-',
         'Penyelesaian Jurnal (%)': student.completionPercent || 0,
         'Status Kehadiran Hari Ini': status,
@@ -356,7 +356,7 @@ export const GuruPortal: React.FC<GuruPortalProps> = ({ onPantau }) => {
                     <tr key={student.id} className="hover:bg-[#F8FAFC] dark:bg-gray-900 transition duration-150">
                       <td className="py-3 px-2 font-semibold">
                         <div>{student.name}</div>
-                        {student.nisn && <div className="text-[10px] text-slate-400 font-normal">NIS/NISN: {student.nisn}</div>}
+                        {student.nisn && <div className="text-[10px] text-slate-400 font-normal">NISN: {student.nisn}</div>}
                       </td>
                       <td className="py-3 px-2">{student.company}</td>
                       <td className="py-3 px-2">

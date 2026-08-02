@@ -263,7 +263,7 @@ export const AuthPage: React.FC<AuthPageProps> = ({ initialView = 'login' }) => 
         }
       }
 
-      if (!institutionCode.trim()) {
+      if (role !== 'EXTERNAL_MENTOR' && !institutionCode.trim()) {
         setError('Kode Institusi wajib diisi.', 'field');
         return;
       }
@@ -337,6 +337,12 @@ export const AuthPage: React.FC<AuthPageProps> = ({ initialView = 'login' }) => 
           setCompanyEmail('');
           setNisn('');
           setNip('');
+        } else if (res.success && !res.pending) {
+          clearError();
+          if (typeof window !== 'undefined') {
+            sessionStorage.setItem('login_success', 'true');
+            window.location.reload();
+          }
         } else if (!res.success) {
           recaptchaRef.current?.reset();
           setCaptchaToken(null);
@@ -697,7 +703,7 @@ export const AuthPage: React.FC<AuthPageProps> = ({ initialView = 'login' }) => 
 
                             <div className="flex flex-col gap-1.5">
                               <label className="text-xs text-[#64748B] dark:text-gray-300 font-bold">
-                                NIS / NISN / NIM <span className="text-red-500">*</span>
+                                NISN / NIM <span className="text-red-500">*</span>
                               </label>
                               <div className="relative">
                                 <input
@@ -813,15 +819,15 @@ export const AuthPage: React.FC<AuthPageProps> = ({ initialView = 'login' }) => 
                           </>
                         )}
 
-                        {/* Institution Code (For all roles) */}
+                        {/* Institution Code */}
                         <div className="flex flex-col gap-1.5">
                           <label className="text-xs text-[#64748B] dark:text-gray-300 font-bold">
-                            Kode Institusi <span className="text-red-500">*</span>
+                            Kode Institusi {role !== 'EXTERNAL_MENTOR' ? <span className="text-red-500">*</span> : <span className="text-slate-400 font-normal">(Opsional untuk Mentor Perusahaan)</span>}
                           </label>
                           <div className="relative">
                             <input
                               type="text"
-                              placeholder="KODE-INSTITUSI"
+                              placeholder={role === 'EXTERNAL_MENTOR' ? "KODE-INSTITUSI (Opsional)" : "KODE-INSTITUSI"}
                               value={institutionCode}
                               onChange={(e) => setInstitutionCode(e.target.value)}
                               className={inputClass(institutionCodeHasError)}
@@ -833,7 +839,9 @@ export const AuthPage: React.FC<AuthPageProps> = ({ initialView = 'login' }) => 
                               {errorState?.message}
                             </p>
                           ) : (
-                            <p className="text-[10px] text-slate-500 mt-0.5">Wajib diisi dengan kode yang diberikan oleh Admin Sekolah Siswa.</p>
+                            <p className="text-[10px] text-slate-500 mt-0.5">
+                              {role === 'EXTERNAL_MENTOR' ? 'Boleh dikosongkan agar Anda dapat membimbing siswa dan mahasiswa dari berbagai sekolah/kampus sekaligus.' : 'Wajib diisi dengan kode yang diberikan oleh Admin Sekolah/Kampus Anda.'}
+                            </p>
                           )}
                         </div>
                       </div>
@@ -1070,40 +1078,6 @@ export const AuthPage: React.FC<AuthPageProps> = ({ initialView = 'login' }) => 
                 </div>
               )}
 
-              {/* Demo Credentials Panel */}
-              {isLogin && (
-                <div className="mt-8 border-t-2 border-slate-100 dark:border-gray-800 pt-6">
-                  <h4 className="text-[11px] font-black text-primary mb-3 flex items-center gap-1.5 uppercase tracking-widest">
-                    <ShieldCheck size={14} />
-                    Akun Demo (Simulasi)
-                  </h4>
-                  <ul className="flex flex-col gap-2 bg-slate-50 dark:bg-gray-900/50 p-4 rounded-2xl border border-slate-100 dark:border-gray-800 font-mono text-xs text-slate-500 dark:text-gray-400">
-                    {[
-                      { role: 'Siswa', user: 'siswa', pass: 'pppppp' },
-                      { role: 'Pem. Eksternal', user: 'manajer', pass: 'pppppp' },
-                      { role: 'Pem. Internal', user: 'ibuguru', pass: 'pppppp' },
-                      { role: 'Admin', user: 'adminnebo', pass: 'pppppp' },
-                      { role: 'superadmin', user: 'superadmin', pass: 'pppppp' },
-                    ].map((acc) => (
-                      <li key={acc.user} className="flex items-center gap-2">
-                        <span className="text-slate-400 font-bold min-w-[100px]">{acc.role}</span>
-                        <span
-                          className="cursor-pointer hover:text-primary transition-colors text-slate-700 dark:text-gray-300 font-semibold bg-white dark:bg-gray-800 px-2 py-0.5 rounded shadow-sm"
-                          onClick={() => {
-                            setUsername(acc.user);
-                            setPassword(acc.pass);
-                          }}
-                        >
-                          {acc.user}
-                        </span>
-                      </li>
-                    ))}
-                  </ul>
-                  <p className="text-[10px] text-slate-400 mt-3 text-center font-medium">
-                    Klik username untuk mengisi otomatis
-                  </p>
-                </div>
-              )}
             </>
           )}
         </div>

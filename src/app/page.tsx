@@ -4,6 +4,7 @@
 import React, { useState, useEffect } from 'react';
 import { PKLProvider, usePKL } from '../context/PKLContext';
 import { PARTICIPANT_ROLES } from '../lib/constants';
+import { getRoleLabel, getParticipantLabel, getIdLabel } from '../lib/role-mapper';
 import { KanbanBoard } from '../components/KanbanBoard';
 import { LogbookTable } from '../components/LogbookTable';
 import { DashboardStats } from '../components/DashboardStats';
@@ -353,7 +354,7 @@ function DashboardContent() {
               <div className="flex items-center gap-2">
                 <Building2 size={16} className="text-primary" />
                 <span className="text-xs font-semibold text-[#0F172A] dark:text-gray-200">
-                  Siswa: <span className="text-primary font-bold">{state.studentName}</span> {state.nisn ? `(NIS/NISN: ${state.nisn})` : ''} - {state.companyName}
+                  {getParticipantLabel((currentUser as any)?.institution?.type)}: <span className="text-primary font-bold">{state.studentName}</span> {state.nisn ? `(${getIdLabel((currentUser as any)?.institution?.type)}: ${state.nisn})` : ''} - {state.companyName}
                 </span>
               </div>
 
@@ -396,11 +397,8 @@ function DashboardContent() {
                           <div className="overflow-hidden flex flex-col justify-center">
                             <h4 className="font-extrabold text-base text-slate-800 dark:text-gray-100 truncate">{currentUser?.name}</h4>
 
-                            {(currentUser?.role === 'siswa' && (currentUser?.nisn || (currentUser as any)?.nis)) && (
-                              <p className="text-xs font-semibold text-slate-500 dark:text-gray-400 truncate mt-0.5">NIS/NISN: {currentUser.nisn || (currentUser as any).nis}</p>
-                            )}
-                            {(currentUser?.role === 'mahasiswa' && (currentUser as any)?.nim) && (
-                              <p className="text-xs font-semibold text-slate-500 dark:text-gray-400 truncate mt-0.5">NIM: {(currentUser as any).nim}</p>
+                            {((PARTICIPANT_ROLES.includes(currentUser?.role || '')) && (currentUser?.nisn || (currentUser as any)?.nis)) && (
+                              <p className="text-xs font-semibold text-slate-500 dark:text-gray-400 truncate mt-0.5">{getIdLabel((currentUser as any)?.institution?.type)}: {currentUser?.nisn || (currentUser as any)?.nis}</p>
                             )}
                             {(currentUser?.role?.includes('pembimbing') && (currentUser as any)?.nip) && (
                               <p className="text-xs font-semibold text-slate-500 dark:text-gray-400 truncate mt-0.5">NIP: {(currentUser as any).nip}</p>
@@ -408,7 +406,7 @@ function DashboardContent() {
 
                             <div className="mt-1.5">
                               <span className="inline-block px-2.5 py-0.5 bg-blue-50/80 dark:bg-blue-500/10 text-blue-600 dark:text-blue-400 font-bold text-[10px] uppercase tracking-wider rounded-md border border-blue-100/50 dark:border-blue-500/20">
-                                {currentUser?.role?.replace('_', ' ')}
+                                {getRoleLabel(currentUser?.role || '', (currentUser as any)?.institution?.type)}
                               </span>
                             </div>
                           </div>
@@ -587,11 +585,8 @@ function DashboardContent() {
                   <div className="overflow-hidden flex flex-col justify-center">
                     <h3 className="font-extrabold text-lg text-slate-800 dark:text-gray-100 truncate">{currentUser?.name}</h3>
 
-                    {(currentUser?.role === 'siswa' && (currentUser?.nisn || (currentUser as any)?.nis)) && (
-                      <p className="text-sm font-semibold text-slate-500 dark:text-gray-400 truncate mt-0.5">NIS/NISN: {currentUser.nisn || (currentUser as any).nis}</p>
-                    )}
-                    {(currentUser?.role === 'mahasiswa' && (currentUser as any)?.nim) && (
-                      <p className="text-sm font-semibold text-slate-500 dark:text-gray-400 truncate mt-0.5">NIM: {(currentUser as any).nim}</p>
+                    {((PARTICIPANT_ROLES.includes(currentUser?.role || '')) && (currentUser?.nisn || (currentUser as any)?.nis)) && (
+                      <p className="text-sm font-semibold text-slate-500 dark:text-gray-400 truncate mt-0.5">{getIdLabel((currentUser as any)?.institution?.type)}: {currentUser?.nisn || (currentUser as any)?.nis}</p>
                     )}
                     {(currentUser?.role?.includes('pembimbing') && (currentUser as any)?.nip) && (
                       <p className="text-sm font-semibold text-slate-500 dark:text-gray-400 truncate mt-0.5">NIP: {(currentUser as any).nip}</p>
@@ -599,7 +594,7 @@ function DashboardContent() {
 
                     <div className="mt-2">
                       <span className="inline-block px-3 py-1 bg-blue-50 dark:bg-blue-500/10 text-blue-600 dark:text-blue-400 font-bold text-xs uppercase tracking-wider rounded-lg border border-blue-100/50 dark:border-blue-500/20">
-                        {currentUser?.role?.replace('_', ' ')}
+                        {getRoleLabel(currentUser?.role || '', (currentUser as any)?.institution?.type)}
                       </span>
                     </div>
                   </div>

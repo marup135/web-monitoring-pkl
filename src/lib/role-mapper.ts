@@ -2,16 +2,15 @@ export type InstitutionType = 'SCHOOL' | 'UNIVERSITY' | 'TRAINING_CENTER' | 'COM
 
 export function getParticipantLabel(type: InstitutionType | undefined | null): string {
   switch (type) {
-    case 'SCHOOL':
-      return 'Siswa';
     case 'UNIVERSITY':
       return 'Mahasiswa';
     case 'TRAINING_CENTER':
       return 'Peserta Pelatihan';
     case 'COMPANY':
       return 'Peserta Magang';
+    case 'SCHOOL':
     default:
-      return 'Partisipan';
+      return 'Siswa';
   }
 }
 
@@ -45,6 +44,21 @@ export function getExternalMentorLabel(type: InstitutionType | undefined | null)
   }
 }
 
+export function getIdLabel(type: InstitutionType | undefined | null): string {
+  switch (type) {
+    case 'UNIVERSITY':
+      return 'NIM';
+    case 'SCHOOL':
+      return 'NISN';
+    case 'TRAINING_CENTER':
+      return 'ID Peserta';
+    case 'COMPANY':
+      return 'ID Magang';
+    default:
+      return 'NISN';
+  }
+}
+
 import { PARTICIPANT_ROLES } from './constants';
 
 export function getRoleLabel(role: string, type?: InstitutionType | null): string {
@@ -56,3 +70,4 @@ export function getRoleLabel(role: string, type?: InstitutionType | null): strin
   if (!role) return '';
   return role.replace('_', ' ');
 }
+

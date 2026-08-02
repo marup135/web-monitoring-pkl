@@ -1765,7 +1765,19 @@ export async function getAllUsersAction() {
 
     const whereClause: any = {};
     if (currentUser.role !== 'SUPER_ADMIN' && currentUser.institutionId) {
-      whereClause.institutionId = currentUser.institutionId;
+      const instCompanies = await prisma.perusahaan.findMany({
+        where: { institutionId: currentUser.institutionId },
+        select: { id: true }
+      });
+      const companyIds = instCompanies.map(c => c.id);
+
+      whereClause.OR = [
+        { institutionId: currentUser.institutionId },
+        { 
+          role: 'EXTERNAL_MENTOR',
+          companies: { some: { id: { in: companyIds } } }
+        }
+      ];
     }
 
     return prisma.user.findMany({
@@ -1858,6 +1870,61 @@ export async function assignMentorToCompanyAction(userId: string, companyIds: st
   } catch (error) {
     console.error('Failed to assign mentor to company', error);
     return { success: false, error: 'Gagal memperbarui hubungan Mentor ↔ Perusahaan.' };
+  }
+}
+
+export async function linkExternalMentorAction(identifier: string, companyId: string) {
+  try {
+    const currentUser = await getAuthenticatedUser();
+    if (!currentUser || (currentUser.role !== 'SUPER_ADMIN' && currentUser.role !== 'INSTITUTION_ADMIN')) {
+      return { success: false, error: 'Akses ditolak: Hanya Admin yang dapat menambahkan mentor.' };
+    }
+
+    if (!identifier || !identifier.trim()) {
+      return { success: false, error: 'ID Karyawan / NIK / Email / Username wajib diisi.' };
+    }
+
+    if (!companyId) {
+      return { success: false, error: 'Pilih perusahaan terlebih dahulu.' };
+    }
+
+    const cleanIdentifier = identifier.trim();
+
+    const mentor = await prisma.user.findFirst({
+      where: {
+        role: 'EXTERNAL_MENTOR',
+        OR: [
+          { employeeId: cleanIdentifier },
+          { nip: cleanIdentifier },
+          { email: cleanIdentifier.toLowerCase() },
+          { username: cleanIdentifier.toLowerCase() }
+        ]
+      }
+    });
+
+    if (!mentor) {
+      return { 
+        success: false, 
+        error: `Pembimbing Eksternal dengan NIK / ID Karyawan / Email "${cleanIdentifier}" tidak ditemukan. Pastikan Pembimbing telah mendaftar akun terlebih dahulu.` 
+      };
+    }
+
+    await prisma.user.update({
+      where: { id: mentor.id },
+      data: {
+        companies: {
+          connect: { id: companyId }
+        }
+      }
+    });
+
+    return { 
+      success: true, 
+      message: `Berhasil menambahkan Pembimbing Eksternal (${mentor.name}) ke perusahaan.` 
+    };
+  } catch (error: any) {
+    console.error('Failed to link external mentor:', error);
+    return { success: false, error: error.message || 'Gagal menambahkan pembimbing eksternal.' };
   }
 }
 
@@ -2391,7 +2458,7 @@ export async function getMonthlyReportDataAction(classId: string) {
       return {
         'No': index + 1,
         'Nama Siswa': student.name,
-        'NIS/NISN': student.nisn || '-',
+        'NISN': student.nisn || '-',
         'Tempat PKL': student.company || '-',
         'Total Hadir': totalHadir,
         'Total Alpha': totalAlpha,

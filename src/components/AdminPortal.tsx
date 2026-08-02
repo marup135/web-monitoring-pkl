@@ -8,7 +8,7 @@ import { PARTICIPANT_ROLES } from '../lib/constants';
 import { getDashboardMetricsAction } from '@/app/actions/pkl';
 import { 
   Building2, Users, FolderKanban, Plus, Edit2, Trash2, CheckSquare, 
-  Square, ShieldAlert, Award, Calendar, FileSpreadsheet, RefreshCw
+  Square, ShieldAlert, Award, Calendar, FileSpreadsheet, RefreshCw, UserPlus, Search, X
 } from 'lucide-react';
 
 export const AdminPortal: React.FC = () => {
@@ -27,6 +27,7 @@ export const AdminPortal: React.FC = () => {
     deleteCompany,
     assignGuruToClass,
     assignMentorToCompany,
+    linkExternalMentor,
     assignSiswa,
     resetState,
     loading,
@@ -35,6 +36,42 @@ export const AdminPortal: React.FC = () => {
   } = usePKL();
 
   const [activeTab, setActiveTab] = useState<'overview' | 'kelas' | 'perusahaan' | 'users' | 'verifikasi'>('overview');
+
+  // Input states for Add External Mentor
+  const [isAddMentorOpen, setIsAddMentorOpen] = useState(false);
+  const [mentorIdentifierInput, setMentorIdentifierInput] = useState('');
+  const [selectedCompanyIdForMentor, setSelectedCompanyIdForMentor] = useState('');
+  const [mentorLinkMessage, setMentorLinkMessage] = useState<{ type: 'success' | 'error'; text: string } | null>(null);
+  const [isLinkingMentor, setIsLinkingMentor] = useState(false);
+
+  const handleLinkMentorSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!mentorIdentifierInput.trim()) {
+      setMentorLinkMessage({ type: 'error', text: 'Masukkan ID Karyawan / NIK / Email / Username.' });
+      return;
+    }
+    if (!selectedCompanyIdForMentor) {
+      setMentorLinkMessage({ type: 'error', text: 'Pilih perusahaan terlebih dahulu.' });
+      return;
+    }
+
+    setIsLinkingMentor(true);
+    setMentorLinkMessage(null);
+
+    const res = await linkExternalMentor(mentorIdentifierInput.trim(), selectedCompanyIdForMentor);
+    setIsLinkingMentor(false);
+
+    if (res.success) {
+      setMentorLinkMessage({ type: 'success', text: res.message || 'Berhasil menambahkan mentor!' });
+      setMentorIdentifierInput('');
+      setTimeout(() => {
+        setIsAddMentorOpen(false);
+        setMentorLinkMessage(null);
+      }, 1500);
+    } else {
+      setMentorLinkMessage({ type: 'error', text: res.error || 'Gagal menambahkan mentor.' });
+    }
+  };
 
   // Input states
   const [newClassName, setNewClassName] = useState('');
@@ -690,9 +727,29 @@ export const AdminPortal: React.FC = () => {
 
               {/* Mentor Section */}
               <div className="border border-[#E2E8F0] dark:border-gray-700 rounded-xl p-4 bg-slate-50 dark:bg-gray-800/40">
-                <h4 className="font-bold text-emerald-600 text-xs uppercase mb-3 flex items-center gap-1.5">
-                  Pembimbing Eksternal (Mentor ↔ Perusahaan)
-                </h4>
+                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-4">
+                  <div>
+                    <h4 className="font-bold text-emerald-600 text-xs uppercase flex items-center gap-1.5">
+                      Pembimbing Eksternal Terhubung (Mentor ↔ Perusahaan)
+                    </h4>
+                    <p className="text-[10px] text-slate-500 dark:text-gray-400">
+                      Hanya menampilkan Pembimbing Eksternal yang telah ditambahkan/terhubung ke perusahaan Anda.
+                    </p>
+                  </div>
+                  <button
+                    onClick={() => {
+                      setIsAddMentorOpen(true);
+                      if (companiesList.length > 0 && !selectedCompanyIdForMentor) {
+                        setSelectedCompanyIdForMentor(companiesList[0].id);
+                      }
+                    }}
+                    className="px-3 py-2 bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs rounded-xl transition shadow-sm cursor-pointer flex items-center justify-center gap-1.5 shrink-0"
+                  >
+                    <UserPlus size={14} />
+                    + Tambah Pembimbing Eksternal
+                  </button>
+                </div>
+
                 <div className="flex flex-col gap-3">
                   {allUsersList.filter(u => u.role === 'EXTERNAL_MENTOR').length === 0 ? (
                     <p className="text-xs text-slate-500 dark:text-gray-2000 italic py-2">{t('noExternalAdvisors')}</p>
@@ -837,6 +894,88 @@ export const AdminPortal: React.FC = () => {
           </div>
         )}
       </div>
+
+      {/* Modal Add External Mentor */}
+      {isAddMentorOpen && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4 backdrop-blur-sm">
+          <div className="bg-white dark:bg-[#1E293B] rounded-2xl p-6 max-w-md w-full shadow-2xl border border-slate-100 dark:border-gray-800 animate-in fade-in zoom-in duration-200">
+            <div className="flex items-center justify-between mb-4 pb-3 border-b border-slate-100 dark:border-gray-800">
+              <h3 className="font-extrabold text-base text-slate-800 dark:text-gray-100 flex items-center gap-2">
+                <UserPlus size={18} className="text-emerald-500" />
+                Tambah Pembimbing Eksternal
+              </h3>
+              <button
+                onClick={() => { setIsAddMentorOpen(false); setMentorLinkMessage(null); }}
+                className="p-1.5 text-slate-400 hover:text-slate-600 dark:hover:text-gray-200 rounded-lg transition cursor-pointer"
+              >
+                <X size={18} />
+              </button>
+            </div>
+
+            <form onSubmit={handleLinkMentorSubmit} className="flex flex-col gap-4">
+              <div>
+                <label className="block text-xs font-bold text-slate-600 dark:text-gray-300 uppercase tracking-wide mb-1.5">
+                  Perusahaan Tempat Penugasan <span className="text-red-500">*</span>
+                </label>
+                <select
+                  value={selectedCompanyIdForMentor}
+                  onChange={(e) => setSelectedCompanyIdForMentor(e.target.value)}
+                  className="w-full bg-slate-50 dark:bg-gray-800 border border-slate-200 dark:border-gray-700 rounded-xl px-3 py-2.5 text-xs font-semibold text-slate-800 dark:text-gray-200 focus:outline-none focus:ring-2 focus:ring-emerald-500"
+                >
+                  <option value="">-- Pilih Perusahaan --</option>
+                  {companiesList.map(co => (
+                    <option key={co.id} value={co.id}>{co.name}</option>
+                  ))}
+                </select>
+              </div>
+
+              <div>
+                <label className="block text-xs font-bold text-slate-600 dark:text-gray-300 uppercase tracking-wide mb-1.5">
+                  NIK / NIP / ID Karyawan / Email Mentor <span className="text-red-500">*</span>
+                </label>
+                <div className="relative">
+                  <Search size={16} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400" />
+                  <input
+                    type="text"
+                    placeholder="Contoh: 19800101... atau mentor@pt.com"
+                    value={mentorIdentifierInput}
+                    onChange={(e) => setMentorIdentifierInput(e.target.value)}
+                    className="w-full bg-slate-50 dark:bg-gray-800 border border-slate-200 dark:border-gray-700 rounded-xl pl-10 pr-3 py-2.5 text-xs font-semibold text-slate-800 dark:text-gray-200 focus:outline-none focus:ring-2 focus:ring-emerald-500"
+                  />
+                </div>
+                <p className="text-[10px] text-slate-400 mt-1">
+                  Masukkan ID Karyawan/NIK atau Email yang didaftarkan oleh Pembimbing Eksternal tersebut.
+                </p>
+              </div>
+
+              {mentorLinkMessage && (
+                <div className={`p-3 rounded-xl text-xs font-semibold flex items-center gap-2 ${
+                  mentorLinkMessage.type === 'success' ? 'bg-emerald-50 text-emerald-700 border border-emerald-200' : 'bg-red-50 text-red-700 border border-red-200'
+                }`}>
+                  {mentorLinkMessage.text}
+                </div>
+              )}
+
+              <div className="flex items-center justify-end gap-2 mt-2 pt-3 border-t border-slate-100 dark:border-gray-800">
+                <button
+                  type="button"
+                  onClick={() => { setIsAddMentorOpen(false); setMentorLinkMessage(null); }}
+                  className="px-4 py-2 text-xs font-bold text-slate-500 hover:bg-slate-100 dark:hover:bg-gray-800 rounded-xl transition cursor-pointer"
+                >
+                  Batal
+                </button>
+                <button
+                  type="submit"
+                  disabled={isLinkingMentor}
+                  className="px-4 py-2 bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-bold rounded-xl transition shadow-sm disabled:opacity-50 flex items-center gap-2 cursor-pointer"
+                >
+                  {isLinkingMentor ? 'Menghubungkan...' : 'Cari & Hubungkan'}
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
     </div>
   );
 };

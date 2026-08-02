@@ -668,7 +668,7 @@ export const LogbookTable: React.FC<LogbookTableProps> = ({ onOpenCard, onEditCa
             <span className="font-bold mt-1">{t("studentSignature")}</span>
             <div className="h-20" />
             <span className="font-bold underline">{formatTitleCase(state.studentName) !== '-' ? formatTitleCase(state.studentName) : '____________________'}</span>
-            <span className="mt-1">{state.nisn ? `NIS/NISN: ${state.nisn}` : 'NIS/NISN: ____________________'}</span>
+            <span className="mt-1">{state.nisn ? `NISN: ${state.nisn}` : 'NISN: ____________________'}</span>
           </div>
         </div>
 
