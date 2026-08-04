@@ -325,7 +325,7 @@ export const PKLProvider: React.FC<{ children: React.ReactNode }> = ({ children 
             setSelectedClassIdState(initialClassId);
           }
           if ((user.role === 'pembimbing_eksternal' || user.role === 'EXTERNAL_MENTOR') && user.companies && user.companies.length > 0) {
-            initialCompanyId = user.companies[0].id;
+            initialCompanyId = null;
             setSelectedCompanyIdState(initialCompanyId);
           }
           
@@ -359,9 +359,11 @@ export const PKLProvider: React.FC<{ children: React.ReactNode }> = ({ children 
           initialClassId = res.user.classes[0].id;
           setSelectedClassIdState(initialClassId);
         }
-        if (res.user.role === 'pembimbing_eksternal' && res.user.companies && res.user.companies.length > 0) {
-          initialCompanyId = res.user.companies[0].id;
-          setSelectedCompanyIdState(initialCompanyId);
+        if (res.user.role === 'pembimbing_eksternal' || res.user.role === 'EXTERNAL_MENTOR') {
+          if (res.user.companies && res.user.companies.length > 0) {
+            initialCompanyId = null;
+            setSelectedCompanyIdState(initialCompanyId);
+          }
         }
 
         await fetchState(res.user, null, initialClassId, initialCompanyId);
@@ -397,9 +399,11 @@ export const PKLProvider: React.FC<{ children: React.ReactNode }> = ({ children 
           initialClassId = regUser.classes[0].id;
           setSelectedClassIdState(initialClassId);
         }
-        if (regUser.role === 'pembimbing_eksternal' && regUser.companies && regUser.companies.length > 0) {
-          initialCompanyId = regUser.companies[0].id;
-          setSelectedCompanyIdState(initialCompanyId);
+        if (regUser.role === 'pembimbing_eksternal' || regUser.role === 'EXTERNAL_MENTOR') {
+          if (regUser.companies && regUser.companies.length > 0) {
+            initialCompanyId = null;
+            setSelectedCompanyIdState(initialCompanyId);
+          }
         }
 
         await fetchState(res.user, null, initialClassId, initialCompanyId);

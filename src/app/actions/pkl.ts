@@ -1037,11 +1037,20 @@ export async function addAttachmentAction(cardId: string, name: string, url: str
       return { success: false, error: 'Sesi tidak sah.' };
     }
 
-    const card = await prisma.card.findUnique({ where: { id: cardId } });
+    const card = await prisma.card.findUnique({ 
+      where: { id: cardId },
+      include: { collaborators: true }
+    });
     if (!card) return { success: false, error: 'Kegiatan tidak ditemukan.' };
 
-    if ((!PARTICIPANT_ROLES.includes(currentUser.role)) || card.studentId !== currentUser.id) {
-      return { success: false, error: 'Akses ditolak: Hanya pemilik kegiatan yang dapat mengunggah lampiran.' };
+    const isOwner = card.studentId === currentUser.id;
+    const isCollaborator = card.collaborators?.some(c => c.id === currentUser.id);
+    const editorIds: string[] = card.editorIds ? JSON.parse(card.editorIds) : [];
+    const isEditor = isCollaborator && (card.collaboratorsCanEdit || editorIds.includes(currentUser.id));
+    const isAdmin = currentUser.role === 'SUPER_ADMIN' || currentUser.role === 'INSTITUTION_ADMIN';
+
+    if (!isOwner && !isEditor && !isAdmin) {
+      return { success: false, error: 'Akses ditolak: Hanya pemilik kegiatan atau anggota yang diizinkan (editor) yang dapat mengunggah lampiran.' };
     }
 
     const attachments = JSON.parse(card.attachmentsJson || '[]');
@@ -1066,11 +1075,20 @@ export async function deleteAttachmentAction(cardId: string, index: number) {
       return { success: false, error: 'Sesi tidak sah.' };
     }
 
-    const card = await prisma.card.findUnique({ where: { id: cardId } });
+    const card = await prisma.card.findUnique({ 
+      where: { id: cardId },
+      include: { collaborators: true }
+    });
     if (!card) return { success: false, error: 'Kegiatan tidak ditemukan.' };
 
-    if ((!PARTICIPANT_ROLES.includes(currentUser.role)) || card.studentId !== currentUser.id) {
-      return { success: false, error: 'Akses ditolak: Hanya pemilik kegiatan yang dapat menghapus lampiran.' };
+    const isOwner = card.studentId === currentUser.id;
+    const isCollaborator = card.collaborators?.some(c => c.id === currentUser.id);
+    const editorIds: string[] = card.editorIds ? JSON.parse(card.editorIds) : [];
+    const isEditor = isCollaborator && (card.collaboratorsCanEdit || editorIds.includes(currentUser.id));
+    const isAdmin = currentUser.role === 'SUPER_ADMIN' || currentUser.role === 'INSTITUTION_ADMIN';
+
+    if (!isOwner && !isEditor && !isAdmin) {
+      return { success: false, error: 'Akses ditolak: Hanya pemilik kegiatan atau anggota yang diizinkan (editor) yang dapat menghapus lampiran.' };
     }
 
     const attachments = JSON.parse(card.attachmentsJson || '[]');

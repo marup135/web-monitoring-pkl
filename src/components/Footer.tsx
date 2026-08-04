@@ -1,9 +1,12 @@
 import React from 'react';
 import Link from 'next/link';
+import { useLanguage } from '../context/LanguageContext';
 
 export const Footer: React.FC<{ onLoginClick?: () => void }> = ({ onLoginClick }) => {
+  const { language } = useLanguage();
+
   return (
-    <footer className="w-full bg-white dark:bg-gray-900 border-t border-slate-200 dark:border-gray-800 pt-16 pb-8 px-6 md:px-12 mt-auto print:hidden">
+    <footer className="w-full bg-white dark:bg-[#0B1120] border-t border-slate-200 dark:border-blue-900/30 pt-16 pb-8 px-6 md:px-12 mt-auto print:hidden">
       <div className="max-w-6xl mx-auto grid grid-cols-1 md:grid-cols-4 gap-10 md:gap-8 mb-12">
         {/* Logo & Info */}
         <div className="md:col-span-1">
@@ -12,48 +15,58 @@ export const Footer: React.FC<{ onLoginClick?: () => void }> = ({ onLoginClick }
             <span className="text-2xl font-black text-blue-600 dark:text-blue-500 tracking-tight">TRACK</span>
           </div>
           <p className="text-sm text-slate-500 dark:text-gray-400 leading-relaxed">
-            Solusi digital modern untuk memantau, mengelola, dan mengevaluasi kegiatan Praktik Kerja Lapangan (PKL) dan Magang siswa secara efektif.
+            {language === 'id' 
+              ? 'Solusi digital modern untuk memantau, mengelola, dan mengevaluasi kegiatan Praktik Kerja Lapangan (PKL) dan Magang siswa secara efektif.' 
+              : 'Modern digital solution to effectively monitor, manage, and evaluate student Internships and Field Work Practices.'}
           </p>
         </div>
 
         {/* Links */}
         <div>
-          <h4 className="font-bold text-slate-800 dark:text-white mb-4">Navigasi</h4>
+          <h4 className="font-bold text-slate-800 dark:text-white mb-4">
+            {language === 'id' ? 'Navigasi' : 'Navigation'}
+          </h4>
           <ul className="flex flex-col gap-3 text-sm text-slate-600 dark:text-gray-400">
-            <li><Link href="/" className="hover:text-blue-600 dark:hover:text-blue-400 transition-colors">Beranda</Link></li>
-            <li><Link href="/#fitur-utama" className="hover:text-blue-600 dark:hover:text-blue-400 transition-colors">Fitur Utama</Link></li>
-            <li><Link href="/#panduan" className="hover:text-blue-600 dark:hover:text-blue-400 transition-colors">Panduan Penggunaan</Link></li>
-            <li><Link href="/#tentang" className="hover:text-blue-600 dark:hover:text-blue-400 transition-colors">Tentang Kami</Link></li>
+            <li><Link href="/" className="hover:text-blue-600 dark:hover:text-blue-400 transition-colors">{language === 'id' ? 'Beranda' : 'Home'}</Link></li>
+            <li><Link href="/#fitur-utama" className="hover:text-blue-600 dark:hover:text-blue-400 transition-colors">{language === 'id' ? 'Fitur Utama' : 'Key Features'}</Link></li>
+            <li><Link href="/#panduan" className="hover:text-blue-600 dark:hover:text-blue-400 transition-colors">{language === 'id' ? 'Panduan Penggunaan' : 'User Guide'}</Link></li>
+            <li><Link href="/#tentang" className="hover:text-blue-600 dark:hover:text-blue-400 transition-colors">{language === 'id' ? 'Tentang Kami' : 'About Us'}</Link></li>
           </ul>
         </div>
 
         <div>
-          <h4 className="font-bold text-slate-800 dark:text-white mb-4">Layanan Institusi</h4>
+          <h4 className="font-bold text-slate-800 dark:text-white mb-4">
+            {language === 'id' ? 'Layanan Institusi' : 'Institution Services'}
+          </h4>
           <ul className="flex flex-col gap-3 text-sm text-slate-600 dark:text-gray-400">
             <li>
               <Link href="/register-admin" className="hover:text-blue-600 dark:hover:text-blue-400 transition-colors flex items-center gap-2">
-                Daftar Sebagai Admin
-                <span className="px-1.5 py-0.5 rounded text-[10px] font-bold bg-blue-100 text-blue-600 dark:bg-blue-900/30 dark:text-blue-400">BARU</span>
+                {language === 'id' ? 'Daftar Sebagai Admin' : 'Register as Admin'}
+                <span className="px-1.5 py-0.5 rounded text-[10px] font-bold bg-blue-100 text-blue-600 dark:bg-blue-900/30 dark:text-blue-400">
+                  {language === 'id' ? 'BARU' : 'NEW'}
+                </span>
               </Link>
             </li>
             <li>
               {onLoginClick ? (
                 <button onClick={onLoginClick} className="hover:text-blue-600 dark:hover:text-blue-400 transition-colors cursor-pointer text-left">
-                  Masuk Portal
+                  {language === 'id' ? 'Masuk Portal' : 'Login Portal'}
                 </button>
               ) : (
                 <Link href="/" className="hover:text-blue-600 dark:hover:text-blue-400 transition-colors cursor-pointer text-left">
-                  Masuk Portal
+                  {language === 'id' ? 'Masuk Portal' : 'Login Portal'}
                 </Link>
               )}
             </li>
-            <li><a href="mailto:support@nebotrack.my.id?subject=Bantuan%20Aplikasi" className="hover:text-blue-600 dark:hover:text-blue-400 transition-colors">Pusat Bantuan (FAQ)</a></li>
+            <li><a href="mailto:support@nebotrack.my.id?subject=Bantuan%20Aplikasi" className="hover:text-blue-600 dark:hover:text-blue-400 transition-colors">{language === 'id' ? 'Pusat Bantuan (FAQ)' : 'Help Center (FAQ)'}</a></li>
           </ul>
         </div>
 
         {/* Contact */}
         <div>
-          <h4 className="font-bold text-slate-800 dark:text-white mb-4">Hubungi Kami</h4>
+          <h4 className="font-bold text-slate-800 dark:text-white mb-4">
+            {language === 'id' ? 'Hubungi Kami' : 'Contact Us'}
+          </h4>
           <ul className="flex flex-col gap-3 text-sm text-slate-600 dark:text-gray-400">
             <li className="flex items-center gap-2">
               <svg className="w-4 h-4 text-blue-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -78,13 +91,17 @@ export const Footer: React.FC<{ onLoginClick?: () => void }> = ({ onLoginClick }
         </div>
       </div>
 
-      <div className="max-w-6xl mx-auto pt-8 border-t border-slate-200 dark:border-gray-800 flex flex-col md:flex-row items-center justify-between gap-4">
+      <div className="max-w-6xl mx-auto pt-8 border-t border-slate-200 dark:border-blue-900/30 flex flex-col md:flex-row items-center justify-between gap-4">
         <p className="text-xs text-slate-500 dark:text-gray-400">
-          &copy; {new Date().getFullYear()} NeboTrack. Seluruh hak cipta dilindungi.
+          &copy; {new Date().getFullYear()} NeboTrack. {language === 'id' ? 'Seluruh hak cipta dilindungi.' : 'All rights reserved.'}
         </p>
         <div className="flex gap-4">
-          <Link href="/terms" className="text-xs text-slate-500 hover:text-blue-600 dark:hover:text-blue-400">Syarat & Ketentuan</Link>
-          <Link href="/privacy" className="text-xs text-slate-500 hover:text-blue-600 dark:hover:text-blue-400">Kebijakan Privasi</Link>
+          <Link href="/terms" className="text-xs text-slate-500 hover:text-blue-600 dark:hover:text-blue-400">
+            {language === 'id' ? 'Syarat & Ketentuan' : 'Terms & Conditions'}
+          </Link>
+          <Link href="/privacy" className="text-xs text-slate-500 hover:text-blue-600 dark:hover:text-blue-400">
+            {language === 'id' ? 'Kebijakan Privasi' : 'Privacy Policy'}
+          </Link>
         </div>
       </div>
     </footer>

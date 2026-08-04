@@ -72,23 +72,24 @@ export async function registerAction(
       if (PARTICIPANT_ROLES.includes(role) && (!className || !className.trim())) {
         return { success: false, error: 'Kelas / Program Studi wajib diisi.' };
       }
+      if (role === 'EXTERNAL_MENTOR') {
+        const cleanCompany = companyName?.trim();
+        if (!cleanCompany) {
+          return { success: false, error: 'Nama Perusahaan wajib diisi.' };
+        }
+        if (cleanCompany.length < 3) {
+          return { success: false, error: 'Nama perusahaan harus terdiri dari minimal 3 karakter.' };
+        }
+        if (!employeeId || !employeeId.trim()) {
+          return { success: false, error: 'Nomor Identitas Karyawan wajib diisi.' };
+        }
+        if (!jabatan || !jabatan.trim()) {
+          return { success: false, error: 'Jabatan wajib diisi.' };
+        }
+      }
     } else if (role === 'INTERNAL_MENTOR') {
       if (!nip || !nip.trim()) {
         return { success: false, error: 'NIP / Nomor Identitas wajib diisi.' };
-      }
-    } else if (role === 'EXTERNAL_MENTOR') {
-      const cleanCompany = companyName?.trim();
-      if (!cleanCompany) {
-        return { success: false, error: 'Nama Perusahaan wajib diisi.' };
-      }
-      if (cleanCompany.length < 3) {
-        return { success: false, error: 'Nama perusahaan harus terdiri dari minimal 3 karakter.' };
-      }
-      if (!employeeId || !employeeId.trim()) {
-        return { success: false, error: 'Nomor Identitas Karyawan wajib diisi.' };
-      }
-      if (!jabatan || !jabatan.trim()) {
-        return { success: false, error: 'Jabatan wajib diisi.' };
       }
     }
 
@@ -123,12 +124,19 @@ export async function registerAction(
       }
 
       if (institutionCode && institutionCode.trim()) {
-        const inst = await prisma.institution.findUnique({
-          where: { code: institutionCode.trim() }
+        const cleanInstCode = institutionCode.trim();
+        const inst = await prisma.institution.findFirst({
+          where: {
+            code: { equals: cleanInstCode, mode: 'insensitive' }
+          }
         });
 
         if (!inst && role !== 'EXTERNAL_MENTOR') {
           return { success: false, error: 'Kode Institusi tidak ditemukan atau tidak valid.' };
+        }
+
+        if (inst && inst.status !== 'ACTIVE' && role !== 'EXTERNAL_MENTOR') {
+          return { success: false, error: 'Institusi belum aktif atau masih dalam proses verifikasi Admin.' };
         }
         
         if (inst) {
@@ -177,15 +185,15 @@ export async function registerAction(
         nisn: PARTICIPANT_ROLES.includes(role) ? (nisn?.trim() || null) : null,
         nip: role === 'INTERNAL_MENTOR' ? (nip?.trim() || null) : null,
         jabatan: role === 'EXTERNAL_MENTOR' ? (jabatan?.trim() || null) : null,
-        school: resolvedSchoolName || undefined,
+        school: school?.trim() || resolvedSchoolName || "",
         status,
         companyName: finalCompany,
         jobTitle: role === 'EXTERNAL_MENTOR' ? (jabatan?.trim() || null) : null,
         employeeId: role === 'EXTERNAL_MENTOR' ? (employeeId?.trim() || null) : null,
         companyEmail: role === 'EXTERNAL_MENTOR' ? (companyEmail?.trim() || null) : null,
         classId: resolvedClassId,
-        companyId: PARTICIPANT_ROLES.includes(role) ? resolvedCompanyId : null,
-        companies: undefined,
+        companyId: (PARTICIPANT_ROLES.includes(role) || role === 'EXTERNAL_MENTOR') ? resolvedCompanyId : null,
+        companies: role === 'EXTERNAL_MENTOR' && resolvedCompanyId ? { connect: [{ id: resolvedCompanyId }] } : undefined,
       }
     });
 
@@ -240,8 +248,8 @@ export async function registerAction(
     // If PENDING, don't set cookie, just return success with pending flag
     return { success: true, pending: true, message: 'Akun Anda sedang menunggu verifikasi Admin. Silakan tunggu hingga akun disetujui.' };
   } catch (error) {
-    console.error(error);
-    return { success: false, error: 'Gagal melakukan pendaftaran' };
+    console.error(">>> REGISTRATION ERROR DETAILS:", error);
+    return { success: false, error: error instanceof Error ? `Gagal: ${error.message}` : 'Gagal melakukan pendaftaran' };
   }
 }
 
@@ -300,7 +308,8 @@ export async function registerInstitutionAdminAction(
         name: cleanName,
         role: 'INSTITUTION_ADMIN',
         status: 'PENDING',
-        institutionId: inst.id
+        institutionId: inst.id,
+        school: institutionName
       }
     });
 

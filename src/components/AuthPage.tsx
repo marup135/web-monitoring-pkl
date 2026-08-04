@@ -4,6 +4,7 @@
 import React, { useState, useRef, useEffect } from 'react';
 import Link from 'next/link';
 import { usePKL } from '../context/PKLContext';
+import { useLanguage } from '../context/LanguageContext';
 import { PARTICIPANT_ROLES } from '../lib/constants';
 import { forgotPasswordAction } from '../app/actions/auth';
 import {
@@ -22,11 +23,7 @@ import ReCAPTCHA from 'react-google-recaptcha';
 
 
 
-const ROLES = [
-  { value: 'siswa', label: 'Peserta / Siswa / Mahasiswa' },
-  { value: 'INTERNAL_MENTOR', label: 'Pembimbing Internal (Guru/Dosen/Instruktur)' },
-  { value: 'EXTERNAL_MENTOR', label: 'Pembimbing Eksternal (Perusahaan)' },
-];
+// ROLES moved inside component for translation support
 
 // Alert types
 type AlertType = 'field' | 'credentials' | 'server';
@@ -43,6 +40,13 @@ interface AuthPageProps {
 
 export const AuthPage: React.FC<AuthPageProps> = ({ initialView = 'login' }) => {
   const { login, register, currentUser } = usePKL();
+  const { language } = useLanguage();
+
+  const ROLES = [
+    { value: 'siswa', label: language === 'id' ? 'Peserta / Siswa / Mahasiswa' : 'Participant / Student / University Student' },
+    { value: 'INTERNAL_MENTOR', label: language === 'id' ? 'Pembimbing Internal (Guru/Dosen/Instruktur)' : 'Internal Mentor (Teacher/Lecturer/Instructor)' },
+    { value: 'EXTERNAL_MENTOR', label: language === 'id' ? 'Pembimbing Eksternal (Perusahaan)' : 'External Mentor (Company)' },
+  ];
 
   const [view, setView] = useState<'login' | 'register' | 'forgot-password'>(initialView);
   const isLogin = view === 'login';
@@ -80,6 +84,14 @@ export const AuthPage: React.FC<AuthPageProps> = ({ initialView = 'login' }) => 
   const roleDropdownRef = useRef<HTMLDivElement>(null);
   const classDropdownRef = useRef<HTMLDivElement>(null);
   const recaptchaRef = useRef<ReCAPTCHA>(null);
+  const errorRef = useRef<HTMLDivElement>(null);
+
+  // Auto-scroll to error alert when error occurs
+  useEffect(() => {
+    if (errorState && errorRef.current) {
+      errorRef.current.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    }
+  }, [errorState]);
 
   // If user is already logged in, the parent HomeWrapper will redirect automatically.
   // We guard here too as extra safety.
@@ -204,8 +216,8 @@ export const AuthPage: React.FC<AuthPageProps> = ({ initialView = 'login' }) => 
         setError('Password wajib diisi.', 'field', 'password');
         return;
       }
-      if (password.length < 5) {
-        setError('Password harus terdiri dari minimal 5 karakter.', 'field', 'password');
+      if (password.length < 6) {
+        setError('Password harus terdiri dari minimal 6 karakter.', 'field', 'password');
         return;
       }
       if (!confirmPassword) {
@@ -264,7 +276,7 @@ export const AuthPage: React.FC<AuthPageProps> = ({ initialView = 'login' }) => 
       }
 
       if (role !== 'EXTERNAL_MENTOR' && !institutionCode.trim()) {
-        setError('Kode Institusi wajib diisi.', 'field');
+        setError('Kode Institusi wajib diisi.', 'field', 'institutionCode');
         return;
       }
 
@@ -326,6 +338,7 @@ export const AuthPage: React.FC<AuthPageProps> = ({ initialView = 'login' }) => 
         if (res.success && res.pending) {
           clearError();
           setIsPendingSuccess(true);
+          alert("Pendaftaran berhasil! Akun Anda sedang menunggu konfirmasi Admin sebelum dapat login.");
           setUsername('');
           setEmail('');
           setPassword('');
@@ -346,6 +359,9 @@ export const AuthPage: React.FC<AuthPageProps> = ({ initialView = 'login' }) => 
         } else if (!res.success) {
           recaptchaRef.current?.reset();
           setCaptchaToken(null);
+          
+          console.log(">>> REGISTER ERROR:", res.error);
+          alert(res.error || "Gagal melakukan pendaftaran. Pastikan data yang dimasukkan benar.");
 
           if (res.error?.includes('Kode Institusi')) {
             setError(res.error, 'field', 'institutionCode');
@@ -375,13 +391,13 @@ export const AuthPage: React.FC<AuthPageProps> = ({ initialView = 'login' }) => 
 
   // Dynamic input border class
   const inputClass = (hasError: boolean) =>
-    `w-full bg-white dark:bg-[#243447] border rounded-xl pl-10 pr-4 text-sm text-[#0F172A] dark:text-gray-200 placeholder:text-[#94A3B8] focus:outline-none focus:ring-2 min-h-[48px] py-3 md:min-h-0 md:py-2.5 md:text-xs transition-all duration-200 ${hasError
+    `w-full bg-white dark:bg-slate-700/80 border rounded-xl pl-10 pr-4 text-sm text-[#0F172A] dark:text-gray-200 placeholder:text-[#94A3B8] focus:outline-none focus:ring-2 min-h-[48px] py-3 md:min-h-0 md:py-2.5 md:text-xs transition-all duration-200 ${hasError
       ? 'border-red-400 focus:border-red-400 focus:ring-red-100 bg-red-50/30'
-      : 'border-[#E2E8F0] dark:border-gray-700 focus:border-primary focus:ring-blue-100'
+      : 'border-[#E2E8F0] dark:border-slate-600 focus:border-primary focus:ring-blue-100'
     }`;
 
   return (
-    <div className="min-h-screen flex items-center justify-center p-4 bg-gradient-to-br from-[#F0F4FF] via-[#F8FAFC] to-[#EFF6FF] text-[#0F172A] dark:text-gray-200 relative overflow-hidden font-sans">
+    <div className="min-h-screen flex items-center justify-center p-4 bg-gradient-to-br from-[#F0F4FF] via-[#F8FAFC] to-[#EFF6FF] dark:from-slate-800 dark:via-blue-900/50 dark:to-slate-800 text-[#0F172A] dark:text-gray-200 relative overflow-hidden font-sans">
       {/* Decorative blobs */}
       <div className="absolute top-0 left-0 w-[500px] h-[500px] bg-primary/8 rounded-full blur-3xl pointer-events-none -translate-x-1/2 -translate-y-1/2" />
       <div className="absolute bottom-0 right-0 w-[400px] h-[400px] bg-[#7C3AED]/6 rounded-full blur-3xl pointer-events-none translate-x-1/3 translate-y-1/3" />
@@ -389,7 +405,7 @@ export const AuthPage: React.FC<AuthPageProps> = ({ initialView = 'login' }) => 
       {/* Card Wrapper - Max 560px */}
       <div className="w-full max-w-[560px] relative z-10 my-8">
         {/* Main Card */}
-        <div className="bg-white/95 dark:bg-gray-900/95 backdrop-blur-sm rounded-3xl p-7 sm:p-10 border border-white dark:border-gray-800 shadow-xl shadow-slate-200/60 dark:shadow-slate-900/50 animate-in fade-in zoom-in-95 duration-300">
+        <div className="bg-white/95 dark:bg-slate-700/60 backdrop-blur-sm rounded-3xl p-7 sm:p-10 border border-white dark:border-slate-600 shadow-xl shadow-slate-200/60 dark:shadow-none animate-in fade-in zoom-in-95 duration-300">
 
           {/* Logo & Header */}
           <div className="flex flex-col items-center mb-10">
@@ -398,7 +414,7 @@ export const AuthPage: React.FC<AuthPageProps> = ({ initialView = 'login' }) => 
               <img
                 src="/nebo.png"
                 alt="NEBO Logo"
-                className="relative w-[72px] h-[72px] md:w-[88px] md:h-[88px] object-contain rounded-2xl shadow-md border border-[#E2E8F0] dark:border-gray-700"
+                className="relative w-[72px] h-[72px] md:w-[88px] md:h-[88px] object-contain rounded-2xl shadow-md border border-[#E2E8F0] dark:border-slate-600"
               />
             </div>
             <h1 className="text-2xl md:text-[28px] font-black text-[#0F172A] dark:text-white tracking-tight">
@@ -431,7 +447,7 @@ export const AuthPage: React.FC<AuthPageProps> = ({ initialView = 'login' }) => 
             <>
               {/* Modern Segmented Tab Toggle */}
               {!isForgotPassword && (
-                <div className="relative flex bg-slate-100 dark:bg-gray-800 p-1 rounded-[16px] mb-8 border border-slate-200 dark:border-gray-700 isolate overflow-hidden">
+                <div className="relative flex bg-slate-100 dark:bg-slate-700/50 p-1 rounded-[16px] mb-8 border border-slate-200 dark:border-slate-600 isolate overflow-hidden">
                   <div
                     className="absolute inset-y-1 bg-white dark:bg-[#1E293B] shadow-sm rounded-xl transition-all duration-300 ease-out"
                     style={{
@@ -445,7 +461,7 @@ export const AuthPage: React.FC<AuthPageProps> = ({ initialView = 'login' }) => 
                     className={`relative z-10 flex-1 py-3 text-sm font-bold rounded-xl transition-colors duration-200 cursor-pointer ${isLogin ? 'text-primary' : 'text-slate-500 hover:text-slate-700 dark:text-gray-400 dark:hover:text-gray-200'
                       }`}
                   >
-                    Masuk
+                    {language === 'id' ? 'Masuk' : 'Login'}
                   </button>
                   <button
                     type="button"
@@ -453,7 +469,7 @@ export const AuthPage: React.FC<AuthPageProps> = ({ initialView = 'login' }) => 
                     className={`relative z-10 flex-1 py-3 text-sm font-bold rounded-xl transition-colors duration-200 cursor-pointer ${!isLogin ? 'text-primary' : 'text-slate-500 hover:text-slate-700 dark:text-gray-400 dark:hover:text-gray-200'
                       }`}
                   >
-                    Daftar
+                    {language === 'id' ? 'Daftar' : 'Register'}
                   </button>
                 </div>
               )}
@@ -462,8 +478,12 @@ export const AuthPage: React.FC<AuthPageProps> = ({ initialView = 'login' }) => 
 
               {isForgotPassword && (
                 <div className="mb-8 text-center animate-in fade-in zoom-in-95 duration-200">
-                  <h2 className="text-lg font-bold text-[#0F172A] dark:text-white">Lupa Password?</h2>
-                  <p className="text-sm text-[#64748B] dark:text-gray-300 mt-2">Masukkan email Anda untuk menerima tautan reset password.</p>
+                  <h2 className="text-lg font-bold text-[#0F172A] dark:text-white">
+                    {language === 'id' ? 'Lupa Password?' : 'Forgot Password?'}
+                  </h2>
+                  <p className="text-sm text-[#64748B] dark:text-gray-300 mt-2">
+                    {language === 'id' ? 'Masukkan email Anda untuk menerima tautan reset password.' : 'Enter your email to receive a password reset link.'}
+                  </p>
                 </div>
               )}
 
@@ -477,14 +497,16 @@ export const AuthPage: React.FC<AuthPageProps> = ({ initialView = 'login' }) => 
                     {/* SECTION 1: INFORMASI AKUN */}
                     <div>
                       <h3 className="text-[11px] font-bold text-slate-400 dark:text-gray-500 uppercase tracking-widest mb-1">Section 1</h3>
-                      <h2 className="text-sm font-black text-slate-800 dark:text-white mb-3">Informasi Akun</h2>
+                      <h2 className="text-sm font-black text-slate-800 dark:text-white mb-3">
+                        {language === 'id' ? 'Informasi Akun' : 'Account Information'}
+                      </h2>
                       <div className="h-[1px] w-full bg-slate-100 dark:bg-gray-800 mb-5" />
 
                       <div className="flex flex-col gap-5">
                         {/* Role Dropdown */}
                         <div className="flex flex-col gap-1.5 relative" ref={roleDropdownRef}>
                           <label className="text-xs text-[#64748B] dark:text-gray-300 font-bold">
-                            Pilih Peran (Role)
+                            {language === 'id' ? 'Pilih Peran (Role)' : 'Select Role'}
                           </label>
                           <button
                             type="button"
@@ -530,13 +552,13 @@ export const AuthPage: React.FC<AuthPageProps> = ({ initialView = 'login' }) => 
                         {/* Full Name */}
                         <div className="flex flex-col gap-1.5">
                           <label className="text-xs text-[#64748B] dark:text-gray-300 font-bold">
-                            Nama Lengkap
+                            {language === 'id' ? 'Nama Lengkap' : 'Full Name'}
                           </label>
                           <div className="relative">
                             <User size={18} className="absolute left-4 top-1/2 -translate-y-1/2 text-[#94A3B8]" />
                             <input
                               type="text"
-                              placeholder="Nama Anda "
+                              placeholder={language === 'id' ? "Nama Anda " : "Your Name "}
                               value={name}
                               onChange={(e) => setName(e.target.value)}
                               className={inputClass(false)}
@@ -625,7 +647,7 @@ export const AuthPage: React.FC<AuthPageProps> = ({ initialView = 'login' }) => 
 
                         <div className="flex flex-col gap-1.5">
                           <label className="text-xs text-[#64748B] dark:text-gray-300 font-bold">
-                            Konfirmasi Password
+                            {language === 'id' ? 'Konfirmasi Password' : 'Confirm Password'}
                           </label>
                           <div className="relative">
                             <Key size={18} className={`absolute left-4 top-1/2 -translate-y-1/2 ${confirmPasswordHasError ? 'text-red-400' : 'text-[#94A3B8]'}`} />
@@ -660,7 +682,9 @@ export const AuthPage: React.FC<AuthPageProps> = ({ initialView = 'login' }) => 
                     {/* SECTION 2: INFORMASI TAMBAHAN */}
                     <div key={`section2-${role}`} className="mt-4 animate-in fade-in slide-in-from-top-2 duration-300">
                       <h3 className="text-[11px] font-bold text-slate-400 dark:text-gray-500 uppercase tracking-widest mb-1">Section 2</h3>
-                      <h2 className="text-sm font-black text-slate-800 dark:text-white mb-3">Informasi Tambahan</h2>
+                      <h2 className="text-sm font-black text-slate-800 dark:text-white mb-3">
+                        {language === 'id' ? 'Informasi Tambahan' : 'Additional Information'}
+                      </h2>
                       <div className="h-[1px] w-full bg-slate-100 dark:bg-gray-800 mb-5" />
 
                       <div className="flex flex-col gap-5">
@@ -669,7 +693,7 @@ export const AuthPage: React.FC<AuthPageProps> = ({ initialView = 'login' }) => 
                           <>
                             <div className="flex flex-col gap-1.5">
                               <label className="text-xs text-[#64748B] dark:text-gray-300 font-bold">
-                                Asal Sekolah / Kampus <span className="text-red-500">*</span>
+                                {language === 'id' ? 'Asal Sekolah / Kampus' : 'School / Campus'} <span className="text-red-500">*</span>
                               </label>
                               <div className="relative">
                                 <Building2 size={18} className="absolute left-4 top-1/2 -translate-y-1/2 text-[#94A3B8]" />
@@ -688,7 +712,7 @@ export const AuthPage: React.FC<AuthPageProps> = ({ initialView = 'login' }) => 
 
                             <div className="flex flex-col gap-1.5">
                               <label className="text-xs text-[#64748B] dark:text-gray-300 font-bold">
-                                Kelas / Program Studi / Jurusan
+                                {language === 'id' ? 'Kelas / Program Studi / Jurusan' : 'Class / Major'}
                               </label>
                               <div className="relative">
                                 <input
@@ -703,7 +727,7 @@ export const AuthPage: React.FC<AuthPageProps> = ({ initialView = 'login' }) => 
 
                             <div className="flex flex-col gap-1.5">
                               <label className="text-xs text-[#64748B] dark:text-gray-300 font-bold">
-                                NISN / NIM <span className="text-red-500">*</span>
+                                {language === 'id' ? 'NISN / NIM' : 'Student ID (NISN/NIM)'} <span className="text-red-500">*</span>
                               </label>
                               <div className="relative">
                                 <input
@@ -723,7 +747,7 @@ export const AuthPage: React.FC<AuthPageProps> = ({ initialView = 'login' }) => 
                           <>
                             <div className="flex flex-col gap-1.5">
                               <label className="text-xs text-[#64748B] dark:text-gray-300 font-bold">
-                                Asal Sekolah / Kampus <span className="text-red-500">*</span>
+                                {language === 'id' ? 'Asal Sekolah / Kampus' : 'School / Campus'} <span className="text-red-500">*</span>
                               </label>
                               <div className="relative">
                                 <Building2 size={18} className="absolute left-4 top-1/2 -translate-y-1/2 text-[#94A3B8]" />
@@ -742,7 +766,7 @@ export const AuthPage: React.FC<AuthPageProps> = ({ initialView = 'login' }) => 
 
                             <div className="flex flex-col gap-1.5">
                               <label className="text-xs text-[#64748B] dark:text-gray-300 font-bold">
-                                NIP / Nomor Identitas
+                                {language === 'id' ? 'NIP / Nomor Identitas' : 'Employee ID (NIP)'}
                               </label>
                               <div className="relative">
                                 <input
@@ -756,7 +780,7 @@ export const AuthPage: React.FC<AuthPageProps> = ({ initialView = 'login' }) => 
                             </div>
                             <p className="text-xs text-slate-500 dark:text-gray-400 mt-1 flex items-center gap-1.5">
                               <ShieldCheck size={14} className="text-blue-500" />
-                              Akun akan diverifikasi Admin.
+                              {language === 'id' ? 'Akun akan diverifikasi Admin.' : 'Account will be verified by Admin.'}
                             </p>
                           </>
                         )}
@@ -766,7 +790,7 @@ export const AuthPage: React.FC<AuthPageProps> = ({ initialView = 'login' }) => 
                           <>
                             <div className="flex flex-col gap-1.5">
                               <label className="text-xs text-[#64748B] dark:text-gray-300 font-bold">
-                                Nama Perusahaan
+                                {language === 'id' ? 'Nama Perusahaan' : 'Company Name'}
                               </label>
                               <div className="relative">
                                 <Building2 size={18} className="absolute left-4 top-1/2 -translate-y-1/2 text-[#94A3B8]" />
@@ -785,7 +809,7 @@ export const AuthPage: React.FC<AuthPageProps> = ({ initialView = 'login' }) => 
 
                             <div className="flex flex-col gap-1.5">
                               <label className="text-xs text-[#64748B] dark:text-gray-300 font-bold">
-                                Jabatan
+                                {language === 'id' ? 'Jabatan' : 'Position'}
                               </label>
                               <div className="relative">
                                 <input
@@ -800,7 +824,7 @@ export const AuthPage: React.FC<AuthPageProps> = ({ initialView = 'login' }) => 
 
                             <div className="flex flex-col gap-1.5">
                               <label className="text-xs text-[#64748B] dark:text-gray-300 font-bold">
-                                Nomor Induk Karyawan
+                                {language === 'id' ? 'Nomor Induk Karyawan' : 'Employee ID'}
                               </label>
                               <div className="relative">
                                 <input
@@ -812,24 +836,23 @@ export const AuthPage: React.FC<AuthPageProps> = ({ initialView = 'login' }) => 
                                 />
                               </div>
                             </div>
-                            <p className="text-xs text-slate-500 dark:text-gray-400 mt-1 flex items-center gap-1.5">
-                              <ShieldCheck size={14} className="text-blue-500" />
-                              Akun akan diverifikasi Admin.
-                            </p>
                           </>
                         )}
 
                         {/* Institution Code */}
                         <div className="flex flex-col gap-1.5">
                           <label className="text-xs text-[#64748B] dark:text-gray-300 font-bold">
-                            Kode Institusi {role !== 'EXTERNAL_MENTOR' ? <span className="text-red-500">*</span> : <span className="text-slate-400 font-normal">(Opsional untuk Mentor Perusahaan)</span>}
+                            {language === 'id' ? 'Kode Institusi' : 'Institution Code'} {role !== 'EXTERNAL_MENTOR' ? <span className="text-red-500">*</span> : <span className="text-slate-400 font-normal">{language === 'id' ? '(Opsional untuk Mentor Perusahaan)' : '(Optional for Company Mentor)'}</span>}
                           </label>
                           <div className="relative">
                             <input
                               type="text"
                               placeholder={role === 'EXTERNAL_MENTOR' ? "KODE-INSTITUSI (Opsional)" : "KODE-INSTITUSI"}
                               value={institutionCode}
-                              onChange={(e) => setInstitutionCode(e.target.value)}
+                              onChange={(e) => {
+                                setInstitutionCode(e.target.value);
+                                if (errorState) clearError();
+                              }}
                               className={inputClass(institutionCodeHasError)}
                             />
                           </div>
@@ -840,7 +863,7 @@ export const AuthPage: React.FC<AuthPageProps> = ({ initialView = 'login' }) => 
                             </p>
                           ) : (
                             <p className="text-[10px] text-slate-500 mt-0.5">
-                              {role === 'EXTERNAL_MENTOR' ? 'Boleh dikosongkan agar Anda dapat membimbing siswa dan mahasiswa dari berbagai sekolah/kampus sekaligus.' : 'Wajib diisi dengan kode yang diberikan oleh Admin Sekolah/Kampus Anda.'}
+                              {role === 'EXTERNAL_MENTOR' ? (language === 'id' ? 'Boleh dikosongkan agar Anda dapat membimbing siswa dan mahasiswa dari berbagai sekolah/kampus sekaligus.' : 'Can be left empty so you can mentor students from various schools/campuses at once.') : (language === 'id' ? 'Wajib diisi dengan kode yang diberikan oleh Admin Sekolah/Kampus Anda.' : 'Must be filled with the code provided by your School/Campus Admin.')}
                             </p>
                           )}
                         </div>
@@ -854,13 +877,13 @@ export const AuthPage: React.FC<AuthPageProps> = ({ initialView = 'login' }) => 
                   <div className="flex flex-col gap-5 animate-in fade-in duration-200">
                     <div className="flex flex-col gap-1.5">
                       <label className="text-xs text-[#64748B] dark:text-gray-300 font-bold">
-                        Username atau Email
+                        {language === 'id' ? 'Username atau Email' : 'Username or Email'}
                       </label>
                       <div className="relative">
                         <User size={18} className={`absolute left-4 top-1/2 -translate-y-1/2 ${usernameHasError ? 'text-red-400' : 'text-[#94A3B8]'}`} />
                         <input
                           type="text"
-                          placeholder="emailanda@gmail.com"
+                          placeholder={language === 'id' ? "emailanda@gmail.com" : "youremail@gmail.com"}
                           value={username}
                           onChange={(e) => {
                             setUsername(e.target.value.toLowerCase().replace(/\s+/g, ''));
@@ -916,7 +939,7 @@ export const AuthPage: React.FC<AuthPageProps> = ({ initialView = 'login' }) => 
                           className="h-4 w-4 rounded border-slate-300 text-primary focus:ring-primary focus:ring-offset-0 cursor-pointer"
                         />
                         <span className="text-xs text-[#64748B] dark:text-gray-300 font-medium group-hover:text-[#0F172A] dark:text-gray-200 transition-colors select-none">
-                          Ingat saya
+                          {language === 'id' ? 'Ingat saya' : 'Remember me'}
                         </span>
                       </label>
 
@@ -925,7 +948,7 @@ export const AuthPage: React.FC<AuthPageProps> = ({ initialView = 'login' }) => 
                         onClick={() => handleTabSwitch('forgot-password')}
                         className="text-xs font-bold text-primary hover:text-blue-700 dark:hover:text-blue-400 transition-colors cursor-pointer"
                       >
-                        Lupa Password?
+                        {language === 'id' ? 'Lupa Password?' : 'Forgot Password?'}
                       </button>
                     </div>
                   </div>
@@ -941,7 +964,7 @@ export const AuthPage: React.FC<AuthPageProps> = ({ initialView = 'login' }) => 
                         <User size={18} className={`absolute left-4 top-1/2 -translate-y-1/2 ${errorState?.type === 'field' ? 'text-red-400' : 'text-[#94A3B8]'}`} />
                         <input
                           type="email"
-                          placeholder="emailanda@gmail.com"
+                          placeholder={language === 'id' ? "emailanda@gmail.com" : "youremail@gmail.com"}
                           value={email}
                           onChange={(e) => {
                             setEmail(e.target.value.toLowerCase().replace(/\s+/g, ''));
@@ -965,7 +988,11 @@ export const AuthPage: React.FC<AuthPageProps> = ({ initialView = 'login' }) => 
                         className="mt-0.5 h-4 w-4 rounded border-slate-300 text-primary focus:ring-primary focus:ring-offset-0 cursor-pointer"
                       />
                       <span className="text-xs text-slate-600 dark:text-gray-300 font-medium leading-tight">
-                        Saya menyetujui Syarat & Ketentuan serta Kebijakan Privasi yang berlaku untuk penggunaan NeboTrack.
+                        {language === 'id' ? 'Saya menyetujui ' : 'I agree to the '}
+                        <Link href="/terms" onClick={(e) => e.stopPropagation()} className="text-blue-600 dark:text-blue-400 hover:underline">{language === 'id' ? 'Syarat & Ketentuan' : 'Terms & Conditions'}</Link>
+                        {language === 'id' ? ' serta ' : ' and '}
+                        <Link href="/privacy" onClick={(e) => e.stopPropagation()} className="text-blue-600 dark:text-blue-400 hover:underline">{language === 'id' ? 'Kebijakan Privasi' : 'Privacy Policy'}</Link>
+                        {language === 'id' ? ' yang berlaku untuk penggunaan NeboTrack.' : ' applicable to the use of NeboTrack.'}
                       </span>
                     </label>
                   )}
@@ -985,6 +1012,37 @@ export const AuthPage: React.FC<AuthPageProps> = ({ initialView = 'login' }) => 
                     </div>
                   )}
 
+                  {/* Error Alert */}
+                  {errorState && (
+                    <div
+                      ref={errorRef}
+                      className={`p-4 rounded-2xl border text-sm leading-relaxed animate-in fade-in slide-in-from-top-2 duration-300 flex items-start gap-3 ${errorState.type === 'server'
+                        ? 'bg-orange-50 border-orange-200 dark:bg-orange-500/10 dark:border-orange-500/20'
+                        : 'bg-red-50 border-red-200 dark:bg-red-500/10 dark:border-red-500/20'
+                        }`}
+                    >
+                      <span className={`shrink-0 mt-0.5 ${errorState.type === 'server' ? 'text-orange-500' : 'text-red-500'}`}>
+                        <AlertCircle size={20} />
+                      </span>
+                      <div className="flex-1 min-w-0">
+                        {errorState.type === 'server' ? (
+                          <>
+                            <p className="font-bold text-orange-800 dark:text-orange-400">
+                              Kesalahan Server
+                            </p>
+                            <p className="mt-1 text-orange-700 dark:text-orange-500">
+                              {errorState.message}
+                            </p>
+                          </>
+                        ) : (
+                          <p className="font-bold text-red-800 dark:text-red-400">
+                            {errorState.message}
+                          </p>
+                        )}
+                      </div>
+                    </div>
+                  )}
+
                   <button
                     type="submit"
                     disabled={loading || (isRegister && !agreedToTerms)}
@@ -993,11 +1051,11 @@ export const AuthPage: React.FC<AuthPageProps> = ({ initialView = 'login' }) => 
                     {loading ? (
                       <>
                         <Loader2 size={18} className="animate-spin" />
-                        <span>{isLogin ? 'Signing in...' : isRegister ? 'Mendaftar...' : 'Memproses...'}</span>
+                        <span>{isLogin ? (language === 'id' ? 'Masuk...' : 'Signing in...') : isRegister ? (language === 'id' ? 'Mendaftar...' : 'Registering...') : (language === 'id' ? 'Memproses...' : 'Processing...')}</span>
                       </>
                     ) : (
                       <>
-                        <span>{isLogin ? 'Masuk Sekarang' : isRegister ? 'Daftar Sekarang' : 'Kirim Tautan Reset'}</span>
+                        <span>{isLogin ? (language === 'id' ? 'Masuk Sekarang' : 'Sign In Now') : isRegister ? (language === 'id' ? 'Daftar Sekarang' : 'Register Now') : (language === 'id' ? 'Kirim Tautan Reset' : 'Send Reset Link')}</span>
                         <ArrowRight size={18} />
                       </>
                     )}
@@ -1008,13 +1066,13 @@ export const AuthPage: React.FC<AuthPageProps> = ({ initialView = 'login' }) => 
                 {!isForgotPassword && (
                   <div className="mt-2 text-center">
                     <p className="text-sm text-slate-500 dark:text-gray-400 font-medium">
-                      {isLogin ? 'Belum punya akun? ' : 'Sudah punya akun? '}
+                      {isLogin ? (language === 'id' ? 'Belum punya akun? ' : 'Don\'t have an account? ') : (language === 'id' ? 'Sudah punya akun? ' : 'Already have an account? ')}
                       <button
                         type="button"
                         onClick={() => handleTabSwitch(isLogin ? 'register' : 'login')}
                         className="text-primary font-bold hover:text-blue-700 transition-colors cursor-pointer"
                       >
-                        {isLogin ? 'Daftar' : 'Masuk'}
+                        {isLogin ? (language === 'id' ? 'Daftar' : 'Register') : (language === 'id' ? 'Masuk' : 'Login')}
                       </button>
                     </p>
                   </div>
@@ -1044,36 +1102,6 @@ export const AuthPage: React.FC<AuthPageProps> = ({ initialView = 'login' }) => 
                     <p className="mt-1 text-green-700 dark:text-green-500">
                       {successMessage}
                     </p>
-                  </div>
-                </div>
-              )}
-
-              {/* Error Alert */}
-              {errorState && (!errorState.field || errorState.type !== 'field') && (
-                <div
-                  className={`mt-6 p-4 rounded-2xl border text-sm leading-relaxed animate-in fade-in slide-in-from-top-2 duration-300 flex items-start gap-3 ${errorState.type === 'server'
-                    ? 'bg-orange-50 border-orange-200 dark:bg-orange-500/10 dark:border-orange-500/20'
-                    : 'bg-red-50 border-red-200 dark:bg-red-500/10 dark:border-red-500/20'
-                    }`}
-                >
-                  <span className={`shrink-0 mt-0.5 ${errorState.type === 'server' ? 'text-orange-500' : 'text-red-500'}`}>
-                    <AlertCircle size={20} />
-                  </span>
-                  <div className="flex-1 min-w-0">
-                    {errorState.type === 'server' ? (
-                      <>
-                        <p className="font-bold text-orange-800 dark:text-orange-400">
-                          Kesalahan Server
-                        </p>
-                        <p className="mt-1 text-orange-700 dark:text-orange-500">
-                          {errorState.message}
-                        </p>
-                      </>
-                    ) : (
-                      <p className="font-bold text-red-800 dark:text-red-400">
-                        {errorState.message}
-                      </p>
-                    )}
                   </div>
                 </div>
               )}

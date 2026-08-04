@@ -845,7 +845,7 @@ export const CardModal: React.FC<CardModalProps> = ({ card, onClose, initialEdit
                       <Paperclip size={14} className="text-primary" />
                       {t('attachments')} ({card.attachments ? card.attachments.length : 0})
                     </h4>
-                    {isStudent && (
+                    {userCanEdit && (
                       <div className="relative">
                         <input
                           type="file"
@@ -883,13 +883,13 @@ export const CardModal: React.FC<CardModalProps> = ({ card, onClose, initialEdit
                         let colorClass = 'text-slate-500 dark:text-gray-300 bg-slate-50 dark:bg-gray-800/50 border-slate-200 dark:border-gray-700';
                         if (att.type === 'image') {
                           IconComponent = ImageIcon;
-                          colorClass = 'text-pink-700 bg-pink-50 border-pink-100';
+                          colorClass = 'text-pink-700 dark:text-pink-300 bg-pink-50 dark:bg-pink-900/30 border-pink-100 dark:border-pink-800/50';
                         } else if (att.type === 'pdf') {
                           IconComponent = FileText;
-                          colorClass = 'text-red-700 bg-red-50 border-red-100';
+                          colorClass = 'text-red-700 dark:text-red-300 bg-red-50 dark:bg-red-900/30 border-red-100 dark:border-red-800/50';
                         } else if (att.type === 'doc') {
                           IconComponent = FileText;
-                          colorClass = 'text-blue-700 bg-primary/10 border-blue-100';
+                          colorClass = 'text-blue-700 dark:text-blue-300 bg-primary/10 dark:bg-blue-900/30 border-blue-100 dark:border-blue-800/50';
                         }
                         return (
                           <div key={idx} className="flex items-center justify-between p-2.5 bg-white dark:bg-[#243447] border border-[#E2E8F0] dark:border-gray-700 rounded-xl text-xs gap-3 shadow-sm">
@@ -901,12 +901,12 @@ export const CardModal: React.FC<CardModalProps> = ({ card, onClose, initialEdit
                                 href={att.url}
                                 target="_blank"
                                 rel="noreferrer"
-                                className="font-medium text-slate-700 hover:text-primary transition truncate underline"
+                                className="font-medium text-slate-700 dark:text-gray-200 hover:text-primary dark:hover:text-blue-400 transition truncate underline"
                               >
                                 {att.name}
                               </a>
                             </div>
-                            {isStudent && (
+                            {userCanEdit && (
                               <button
                                 onClick={() => deleteAttachment(card.id, idx)}
                                 className="p-1 rounded bg-slate-50 dark:bg-gray-800/50 hover:bg-red-50 text-slate-400 hover:text-[#EF4444] transition shrink-0 cursor-pointer"
@@ -1254,14 +1254,14 @@ export const CardModal: React.FC<CardModalProps> = ({ card, onClose, initialEdit
 
                   <div className="flex justify-between items-center py-1.5 border-b border-[#E2E8F0] dark:border-gray-700">
                     <span className="text-slate-500 dark:text-gray-300">{t('createdAt')}</span>
-                    <span className="text-slate-600">
+                    <span className="text-slate-600 dark:text-gray-300">
                       {new Date(card.createdAt).toLocaleDateString('id-ID')}
                     </span>
                   </div>
 
                   <div className="flex justify-between items-center py-1.5">
                     <span className="text-slate-500 dark:text-gray-300">{t('owner')}</span>
-                    <span className="font-medium text-slate-700">{state.studentName}</span>
+                    <span className="font-medium text-slate-700 dark:text-gray-200">{state.studentName}</span>
                   </div>
                 </div>
 
@@ -1286,8 +1286,8 @@ export const CardModal: React.FC<CardModalProps> = ({ card, onClose, initialEdit
                             card.columnId === col.id
                               ? 'bg-primary/10 border-blue-200 text-primary cursor-default'
                               : isDisabled
-                              ? 'bg-slate-50 dark:bg-gray-800/50 border-slate-200 dark:border-gray-700 text-slate-400 cursor-not-allowed opacity-50'
-                              : 'bg-white dark:bg-[#243447] border-[#E2E8F0] dark:border-gray-700 text-slate-700 hover:bg-slate-50 dark:hover:bg-[#2D435E] hover:text-slate-900'
+                              ? 'bg-slate-50 dark:bg-gray-800/50 border-slate-200 dark:border-gray-700 text-slate-400 dark:text-gray-500 cursor-not-allowed opacity-50'
+                              : 'bg-white dark:bg-[#243447] border-[#E2E8F0] dark:border-gray-700 text-slate-700 dark:text-gray-300 hover:bg-slate-50 dark:hover:bg-[#2D435E] hover:text-slate-900 dark:hover:text-white'
                           }`}
                         >
                           {col.label}

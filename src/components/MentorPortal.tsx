@@ -55,7 +55,9 @@ export const MentorPortal: React.FC<MentorPortalProps> = ({ onPantau }) => {
   }, [selectedCompanyId]);
 
   const hasAssignment = currentUser?.companies && currentUser.companies.length > 0;
-  const activeCompanyName = currentUser?.companies?.find((c: { id: string; name: string }) => c.id === selectedCompanyId)?.name || 'Perusahaan Aktif';
+  const activeCompanyName = selectedCompanyId 
+    ? (currentUser?.companies?.find((c: { id: string; name: string }) => c.id === selectedCompanyId)?.name || 'Perusahaan Aktif')
+    : 'Semua Instansi';
 
   // Empty state when no companies are assigned
   if (!hasAssignment) {
@@ -96,9 +98,10 @@ export const MentorPortal: React.FC<MentorPortalProps> = ({ onPantau }) => {
             <span className="text-xs font-semibold text-[#64748B] dark:text-gray-300">{t('selectCompany')}</span>
             <select
               value={selectedCompanyId || ''}
-              onChange={(e) => setSelectedCompanyId(e.target.value)}
+              onChange={(e) => setSelectedCompanyId(e.target.value === '' ? null : e.target.value)}
               className="bg-white dark:bg-[#243447] border border-[#E2E8F0] dark:border-gray-700 rounded-xl px-3 py-1.5 text-xs text-[#0F172A] dark:text-gray-200 focus:outline-none focus:border-primary"
             >
+              <option value="">Semua Instansi</option>
               {currentUser.companies.map((c: { id: string; name: string }) => (
                 <option key={c.id} value={c.id}>{c.name}</option>
               ))}

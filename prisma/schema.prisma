@@ -33,7 +33,7 @@ model User {
   role                  String         @db.VarChar(50)
   company               String?        @db.VarChar(255)
   nisn                  String?        @db.VarChar(50)
-  school                String         @default("SMKN 1 BOJONG") @db.VarChar(255)
+  school                String?        @db.VarChar(255)
   createdAt             DateTime       @default(now())
   classId               String?        @db.VarChar(255)
   companyId             String?        @db.VarChar(255)

@@ -374,7 +374,7 @@ export const LogbookTable: React.FC<LogbookTableProps> = ({ onOpenCard, onEditCa
 
           <div className="flex flex-col items-center text-center text-xs font-semibold text-black/70 mb-4">
             <p className="uppercase tracking-wider font-bold text-sm text-black">
-              {formatTitleCase((currentUser as any)?.school || 'SMKN 1 BOJONG')}
+              {formatTitleCase((currentUser as any)?.school || (currentUser as any)?.institution?.name || '-')}
             </p>
             <p className="mt-1">Tahun {new Date().getFullYear()}</p>
           </div>
