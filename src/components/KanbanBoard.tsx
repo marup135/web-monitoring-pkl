@@ -113,6 +113,7 @@ export const KanbanBoard: React.FC<KanbanBoardProps> = ({ onOpenCard }) => {
   const [newEndTime, setNewEndTime] = useState('');
   const [newCollaborators, setNewCollaborators] = useState('');
   const [validationError, setValidationError] = useState<string | null>(null);
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
   const getColumnTitle = (id: PKLCard['columnId']) => {
     switch (id) {
@@ -126,10 +127,13 @@ export const KanbanBoard: React.FC<KanbanBoardProps> = ({ onOpenCard }) => {
 
   const handleModalSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (isSubmitting) return;
     setValidationError(null);
+    setIsSubmitting(true);
 
     if (!newStartTime || !newEndTime) {
       setValidationError('Waktu mulai dan waktu selesai wajib diisi.');
+      setIsSubmitting(false);
       return;
     }
 
@@ -139,10 +143,14 @@ export const KanbanBoard: React.FC<KanbanBoardProps> = ({ onOpenCard }) => {
     const endMin = endH * 60 + endM;
     if (endMin < startMin) {
       setValidationError('Waktu selesai harus lebih besar dari waktu mulai.');
+      setIsSubmitting(false);
       return;
     }
 
-    if (!newTitle.trim()) return;
+    if (!newTitle.trim()) {
+      setIsSubmitting(false);
+      return;
+    }
 
     const isDuplicate = state.cards.some(
       (card) => card.title.trim().toLowerCase() === newTitle.trim().toLowerCase()
@@ -150,6 +158,7 @@ export const KanbanBoard: React.FC<KanbanBoardProps> = ({ onOpenCard }) => {
 
     if (isDuplicate) {
       setValidationError('Kegiatan dengan judul tersebut sudah ada. Harap gunakan judul yang berbeda.');
+      setIsSubmitting(false);
       return;
     }
 
@@ -175,8 +184,11 @@ export const KanbanBoard: React.FC<KanbanBoardProps> = ({ onOpenCard }) => {
       setIsAddModalOpen(false);
     } catch (err: any) {
       setValidationError(err.message || 'Gagal menyimpan kegiatan.');
+    } finally {
+      setIsSubmitting(false);
     }
   };
+
 
   const getPriorityBadge = (priority?: PriorityLevel) => {
     switch (priority) {
@@ -1167,10 +1179,12 @@ export const KanbanBoard: React.FC<KanbanBoardProps> = ({ onOpenCard }) => {
                 </button>
                 <button
                   type="submit"
-                  className="w-full md:w-auto px-4 py-3 md:py-2 rounded-xl bg-primary hover:bg-primary-hover text-sm md:text-xs font-semibold text-white shadow-sm hover:shadow-primary/10 transition cursor-pointer min-h-[48px] md:min-h-0"
+                  disabled={isSubmitting}
+                  className="w-full md:w-auto px-4 py-3 md:py-2 rounded-xl bg-primary hover:bg-primary-hover text-sm md:text-xs font-semibold text-white shadow-sm hover:shadow-primary/10 transition cursor-pointer min-h-[48px] md:min-h-0 disabled:opacity-70 disabled:cursor-not-allowed"
                 >
-                  {t('save')}
+                  {isSubmitting ? 'Menyimpan...' : t('save')}
                 </button>
+
               </div>
             </form>
           </div>
