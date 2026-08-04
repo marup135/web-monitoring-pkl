@@ -509,6 +509,7 @@ export const translations = {
     needReview: "Menunggu Review",
     studentActions: "Tindakan",
     studentClass: "Kelas",
+    appPreferences: "Preferensi Aplikasi",
   },
   en: {
     errNewPasswordRequired: "New password is required.",
@@ -1020,6 +1021,7 @@ export const translations = {
     needReview: "Need Review",
     studentActions: "Actions",
     studentClass: "Class",
+    appPreferences: "App Preferences",
   }
 };
 
