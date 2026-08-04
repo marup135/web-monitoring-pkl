@@ -50,7 +50,7 @@ export function parseActivityPhotos(raw: string | null | undefined): string[] {
 }
 
 export function AttendancePage() {
-  const { currentUser, selectedStudentId } = usePKL();
+  const { currentUser, selectedStudentId, state } = usePKL();
   const { t } = useLanguage();
   const [loading, setLoading] = useState(true);
   const [actionLoading, setActionLoading] = useState(false);
@@ -159,7 +159,9 @@ export function AttendancePage() {
     doc.text("Rekap Absensi Siswa", 14, 20);
     
     doc.setFontSize(10);
-    doc.text(`Dicetak pada: ${new Date().toLocaleString('id-ID')}`, 14, 30);
+    doc.text(`Nama Siswa / Mahasiswa: ${state.studentName || currentUser?.name || '-'}`, 14, 30);
+    doc.text(`Tempat PKL: ${state.companyName || '-'}`, 14, 35);
+    doc.text(`Dicetak pada: ${new Date().toLocaleString('id-ID')}`, 14, 40);
     
     const tableColumn = ["Tanggal", "Masuk", "Pulang", "Status"];
     const tableRows: any[] = [];
@@ -177,7 +179,7 @@ export function AttendancePage() {
     autoTable(doc, {
       head: [tableColumn],
       body: tableRows,
-      startY: 40,
+      startY: 50,
       theme: 'grid'
     });
     

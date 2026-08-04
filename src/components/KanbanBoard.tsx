@@ -4,6 +4,8 @@ import React, { useState } from 'react';
 import { usePKL } from '../context/PKLContext';
 import { PKLCard, TaskCategory, PriorityLevel } from '../types/pkl';
 import { Plus, Calendar as CalendarIcon, Clock, MessageSquare, Award, Search, Filter, ChevronDown, X, CheckSquare, Tag, AlertCircle, LayoutGrid, List, ChevronLeft, ChevronRight, Eye, ArrowUpDown, TrendingUp, Minus, Maximize2, Trash2, Pencil, Palette, Image as ImageIcon, Sparkles, Check, Loader2 } from 'lucide-react';
+import { LogbookTable } from './LogbookTable';
+import { BackgroundPicker } from './BackgroundPicker';
 import { useLanguage } from '../context/LanguageContext';
 import { updateBoardBackgroundAction } from '../app/actions/pkl';
 
@@ -181,26 +183,26 @@ export const KanbanBoard: React.FC<KanbanBoardProps> = ({ onOpenCard }) => {
       case 'urgent':
         return (
           <span className="text-[9px] font-extrabold px-2 py-0.5 rounded bg-purple-100 dark:bg-purple-900/40 text-purple-700 dark:text-purple-300 border border-purple-300 dark:border-purple-700 flex items-center gap-1">
-            ⚡ Mendesak
+            {t('priorityUrgent')}
           </span>
         );
       case 'high':
         return (
           <span className="text-[9px] font-extrabold px-2 py-0.5 rounded bg-red-100 dark:bg-red-900/40 text-red-700 dark:text-red-300 border border-red-300 dark:border-red-700 flex items-center gap-1">
-            🔥 Tinggi
+            {t('priorityHigh')}
           </span>
         );
       case 'low':
         return (
           <span className="text-[9px] font-bold px-2 py-0.5 rounded bg-emerald-100 dark:bg-emerald-900/40 text-emerald-700 dark:text-emerald-300 border border-emerald-300 dark:border-emerald-700 flex items-center gap-1">
-            🟢 Rendah
+            {t('priorityLow')}
           </span>
         );
       case 'medium':
       default:
         return (
           <span className="text-[9px] font-bold px-2 py-0.5 rounded bg-amber-100 dark:bg-amber-900/40 text-amber-700 dark:text-amber-300 border border-amber-300 dark:border-amber-700 flex items-center gap-1">
-            🟡 Sedang
+            {t('priorityMedium')}
           </span>
         );
     }
@@ -492,6 +494,8 @@ export const KanbanBoard: React.FC<KanbanBoardProps> = ({ onOpenCard }) => {
             </button>
           )}
 
+          <BackgroundPicker />
+
           <button
             type="button"
             onClick={() => setIsFilterSidebarOpen(true)}
@@ -620,9 +624,9 @@ export const KanbanBoard: React.FC<KanbanBoardProps> = ({ onOpenCard }) => {
                 <div className="flex flex-col gap-2.5 overflow-y-auto pr-1 flex-1 min-h-[40px] lg:max-h-[calc(100vh-340px)] scrollbar-thin">
                   {colCards.length === 0 ? (
                     <div className="py-5 text-center text-slate-400 text-xs border border-dashed border-slate-200 dark:border-gray-700/50 rounded-xl bg-white/40 dark:bg-gray-800/30 px-3 flex flex-col items-center gap-1">
-                      <span className="font-semibold">{col.id === 'selesai' ? '🔒 Khusus Persetujuan Pembimbing' : 'Kosong'}</span>
+                      <span className="font-semibold">{col.id === 'selesai' ? t('lockedApproval') : t('empty')}</span>
                       <span className="text-[10px] text-slate-400 font-normal">
-                        {col.id === 'selesai' ? 'Kegiatan dipindahkan setelah disetujui & dinilai' : 'Belum ada kegiatan'}
+                        {col.id === 'selesai' ? t('approvalDesc') : t('noActivities')}
                       </span>
                     </div>
                   ) : (
@@ -672,7 +676,7 @@ export const KanbanBoard: React.FC<KanbanBoardProps> = ({ onOpenCard }) => {
                           </h4>
 
                           <p className="text-[11px] text-slate-500 dark:text-gray-400 line-clamp-2 mb-3 leading-relaxed">
-                            {card.description || 'Tidak ada deskripsi.'}
+                            {card.description || t('noDescription')}
                           </p>
 
                           {/* Subtask progress */}
@@ -743,16 +747,16 @@ export const KanbanBoard: React.FC<KanbanBoardProps> = ({ onOpenCard }) => {
                 className="w-full flex items-center gap-2.5 p-3.5 bg-slate-100/80 hover:bg-slate-200/80 dark:bg-gray-800/80 dark:hover:bg-gray-700/80 border border-dashed border-slate-300 dark:border-gray-600 text-slate-700 dark:text-gray-200 rounded-2xl text-xs font-bold shadow-sm transition cursor-pointer"
               >
                 <Plus size={16} className="text-primary" />
-                <span>+ Tambah Kolom Baru</span>
+                <span>{t('addCustomColumn')}</span>
               </button>
             ) : (
               <form onSubmit={handleAddCustomColumn} className="bg-white dark:bg-[#1E293B] border border-slate-200 dark:border-gray-700 p-3.5 rounded-2xl shadow-xl flex flex-col gap-3 animate-in fade-in zoom-in-95 duration-150">
-                <h4 className="text-xs font-bold text-slate-800 dark:text-white">Tambah Kolom Baru</h4>
+                <h4 className="text-xs font-bold text-slate-800 dark:text-white">{t('addCustomColumn').replace('+', '').trim()}</h4>
                 <input
                   type="text"
                   autoFocus
                   required
-                  placeholder="Nama judul kolom..."
+                  placeholder={t('columnTitlePlaceholder')}
                   value={newColumnTitle}
                   onChange={(e) => setNewColumnTitle(e.target.value)}
                   className="w-full bg-slate-50 dark:bg-gray-900 border border-slate-200 dark:border-gray-700 rounded-xl px-3 py-2 text-xs text-slate-800 dark:text-gray-200 focus:outline-none focus:border-primary"
@@ -763,13 +767,13 @@ export const KanbanBoard: React.FC<KanbanBoardProps> = ({ onOpenCard }) => {
                     onClick={() => { setIsAddColumnOpen(false); setNewColumnTitle(''); }}
                     className="px-3 py-1.5 text-xs text-slate-500 hover:text-slate-700 dark:text-gray-400 font-bold transition cursor-pointer"
                   >
-                    Batal
+                    {t('cancel')}
                   </button>
                   <button
                     type="submit"
                     className="px-4 py-1.5 bg-primary hover:bg-primary-hover text-white text-xs font-bold rounded-xl shadow-sm transition cursor-pointer"
                   >
-                    + Simpan
+                    {t('saveAdd')}
                   </button>
                 </div>
               </form>
@@ -840,10 +844,10 @@ export const KanbanBoard: React.FC<KanbanBoardProps> = ({ onOpenCard }) => {
                             'bg-slate-100 text-slate-700 border-slate-200 dark:bg-gray-800 dark:text-gray-300 dark:border-gray-700'
                           }`}
                         >
-                          <option value="rencana">Rencana Kegiatan</option>
-                          <option value="progres">Sedang Dikerjakan</option>
-                          <option value="review">Butuh Review</option>
-                          <option value="selesai">Selesai (Disetujui)</option>
+                          <option value="rencana">{t('listRencana')}</option>
+                          <option value="progres">{t('listProgres')}</option>
+                          <option value="review">{t('listReview')}</option>
+                          <option value="selesai">{t('listSelesai')}</option>
                         </select>
                       </td>
                       <td className="py-3 px-4 text-center whitespace-nowrap">
@@ -1102,13 +1106,13 @@ export const KanbanBoard: React.FC<KanbanBoardProps> = ({ onOpenCard }) => {
 
               {/* Priority Selector */}
               <div className="flex flex-col gap-1.5">
-                <label className="text-[11px] text-[#64748B] dark:text-gray-300 font-semibold uppercase tracking-wider">Tingkat Prioritas</label>
+                <label className="text-[11px] text-[#64748B] dark:text-gray-300 font-semibold uppercase tracking-wider">{t('priorityLevelLabel')}</label>
                 <div className="grid grid-cols-4 gap-2">
                   {[
-                    { id: 'low', label: '🟢 Rendah' },
-                    { id: 'medium', label: '🟡 Sedang' },
-                    { id: 'high', label: '🔥 Tinggi' },
-                    { id: 'urgent', label: '⚡ Mendesak' },
+                    { id: 'low', label: t('priorityLow') },
+                    { id: 'medium', label: t('priorityMedium') },
+                    { id: 'high', label: t('priorityHigh') },
+                    { id: 'urgent', label: t('priorityUrgent') },
                   ].map((p) => (
                     <button
                       key={p.id}
@@ -1190,8 +1194,8 @@ export const KanbanBoard: React.FC<KanbanBoardProps> = ({ onOpenCard }) => {
                   <Filter size={18} />
                 </div>
                 <div>
-                  <h3 className="font-bold text-slate-900 dark:text-white text-sm">Filter & Menu Board</h3>
-                  <p className="text-[11px] text-slate-400 dark:text-gray-400">Atur pencarian & filter kegiatan</p>
+                  <h3 className="font-bold text-slate-900 dark:text-white text-sm">{t('filterMenuTitle')}</h3>
+                  <p className="text-[11px] text-slate-400 dark:text-gray-400">{t('filterMenuDesc')}</p>
                 </div>
               </div>
               <button
@@ -1208,7 +1212,7 @@ export const KanbanBoard: React.FC<KanbanBoardProps> = ({ onOpenCard }) => {
               {/* Search */}
               <div className="flex flex-col gap-2">
                 <label className="text-xs font-bold text-slate-700 dark:text-gray-300 uppercase tracking-wider">
-                  🔍 Cari Kegiatan
+                  {t('searchActivityLabel')}
                 </label>
                 <div className="relative">
                   <Search size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" />
@@ -1234,7 +1238,7 @@ export const KanbanBoard: React.FC<KanbanBoardProps> = ({ onOpenCard }) => {
               {/* Kategori / Label */}
               <div className="flex flex-col gap-2">
                 <label className="text-xs font-bold text-slate-700 dark:text-gray-300 uppercase tracking-wider">
-                  🏷️ Label & Kategori
+                  {t('categoryLabel')}
                 </label>
                 <div className="flex flex-wrap gap-1.5">
                   {filterCategories.map((cat) => {
@@ -1260,15 +1264,15 @@ export const KanbanBoard: React.FC<KanbanBoardProps> = ({ onOpenCard }) => {
               {/* Filter Prioritas */}
               <div className="flex flex-col gap-2">
                 <label className="text-xs font-bold text-slate-700 dark:text-gray-300 uppercase tracking-wider">
-                  ⚡ Tingkat Prioritas
+                  {t('priorityFilterLabel')}
                 </label>
                 <div className="grid grid-cols-2 gap-1.5">
                   {[
-                    { id: 'Semua', label: 'Semua' },
-                    { id: 'urgent', label: '⚡ Mendesak' },
-                    { id: 'high', label: '🔥 Tinggi' },
-                    { id: 'medium', label: '🟡 Sedang' },
-                    { id: 'low', label: '🟢 Rendah' },
+                    { id: 'Semua', label: t('all') },
+                    { id: 'urgent', label: t('priorityUrgent') },
+                    { id: 'high', label: t('priorityHigh') },
+                    { id: 'medium', label: t('priorityMedium') },
+                    { id: 'low', label: t('priorityLow') },
                   ].map((p) => (
                     <button
                       key={p.id}
@@ -1289,14 +1293,14 @@ export const KanbanBoard: React.FC<KanbanBoardProps> = ({ onOpenCard }) => {
               {/* Urutkan Berdasarkan */}
               <div className="flex flex-col gap-2">
                 <label className="text-xs font-bold text-slate-700 dark:text-gray-300 uppercase tracking-wider">
-                  🔀 Urutkan Kegiatan
+                  {t('sortActivityLabel')}
                 </label>
                 <div className="flex flex-col gap-1">
                   {[
-                    { id: 'default', label: 'Bawaan (Terbaru)' },
-                    { id: 'dueDate', label: '📅 Batas Waktu Terdekat' },
-                    { id: 'priority', label: '⚡ Prioritas Tertinggi' },
-                    { id: 'title', label: '🔤 Judul (A-Z)' },
+                    { id: 'default', label: t('sortDefault') },
+                    { id: 'dueDate', label: t('sortDueDate') },
+                    { id: 'priority', label: t('sortPriority') },
+                    { id: 'title', label: t('sortTitle') },
                   ].map((item) => (
                     <button
                       key={item.id}

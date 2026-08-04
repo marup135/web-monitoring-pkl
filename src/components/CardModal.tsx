@@ -28,7 +28,7 @@ export const CardModal: React.FC<CardModalProps> = ({ card, onClose, initialEdit
     manageCollaborators,
     currentUser
   } = usePKL();
-  const { t } = useLanguage();
+  const { t, language } = useLanguage();
   const [activeTab, setActiveTab] = useState<'details' | 'history' | 'collaborators'>('details');
 
   // Edit Mode states (for Student)
@@ -324,7 +324,7 @@ export const CardModal: React.FC<CardModalProps> = ({ card, onClose, initialEdit
               {isCategoryDropdownOpen && (
                 <div className="absolute left-0 mt-2 w-48 bg-white dark:bg-[#243447] border border-[#E2E8F0] dark:border-gray-700 rounded-xl shadow-xl z-50 overflow-hidden py-1 animate-in fade-in zoom-in-95 duration-150">
                   <div className="px-3 py-1.5 text-[10px] font-bold text-slate-400 dark:text-gray-400 uppercase tracking-wider border-b border-slate-100 dark:border-gray-700/60 mb-1">
-                    Ganti Label / Kategori
+                    {t('changeCategory')}
                   </div>
                   {['Coding', 'Design', 'Laporan', 'Networking'].map((cat) => (
                     <button
@@ -373,12 +373,12 @@ export const CardModal: React.FC<CardModalProps> = ({ card, onClose, initialEdit
               >
                 <span>
                   {card.priority === 'urgent'
-                    ? '⚡ Mendesak'
+                    ? t('priorityUrgent')
                     : card.priority === 'high'
-                    ? '🔥 Tinggi'
+                    ? t('priorityHigh')
                     : card.priority === 'low'
-                    ? '🟢 Rendah'
-                    : '🟡 Sedang'}
+                    ? t('priorityLow')
+                    : t('priorityMedium')}
                 </span>
                 <ChevronDown size={12} className="text-slate-400" />
               </button>
@@ -386,13 +386,13 @@ export const CardModal: React.FC<CardModalProps> = ({ card, onClose, initialEdit
               {isPriorityDropdownOpen && (
                 <div className="absolute left-0 mt-2 w-44 bg-white dark:bg-[#243447] border border-[#E2E8F0] dark:border-gray-700 rounded-xl shadow-xl z-50 overflow-hidden py-1 animate-in fade-in zoom-in-95 duration-150">
                   <div className="px-3 py-1.5 text-[10px] font-bold text-slate-400 dark:text-gray-400 uppercase tracking-wider border-b border-slate-100 dark:border-gray-700/60 mb-1">
-                    Ganti Prioritas
+                    {t('changePriority')}
                   </div>
                   {[
-                    { id: 'low', label: '🟢 Rendah' },
-                    { id: 'medium', label: '🟡 Sedang' },
-                    { id: 'high', label: '🔥 Tinggi' },
-                    { id: 'urgent', label: '⚡ Mendesak' },
+                    { id: 'low', label: t('priorityLow') },
+                    { id: 'medium', label: t('priorityMedium') },
+                    { id: 'high', label: t('priorityHigh') },
+                    { id: 'urgent', label: t('priorityUrgent') },
                   ].map((p) => (
                     <button
                       key={p.id}
@@ -464,7 +464,7 @@ export const CardModal: React.FC<CardModalProps> = ({ card, onClose, initialEdit
             }`}
           >
             <Users size={14} />
-            Anggota {card.collaborators && card.collaborators.length > 0 ? `(${card.collaborators.length})` : ''}
+            {t('membersTab')} {card.collaborators && card.collaborators.length > 0 ? `(${card.collaborators.length})` : ''}
           </button>
         </div>
 
@@ -491,12 +491,12 @@ export const CardModal: React.FC<CardModalProps> = ({ card, onClose, initialEdit
                         <Award className="text-purple-600 dark:text-purple-400 shrink-0" size={18} />
                         <div>
                           <h4 className="text-xs font-bold text-purple-900 dark:text-purple-200">
-                            ⏳ Menunggu Persetujuan & Penilaian Pembimbing
+                            {t('waitingApprovalMentor')}
                           </h4>
                           <p className="text-[11px] text-purple-700 dark:text-purple-300">
                             {isStudent
-                              ? 'Kegiatan ini telah diajukan. Hanya Dosen Pembimbing atau Mentor Industri yang dapat menyetujui & memindahkan ke kolom Selesai.'
-                              : 'Sebagai Guru/Mentor, Anda dapat memberikan penilaian & persetujuan atau meminta revisi.'}
+                              ? t('waitingApprovalDesc')
+                              : t('waitingApprovalDescTeacher')}
                           </p>
                         </div>
                       </div>
@@ -507,7 +507,7 @@ export const CardModal: React.FC<CardModalProps> = ({ card, onClose, initialEdit
                             onClick={() => setIsRevisionBoxOpen(!isRevisionBoxOpen)}
                             className="px-3 py-1.5 bg-red-100 hover:bg-red-200 text-red-700 dark:bg-red-900/40 dark:text-red-300 text-xs font-bold rounded-lg transition cursor-pointer"
                           >
-                            🔴 Minta Revisi
+                            {t('requestRevisionBtn')}
                           </button>
                         </div>
                       )}
@@ -516,13 +516,13 @@ export const CardModal: React.FC<CardModalProps> = ({ card, onClose, initialEdit
                     {/* Inline Revision Request Box */}
                     {isRevisionBoxOpen && (
                       <form onSubmit={handleRequestRevision} className="flex flex-col gap-2 pt-2 border-t border-purple-200 dark:border-purple-800/60">
-                        <label className="text-[11px] font-bold text-red-700 dark:text-red-300">Catatan/Alasan Revisi untuk Mahasiswa:</label>
+                        <label className="text-[11px] font-bold text-red-700 dark:text-red-300">{t('revisionNoteLabel')}</label>
                         <textarea
                           required
                           rows={2}
                           value={revisionNote}
                           onChange={(e) => setRevisionNote(e.target.value)}
-                          placeholder="Jelaskan bagian mana yang perlu diperbaiki oleh mahasiswa..."
+                          placeholder={t('revisionNotePlaceholder')}
                           className="w-full bg-white dark:bg-gray-900 border border-red-300 rounded-lg p-2 text-xs text-slate-800 dark:text-gray-200 focus:outline-none"
                         />
                         <div className="flex justify-end gap-2">
@@ -537,7 +537,7 @@ export const CardModal: React.FC<CardModalProps> = ({ card, onClose, initialEdit
                             type="submit"
                             className="px-3 py-1 bg-red-600 hover:bg-red-700 text-white text-xs font-bold rounded-lg shadow-sm cursor-pointer"
                           >
-                            Kirim Revisi & Kembalikan Kartu
+                            {t('sendRevisionBtn')}
                           </button>
                         </div>
                       </form>
@@ -551,10 +551,10 @@ export const CardModal: React.FC<CardModalProps> = ({ card, onClose, initialEdit
                       <CheckCircle className="text-emerald-600 dark:text-emerald-400 shrink-0" size={18} />
                       <div>
                         <h4 className="text-xs font-bold text-emerald-900 dark:text-emerald-200">
-                          ✅ Telah Disetujui & Dinilai oleh Pembimbing
+                          {t('approvedMentorMsg')}
                         </h4>
                         <p className="text-[11px] text-emerald-700 dark:text-emerald-300">
-                          Kegiatan ini telah resmi diverifikasi. Nilai & masukan telah dicatat dalam sistem monitoring PKL.
+                          {t('approvedMentorDesc')}
                         </p>
                       </div>
                     </div>
@@ -652,10 +652,10 @@ export const CardModal: React.FC<CardModalProps> = ({ card, onClose, initialEdit
                         <label className="text-[10px] text-[#64748B] dark:text-gray-300 font-semibold uppercase">Tingkat Prioritas</label>
                         <div className="grid grid-cols-4 gap-2">
                           {[
-                            { id: 'low', label: '🟢 Rendah' },
-                            { id: 'medium', label: '🟡 Sedang' },
-                            { id: 'high', label: '🔥 Tinggi' },
-                            { id: 'urgent', label: '⚡ Mendesak' },
+                            { id: 'low', label: t('priorityLow') },
+                            { id: 'medium', label: t('priorityMedium') },
+                            { id: 'high', label: t('priorityHigh') },
+                            { id: 'urgent', label: t('priorityUrgent') },
                           ].map((p) => (
                             <button
                               key={p.id}
@@ -738,7 +738,7 @@ export const CardModal: React.FC<CardModalProps> = ({ card, onClose, initialEdit
                         <div className="flex items-center gap-2">
                           <span className="text-[#94A3B8] font-normal w-12">{t('date')}</span>
                           <span>
-                            {card.dueDate ? new Date(card.dueDate).toLocaleDateString('id-ID', { day: '2-digit', month: 'long', year: 'numeric' }) : '-'}
+                            {card.dueDate ? new Date(card.dueDate).toLocaleDateString(language === 'id' ? 'id-ID' : 'en-US', { day: '2-digit', month: 'long', year: 'numeric' }) : '-'}
                           </span>
                         </div>
                         {(card.startTime || card.endTime) && (
@@ -762,7 +762,7 @@ export const CardModal: React.FC<CardModalProps> = ({ card, onClose, initialEdit
                     <div className="flex items-center gap-2">
                       <CheckSquare size={16} className="text-primary" />
                       <h4 className="text-xs font-bold text-[#64748B] dark:text-gray-300 uppercase tracking-wider">
-                        Sub-tugas & Checklist ({subtasks.filter(s => s.isCompleted).length}/{subtasks.length})
+                        {t('subtaskChecklist')} ({subtasks.filter(s => s.isCompleted).length}/{subtasks.length})
                       </h4>
                     </div>
                     {subtasks.length > 0 && (
@@ -803,7 +803,7 @@ export const CardModal: React.FC<CardModalProps> = ({ card, onClose, initialEdit
                             type="button"
                             onClick={() => handleDeleteSubtask(st.id)}
                             className="text-slate-400 hover:text-red-500 transition p-1 opacity-0 group-hover:opacity-100 cursor-pointer"
-                            title="Hapus Sub-tugas"
+                            title={t('deleteSubtask')}
                           >
                             <Trash2 size={13} />
                           </button>
@@ -812,7 +812,7 @@ export const CardModal: React.FC<CardModalProps> = ({ card, onClose, initialEdit
                     ))}
 
                     {subtasks.length === 0 && (
-                      <p className="text-xs text-slate-400 dark:text-gray-400 italic">Belum ada sub-tugas. Tambahkan langkah-langkah kerja di bawah.</p>
+                      <p className="text-xs text-slate-400 dark:text-gray-400 italic">{t('emptySubtask')}</p>
                     )}
                   </div>
 
@@ -821,7 +821,7 @@ export const CardModal: React.FC<CardModalProps> = ({ card, onClose, initialEdit
                     <form onSubmit={handleAddSubtask} className="flex gap-2">
                       <input
                         type="text"
-                        placeholder="Tambah sub-tugas baru..."
+                        placeholder={t('addSubtaskPlaceholder')}
                         value={newSubtaskText}
                         onChange={(e) => setNewSubtaskText(e.target.value)}
                         className="flex-1 bg-white dark:bg-[#243447] border border-[#E2E8F0] dark:border-gray-700 rounded-lg px-3 py-1.5 text-xs text-slate-700 dark:text-gray-200 focus:outline-none focus:border-primary"
@@ -832,7 +832,7 @@ export const CardModal: React.FC<CardModalProps> = ({ card, onClose, initialEdit
                         className="px-3 py-1.5 bg-primary hover:bg-primary-hover text-white rounded-lg text-xs font-semibold flex items-center gap-1 transition disabled:opacity-50 cursor-pointer"
                       >
                         <Plus size={13} />
-                        <span>Tambah</span>
+                        <span>{t('add')}</span>
                       </button>
                     </form>
                   )}
@@ -939,15 +939,15 @@ export const CardModal: React.FC<CardModalProps> = ({ card, onClose, initialEdit
                           <div className="grid grid-cols-3 gap-2 text-[11px] text-slate-500 dark:text-gray-300">
                             <div className="bg-white dark:bg-[#243447] p-1.5 rounded border border-[#E2E8F0] dark:border-gray-700 text-center">
                               <span className="block font-bold text-slate-800 dark:text-gray-200">{card.scoreMentorDiscipline}</span>
-                              Kedisiplinan
+                              {t('scoreDiscipline')}
                             </div>
                             <div className="bg-white dark:bg-[#243447] p-1.5 rounded border border-[#E2E8F0] dark:border-gray-700 text-center">
                               <span className="block font-bold text-slate-800 dark:text-gray-200">{card.scoreMentorSkill}</span>
-                              Keahlian
+                              {t('scoreSkill')}
                             </div>
                             <div className="bg-white dark:bg-[#243447] p-1.5 rounded border border-[#E2E8F0] dark:border-gray-700 text-center">
                               <span className="block font-bold text-slate-800 dark:text-gray-200">{card.scoreMentorAttitude}</span>
-                              Sikap
+                              {t('scoreAttitude')}
                             </div>
                           </div>
                         </div>
@@ -980,15 +980,15 @@ export const CardModal: React.FC<CardModalProps> = ({ card, onClose, initialEdit
                           <div className="grid grid-cols-3 gap-2 text-[11px] text-slate-500 dark:text-gray-300">
                             <div className="bg-white dark:bg-[#243447] p-1.5 rounded border border-[#E2E8F0] dark:border-gray-700 text-center">
                               <span className="block font-bold text-slate-800 dark:text-gray-200">{card.scoreAdvisorDiscipline}</span>
-                              Kedisiplinan
+                              {t('scoreDiscipline')}
                             </div>
                             <div className="bg-white dark:bg-[#243447] p-1.5 rounded border border-[#E2E8F0] dark:border-gray-700 text-center">
                               <span className="block font-bold text-slate-800 dark:text-gray-200">{card.scoreAdvisorReport}</span>
-                              Laporan
+                              {t('scoreReport')}
                             </div>
                             <div className="bg-white dark:bg-[#243447] p-1.5 rounded border border-[#E2E8F0] dark:border-gray-700 text-center">
                               <span className="block font-bold text-slate-800 dark:text-gray-200">{card.scoreAdvisorCommunication}</span>
-                              Komunikasi
+                              {t('scoreCommunication')}
                             </div>
                           </div>
                         </div>

@@ -206,8 +206,8 @@ export const LogbookTable: React.FC<LogbookTableProps> = ({ onOpenCard, onEditCa
             <Clock size={20} />
           </div>
           <div>
-            <span className="text-[10px] uppercase font-bold text-slate-400">Total Jam Logbook</span>
-            <span className="text-xl font-black text-slate-800 dark:text-white block">{totalLogbookHours} Jam</span>
+            <span className="text-[10px] uppercase font-bold text-slate-400">{t('totalLogbookHours')}</span>
+            <span className="text-xl font-black text-slate-800 dark:text-white block">{totalLogbookHours} {t('hoursSuffix')}</span>
           </div>
         </div>
 
@@ -216,8 +216,8 @@ export const LogbookTable: React.FC<LogbookTableProps> = ({ onOpenCard, onEditCa
             <CheckCircle2 size={20} />
           </div>
           <div>
-            <span className="text-[10px] uppercase font-bold text-slate-400">Logbook Disetujui</span>
-            <span className="text-xl font-black text-slate-800 dark:text-white block">{approvedCount} Jurnal</span>
+            <span className="text-[10px] uppercase font-bold text-slate-400">{t('logbookApproved')}</span>
+            <span className="text-xl font-black text-slate-800 dark:text-white block">{approvedCount} {t('journalSuffix')}</span>
           </div>
         </div>
 
@@ -226,8 +226,8 @@ export const LogbookTable: React.FC<LogbookTableProps> = ({ onOpenCard, onEditCa
             <AlertCircle size={20} />
           </div>
           <div>
-            <span className="text-[10px] uppercase font-bold text-slate-400">Menunggu Review</span>
-            <span className="text-xl font-black text-slate-800 dark:text-white block">{reviewCount} Jurnal</span>
+            <span className="text-[10px] uppercase font-bold text-slate-400">{t('waitingReview')}</span>
+            <span className="text-xl font-black text-slate-800 dark:text-white block">{reviewCount} {t('journalSuffix')}</span>
           </div>
         </div>
 
@@ -236,8 +236,8 @@ export const LogbookTable: React.FC<LogbookTableProps> = ({ onOpenCard, onEditCa
             <FileText size={20} />
           </div>
           <div>
-            <span className="text-[10px] uppercase font-bold text-slate-400">Total Baris Entri</span>
-            <span className="text-xl font-black text-slate-800 dark:text-white block">{filteredCards.length} Entri</span>
+            <span className="text-[10px] uppercase font-bold text-slate-400">{t('totalEntries')}</span>
+            <span className="text-xl font-black text-slate-800 dark:text-white block">{filteredCards.length} {t('entriesSuffix')}</span>
           </div>
         </div>
       </div>
@@ -251,7 +251,7 @@ export const LogbookTable: React.FC<LogbookTableProps> = ({ onOpenCard, onEditCa
             <Search size={16} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400" />
             <input
               type="text"
-              placeholder="Cari jurnal (judul, kegiatan, atau kategori)..."
+              placeholder={t('searchLogbook')}
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
               className="w-full bg-slate-50 dark:bg-gray-900/60 border border-slate-200 dark:border-gray-700 rounded-xl pl-9 pr-4 py-2.5 text-xs text-slate-800 dark:text-gray-200 focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary"
@@ -289,40 +289,40 @@ export const LogbookTable: React.FC<LogbookTableProps> = ({ onOpenCard, onEditCa
           
           {/* Category Filter */}
           <div className="flex flex-col gap-1">
-            <label className="text-[10px] uppercase font-bold text-slate-400">Kategori</label>
+            <label className="text-[10px] uppercase font-bold text-slate-400">{t('category')}</label>
             <select
               value={selectedCategory}
               onChange={(e) => setSelectedCategory(e.target.value)}
               className="w-full bg-slate-50 dark:bg-gray-900 border border-slate-200 dark:border-gray-700 rounded-xl px-2.5 py-2 text-xs text-slate-700 dark:text-gray-200 focus:outline-none"
             >
-              <option value="all">Semua Kategori</option>
-              <option value="Coding">Coding</option>
-              <option value="Design">Design</option>
-              <option value="Laporan">Laporan</option>
-              <option value="Networking">Networking</option>
-              <option value="Lainnya">Lainnya</option>
+              <option value="all">{t('allCategories')}</option>
+              <option value="Coding">{t('coding') || 'Coding'}</option>
+              <option value="Design">{t('design') || 'Design'}</option>
+              <option value="Laporan">{t('report') || 'Laporan'}</option>
+              <option value="Networking">{t('networking') || 'Networking'}</option>
+              <option value="Lainnya">{t('others') || 'Lainnya'}</option>
             </select>
           </div>
 
           {/* Status Filter */}
           <div className="flex flex-col gap-1">
-            <label className="text-[10px] uppercase font-bold text-slate-400">Status</label>
+            <label className="text-[10px] uppercase font-bold text-slate-400">{t('colStatus') || 'Status'}</label>
             <select
               value={selectedStatus}
               onChange={(e) => setSelectedStatus(e.target.value)}
               className="w-full bg-slate-50 dark:bg-gray-900 border border-slate-200 dark:border-gray-700 rounded-xl px-2.5 py-2 text-xs text-slate-700 dark:text-gray-200 focus:outline-none"
             >
-              <option value="all">Semua Status</option>
-              <option value="selesai">Selesai (Disetujui)</option>
-              <option value="review">Menunggu Review</option>
-              <option value="progres">Sedang Dikerjakan</option>
-              <option value="rencana">Rencana</option>
+              <option value="all">{t('allStatus')}</option>
+              <option value="selesai">{t('statusDone')}</option>
+              <option value="review">{t('statusReview')}</option>
+              <option value="progres">{t('statusProgress')}</option>
+              <option value="rencana">{t('statusPlan')}</option>
             </select>
           </div>
 
           {/* Date Start Filter */}
           <div className="flex flex-col gap-1">
-            <label className="text-[10px] uppercase font-bold text-slate-400">Dari Tanggal</label>
+            <label className="text-[10px] uppercase font-bold text-slate-400">{t('fromDate')}</label>
             <input
               type="date"
               value={dateStart}
@@ -333,7 +333,7 @@ export const LogbookTable: React.FC<LogbookTableProps> = ({ onOpenCard, onEditCa
 
           {/* Date End Filter */}
           <div className="flex flex-col gap-1">
-            <label className="text-[10px] uppercase font-bold text-slate-400">Sampai Tanggal</label>
+            <label className="text-[10px] uppercase font-bold text-slate-400">{t('toDate')}</label>
             <input
               type="date"
               value={dateEnd}

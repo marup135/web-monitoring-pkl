@@ -129,3 +129,20 @@ export async function getFaceDescriptorAction(userId: string) {
     return { success: false, error: 'Gagal mendapatkan data wajah' };
   }
 }
+
+export async function updateTargetHoursAction(targetHours: number) {
+  try {
+    const userId = await getUserIdFromSession();
+    if (!userId) return { success: false, error: 'Belum login' };
+
+    await prisma.user.update({
+      where: { id: userId },
+      data: { targetHours },
+    });
+
+    return { success: true };
+  } catch (error) {
+    console.error('Failed to update target hours', error);
+    return { success: false, error: 'Gagal mengupdate target jam PKL' };
+  }
+}

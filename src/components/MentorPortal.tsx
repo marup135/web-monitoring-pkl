@@ -36,23 +36,25 @@ export const MentorPortal: React.FC<MentorPortalProps> = ({ onPantau }) => {
 
   const [metrics, setMetrics] = useState<DashboardMetrics | null>(null);
   const [loadingMetrics, setLoadingMetrics] = useState(false);
+  const [selectedSchool, setSelectedSchool] = useState<string>('');
+
+  const schools = Array.from(new Set(studentsList.map((s: any) => s.school).filter(Boolean))) as string[];
+  const filteredStudents = selectedSchool ? studentsList.filter((s: any) => s.school === selectedSchool) : studentsList;
 
   useEffect(() => {
     const loadMetrics = async () => {
-      if (selectedCompanyId) {
-        setLoadingMetrics(true);
-        try {
-          const m = await getDashboardMetricsAction(undefined, selectedCompanyId);
-          setMetrics(m as DashboardMetrics);
-        } catch (e) {
-          console.error(e);
-        } finally {
-          setLoadingMetrics(false);
-        }
+      setLoadingMetrics(true);
+      try {
+        const m = await getDashboardMetricsAction(undefined, undefined);
+        setMetrics(m as DashboardMetrics);
+      } catch (e) {
+        console.error(e);
+      } finally {
+        setLoadingMetrics(false);
       }
     };
     loadMetrics();
-  }, [selectedCompanyId]);
+  }, []);
 
   const hasAssignment = currentUser?.companies && currentUser.companies.length > 0;
   const activeCompanyName = selectedCompanyId 
@@ -93,17 +95,17 @@ export const MentorPortal: React.FC<MentorPortalProps> = ({ onPantau }) => {
           <p className="text-[11px] text-[#64748B] dark:text-gray-300">{t('mentorMonitorDesc')}</p>
         </div>
 
-        {currentUser?.companies && currentUser.companies.length > 1 && (
+        {schools.length > 0 && (
           <div className="flex items-center gap-2">
-            <span className="text-xs font-semibold text-[#64748B] dark:text-gray-300">{t('selectCompany')}</span>
+            <span className="text-xs font-semibold text-[#64748B] dark:text-gray-300">Pilih Sekolah</span>
             <select
-              value={selectedCompanyId || ''}
-              onChange={(e) => setSelectedCompanyId(e.target.value === '' ? null : e.target.value)}
+              value={selectedSchool}
+              onChange={(e) => setSelectedSchool(e.target.value)}
               className="bg-white dark:bg-[#243447] border border-[#E2E8F0] dark:border-gray-700 rounded-xl px-3 py-1.5 text-xs text-[#0F172A] dark:text-gray-200 focus:outline-none focus:border-primary"
             >
-              <option value="">Semua Instansi</option>
-              {currentUser.companies.map((c: { id: string; name: string }) => (
-                <option key={c.id} value={c.id}>{c.name}</option>
+              <option value="">Semua Sekolah</option>
+              {schools.map((school) => (
+                <option key={school} value={school}>{school}</option>
               ))}
             </select>
           </div>
@@ -231,7 +233,7 @@ export const MentorPortal: React.FC<MentorPortalProps> = ({ onPantau }) => {
             {t('studentListAt')} {activeCompanyName}
           </h3>
 
-          {studentsList.length === 0 ? (
+          {filteredStudents.length === 0 ? (
             <div className="flex flex-col items-center justify-center py-12 text-center text-[#64748B] dark:text-gray-300 px-4">
               <Users size={36} className="mb-3 text-slate-300 dark:text-gray-600" />
               <p className="text-sm font-bold text-slate-700 dark:text-gray-200 mb-1">Belum Ada Siswa / Mahasiswa Ditugaskan</p>
@@ -252,8 +254,8 @@ export const MentorPortal: React.FC<MentorPortalProps> = ({ onPantau }) => {
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-[#E2E8F0] text-[#0F172A] dark:text-gray-200">
-                  {studentsList.map((student) => (
-                    <tr key={student.id} className="hover:bg-[#F8FAFC] dark:bg-gray-900 transition duration-150">
+                  {filteredStudents.map((student) => (
+                    <tr key={student.id} className="border-b border-[#F1F5F9] dark:border-gray-700/50 hover:bg-[#F8FAFC] dark:hover:bg-gray-800/50 transition duration-150">
                       <td className="py-3 px-2 font-semibold">
                         <div>{student.name}</div>
                         {student.nisn && <div className="text-[10px] text-slate-400 font-normal">NISN: {student.nisn}</div>}

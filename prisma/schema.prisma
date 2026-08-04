@@ -42,6 +42,7 @@ model User {
   jabatan               String?        @db.VarChar(100)
   nip                   String?        @db.VarChar(50)
   status                String         @default("ACTIVE") @db.VarChar(20)
+  targetHours           Int            @default(200)
   companyEmail          String?        @db.VarChar(255)
   companyName           String?        @db.VarChar(255)
   employeeId            String?        @db.VarChar(50)

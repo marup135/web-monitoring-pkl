@@ -40,16 +40,14 @@ export const GuruPortal: React.FC<GuruPortalProps> = ({ onPantau }) => {
 
   useEffect(() => {
     const loadMetrics = async () => {
-      if (selectedClassId) {
-        setLoadingMetrics(true);
-        try {
-          const m = await getDashboardMetricsAction(selectedClassId, undefined);
-          console.log('METRICS: ', m); setMetrics(m as DashboardMetrics);
-        } catch (e) {
-          console.error(e);
-        } finally {
-          setLoadingMetrics(false);
-        }
+      setLoadingMetrics(true);
+      try {
+        const m = await getDashboardMetricsAction(selectedClassId || undefined, undefined);
+        console.log('METRICS: ', m); setMetrics(m as DashboardMetrics);
+      } catch (e) {
+        console.error(e);
+      } finally {
+        setLoadingMetrics(false);
       }
     };
     loadMetrics();
@@ -201,9 +199,10 @@ export const GuruPortal: React.FC<GuruPortalProps> = ({ onPantau }) => {
               <span className="text-xs font-semibold text-[#64748B] dark:text-gray-300">{t('selectClass')}</span>
               <select
                 value={selectedClassId || ''}
-                onChange={(e) => setSelectedClassId(e.target.value)}
+                onChange={(e) => setSelectedClassId(e.target.value === '' ? null : e.target.value)}
                 className="bg-white dark:bg-[#243447] border border-[#E2E8F0] dark:border-gray-700 rounded-xl px-3 py-1.5 text-xs text-[#0F172A] dark:text-gray-200 focus:outline-none focus:border-primary"
               >
+                <option value="">Semua Kelas</option>
                 {currentUser.classes.map((c: { id: string; name: string }) => (
                   <option key={c.id} value={c.id}>{c.name}</option>
                 ))}

@@ -252,12 +252,14 @@ export const AdminPortal: React.FC = () => {
           >
             <RefreshCw size={16} className={loading ? "animate-spin" : ""} />
           </button>
-          <button
-            onClick={handleResetData}
-            className="px-4 py-2.5 sm:px-3 sm:py-1.5 bg-red-600 hover:bg-red-700 text-white font-bold text-xs rounded-xl transition shadow-sm cursor-pointer min-h-[44px] flex items-center justify-center"
-          >
-            Reset Database
-          </button>
+          {currentUser?.role === 'SUPER_ADMIN' && (
+            <button
+              onClick={handleResetData}
+              className="px-4 py-2.5 sm:px-3 sm:py-1.5 bg-red-600 hover:bg-red-700 text-white font-bold text-xs rounded-xl transition shadow-sm cursor-pointer min-h-[44px] flex items-center justify-center"
+            >
+              Reset Database
+            </button>
+          )}
         </div>
       </div>
 

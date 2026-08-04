@@ -434,6 +434,7 @@ export async function getCurrentUserAction() {
         profileImage: true,
         createdAt: true,
         boardBackground: true,
+        targetHours: true,
         institution: true,
         classes: {
           select: {

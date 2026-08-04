@@ -14,11 +14,10 @@ import { PieChart, Pie, Cell, Tooltip as RechartsTooltip, ResponsiveContainer, A
 
 export const DashboardStats: React.FC = () => {
   const { state, addAdvisorNote, deleteAdvisorNote, currentUser, selectedStudentId } = usePKL();
-  const { t } = useLanguage();
+  const { t, language } = useLanguage();
   const [newNoteText, setNewNoteText] = useState('');
 
-  // Target Jam PKL Standard (200 jam)
-  const TARGET_HOURS = 200;
+
 
   // Calculate statistics
   const totalCards = state.cards.length;
@@ -31,8 +30,7 @@ export const DashboardStats: React.FC = () => {
     state.cards.reduce((sum, card) => sum + calculateDuration(card.startTime, card.endTime), 0)
   );
 
-  const targetPercentage = Math.min(100, Math.round((totalHours / TARGET_HOURS) * 100));
-  
+
   const mentorGradedCards = state.cards.filter(c => c.scoreMentor !== undefined && c.scoreMentor !== null);
   const averageScoreMentor = mentorGradedCards.length > 0
     ? Math.round(mentorGradedCards.reduce((sum, card) => sum + (card.scoreMentor || 0), 0) / mentorGradedCards.length)
@@ -106,7 +104,7 @@ export const DashboardStats: React.FC = () => {
       if (dateMap[cardDateISO]) {
         dateMap[cardDateISO].hours += hours;
       } else {
-        const display = new Date(card.createdAt).toLocaleDateString('id-ID', { day: 'numeric', month: 'short' });
+        const display = new Date(card.createdAt).toLocaleDateString(language === 'id' ? 'id-ID' : 'en-US', { day: 'numeric', month: 'short' });
         dateMap[cardDateISO] = { display, hours };
       }
     });
@@ -160,39 +158,6 @@ export const DashboardStats: React.FC = () => {
   return (
     <div className="flex flex-col gap-6 md:gap-8 text-[#0F172A] dark:text-gray-200 font-sans">
       
-      {/* 🎯 Target Progress Banner */}
-      <div className="bg-gradient-to-r from-blue-600 via-indigo-600 to-purple-600 rounded-3xl p-6 md:p-7 text-white shadow-xl shadow-blue-500/10 relative overflow-hidden">
-        <div className="absolute top-0 right-0 w-96 h-96 bg-white/10 rounded-full blur-3xl pointer-events-none" />
-        <div className="relative z-10 flex flex-col lg:flex-row lg:items-center justify-between gap-6">
-          <div className="flex flex-col gap-2 max-w-xl">
-            <div className="flex items-center gap-2 bg-white/15 backdrop-blur-md px-3 py-1 rounded-full text-xs font-semibold w-fit border border-white/20">
-              <Sparkles size={14} className="text-yellow-300 animate-pulse" />
-              <span>Target Jam Kerja PKL</span>
-            </div>
-            <h2 className="text-xl md:text-2xl font-black tracking-tight">
-              Pencapaian {totalHours} dari {TARGET_HOURS} Jam Kerja PKL ({targetPercentage}%)
-            </h2>
-            <p className="text-xs md:text-sm text-blue-100 font-medium">
-              {completedCards.length} tugas telah diselesaikan dan disetujui. Pertahankan konsistensi harianmu!
-            </p>
-          </div>
-
-          <div className="flex flex-col gap-2 min-w-[240px] lg:w-72 bg-white/10 backdrop-blur-md p-4 rounded-2xl border border-white/15">
-            <div className="flex justify-between items-center text-xs font-bold">
-              <span>Progres Target</span>
-              <span>{targetPercentage}%</span>
-            </div>
-            <div className="w-full h-3 bg-black/20 rounded-full overflow-hidden p-0.5 border border-white/10">
-              <div 
-                className="h-full bg-gradient-to-r from-green-400 to-emerald-300 rounded-full transition-all duration-1000 shadow-sm"
-                style={{ width: `${targetPercentage}%` }}
-              />
-            </div>
-            <span className="text-[10px] text-blue-100/80 text-right">Sisa {Math.max(0, TARGET_HOURS - totalHours)} Jam Lagi</span>
-          </div>
-        </div>
-      </div>
-
       {/* Metrics Row */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 md:gap-6">
         
@@ -218,7 +183,7 @@ export const DashboardStats: React.FC = () => {
               <span className="text-2xl md:text-3xl font-black text-slate-800 dark:text-gray-100">
                 {totalCards > 0 ? Math.round((completedCards.length / totalCards) * 100) : 0}%
               </span>
-              <span className="text-[10px] md:text-xs text-[#64748B] dark:text-gray-400 font-semibold">({completedCards.length}/{totalCards} tugas)</span>
+              <span className="text-[10px] md:text-xs text-[#64748B] dark:text-gray-400 font-semibold">({completedCards.length}/{totalCards} {t('tasks')})</span>
             </div>
           </div>
         </div>
@@ -232,11 +197,11 @@ export const DashboardStats: React.FC = () => {
             <span className="text-[10px] uppercase font-bold text-[#64748B] dark:text-gray-400 tracking-wider block mb-1">{t('averageScore')}</span>
             <div className="flex flex-col gap-1 text-[11px] font-semibold">
               <div className="flex items-center gap-2">
-                <span className="text-[#64748B] dark:text-gray-400">Eksternal:</span> 
+                <span className="text-[#64748B] dark:text-gray-400">{t('externalReviewer')}</span> 
                 <span className="font-bold text-purple-600 dark:text-purple-400">{averageScoreMentor > 0 ? `${averageScoreMentor}/100` : '-'}</span>
               </div>
               <div className="flex items-center gap-2">
-                <span className="text-[#64748B] dark:text-gray-400">Internal:</span> 
+                <span className="text-[#64748B] dark:text-gray-400">{t('internalReviewer')}</span> 
                 <span className="font-bold text-amber-600 dark:text-amber-400">{averageScoreAdvisor > 0 ? `${averageScoreAdvisor}/100` : '-'}</span>
               </div>
             </div>
@@ -263,7 +228,7 @@ export const DashboardStats: React.FC = () => {
         <div className="lg:col-start-3 lg:col-span-1 lg:row-start-1 bg-white dark:bg-[#243447] border border-[#E2E8F0] dark:border-gray-700 rounded-3xl p-6 shadow-sm flex flex-col gap-6 justify-between">
           <div>
             <h3 className="font-bold text-slate-800 dark:text-gray-100 text-base text-center mb-1">{t('statusProgressTitle')}</h3>
-            <p className="text-xs text-slate-400 dark:text-gray-400 text-center mb-4">Ringkasan status tugas logbook</p>
+            <p className="text-xs text-slate-400 dark:text-gray-400 text-center mb-4">{t('statusProgressDesc')}</p>
           </div>
 
           <div className="h-[180px] w-full relative">
@@ -287,14 +252,14 @@ export const DashboardStats: React.FC = () => {
                 </PieChart>
               </ResponsiveContainer>
             ) : (
-              <div className="absolute inset-0 flex items-center justify-center text-slate-400 text-xs">Belum ada data tugas</div>
+              <div className="absolute inset-0 flex items-center justify-center text-slate-400 text-xs">{t('noTaskData')}</div>
             )}
             
             {/* Center Label for Donut */}
             {statusData.length > 0 && (
               <div className="absolute inset-0 flex flex-col items-center justify-center pointer-events-none">
                 <span className="text-3xl font-black text-slate-800 dark:text-white">{totalCards}</span>
-                <span className="text-[10px] uppercase tracking-wider font-bold text-slate-400">Total Tugas</span>
+                <span className="text-[10px] uppercase tracking-wider font-bold text-slate-400">{t('totalTasks')}</span>
               </div>
             )}
           </div>
@@ -304,7 +269,7 @@ export const DashboardStats: React.FC = () => {
             <div className="flex items-center justify-between text-xs font-semibold p-2 rounded-xl bg-emerald-50/60 dark:bg-emerald-950/30 text-emerald-700 dark:text-emerald-300">
               <span className="flex items-center gap-2">
                 <CheckCircle2 size={14} className="text-emerald-500" />
-                <span>Selesai (Disetujui)</span>
+                <span>{t('listSelesai')}</span>
               </span>
               <span className="font-bold">{completedCards.length} ({totalCards > 0 ? Math.round((completedCards.length/totalCards)*100) : 0}%)</span>
             </div>
@@ -312,7 +277,7 @@ export const DashboardStats: React.FC = () => {
             <div className="flex items-center justify-between text-xs font-semibold p-2 rounded-xl bg-amber-50/60 dark:bg-amber-950/30 text-amber-700 dark:text-amber-300">
               <span className="flex items-center gap-2">
                 <AlertCircle size={14} className="text-amber-500" />
-                <span>Butuh Review</span>
+                <span>{t('listReview')}</span>
               </span>
               <span className="font-bold">{reviewCards.length} ({totalCards > 0 ? Math.round((reviewCards.length/totalCards)*100) : 0}%)</span>
             </div>
@@ -320,7 +285,7 @@ export const DashboardStats: React.FC = () => {
             <div className="flex items-center justify-between text-xs font-semibold p-2 rounded-xl bg-blue-50/60 dark:bg-blue-950/30 text-blue-700 dark:text-blue-300">
               <span className="flex items-center gap-2">
                 <Hourglass size={14} className="text-blue-500" />
-                <span>Sedang Dikerjakan</span>
+                <span>{t('listProgres')}</span>
               </span>
               <span className="font-bold">{progressCards.length} ({totalCards > 0 ? Math.round((progressCards.length/totalCards)*100) : 0}%)</span>
             </div>
@@ -331,7 +296,7 @@ export const DashboardStats: React.FC = () => {
         <div className="lg:col-start-1 lg:col-span-2 lg:row-start-1 bg-white dark:bg-[#243447] border border-[#E2E8F0] dark:border-gray-700 rounded-3xl p-6 shadow-sm flex flex-col gap-6">
           <div>
             <h3 className="font-bold text-slate-800 dark:text-gray-100 text-base mb-1">{t('categoryDistribution')}</h3>
-            <p className="text-xs text-slate-400 dark:text-gray-400">Pembagian fokus pekerjaan berdasarkan kategori bidang PKL</p>
+            <p className="text-xs text-slate-400 dark:text-gray-400">{t('categoryDistributionDesc')}</p>
           </div>
 
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
@@ -350,15 +315,15 @@ export const DashboardStats: React.FC = () => {
                       </div>
                       <div>
                         <h4 className="font-bold text-slate-800 dark:text-gray-200 text-sm">{catKey}</h4>
-                        <span className="text-[11px] text-slate-400">{Math.round(hours * 10) / 10} Jam Kerja</span>
+                        <span className="text-[11px] text-slate-400">{Math.round(hours * 10) / 10} {t('hours')}</span>
                       </div>
                     </div>
-                    <span className="text-xs font-black text-slate-700 dark:text-gray-300">{count} Tugas</span>
+                    <span className="text-xs font-black text-slate-700 dark:text-gray-300">{count} {t('tasks')}</span>
                   </div>
 
                   <div className="flex flex-col gap-1">
                     <div className="flex justify-between items-center text-[10px] text-slate-500 font-semibold">
-                      <span>Progres Kategori</span>
+                      <span>{t('categoryProgress')}</span>
                       <span>{percent}%</span>
                     </div>
                     <div className="w-full h-2 bg-slate-200 dark:bg-gray-800 rounded-full overflow-hidden">
@@ -379,8 +344,8 @@ export const DashboardStats: React.FC = () => {
                 <Activity size={20} />
               </div>
               <div>
-                <h3 className="font-bold text-slate-800 dark:text-gray-100 text-base">Tren Aktivitas Jam Kerja (7 Hari Terakhir)</h3>
-                <p className="text-xs text-slate-400 dark:text-gray-400">Grafik konsistensi pengisian logbook harian</p>
+                <h3 className="font-bold text-slate-800 dark:text-gray-100 text-base">{t('timeSeriesTitle')}</h3>
+                <p className="text-xs text-slate-400 dark:text-gray-400">{t('timeSeriesDesc')}</p>
               </div>
             </div>
           </div>
@@ -452,7 +417,7 @@ export const DashboardStats: React.FC = () => {
                       <div className="flex items-center gap-2">
                         <span className="flex items-center gap-1 bg-slate-50 dark:bg-gray-800 px-1.5 py-0.5 rounded">
                           <Calendar size={10} />
-                          {new Date(note.createdAt).toLocaleDateString('id-ID')}
+                          {new Date(note.createdAt).toLocaleDateString(language === 'id' ? 'id-ID' : 'en-US')}
                         </span>
                         {currentUser && (currentUser.id === note.advisorId || currentUser.role === 'SUPER_ADMIN') && (
                           <button

@@ -5,6 +5,7 @@ import { createPortal } from 'react-dom';
 import * as faceapi from '@vladmandic/face-api';
 import { Camera, RefreshCw, CheckCircle2, AlertCircle, X } from 'lucide-react';
 import { registerFaceAction } from '../app/actions/profile';
+import { useLanguage } from '../context/LanguageContext';
 
 interface FaceRegistrationModalProps {
   onClose: () => void;
@@ -12,6 +13,7 @@ interface FaceRegistrationModalProps {
 }
 
 export function FaceRegistrationModal({ onClose, onSuccess }: FaceRegistrationModalProps) {
+  const { t } = useLanguage();
   const [mounted, setMounted] = useState(false);
   const [loadingModels, setLoadingModels] = useState(true);
 
@@ -35,7 +37,7 @@ export function FaceRegistrationModal({ onClose, onSuccess }: FaceRegistrationMo
         if (isMounted) setLoadingModels(false);
       } catch (err) {
         console.error('Failed to load face-api models', err);
-        if (isMounted) setErrorMsg('Gagal memuat model pengenalan wajah.');
+        if (isMounted) setErrorMsg(t('errorLoadModel'));
       }
     };
     loadModels();
@@ -54,7 +56,7 @@ export function FaceRegistrationModal({ onClose, onSuccess }: FaceRegistrationMo
       }
     } catch (err) {
       console.error("Camera access denied:", err);
-      setErrorMsg("Akses kamera ditolak atau tidak tersedia.");
+      setErrorMsg(t('errorCameraAccess'));
     }
   };
 
@@ -85,7 +87,7 @@ export function FaceRegistrationModal({ onClose, onSuccess }: FaceRegistrationMo
         .withFaceDescriptor();
         
       if (!detection) {
-        setErrorMsg('Wajah tidak terdeteksi. Pastikan pencahayaan cukup dan wajah terlihat jelas.');
+        setErrorMsg(t('errorFaceNotFound'));
         setDetecting(false);
         return;
       }
@@ -95,16 +97,16 @@ export function FaceRegistrationModal({ onClose, onSuccess }: FaceRegistrationMo
       
       const res = await registerFaceAction(descriptorStr);
       if (res.success) {
-        setSuccessMsg('Wajah berhasil didaftarkan!');
+        setSuccessMsg(t('successFaceRegistration'));
         setTimeout(() => {
           onSuccess();
           onClose();
         }, 1500);
       } else {
-        setErrorMsg(res.error || 'Gagal mendaftarkan wajah ke server.');
+        setErrorMsg(res.error || t('errorServerRegistration'));
       }
     } catch (err: any) {
-      setErrorMsg(err.message || 'Terjadi kesalahan saat memproses wajah.');
+      setErrorMsg(err.message || t('errorProcessFace'));
     } finally {
       setDetecting(false);
     }
@@ -116,7 +118,7 @@ export function FaceRegistrationModal({ onClose, onSuccess }: FaceRegistrationMo
     <div className="fixed inset-0 z-[9999] bg-black/60 backdrop-blur-sm flex items-center justify-center p-4">
       <div className="bg-white dark:bg-[#1E293B] rounded-3xl w-full max-w-md shadow-2xl overflow-hidden flex flex-col">
         <div className="flex justify-between items-center p-5 border-b border-gray-100 dark:border-gray-800">
-          <h3 className="font-bold text-gray-800 dark:text-white">Registrasi Wajah</h3>
+          <h3 className="font-bold text-gray-800 dark:text-white">{t('faceRegistrationTitle')}</h3>
           <button onClick={onClose} className="p-1.5 rounded-full hover:bg-gray-100 dark:hover:bg-gray-700 text-gray-500 transition">
             <X size={18} />
           </button>
@@ -138,14 +140,14 @@ export function FaceRegistrationModal({ onClose, onSuccess }: FaceRegistrationMo
             {loadingModels ? (
               <div className="flex flex-col items-center text-white">
                 <RefreshCw className="animate-spin mb-2" size={24} />
-                <span className="text-sm">Memuat AI Model...</span>
+                <span className="text-sm">{t('loadingAIModel')}</span>
               </div>
             ) : (
               <video ref={videoRef} autoPlay playsInline muted className="w-full h-full object-cover" />
             )}
           </div>
           <p className="text-xs text-slate-500 text-center">
-            Posisikan wajah Anda tepat di tengah layar dengan pencahayaan yang cukup. Data wajah Anda digunakan untuk absen masuk.
+            {t('faceRegistrationInstruction')}
           </p>
         </div>
 
@@ -160,9 +162,9 @@ export function FaceRegistrationModal({ onClose, onSuccess }: FaceRegistrationMo
             }`}
           >
             {detecting ? (
-              <><RefreshCw size={18} className="animate-spin" /> Memindai Wajah...</>
+              <><RefreshCw size={18} className="animate-spin" /> {t('scanningFace')}</>
             ) : (
-              <><Camera size={18} /> Daftarkan Wajah</>
+              <><Camera size={18} /> {t('registerFaceBtn')}</>
             )}
           </button>
         </div>

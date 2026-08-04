@@ -7,7 +7,7 @@ import { Moon, Globe, Info, LogOut, ChevronRight, User, Image as ImageIcon, Uplo
 import { useTheme } from 'next-themes';
 import { uploadBoardBackgroundAction, updateBoardBackgroundAction } from '../app/actions/pkl';
 import { changePasswordAction, forgotPasswordAction } from '../app/actions/auth';
-import { updateProfileInfoAction, uploadProfileImageAction } from '../app/actions/profile';
+import { updateProfileInfoAction, uploadProfileImageAction, updateTargetHoursAction } from '../app/actions/profile';
 import { useLanguage } from '../context/LanguageContext';
 import { PARTICIPANT_ROLES } from '../lib/constants';
 import { getRoleLabel, getIdLabel } from '../lib/role-mapper';
@@ -116,6 +116,7 @@ export const SettingsPage: React.FC<SettingsPageProps> = ({
   // Profile States
   const [name, setName] = useState(currentUser?.name || '');
   const [email, setEmail] = useState(currentUser?.email || '');
+  const [targetHours, setTargetHours] = useState<number>(currentUser?.targetHours || 200);
   const [isEditingProfile, setIsEditingProfile] = useState(activeSection === 'profile');
   const [isSavingProfile, setIsSavingProfile] = useState(false);
   const [isUploadingProfileImage, setIsUploadingProfileImage] = useState(false);
@@ -134,6 +135,7 @@ export const SettingsPage: React.FC<SettingsPageProps> = ({
     if (currentUser?.id) {
       setName(currentUser.name || '');
       setEmail(currentUser.email || '');
+      setTargetHours(currentUser.targetHours || 200);
       const savedExtrasStr = localStorage.getItem(`profile_extras_${currentUser.id}`);
       if (savedExtrasStr) {
         try {
@@ -166,8 +168,9 @@ export const SettingsPage: React.FC<SettingsPageProps> = ({
 
       // API Call for Database fields
       const res = await updateProfileInfoAction(name.trim(), email.trim());
+      await updateTargetHoursAction(targetHours);
       if (res.success) {
-        updateProfileContext({ name: name.trim(), email: email.trim() });
+        updateProfileContext({ name: name.trim(), email: email.trim(), targetHours });
         setProfileSuccessMsg('Profil berhasil diperbarui');
         setIsEditingProfile(false);
       } else {
@@ -286,8 +289,8 @@ export const SettingsPage: React.FC<SettingsPageProps> = ({
     { id: 'profile', label: t('profile'), icon: User, desc: t('manageProfile') },
     { id: 'security', label: t('accountSecurity'), icon: Shield, desc: t('passwordAuth') },
     { id: 'appearance', label: t('appearance'), icon: Palette, desc: t('themeAndBackground') },
-    { id: 'preferences', label: t('preferences'), icon: Settings, desc: t('languageRegion') },
-    { id: 'about', label: 'Tentang', icon: Info, desc: t('appInfo') }
+    { id: 'preferences', label: 'Preferences', icon: Settings, desc: t('appPreferences') },
+    { id: 'about', label: t('about'), icon: Info, desc: t('appInfo') }
   ];
 
   const renderProfileTab = () => (
@@ -382,6 +385,8 @@ export const SettingsPage: React.FC<SettingsPageProps> = ({
                 </>
               )}
 
+
+
               {/* Extras */}
               {phone && (
                 <div>
@@ -393,7 +398,7 @@ export const SettingsPage: React.FC<SettingsPageProps> = ({
               )}
               {bio && (
                 <div className="col-span-1 md:col-span-2">
-                  <label className="block text-xs font-bold text-slate-500 dark:text-gray-400 uppercase tracking-wide mb-2">Tentang Saya (Bio)</label>
+                  <label className="block text-xs font-bold text-slate-500 dark:text-gray-400 uppercase tracking-wide mb-2">{t('bioLabel')}</label>
                   <div className="px-4 py-3 rounded-xl border border-transparent bg-slate-50 dark:bg-gray-800/50 font-semibold whitespace-pre-wrap">
                     {bio}
                   </div>
@@ -476,6 +481,8 @@ export const SettingsPage: React.FC<SettingsPageProps> = ({
                 />
               </div>
 
+
+
               {/* Extras (Locally Stored) */}
               <div>
                 <label className="text-xs text-[#64748B] dark:text-gray-400 font-bold uppercase tracking-wider mb-2 block">Nomor HP</label>
@@ -523,11 +530,11 @@ export const SettingsPage: React.FC<SettingsPageProps> = ({
               </div>
 
               <div className="col-span-1 md:col-span-2">
-                <label className="text-xs text-[#64748B] dark:text-gray-400 font-bold uppercase tracking-wider mb-2 block">Tentang Saya (Bio)</label>
+                <label className="text-xs text-[#64748B] dark:text-gray-400 font-bold uppercase tracking-wider mb-2 block">{t('bioLabel')}</label>
                 <textarea
                   value={bio}
                   onChange={(e) => setBio(e.target.value)}
-                  placeholder="Tuliskan biografi singkat tentang Anda..."
+                  placeholder={t('bioPlaceholder')}
                   rows={4}
                   className="w-full bg-slate-50 dark:bg-gray-800/50 border border-slate-200 dark:border-gray-600 rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all font-semibold text-slate-800 dark:text-white resize-none"
                 />
@@ -614,10 +621,10 @@ export const SettingsPage: React.FC<SettingsPageProps> = ({
         {currentUser?.role && PARTICIPANT_ROLES.includes(currentUser.role) && (
           <div className="mt-8 pt-6 border-t border-slate-100 dark:border-gray-800">
             <h3 className="text-lg font-black text-slate-800 dark:text-white mb-4 flex items-center gap-2">
-              <Camera size={20} className="text-primary" /> Registrasi Wajah
+              <Camera size={20} className="text-primary" /> {t('faceRegistrationTitle')}
             </h3>
             <p className="text-xs text-slate-500 dark:text-gray-400 font-medium mb-4">
-              Daftarkan data wajah Anda untuk dapat melakukan absen masuk menggunakan Face Recognition.
+              {t('faceRegistrationDesc')}
             </p>
             <button
               type="button"
@@ -625,7 +632,7 @@ export const SettingsPage: React.FC<SettingsPageProps> = ({
               className="px-6 py-2.5 bg-primary hover:bg-primary-hover text-white rounded-xl text-sm font-bold transition-all shadow-sm flex items-center gap-2"
             >
               <Camera size={18} />
-              Mulai Registrasi Wajah
+              {t('startFaceRegistration')}
             </button>
           </div>
         )}
@@ -703,172 +710,7 @@ export const SettingsPage: React.FC<SettingsPageProps> = ({
           </div>
         </div>
 
-        {/* BOARD BACKGROUND */}
-        <div>
-          <h3 className="text-base font-black text-slate-800 dark:text-white mb-4 flex items-center gap-2">
-            <ImageIcon size={18} className="text-blue-500" /> Board Background
-          </h3>
-          
-          {uploadError && (
-            <div className="mb-4 p-3 bg-red-100 text-red-700 dark:bg-red-500/20 rounded-xl text-xs font-bold">
-              {uploadError}
-            </div>
-          )}
 
-          <div className="flex flex-col gap-6">
-            <div className="flex flex-wrap gap-2">
-              <button
-                onClick={() => handleSetBuiltinBackground(null)}
-                className={`w-10 h-10 rounded-xl border-2 transition-all hover:scale-105 ${!currentUser?.boardBackground ? 'border-primary shadow-md' : 'border-slate-200'} bg-slate-100 dark:bg-gray-800 flex items-center justify-center`}
-                title="Default"
-              >
-                {!currentUser?.boardBackground && <Check size={16} className="text-slate-600 dark:text-gray-300" />}
-              </button>
-              {(
-                [
-                  { color: '#2563EB' }, { color: '#10B981' }, { color: '#8B5CF6' }, { color: '#F97316' },
-                  { color: '#047857' }, { color: '#1E3A8A' }, { color: '#475569' },
-                ] as const
-              ).map(t => (
-                <button
-                  key={t.color}
-                  onClick={() => handleSetBuiltinBackground(t.color)}
-                  className={`w-10 h-10 rounded-xl transition-all duration-200 hover:scale-110 flex items-center justify-center ${currentUser?.boardBackground === t.color ? 'ring-2 ring-offset-2 ring-primary scale-110' : ''}`}
-                  style={{ backgroundColor: t.color }}
-                >
-                  {currentUser?.boardBackground === t.color && <Check size={16} className="text-white drop-shadow-md" />}
-                </button>
-              ))}
-            </div>
-
-            <div className="flex flex-wrap gap-2">
-              {(
-                [
-                  { bg: 'linear-gradient(to right, #3b82f6, #2dd4bf)' },
-                  { bg: 'linear-gradient(to right, #8b5cf6, #d946ef)' },
-                  { bg: 'linear-gradient(to right, #f97316, #eab308)' },
-                  { bg: 'linear-gradient(to right, #047857, #10b981)' },
-                  { bg: 'linear-gradient(to right, #1e3a8a, #8b5cf6)' },
-                ] as const
-              ).map(t => (
-                <button
-                  key={t.bg}
-                  onClick={() => handleSetBuiltinBackground(t.bg)}
-                  className={`w-14 h-10 rounded-xl transition-all duration-200 hover:scale-110 flex items-center justify-center ${currentUser?.boardBackground === t.bg ? 'ring-2 ring-offset-2 ring-primary scale-105' : ''}`}
-                  style={{ background: t.bg }}
-                >
-                  {currentUser?.boardBackground === t.bg && <Check size={16} className="text-white drop-shadow-md" />}
-                </button>
-              ))}
-            </div>
-
-            {/* Nature Wallpapers */}
-            <div className="flex flex-wrap gap-2">
-              {(
-                [
-                  { id: 'mountain', label: 'Gunung', url: 'https://images.unsplash.com/photo-1477346611705-65d1883cee1e?auto=format&fit=crop&w=1600&q=80' },
-                  { id: 'beach', label: 'Pantai', url: 'https://images.unsplash.com/photo-1507525428034-b723cf961d3e?auto=format&fit=crop&w=1600&q=80' },
-                  { id: 'space', label: 'Bintang', url: 'https://images.unsplash.com/photo-1519681393784-d120267933ba?auto=format&fit=crop&w=1600&q=80' },
-                  { id: 'forest', label: 'Hutan', url: 'https://images.unsplash.com/photo-1470071459604-3b5ec3a7fe05?auto=format&fit=crop&w=1600&q=80' },
-                ] as const
-              ).map(wp => (
-                <button
-                  key={wp.id}
-                  onClick={() => handleSetBuiltinBackground(wp.url)}
-                  className={`w-20 h-12 rounded-xl transition-all duration-200 hover:scale-110 flex items-center justify-center relative overflow-hidden group ${currentUser?.boardBackground === wp.url ? 'ring-2 ring-offset-2 ring-primary scale-105' : ''}`}
-                >
-                  <img
-                    src={wp.url}
-                    alt={wp.label}
-                    className="w-full h-full object-cover"
-                  />
-                  <div className="absolute inset-0 bg-black/30 flex items-center justify-center p-1">
-                    <span className="text-[9px] font-bold text-white drop-shadow-md">
-                      {wp.label}
-                    </span>
-                  </div>
-                  {currentUser?.boardBackground === wp.url && (
-                    <div className="absolute inset-0 bg-black/40 flex items-center justify-center">
-                      <Check size={16} className="text-white drop-shadow-md" />
-                    </div>
-                  )}
-                </button>
-              ))}
-            </div>
-
-            {/* Custom URL */}
-            <div className="w-full sm:w-[320px]">
-              <form
-                onSubmit={(e) => {
-                  e.preventDefault();
-                  if (customBgInput.trim()) {
-                    handleSetBuiltinBackground(customBgInput.trim());
-                    setCustomBgInput('');
-                  }
-                }}
-                className="flex gap-2"
-              >
-                <input
-                  type="url"
-                  placeholder="URL Gambar Kustom (https://...)"
-                  value={customBgInput}
-                  onChange={(e) => setCustomBgInput(e.target.value)}
-                  className="flex-1 px-4 py-2.5 text-sm rounded-xl border border-slate-200 dark:border-gray-700 bg-slate-50 dark:bg-gray-800 text-slate-800 dark:text-gray-200 focus:outline-none focus:ring-2 focus:ring-primary/20 transition-all"
-                />
-                <button
-                  type="submit"
-                  className="px-4 py-2.5 bg-primary text-white font-bold text-sm rounded-xl hover:bg-primary-hover transition cursor-pointer shadow-sm"
-                >
-                  Pakai
-                </button>
-              </form>
-            </div>
-
-            <div className="flex gap-3">
-              <label className="flex items-center justify-center gap-2 px-5 py-2.5 bg-white dark:bg-[#1E293B] hover:bg-slate-50 text-slate-700 dark:text-gray-200 rounded-xl cursor-pointer transition-all border border-slate-200 dark:border-gray-700 text-sm font-bold shadow-sm">
-                <Upload size={16} />
-                {t('uploadImage')}
-                <input
-                  type="file"
-                  accept="image/jpeg,image/png,image/webp"
-                  className="hidden"
-                  onChange={handleBackgroundUpload}
-                  disabled={isUploadingBackground}
-                />
-              </label>
-              {currentUser?.boardBackground && (
-                <button
-                  onClick={() => handleSetBuiltinBackground(null)}
-                  disabled={isUploadingBackground}
-                  className="flex items-center justify-center gap-2 px-4 py-2.5 bg-red-50 text-red-600 rounded-xl font-bold text-sm"
-                >
-                  <Trash2 size={16} />
-                  Hapus
-                </button>
-              )}
-            </div>
-
-            <div 
-              className="w-full sm:w-[320px] aspect-[4/3] rounded-2xl shadow-inner border-2 border-slate-100 dark:border-gray-800 bg-slate-100 dark:bg-gray-900 bg-cover bg-center overflow-hidden flex items-center justify-center relative mt-2"
-              style={{ 
-                background: currentUser?.boardBackground 
-                  ? (currentUser.boardBackground.startsWith('http') || currentUser.boardBackground.startsWith('data:') || currentUser.boardBackground.startsWith('/') 
-                    ? `url("${currentUser.boardBackground}") center/cover no-repeat` 
-                    : currentUser.boardBackground)
-                  : undefined
-              }}
-            >
-              {!currentUser?.boardBackground && (
-                <span className="text-slate-400 dark:text-gray-600 font-bold text-sm">{t('previewBoard')}</span>
-              )}
-              {isUploadingBackground && (
-                <div className="absolute inset-0 bg-white/50 backdrop-blur-sm flex items-center justify-center">
-                  <Loader2 className="animate-spin text-primary w-8 h-8" />
-                </div>
-              )}
-            </div>
-          </div>
-        </div>
       </div>
     </div>
   );
@@ -945,13 +787,13 @@ export const SettingsPage: React.FC<SettingsPageProps> = ({
                 </div>
                 <div className="text-sm text-slate-600 dark:text-gray-300 leading-relaxed space-y-3">
                   <p>
-                    <strong>Keamanan Data:</strong> Data Anda (termasuk informasi profil, absensi, dan logbook) disimpan dengan standar keamanan yang ketat dan dienkripsi untuk melindungi privasi Anda.
+                    {t('privacyPolicySecurity')}
                   </p>
                   <p>
-                    <strong>Penggunaan Data:</strong> Data hanya digunakan untuk keperluan monitoring Praktik Kerja Lapangan (PKL) oleh pihak sekolah dan instansi terkait.
+                    {t('privacyPolicyUsage')}
                   </p>
                   <p>
-                    <strong>Pihak Ketiga:</strong> Kami <strong>tidak pernah</strong> menjual atau membagikan data pribadi Anda kepada pihak ketiga tanpa izin atau di luar kepentingan akademik.
+                    {t('privacyPolicyThirdParty')}
                   </p>
                 </div>
               </div>
@@ -973,28 +815,28 @@ export const SettingsPage: React.FC<SettingsPageProps> = ({
                 </div>
                 <div className="text-sm text-slate-600 dark:text-gray-300 leading-relaxed space-y-4">
                   <p>
-                    Jika Anda mengalami kendala teknis saat menggunakan aplikasi NeboTrack, Anda dapat menghubungi pihak berikut:
+                    {t('helpCenterIntro')}
                   </p>
                   <div className="flex flex-col gap-3 text-left">
                     <div className="flex items-start gap-3 p-3 bg-slate-50 dark:bg-gray-800/50 rounded-lg border border-slate-100 dark:border-gray-700/50">
                       <div className="mt-0.5 text-blue-500"><GraduationCap size={18} /></div>
                       <div>
-                        <strong className="block text-slate-800 dark:text-gray-200">Guru Pembimbing Internal</strong>
-                        <span className="text-xs">Terkait nilai, absensi, atau masalah jurnal PKL.</span>
+                        <strong className="block text-slate-800 dark:text-gray-200">{t('helpCenterAdvisor')}</strong>
+                        <span className="text-xs">{t('helpCenterAdvisorDesc')}</span>
                       </div>
                     </div>
                     <div className="flex items-start gap-3 p-3 bg-slate-50 dark:bg-gray-800/50 rounded-lg border border-slate-100 dark:border-gray-700/50">
                       <div className="mt-0.5 text-emerald-500"><Briefcase size={18} /></div>
                       <div>
-                        <strong className="block text-slate-800 dark:text-gray-200">Admin Instansi / Mentor</strong>
-                        <span className="text-xs">Terkait operasional absensi di tempat kerja.</span>
+                        <strong className="block text-slate-800 dark:text-gray-200">{t('helpCenterMentor')}</strong>
+                        <span className="text-xs">{t('helpCenterMentorDesc')}</span>
                       </div>
                     </div>
                     <div className="flex items-start gap-3 p-3 bg-slate-50 dark:bg-gray-800/50 rounded-lg border border-slate-100 dark:border-gray-700/50">
                       <div className="mt-0.5 text-red-500"><Settings size={18} /></div>
                       <div>
-                        <strong className="block text-slate-800 dark:text-gray-200">Administrator Sekolah</strong>
-                        <span className="text-xs">Terkait error aplikasi, kendala login, atau perubahan data.</span>
+                        <strong className="block text-slate-800 dark:text-gray-200">{t('helpCenterAdmin')}</strong>
+                        <span className="text-xs">{t('helpCenterAdminDesc')}</span>
                       </div>
                     </div>
                   </div>
@@ -1141,7 +983,7 @@ export const SettingsPage: React.FC<SettingsPageProps> = ({
                 onClick={() => setIsInfoModalOpen(false)}
                 className="px-6 py-2 bg-primary hover:bg-primary-hover text-white rounded-xl text-sm font-bold shadow-sm transition-all"
               >
-                Tutup
+                {t('closeBtn')}
               </button>
             </div>
           </div>

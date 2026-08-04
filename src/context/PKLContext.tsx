@@ -111,6 +111,7 @@ export interface StudentMetric {
   className: string;
   companyId: string;
   nisn: string;
+  school?: string | null;
   totalTasks: number;
   completedTasks: number;
   hoursLogged: number;
@@ -321,7 +322,7 @@ export const PKLProvider: React.FC<{ children: React.ReactNode }> = ({ children 
           let initialCompanyId = null;
           
           if ((user.role === 'pembimbing_internal' || user.role === 'INTERNAL_MENTOR') && user.classes && user.classes.length > 0) {
-            initialClassId = user.classes[0].id;
+            initialClassId = null;
             setSelectedClassIdState(initialClassId);
           }
           if ((user.role === 'pembimbing_eksternal' || user.role === 'EXTERNAL_MENTOR') && user.companies && user.companies.length > 0) {
@@ -355,8 +356,8 @@ export const PKLProvider: React.FC<{ children: React.ReactNode }> = ({ children 
         
         let initialClassId = null;
         let initialCompanyId = null;
-        if (res.user.role === 'pembimbing_internal' && res.user.classes && res.user.classes.length > 0) {
-          initialClassId = res.user.classes[0].id;
+        if ((res.user.role === 'pembimbing_internal' || res.user.role === 'INTERNAL_MENTOR') && res.user.classes && res.user.classes.length > 0) {
+          initialClassId = null;
           setSelectedClassIdState(initialClassId);
         }
         if (res.user.role === 'pembimbing_eksternal' || res.user.role === 'EXTERNAL_MENTOR') {

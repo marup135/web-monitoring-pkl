@@ -1240,6 +1240,7 @@ export async function getStudentsAction(classId?: string, companyId?: string) {
         classId: true,
         companyId: true,
         nisn: true,
+        school: true,
         class: { select: { name: true } }, attendances: { where: { date: new Date().toLocaleDateString('en-CA', { timeZone: 'Asia/Jakarta' }) }, select: { status: true, checkIn: true, checkOut: true } }
       },
       orderBy: { name: 'asc' }
@@ -1264,6 +1265,7 @@ export async function getStudentsAction(classId?: string, companyId?: string) {
           className: student.class?.name || '-',
           companyId: student.companyId || '-',
           nisn: student.nisn || '-',
+          school: student.school || null,
           totalTasks: totalCount,
           completedTasks: completedCount,
           hoursLogged: Math.round(totalHours),
@@ -1281,6 +1283,11 @@ export async function getStudentsAction(classId?: string, companyId?: string) {
 
 export async function resetDatabaseAction() {
   try {
+    const currentUser = await getAuthenticatedUser();
+    if (!currentUser || currentUser.role !== 'SUPER_ADMIN') {
+      return { success: false, error: 'Unauthorized. Only Super Admin can reset the database.' };
+    }
+
     // Clear all existing data
     await prisma.$transaction([
       prisma.comment.deleteMany(),
