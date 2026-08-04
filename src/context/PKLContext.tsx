@@ -66,6 +66,7 @@ export interface UserProfile {
   createdAt?: string | Date;
   boardBackground?: string | null;
   institution?: { name: string; code: string; } | null;
+  targetHours?: number | null;
 }
 
 export interface ClassItem {
