@@ -290,8 +290,7 @@ export const translations = {
     scoreReport: "Laporan",
     scoreCommunication: "Komunikasi",
     time: "Waktu",
-    add: "Tambah",
-    
+
     // Kanban Board
     empty: "Kosong",
     noActivities: "Belum ada kegiatan",
