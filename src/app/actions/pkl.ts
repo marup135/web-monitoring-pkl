@@ -481,7 +481,7 @@ export async function updateCardColumnAction(
         cardEditorIds = [];
       }
       const isCollabWithPermission = card.collaborators.some(c => c.id === currentUser.id) && (card.collaboratorsCanEdit || cardEditorIds.includes(currentUser.id));
-      
+
       if (!isOwner && !isCollabWithPermission) {
         return { success: false, error: 'Akses ditolak: Anda bukan pemilik kegiatan ini dan belum diizinkan.' };
       }
@@ -1037,7 +1037,7 @@ export async function addAttachmentAction(cardId: string, name: string, url: str
       return { success: false, error: 'Sesi tidak sah.' };
     }
 
-    const card = await prisma.card.findUnique({ 
+    const card = await prisma.card.findUnique({
       where: { id: cardId },
       include: { collaborators: true }
     });
@@ -1075,7 +1075,7 @@ export async function deleteAttachmentAction(cardId: string, index: number) {
       return { success: false, error: 'Sesi tidak sah.' };
     }
 
-    const card = await prisma.card.findUnique({ 
+    const card = await prisma.card.findUnique({
       where: { id: cardId },
       include: { collaborators: true }
     });
@@ -1147,7 +1147,7 @@ export async function deleteAdvisorNoteAction(noteId: string) {
 
     const note = await prisma.advisorNote.findUnique({ where: { id: noteId } });
     if (!note) return { success: false, error: 'Catatan tidak ditemukan.' };
-    
+
     if (note.advisorId !== currentUser.id && userRole !== 'SUPER_ADMIN') {
       return { success: false, error: 'Akses ditolak: Anda hanya dapat menghapus catatan Anda sendiri.' };
     }
@@ -1241,6 +1241,8 @@ export async function getStudentsAction(classId?: string, companyId?: string) {
         companyId: true,
         nisn: true,
         school: true,
+        finalGrade: true,
+        gradeDetails: true,
         class: { select: { name: true } }, attendances: { where: { date: new Date().toLocaleDateString('en-CA', { timeZone: 'Asia/Jakarta' }) }, select: { status: true, checkIn: true, checkOut: true } }
       },
       orderBy: { name: 'asc' }
@@ -1257,6 +1259,13 @@ export async function getStudentsAction(classId?: string, companyId?: string) {
         const completedCount = cards.filter(c => c.columnId === 'selesai').length;
         const totalCount = cards.length; const todayAttendance = student.attendances?.[0];
 
+        const boardCounts = {
+          rencana: cards.filter(c => c.columnId === 'rencana').length,
+          progres: cards.filter(c => c.columnId === 'progres').length,
+          review: cards.filter(c => c.columnId === 'review').length,
+          selesai: completedCount
+        };
+
         return {
           id: student.id,
           name: student.name,
@@ -1266,10 +1275,13 @@ export async function getStudentsAction(classId?: string, companyId?: string) {
           companyId: student.companyId || '-',
           nisn: student.nisn || '-',
           school: student.school || null,
+          finalGrade: (student as any).finalGrade || null,
+          gradeDetails: (student as any).gradeDetails || null,
           totalTasks: totalCount,
           completedTasks: completedCount,
           hoursLogged: Math.round(totalHours),
-          completionPercent: totalCount > 0 ? Math.round((completedCount / totalCount) * 100) : 0, attendanceStatus: todayAttendance?.status || 'NOT_CHECKED_IN', checkIn: todayAttendance?.checkIn || null, checkOut: todayAttendance?.checkOut || null
+          completionPercent: totalCount > 0 ? Math.round((completedCount / totalCount) * 100) : 0, attendanceStatus: todayAttendance?.status || 'NOT_CHECKED_IN', checkIn: todayAttendance?.checkIn || null, checkOut: todayAttendance?.checkOut || null,
+          boardCounts
         };
       })
     );
@@ -1685,7 +1697,7 @@ export async function deleteClassAction(id: string) {
 export async function getCompaniesAction() {
   try {
     const currentUser = await getAuthenticatedUser();
-    
+
     if (currentUser?.role === 'EXTERNAL_MENTOR') {
       const mentorCompanyIds = currentUser.companies.map((c: { id: string }) => c.id);
       return prisma.perusahaan.findMany({
@@ -1761,6 +1773,58 @@ export async function updateCompanyAction(id: string, name: string, latitude?: n
   }
 }
 
+export async function setCompanyIpPrefixAction(companyId: string, clientIp: string) {
+  try {
+    const currentUser = await getAuthenticatedUser();
+    if (!currentUser) {
+      return { success: false, error: 'Sesi tidak sah.' };
+    }
+
+    let isAllowed = false;
+    if (currentUser.role === 'SUPER_ADMIN' || currentUser.role === 'INSTITUTION_ADMIN') {
+      isAllowed = true;
+    } else if (currentUser.role === 'EXTERNAL_MENTOR') {
+      const isAssigned = currentUser.companies?.some((c: any) => c.id === companyId);
+      if (isAssigned) isAllowed = true;
+    }
+
+    if (!isAllowed) {
+      return { success: false, error: 'Hanya admin atau mentor yang dapat mengelola data perusahaan.' };
+    }
+
+    if (!clientIp) {
+      return { success: false, error: 'IP Address tidak valid.' };
+    }
+
+    // Proses semua IP yang dipisahkan dengan koma
+    const rawIps = clientIp.split(',').map(ip => ip.trim()).filter(ip => ip.length > 0);
+    const prefixes = rawIps.map(ip => {
+      // Ambil 3 blok angka pertama (contoh: 36.95.89.218 -> 36.95.89.)
+      if (ip.includes('.')) {
+        const parts = ip.split('.');
+        if (parts.length === 4) {
+          return `${parts[0]}.${parts[1]}.${parts[2]}.`;
+        }
+      }
+      return ip; // Biarkan utuh jika formatnya tidak lazim
+    });
+
+    // Buang duplikat
+    const uniquePrefixes = Array.from(new Set(prefixes));
+    const prefixString = uniquePrefixes.join(',');
+
+    await prisma.perusahaan.update({
+      where: { id: companyId },
+      data: { allowedIpPrefix: prefixString }
+    });
+
+    return { success: true, prefix: prefixString };
+  } catch (error) {
+    console.error('Failed to update company IP prefix', error);
+    return { success: false, error: 'Gagal mengatur IP perusahaan.' };
+  }
+}
+
 export async function deleteCompanyAction(id: string) {
   try {
     const currentUser = await requireAdmin();
@@ -1798,7 +1862,7 @@ export async function getAllUsersAction() {
 
       whereClause.OR = [
         { institutionId: currentUser.institutionId },
-        { 
+        {
           role: 'EXTERNAL_MENTOR',
           companies: { some: { id: { in: companyIds } } }
         }
@@ -1928,9 +1992,9 @@ export async function linkExternalMentorAction(identifier: string, companyId: st
     });
 
     if (!mentor) {
-      return { 
-        success: false, 
-        error: `Pembimbing Eksternal dengan NIK / ID Karyawan / Email "${cleanIdentifier}" tidak ditemukan. Pastikan Pembimbing telah mendaftar akun terlebih dahulu.` 
+      return {
+        success: false,
+        error: `Pembimbing Eksternal dengan NIK / ID Karyawan / Email "${cleanIdentifier}" tidak ditemukan. Pastikan Pembimbing telah mendaftar akun terlebih dahulu.`
       };
     }
 
@@ -1943,9 +2007,9 @@ export async function linkExternalMentorAction(identifier: string, companyId: st
       }
     });
 
-    return { 
-      success: true, 
-      message: `Berhasil menambahkan Pembimbing Eksternal (${mentor.name}) ke perusahaan.` 
+    return {
+      success: true,
+      message: `Berhasil menambahkan Pembimbing Eksternal (${mentor.name}) ke perusahaan.`
     };
   } catch (error: any) {
     console.error('Failed to link external mentor:', error);
@@ -2014,7 +2078,7 @@ export async function updateUserByAdminAction(
   }
 }
 
-export async function getDashboardMetricsAction(classId?: string, companyId?: string) {
+export async function getDashboardMetricsAction(classId?: string, companyId?: string, school?: string) {
   try {
     const currentUser = await getAuthenticatedUser();
     if (!currentUser || PARTICIPANT_ROLES.includes(currentUser.role)) {
@@ -2067,6 +2131,10 @@ export async function getDashboardMetricsAction(classId?: string, companyId?: st
       }
       if (classId) whereClause.classId = classId;
       if (companyId) whereClause.companyId = companyId;
+    }
+
+    if (school) {
+      (whereClause as any).school = school;
     }
 
     const students = await prisma.user.findMany({
@@ -2218,7 +2286,7 @@ export async function uploadBoardBackgroundAction(formData: FormData) {
 
     const ext = file.name.split('.').pop() || 'jpg';
     const fileName = `${user.id}/${Date.now()}-${Math.floor(Math.random() * 1000)}.${ext}`;
-    
+
     const arrayBuffer = await file.arrayBuffer();
     const buffer = Buffer.from(arrayBuffer);
 
@@ -2352,7 +2420,7 @@ export async function manageCollaboratorsAction(
     });
 
     if (!card) return { success: false, error: 'Kegiatan tidak ditemukan.' };
-    
+
     const isOwner = card.studentId === currentUser.id;
     let cardEditorIds: string[] = [];
     try {
@@ -2388,7 +2456,7 @@ export async function manageCollaboratorsAction(
         editorIds: JSON.stringify(editorIds)
       }
     });
-    
+
     return { success: true };
   } catch (error) {
     console.error('Failed to manage collaborators', error);
@@ -2442,7 +2510,7 @@ export async function getMonthlyReportDataAction(classId: string) {
       // Hitung Rata-rata Nilai Mentor
       let mentorScoreSum = 0;
       let mentorScoreCount = 0;
-      
+
       // Hitung Rata-rata Nilai Guru
       let advisorScoreSum = 0;
       let advisorScoreCount = 0;
@@ -2451,9 +2519,9 @@ export async function getMonthlyReportDataAction(classId: string) {
         // Mentor
         if (card.scoreMentor != null) {
           const avg = (
-            (card.scoreMentor || 0) + 
-            (card.scoreMentorDiscipline || 0) + 
-            (card.scoreMentorSkill || 0) + 
+            (card.scoreMentor || 0) +
+            (card.scoreMentorDiscipline || 0) +
+            (card.scoreMentorSkill || 0) +
             (card.scoreMentorAttitude || 0)
           ) / 4;
           if (avg > 0) {
@@ -2461,13 +2529,13 @@ export async function getMonthlyReportDataAction(classId: string) {
             mentorScoreCount++;
           }
         }
-        
+
         // Advisor (Guru)
         if (card.scoreAdvisor != null) {
           const avg = (
-            (card.scoreAdvisor || 0) + 
-            (card.scoreAdvisorDiscipline || 0) + 
-            (card.scoreAdvisorReport || 0) + 
+            (card.scoreAdvisor || 0) +
+            (card.scoreAdvisorDiscipline || 0) +
+            (card.scoreAdvisorReport || 0) +
             (card.scoreAdvisorCommunication || 0)
           ) / 4;
           if (avg > 0) {
@@ -2500,3 +2568,355 @@ export async function getMonthlyReportDataAction(classId: string) {
 }
 
 
+
+export async function setFinalGradeAction(
+  studentId: string,
+  finalGrade: number,
+  gradeDetails?: Record<string, number>
+) {
+  try {
+    const currentUser = await getAuthenticatedUser();
+    if (!currentUser || !['EXTERNAL_MENTOR', 'INTERNAL_MENTOR', 'INSTITUTION_ADMIN', 'SUPER_ADMIN'].includes(currentUser.role)) {
+      return { success: false, error: 'Akses ditolak.' };
+    }
+
+    await (prisma.user as any).update({
+      where: { id: studentId },
+      data: {
+        finalGrade,
+        gradeDetails
+      }
+    });
+
+    return { success: true };
+  } catch (error) {
+    console.error('Failed to set final grade', error);
+    return { success: false, error: 'Gagal memberikan nilai akhir' };
+  }
+}
+
+
+export async function getAnalyticsDataAction(classId?: string, companyId?: string, school?: string) {
+  try {
+    const currentUser = await getAuthenticatedUser();
+    if (!currentUser) return null;
+
+    const whereClause: any = { role: { in: PARTICIPANT_ROLES } };
+
+    if (currentUser.role === 'EXTERNAL_MENTOR') {
+      const mentorCompanyIds = currentUser.companies.map((c: { id: string }) => c.id);
+      if (companyId && mentorCompanyIds.includes(companyId)) {
+        whereClause.companyId = companyId;
+      } else {
+        whereClause.companyId = { in: mentorCompanyIds };
+      }
+    } else if (currentUser.role === 'INTERNAL_MENTOR') {
+      const advisorClassIds = currentUser.classes.map((c: { id: string }) => c.id);
+      if (classId && advisorClassIds.includes(classId)) {
+        whereClause.classId = classId;
+      } else {
+        whereClause.classId = { in: advisorClassIds };
+      }
+    }
+    if (school) whereClause.school = school;
+
+    const students = await prisma.user.findMany({
+      where: whereClause,
+      select: {
+        id: true,
+        finalGrade: true,
+        attendances: {
+          orderBy: { date: 'desc' },
+          take: 7
+        },
+        cards: {
+          select: { columnId: true }
+        }
+      }
+    });
+
+    let rencana = 0, progres = 0, review = 0, selesai = 0;
+    let grade0_50 = 0, grade51_70 = 0, grade71_85 = 0, grade86_100 = 0;
+    const trendMap: Record<string, { hadir: number, izin: number, sakit: number, alpha: number }> = {};
+
+    for (let i = 6; i >= 0; i--) {
+      const d = new Date();
+      d.setDate(d.getDate() - i);
+      const dateStr = d.toLocaleDateString('en-CA', { timeZone: 'Asia/Jakarta' });
+      trendMap[dateStr] = { hadir: 0, izin: 0, sakit: 0, alpha: 0 };
+    }
+
+    students.forEach(s => {
+      s.cards.forEach(c => {
+        if (c.columnId === 'rencana') rencana++;
+        if (c.columnId === 'progres') progres++;
+        if (c.columnId === 'review') review++;
+        if (c.columnId === 'selesai') selesai++;
+      });
+
+      const grade = (s as any).finalGrade || 0;
+      if (grade > 0) {
+        if (grade <= 50) grade0_50++;
+        else if (grade <= 70) grade51_70++;
+        else if (grade <= 85) grade71_85++;
+        else grade86_100++;
+      }
+
+      s.attendances.forEach(att => {
+        const dateStr = att.date;
+        if (trendMap[dateStr]) {
+          if (att.status === 'CHECKED_IN' || att.status === 'CHECKED_OUT' || att.status === 'COMPLETED' || att.status === 'HALF_DAY') trendMap[dateStr].hadir++;
+          else if (att.status === 'IZIN') trendMap[dateStr].izin++;
+          else if (att.status === 'SAKIT') trendMap[dateStr].sakit++;
+          else if (att.status === 'ABSENT' || att.status === 'NOT_CHECKED_IN') trendMap[dateStr].alpha++;
+        }
+      });
+    });
+
+    const attendanceTrend = Object.keys(trendMap).sort().map(key => {
+      const d = new Date(key);
+      const displayStr = d.toLocaleDateString('id-ID', { day: 'numeric', month: 'short' });
+      return { date: displayStr, ...trendMap[key] };
+    });
+
+    return {
+      attendanceTrend,
+      logbookStatus: [
+        { name: 'Rencana', value: rencana, fill: '#60a5fa' },
+        { name: 'Progres', value: progres, fill: '#fbbf24' },
+        { name: 'Review', value: review, fill: '#c084fc' },
+        { name: 'Selesai', value: selesai, fill: '#4ade80' }
+      ],
+      gradeDistribution: [
+        { range: '0-50', count: grade0_50 },
+        { range: '51-70', count: grade51_70 },
+        { range: '71-85', count: grade71_85 },
+        { range: '86-100', count: grade86_100 },
+      ]
+    };
+  } catch (error) {
+    console.error('Failed to get analytics:', error);
+    return null;
+  }
+}
+
+export async function getTodayAttendancesAction(classId?: string, companyId?: string, school?: string) {
+  try {
+    const currentUser = await getAuthenticatedUser();
+    if (!currentUser || !['EXTERNAL_MENTOR', 'INTERNAL_MENTOR', 'SUPER_ADMIN', 'INSTITUTION_ADMIN'].includes(currentUser.role)) {
+      return [];
+    }
+
+    const whereClause: any = { role: { in: PARTICIPANT_ROLES } };
+
+    if (currentUser.role === 'EXTERNAL_MENTOR') {
+      const mentorCompanyIds = currentUser.companies.map((c: { id: string }) => c.id);
+      if (companyId && mentorCompanyIds.includes(companyId)) {
+        whereClause.companyId = companyId;
+      } else {
+        whereClause.companyId = { in: mentorCompanyIds };
+      }
+    } else if (currentUser.role === 'INTERNAL_MENTOR') {
+      const advisorClassIds = currentUser.classes.map((c: { id: string }) => c.id);
+      if (classId && advisorClassIds.includes(classId)) {
+        whereClause.classId = classId;
+      } else {
+        whereClause.classId = { in: advisorClassIds };
+      }
+    }
+    if (school) whereClause.school = school;
+
+    const todayDateStr = new Date().toLocaleDateString('en-CA', { timeZone: 'Asia/Jakarta' });
+
+    const students = await prisma.user.findMany({
+      where: whereClause,
+      select: {
+        id: true,
+        name: true,
+        school: true,
+        company: true,
+        attendances: {
+          select: {
+            id: true,
+            status: true,
+            checkIn: true,
+            checkOut: true,
+            activityNotes: true,
+            checkInPhoto: true,
+            checkOutPhoto: true,
+            activityPhoto: true,
+            date: true,
+            isVerified: true,
+            locationStatus: true
+          }
+        }
+      },
+      orderBy: { name: 'asc' }
+    });
+
+    return students.map(student => {
+      const todayAtt = student.attendances?.find(a => a.date === todayDateStr);
+
+            const recap = { hadir: 0, izin: 0, sakit: 0, alpha: 0 };
+      if (student.attendances) {
+        student.attendances.forEach(att => {
+          if (att.status === 'COMPLETED' || att.status === 'HALF_DAY' || att.status === 'CHECKED_IN') {
+            recap.hadir++;
+          } else if (att.status === 'IZIN' || att.status === 'PENDING_EXCUSED' || att.status === 'EXCUSED') {
+            recap.izin++;
+          } else if (att.status === 'SAKIT' || att.status === 'PENDING_SICK' || att.status === 'SICK') {
+            recap.sakit++;
+          } else if (att.status === 'ABSENT' || att.status === 'NOT_CHECKED_IN') {
+            recap.alpha++;
+          }
+        });
+      }
+
+      let finalStatus = todayAtt?.status || 'NOT_CHECKED_IN';
+      let isVerified = todayAtt?.isVerified || false;
+
+      if (finalStatus === 'PENDING_SICK') { finalStatus = 'SAKIT'; isVerified = false; }
+      else if (finalStatus === 'SICK') { finalStatus = 'SAKIT'; isVerified = true; }
+      else if (finalStatus === 'PENDING_EXCUSED') { finalStatus = 'IZIN'; isVerified = false; }
+      else if (finalStatus === 'EXCUSED') { finalStatus = 'IZIN'; isVerified = true; }
+      
+      // Check WFH
+      if (['CHECKED_IN', 'COMPLETED', 'HALF_DAY'].includes(todayAtt?.status || '')) {
+        if (todayAtt?.locationStatus === 'PENDING') {
+          finalStatus = 'WFH';
+          isVerified = false;
+        } else if (todayAtt?.locationStatus === 'APPROVED') {
+          finalStatus = 'WFH';
+          isVerified = true;
+        }
+      }
+
+      return {
+        userId: student.id,
+        name: student.name,
+        school: student.school,
+        company: student.company,
+        status: finalStatus,
+        checkIn: todayAtt?.checkIn || null,
+        checkOut: todayAtt?.checkOut || null,
+        activityNotes: todayAtt?.activityNotes || null,
+        activityPhoto: todayAtt?.activityPhoto || null,
+        checkInPhoto: todayAtt?.checkInPhoto || null,
+        checkOutPhoto: todayAtt?.checkOutPhoto || null,
+        activityPhotosList: todayAtt?.activityPhoto && todayAtt.activityPhoto.startsWith('[') ? JSON.parse(todayAtt.activityPhoto) : (todayAtt?.activityPhoto ? [todayAtt.activityPhoto] : []),
+        date: todayAtt?.date || todayDateStr,
+        isVerified: isVerified,
+        attendanceId: todayAtt?.id || null,
+        recap: recap
+      };
+    });
+  } catch (error) {
+    console.error('Failed to get today attendances:', error);
+    return [];
+  }
+}
+
+export async function approveAttendanceAction(id: string, isApproved: boolean) {
+  try {
+    const currentUser = await getAuthenticatedUser();
+    if (!currentUser || !['EXTERNAL_MENTOR', 'INTERNAL_MENTOR', 'SUPER_ADMIN'].includes(currentUser.role)) {
+      return { success: false, error: 'Unauthorized' };
+    }
+    await prisma.attendance.updateMany({
+      where: { userId: id, date: new Date().toLocaleDateString('en-CA', { timeZone: 'Asia/Jakarta' }) },
+      data: { isVerified: isApproved }
+    });
+    return { success: true, error: '' };
+  } catch (error) {
+    return { success: false, error: 'Error approving attendance' };
+  }
+}
+
+export async function getPendingReviewCardsAction(classId?: string, companyId?: string, school?: string) {
+  try {
+    const currentUser = await getAuthenticatedUser();
+    if (!currentUser) return [];
+
+    const whereClause: any = { role: { in: PARTICIPANT_ROLES } };
+
+    if (currentUser.role === 'EXTERNAL_MENTOR') {
+      const mentorCompanyIds = currentUser.companies.map((c: { id: string }) => c.id);
+      if (companyId && mentorCompanyIds.includes(companyId)) {
+        whereClause.companyId = companyId;
+      } else {
+        whereClause.companyId = { in: mentorCompanyIds };
+      }
+    } else if (currentUser.role === 'INTERNAL_MENTOR') {
+      const advisorClassIds = currentUser.classes.map((c: { id: string }) => c.id);
+      if (classId && advisorClassIds.includes(classId)) {
+        whereClause.classId = classId;
+      } else {
+        whereClause.classId = { in: advisorClassIds };
+      }
+    }
+    if (school) whereClause.school = school;
+
+    const students = await prisma.user.findMany({
+      where: whereClause,
+      select: { id: true }
+    });
+
+    const studentIds = students.map(s => s.id);
+
+    const cards = await prisma.card.findMany({
+      where: {
+        studentId: { in: studentIds },
+        columnId: 'review'
+      },
+      include: {
+        student: { select: { name: true, school: true, company: true } }
+      },
+      orderBy: { createdAt: 'desc' }
+    });
+
+    return cards;
+  } catch (error) {
+    return [];
+  }
+}
+
+export async function batchApproveCardsAction(
+  cardIds: string[],
+  scores?: {
+    discipline?: number;
+    skillOrReport?: number;
+    attitudeOrCommunication?: number;
+  }
+) {
+  try {
+    const currentUser = await getAuthenticatedUser();
+    if (!currentUser || !['EXTERNAL_MENTOR', 'INTERNAL_MENTOR', 'SUPER_ADMIN'].includes(currentUser.role)) {
+      return { success: false, error: 'Unauthorized' };
+    }
+
+    const data: any = { columnId: 'selesai' };
+
+    if (scores && currentUser.role === 'EXTERNAL_MENTOR') {
+      const avg = Math.round(((scores.discipline || 0) + (scores.skillOrReport || 0) + (scores.attitudeOrCommunication || 0)) / 3);
+      data.scoreMentor = avg;
+      data.scoreMentorDiscipline = scores.discipline;
+      data.scoreMentorSkill = scores.skillOrReport;
+      data.scoreMentorAttitude = scores.attitudeOrCommunication;
+    } else if (scores && currentUser.role === 'INTERNAL_MENTOR') {
+      const avg = Math.round(((scores.discipline || 0) + (scores.skillOrReport || 0) + (scores.attitudeOrCommunication || 0)) / 3);
+      data.scoreAdvisor = avg;
+      data.scoreAdvisorDiscipline = scores.discipline;
+      data.scoreAdvisorReport = scores.skillOrReport;
+      data.scoreAdvisorCommunication = scores.attitudeOrCommunication;
+    }
+
+    await prisma.card.updateMany({
+      where: { id: { in: cardIds } },
+      data
+    });
+
+    return { success: true, error: '' };
+  } catch (error) {
+    return { success: false, error: 'Error approving cards' };
+  }
+}

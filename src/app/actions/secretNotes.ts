@@ -75,7 +75,7 @@ export async function deleteSecretNoteAction(noteId: string) {
     const note = await prisma.secretNote.findUnique({ where: { id: noteId } });
     if (!note) return { success: false, error: 'Catatan tidak ditemukan.' };
 
-    if (note.authorId !== currentUser.id && currentUser.role !== 'SUPERADMIN' && currentUser.role !== 'ADMIN') {
+    if (note.authorId !== currentUser.id && currentUser.role !== 'SUPER_ADMIN' && currentUser.role !== 'INSTITUTION_ADMIN') {
       return { success: false, error: 'Anda tidak berhak menghapus catatan ini.' };
     }
 

@@ -397,13 +397,13 @@ export const LogbookTable: React.FC<LogbookTableProps> = ({ onOpenCard, onEditCa
           <table className="w-full text-left border-collapse text-xs border border-[#E2E8F0] dark:border-gray-700 rounded-xl overflow-hidden print:overflow-visible shadow-sm print:border-black print:rounded-none">
             <thead className="print:table-header-group">
               <tr className="border-b border-[#E2E8F0] dark:border-gray-700 text-slate-500 dark:text-gray-300 font-semibold uppercase tracking-wider bg-[#F8FAFC] dark:bg-gray-900 print:border-black print:text-black print:bg-gray-100">
-                <th className="py-3 px-2 w-10 text-center print:border print:border-black print:py-3 print:px-2">{t("no")}</th>
-                <th className="py-3 px-3 w-36 print:border print:border-black print:py-3 print:px-2">TANGGAL MULAI - SELESAI</th>
-                <th className="py-3 px-3 w-24 print:border print:border-black print:py-3 print:px-2">{t("category")}</th>
-                <th className="py-3 px-4 print:border print:border-black print:py-3 print:px-2">{t("details")}</th>
-                <th className="py-3 px-3 w-24 text-center print:border print:border-black print:py-3 print:px-2">{t("status")}</th>
-                <th className="py-3 px-3 w-32 hidden print:table-cell print:border print:border-black print:py-3 print:px-2">{t("internalEvaluation")}</th>
-                <th className="py-3 px-3 w-32 hidden print:table-cell print:border print:border-black print:py-3 print:px-2">{t("externalEvaluation")}</th>
+                <th className="py-3 px-2 w-10 text-center print:border print:border-black print:py-3 print:px-2 print:w-[5%]">{t("no")}</th>
+                <th className="py-3 px-3 w-36 print:border print:border-black print:py-3 print:px-2 print:w-[15%]">TANGGAL MULAI - SELESAI</th>
+                <th className="py-3 px-3 w-24 print:border print:border-black print:py-3 print:px-2 print:w-[10%]">{t("category")}</th>
+                <th className="py-3 px-4 print:border print:border-black print:py-3 print:px-2 print:w-[35%]">{t("details")}</th>
+                <th className="py-3 px-3 w-24 text-center print:border print:border-black print:py-3 print:px-2 print:w-[10%]">{t("status")}</th>
+                <th className="py-3 px-3 w-32 hidden print:table-cell print:border print:border-black print:py-3 print:px-2 print:w-[12.5%]">{t("internalEvaluation")}</th>
+                <th className="py-3 px-3 w-32 hidden print:table-cell print:border print:border-black print:py-3 print:px-2 print:w-[12.5%]">{t("externalEvaluation")}</th>
                 <th className="py-3 px-4 w-52 print:hidden">{t('eval')}</th>
               </tr>
             </thead>

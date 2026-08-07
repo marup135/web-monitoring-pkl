@@ -15,6 +15,7 @@ import {
   Loader2,
 } from 'lucide-react';
 import { registerInstitutionAdminAction } from '../actions/auth';
+import { useLanguage } from '../../context/LanguageContext';
 import { Footer } from '../../components/Footer';
 
 type AlertType = 'field' | 'server';
@@ -26,6 +27,7 @@ interface ErrorState {
 }
 
 export default function RegisterAdminPage() {
+  const { t } = useLanguage();
   const [errorState, setErrorState] = useState<ErrorState | null>(null);
   const [loading, setLoading] = useState(false);
   const [isPendingSuccess, setIsPendingSuccess] = useState(false);
@@ -54,15 +56,15 @@ export default function RegisterAdminPage() {
     clearError();
 
     // Basic Validation
-    if (!name.trim()) return setError('Nama lengkap wajib diisi.', 'field', 'name');
-    if (!email.trim()) return setError('Email wajib diisi.', 'field', 'email');
-    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email.trim())) return setError('Format email tidak valid.', 'field', 'email');
-    if (!password) return setError('Password wajib diisi.', 'field', 'password');
-    if (password.length < 5) return setError('Password minimal 5 karakter.', 'field', 'password');
-    if (password !== confirmPassword) return setError('Password dan Konfirmasi tidak sama.', 'field', 'confirmPassword');
-    if (!institutionName.trim()) return setError('Nama Institusi wajib diisi.', 'field', 'institutionName');
-    if (!phone.trim()) return setError('Nomor HP wajib diisi.', 'field', 'phone');
-    if (!address.trim()) return setError('Alamat wajib diisi.', 'field', 'address');
+    if (!name.trim()) return setError(t('errRegNameRequired') || 'Nama lengkap wajib diisi.', 'field', 'name');
+    if (!email.trim()) return setError(t('errRegEmailRequired') || 'Email wajib diisi.', 'field', 'email');
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email.trim())) return setError(t('errRegEmailInvalid') || 'Format email tidak valid.', 'field', 'email');
+    if (!password) return setError(t('errRegPasswordRequired') || 'Password wajib diisi.', 'field', 'password');
+    if (password.length < 5) return setError(t('errRegPasswordMin') || 'Password minimal 5 karakter.', 'field', 'password');
+    if (password !== confirmPassword) return setError(t('errRegPasswordMatch') || 'Password dan Konfirmasi tidak sama.', 'field', 'confirmPassword');
+    if (!institutionName.trim()) return setError(t('errRegInstitutionRequired') || 'Nama Institusi wajib diisi.', 'field', 'institutionName');
+    if (!phone.trim()) return setError(t('errRegPhoneRequired') || 'Nomor HP wajib diisi.', 'field', 'phone');
+    if (!address.trim()) return setError(t('errRegAddressRequired') || 'Alamat wajib diisi.', 'field', 'address');
 
     setLoading(true);
 
@@ -81,10 +83,10 @@ export default function RegisterAdminPage() {
       if (res.success) {
         setIsPendingSuccess(true);
       } else {
-        setError(res.error || 'Terjadi kesalahan saat pendaftaran.', 'server');
+        setError(res.error || t('errRegGenericRegister') || 'Terjadi kesalahan saat pendaftaran.', 'server');
       }
     } catch {
-      setError('Gagal menghubungi server.', 'server');
+      setError(t('errRegServerConnect') || 'Gagal menghubungi server.', 'server');
     } finally {
       setLoading(false);
     }
@@ -119,10 +121,10 @@ export default function RegisterAdminPage() {
               />
             </div>
             <h1 className="text-xl md:text-2xl font-black text-[#0F172A] dark:text-white tracking-tight text-center">
-              Pendaftaran Admin Institusi
+              {t('registerAdminTitle') || 'Pendaftaran Admin Institusi'}
             </h1>
             <p className="text-sm text-[#64748B] dark:text-gray-300 font-medium mt-2 text-center leading-relaxed">
-              Daftarkan sekolah, kampus, atau perusahaan Anda ke sistem NEBO.
+              {t('registerAdminSubtitle') || 'Daftarkan sekolah, kampus, atau perusahaan Anda ke sistem NEBO.'}
             </p>
           </div>
 
@@ -131,15 +133,15 @@ export default function RegisterAdminPage() {
               <div className="w-16 h-16 rounded-full bg-green-100 flex items-center justify-center text-green-500 mb-2">
                 <ShieldCheck size={32} />
               </div>
-              <h2 className="text-xl font-bold text-[#0F172A] dark:text-white">Pendaftaran Berhasil Dikirim</h2>
+              <h2 className="text-xl font-bold text-[#0F172A] dark:text-white">{t('regSuccessTitle') || 'Pendaftaran Berhasil Dikirim'}</h2>
               <p className="text-sm text-[#64748B] dark:text-gray-300">
-                Permohonan Anda akan ditinjau oleh Super Admin sebelum akun admin diaktifkan. Kami akan memberitahu Anda setelah akun disetujui.
+                {t('regSuccessDesc') || 'Permohonan Anda akan ditinjau oleh Super Admin sebelum akun admin diaktifkan. Kami akan memberitahu Anda setelah akun disetujui.'}
               </p>
               <Link
                 href="/"
                 className="mt-6 w-full py-3.5 px-4 bg-gradient-to-r from-primary to-blue-600 hover:to-blue-700 text-white font-bold rounded-2xl shadow-lg shadow-blue-500/30 transition-all active:scale-[0.98] flex items-center justify-center gap-2"
               >
-                Kembali ke Beranda
+                {t('backToHome') || 'Kembali ke Beranda'}
                 <ArrowRight size={18} />
               </Link>
             </div>
@@ -156,7 +158,7 @@ export default function RegisterAdminPage() {
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   {/* Nama Lengkap */}
                   <div>
-                    <label className="block text-sm font-semibold text-[#1E293B] dark:text-gray-200 mb-2">Nama Lengkap PIC</label>
+                    <label className="block text-sm font-semibold text-[#1E293B] dark:text-gray-200 mb-2">{t('picNameLabel') || 'Nama Lengkap PIC'}</label>
                     <div className="relative group">
                       <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
                         <User className="h-5 w-5 text-[#94A3B8] group-focus-within:text-primary transition-colors" />
@@ -173,7 +175,7 @@ export default function RegisterAdminPage() {
 
                   {/* Email */}
                   <div>
-                    <label className="block text-sm font-semibold text-[#1E293B] dark:text-gray-200 mb-2">Email Akun</label>
+                    <label className="block text-sm font-semibold text-[#1E293B] dark:text-gray-200 mb-2">{t('accountEmailLabel') || 'Email Akun'}</label>
                     <div className="relative group">
                       <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
                         <Mail className="h-5 w-5 text-[#94A3B8] group-focus-within:text-primary transition-colors" />
@@ -228,7 +230,7 @@ export default function RegisterAdminPage() {
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   {/* Nama Institusi */}
                   <div>
-                    <label className="block text-sm font-semibold text-[#1E293B] dark:text-gray-200 mb-2">Nama Institusi</label>
+                    <label className="block text-sm font-semibold text-[#1E293B] dark:text-gray-200 mb-2">{t('institutionNameLabel') || 'Nama Institusi'}</label>
                     <div className="relative group">
                       <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
                         <Building2 className="h-5 w-5 text-[#94A3B8] group-focus-within:text-primary transition-colors" />
@@ -245,18 +247,18 @@ export default function RegisterAdminPage() {
 
                   {/* Jenis Institusi */}
                   <div>
-                    <label className="block text-sm font-semibold text-[#1E293B] dark:text-gray-200 mb-2">Jenis Institusi</label>
+                    <label className="block text-sm font-semibold text-[#1E293B] dark:text-gray-200 mb-2">{t('institutionTypeLabel') || 'Jenis Institusi'}</label>
                     <div className="relative group">
                       <select
                         value={institutionType}
                         onChange={(e) => setInstitutionType(e.target.value as any)}
                         className={inputClass(false) + " pl-4 appearance-none"}
                       >
-                        <option value="SCHOOL">Sekolah (SMK/SMA)</option>
-                        <option value="UNIVERSITY">Perguruan Tinggi</option>
-                        <option value="TRAINING_CENTER">Lembaga Pelatihan (LPK)</option>
-                        <option value="COMPANY">Perusahaan</option>
-                        <option value="OTHER">Lainnya</option>
+                        <option value="SCHOOL">{t('typeSchool') || 'Sekolah (SMK/SMA)'}</option>
+                        <option value="UNIVERSITY">{t('typeUniversity') || 'Perguruan Tinggi'}</option>
+                        <option value="TRAINING_CENTER">{t('typeTraining') || 'Lembaga Pelatihan (LPK)'}</option>
+                        <option value="COMPANY">{t('typeCompany') || 'Perusahaan'}</option>
+                        <option value="OTHER">{t('typeOther') || 'Lainnya'}</option>
                       </select>
                     </div>
                   </div>
@@ -265,7 +267,7 @@ export default function RegisterAdminPage() {
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   {/* Nomor HP */}
                   <div>
-                    <label className="block text-sm font-semibold text-[#1E293B] dark:text-gray-200 mb-2">Nomor HP / Telp</label>
+                    <label className="block text-sm font-semibold text-[#1E293B] dark:text-gray-200 mb-2">{t('phoneLabel') || 'Nomor HP / Telp'}</label>
                     <div className="relative group">
                       <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
                         <Phone className="h-5 w-5 text-[#94A3B8] group-focus-within:text-primary transition-colors" />
@@ -282,7 +284,7 @@ export default function RegisterAdminPage() {
 
                   {/* Website */}
                   <div>
-                    <label className="block text-sm font-semibold text-[#1E293B] dark:text-gray-200 mb-2">Website (Opsional)</label>
+                    <label className="block text-sm font-semibold text-[#1E293B] dark:text-gray-200 mb-2">{t('websiteLabel') || 'Website (Opsional)'}</label>
                     <div className="relative group">
                       <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
                         <Globe className="h-5 w-5 text-[#94A3B8] group-focus-within:text-primary transition-colors" />
@@ -300,7 +302,7 @@ export default function RegisterAdminPage() {
 
                 {/* Alamat */}
                 <div>
-                  <label className="block text-sm font-semibold text-[#1E293B] dark:text-gray-200 mb-2">Alamat Lengkap</label>
+                  <label className="block text-sm font-semibold text-[#1E293B] dark:text-gray-200 mb-2">{t('addressLabel') || 'Alamat Lengkap'}</label>
                   <div className="relative group">
                     <div className="absolute top-3 left-0 pl-3 flex items-start pointer-events-none">
                       <MapPin className="h-5 w-5 text-[#94A3B8] group-focus-within:text-primary transition-colors" />
@@ -331,11 +333,11 @@ export default function RegisterAdminPage() {
                 {loading ? (
                   <>
                     <Loader2 size={18} className="animate-spin" />
-                    <span>Mendaftarkan...</span>
+                    <span>{t('registeringBtn') || 'Mendaftarkan...'}</span>
                   </>
                 ) : (
                   <>
-                    <span>Daftar sebagai Admin Institusi</span>
+                    <span>{t('registerBtn') || 'Daftar sebagai Admin Institusi'}</span>
                     <ArrowRight size={18} />
                   </>
                 )}
@@ -343,7 +345,7 @@ export default function RegisterAdminPage() {
 
               <div className="mt-6 text-center">
                 <Link href="/" className="text-sm font-bold text-slate-500 hover:text-primary transition-colors">
-                  ← Kembali ke Halaman Utama
+                  {t('backToMainBtn') || '← Kembali ke Halaman Utama'}
                 </Link>
               </div>
             </form>

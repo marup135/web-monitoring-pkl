@@ -1,6 +1,7 @@
 'use server';
 
 import prisma from '@/lib/prisma';
+import { sendAdminApprovalEmail } from '@/lib/email';
 import { cookies } from 'next/headers';
 import { verifySession } from '@/lib/auth';
 
@@ -43,19 +44,38 @@ export async function approveInstitutionAction(institutionId: string) {
     return { success: false, error: 'Forbidden' };
   }
 
-  try {
-    await prisma.$transaction(async (tx) => {
-      await tx.institution.update({
-        where: { id: institutionId },
-        data: { status: 'ACTIVE' }
+      try {
+      let adminUsers: any[] = [];
+      let instData: any = null;
+
+      await prisma.$transaction(async (tx) => {
+        instData = await tx.institution.update({
+          where: { id: institutionId },
+          data: { status: 'ACTIVE' }
+        });
+        
+        // Find admins first before updating to get their emails
+        adminUsers = await tx.user.findMany({
+          where: { institutionId, role: 'INSTITUTION_ADMIN', status: 'PENDING' }
+        });
+
+        await tx.user.updateMany({
+          where: { institutionId, role: 'INSTITUTION_ADMIN', status: 'PENDING' },
+          data: { status: 'ACTIVE' }
+        });
       });
-      await tx.user.updateMany({
-        where: { institutionId, role: 'INSTITUTION_ADMIN', status: 'PENDING' },
-        data: { status: 'ACTIVE' }
-      });
-    });
-    return { success: true };
-  } catch (error) {
+
+      // Send emails asynchronously (don't await to block the UI)
+      if (instData && adminUsers.length > 0) {
+        for (const admin of adminUsers) {
+          if (admin.email) {
+            sendAdminApprovalEmail(admin.email, admin.name, instData.name).catch(console.error);
+          }
+        }
+      }
+
+      return { success: true };
+    } catch (error) {
     return { success: false, error: 'Gagal menyetujui institusi' };
   }
 }

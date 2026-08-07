@@ -57,8 +57,12 @@ function DashboardContent() {
     ? state.cards.find(c => c.id === selectedCard.id) || null
     : null;
 
-  const handlePantauStudent = async (studentId: string) => {
+  const [showDetailTabs, setShowDetailTabs] = useState(false);
+
+  const handlePantauStudent = async (studentId: string, targetTab: 'board' | 'attendance' = 'board', showTabs: boolean = false) => {
     await setSelectedStudentId(studentId);
+    setActiveTab(targetTab);
+    setShowDetailTabs(showTabs);
     setViewMode('detail');
   };
 
@@ -69,9 +73,9 @@ function DashboardContent() {
     background: isImageBg ? `url("${boardBg}") center/cover no-repeat fixed` : (boardBg || undefined)
   } : {};
 
-  const showBackground = boardBg && activeTab === 'board' && !isSettingsActive && (!isPembimbing || viewMode !== 'list');
+  const showBackground = Boolean(boardBg && !isSettingsActive);
   const GlobalBackground = showBackground ? (
-    <div className="fixed inset-0 z-0 pointer-events-none transition-all duration-300" style={bgStyle}>
+    <div className="fixed inset-0 z-0 pointer-events-none transition-all duration-300 print:hidden" style={bgStyle}>
       <div className="absolute inset-0 bg-white/40 dark:bg-black/60 pointer-events-none" />
     </div>
   ) : null;
@@ -82,22 +86,24 @@ function DashboardContent() {
         {GlobalBackground}
         <main className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4 md:py-8 flex-1 w-full font-sans text-[#0F172A] dark:text-gray-200">
           {/* Header */}
-          <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 mb-6 md:mb-8 border-b border-[#E2E8F0] dark:border-gray-700 pb-4 md:pb-6">
+          <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 mb-6 md:mb-8 bg-white dark:bg-[#1E293B] p-4 md:p-5 rounded-2xl shadow-sm border border-slate-200 dark:border-slate-700">
             <div>
-              <div className="flex items-center gap-3">
-                <img
-                  src="/nebo.png"
-                  alt="NEBO Logo"
-                  className="w-10 h-10 object-contain rounded-xl shadow-sm border border-[#E2E8F0] dark:border-gray-700"
-                />
+              <div className="flex items-center gap-4">
+                <div className="bg-white p-1.5 rounded-xl shadow-sm border border-slate-100 dark:border-slate-800">
+                  <img
+                    src="/nebo.png"
+                    alt="NEBO Logo"
+                    className="w-10 h-10 object-contain rounded-lg"
+                  />
+                </div>
                 <div>
-                  <h1 className="text-xl md:text-2xl font-black text-[#0F172A] dark:text-white tracking-tight">
-                    {PARTICIPANT_ROLES.includes(currentUser.role) ? 'PORTAL SISWA - NEBOTRACK' : 'PORTAL PEMBIMBING - NEBOTRACK'}
+                  <h1 className="text-xl md:text-2xl font-black text-slate-800 dark:text-white tracking-tight">
+                    {PARTICIPANT_ROLES.includes(currentUser.role) ? (t('portalSiswa') || 'PORTAL SISWA - NEBOTRACK') : (t('portalPembimbing') || 'PORTAL PEMBIMBING - NEBOTRACK')}
                   </h1>
-                  <p className="text-[10px] md:text-xs text-[#64748B] dark:text-gray-300 font-medium mt-0.5">
-                    Selamat datang, <span className="text-primary font-bold">{currentUser.name}</span> (Peran:{' '}
-                    {PARTICIPANT_ROLES.includes(currentUser.role) ? 'Peserta / Siswa' : currentUser.role === 'SUPER_ADMIN' ? 'Super Admin' : currentUser.role === 'INSTITUTION_ADMIN' ? 'Admin Institusi' : currentUser.role === 'INTERNAL_MENTOR' ? 'Pembimbing Internal' : 'Pembimbing Eksternal'}
-                    )
+                  <p className="text-[11px] md:text-xs text-slate-500 dark:text-slate-400 font-medium mt-1">
+                    {t('welcome')}, <span className="text-primary font-bold">{currentUser.name}</span> <span className="opacity-75">({t('roleLabel')}:{' '}
+                    {PARTICIPANT_ROLES.includes(currentUser.role) ? t('roleStudent') : currentUser.role === 'SUPER_ADMIN' ? t('roleSuperAdmin') : currentUser.role === 'INSTITUTION_ADMIN' ? t('roleAdmin') : currentUser.role === 'INTERNAL_MENTOR' ? t('roleInternalMentor') : t('roleExternalMentor')}
+                    )</span>
                   </p>
                 </div>
               </div>
@@ -107,9 +113,9 @@ function DashboardContent() {
               <NotificationBell />
               <button
                 onClick={logout}
-                className="w-full md:w-auto px-4 py-3 md:py-2.5 bg-[#EF4444] hover:bg-[#DC2626] dark:bg-red-500/10 dark:hover:bg-red-500/20 dark:text-red-500 dark:border dark:border-red-500/20 text-white font-semibold text-xs rounded-xl shadow-sm transition cursor-pointer min-h-[48px] md:min-h-0"
+                className="w-full md:w-auto px-4 py-2.5 bg-red-500 hover:bg-red-600 dark:bg-red-500/20 dark:hover:bg-red-500/30 text-white dark:text-red-400 font-bold text-xs rounded-xl shadow-sm transition-all flex items-center justify-center gap-2 border border-transparent dark:border-red-500/20"
               >
-                Keluar (Logout)
+                {t('logout')}
               </button>
             </div>
           </div>
@@ -447,7 +453,8 @@ function DashboardContent() {
           <div className="h-[1px] w-full bg-[#E2E8F0]/50 dark:bg-gray-700/50 rounded-full my-0.5" />
 
           {/* Main Tab Controls */}
-          <div className="flex gap-2 overflow-x-auto pb-1 scrollbar-none">
+          {(!isPembimbing || viewMode !== 'detail' || showDetailTabs) && (
+            <div className="flex gap-2 overflow-x-auto pb-1 scrollbar-none">
             <button
               onClick={() => { setActiveTab('board'); setIsSettingsActive(false); }}
               className={`flex items-center gap-2 px-4 py-2 rounded-xl border text-xs font-semibold whitespace-nowrap transition-all duration-200 cursor-pointer ${!isSettingsActive && activeTab === 'board'
@@ -503,6 +510,7 @@ function DashboardContent() {
               {t('settings')}
             </button>
           </div>
+          )}
         </div>
 
         {/* Mobile Back to List View Trigger for Pembimbing */}

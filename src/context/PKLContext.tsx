@@ -120,6 +120,14 @@ export interface StudentMetric {
   attendanceStatus?: string;
   checkIn?: string | null;
   checkOut?: string | null;
+  finalGrade?: number | null;
+  gradeDetails?: Record<string, number> | null;
+  boardCounts?: {
+    rencana: number;
+    progres: number;
+    review: number;
+    selesai: number;
+  };
 }
 
 interface PKLContextProps {
@@ -129,6 +137,7 @@ interface PKLContextProps {
   loading: boolean;
   currentUser: UserProfile | null;
   studentsList: StudentMetric[];
+  setStudentsList: React.Dispatch<React.SetStateAction<StudentMetric[]>>;
   selectedStudentId: string | null;
   selectedClassId: string | null;
   selectedCompanyId: string | null;
@@ -981,6 +990,7 @@ export const PKLProvider: React.FC<{ children: React.ReactNode }> = ({ children 
         loading,
         currentUser,
         studentsList,
+        setStudentsList,
         selectedStudentId,
         selectedClassId,
         selectedCompanyId,

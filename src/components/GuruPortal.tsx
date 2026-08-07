@@ -3,13 +3,21 @@
 import React, { useState, useEffect } from 'react';
 import { usePKL } from '../context/PKLContext';
 import { useLanguage } from '../context/LanguageContext';
-import { getDashboardMetricsAction, getMonthlyReportDataAction } from '@/app/actions/pkl';
-import { Users, Calendar, FileSpreadsheet, Award, UserCheck, BarChart3, AlertCircle, Download, FileBarChart } from 'lucide-react';
+import { getDashboardMetricsAction, getMonthlyReportDataAction, setFinalGradeAction } from '@/app/actions/pkl';
+import { Users, Calendar, FileSpreadsheet, Award, UserCheck, BarChart3, AlertCircle, Download, FileBarChart, FileText, Sun, Moon, Globe, Sparkles, LineChart, KanbanSquare } from 'lucide-react';
 import * as xlsx from 'xlsx';
+import jsPDF from 'jspdf';
+import autoTable from 'jspdf-autotable';
+import { useTheme } from 'next-themes';
 import { AnnouncementEditor } from './AnnouncementEditor';
+import { DailyDashboard } from './DailyDashboard';
+import { PendingReviewsList } from './PendingReviewsList';
+import { AnalyticsDashboard } from './AnalyticsDashboard';
+import { BackgroundPicker } from './BackgroundPicker';
+
 
 interface GuruPortalProps {
-  onPantau: (studentId: string) => void;
+  onPantau: (studentId: string, tab?: 'board' | 'attendance', showTabs?: boolean) => void;
 }
 
 interface DashboardMetrics {
@@ -27,7 +35,9 @@ interface DashboardMetrics {
 }
 
 export const GuruPortal: React.FC<GuruPortalProps> = ({ onPantau }) => {
-  const { t } = useLanguage();
+  const { language, setLanguage, t } = useLanguage();
+  const { theme, setTheme, resolvedTheme } = useTheme();
+  const isDarkMode = (resolvedTheme || theme) === 'dark';
   const {
     currentUser,
     studentsList,
@@ -37,6 +47,7 @@ export const GuruPortal: React.FC<GuruPortalProps> = ({ onPantau }) => {
 
   const [metrics, setMetrics] = useState<DashboardMetrics | null>(null);
   const [loadingMetrics, setLoadingMetrics] = useState(false);
+  const [viewMode, setViewMode] = useState<'overview' | 'attendance' | 'progress' | 'analytics' | 'students'>('overview');
 
   useEffect(() => {
     const loadMetrics = async () => {
@@ -55,6 +66,99 @@ export const GuruPortal: React.FC<GuruPortalProps> = ({ onPantau }) => {
 
   const hasAssignment = currentUser?.classes && currentUser.classes.length > 0;
   const activeClassName = currentUser?.classes?.find((c: { id: string; name: string }) => c.id === selectedClassId)?.name || 'Kelas Aktif';
+
+  const [isExportingExcelList, setIsExportingExcelList] = useState(false);
+  const [isExportingPDFList, setIsExportingPDFList] = useState(false);
+
+  const handleExportExcelList = () => {
+    try {
+      setIsExportingExcelList(true);
+      const dataToExport = studentsList.map((student: any, index: number) => ({
+        'No': index + 1,
+        'Nama Siswa': student.name,
+        'NISN/NIM': student.nisn || '-',
+        'Kelas': student.className || '-',
+        'Sekolah': student.school || '-',
+        'Kehadiran (Status)': student.attendanceStatus === 'CHECKED_IN' ? 'Hadir' : student.attendanceStatus === 'HALF_DAY' ? 'Setengah Hari' : student.attendanceStatus === 'ABSENT' ? 'Absen' : 'Selesai/Belum Absen',
+        'Check-In': student.checkIn || '-',
+        'Check-Out': student.checkOut || '-',
+        'Progress (%)': student.completionPercent || 0
+      }));
+
+      const worksheet = xlsx.utils.json_to_sheet(dataToExport);
+      
+      const wscols = [
+        { wch: 5 }, // No
+        { wch: 30 }, // Nama
+        { wch: 15 }, // NISN
+        { wch: 15 }, // Kelas
+        { wch: 25 }, // Sekolah
+        { wch: 20 }, // Kehadiran
+        { wch: 15 }, // Check-In
+        { wch: 15 }, // Check-Out
+        { wch: 15 }, // Progress
+      ];
+      worksheet['!cols'] = wscols;
+
+      const workbook = xlsx.utils.book_new();
+      xlsx.utils.book_append_sheet(workbook, worksheet, "Daftar Siswa");
+      
+      const dateStr = new Date().toISOString().split('T')[0];
+      const safeClassName = activeClassName.replace(/[^a-zA-Z0-9]/g, '_');
+      const fileName = `Daftar_Siswa_${safeClassName}_${dateStr}.xlsx`;
+      
+      xlsx.writeFile(workbook, fileName);
+    } catch (error) {
+      console.error('Export Excel error:', error);
+      alert('Terjadi kesalahan saat mengekspor ke Excel.');
+    } finally {
+      setIsExportingExcelList(false);
+    }
+  };
+
+  const handleExportPDFList = () => {
+    try {
+      setIsExportingPDFList(true);
+      const doc = new jsPDF('landscape');
+      
+      doc.setFontSize(16);
+      doc.text(`Data Siswa - ${activeClassName}`, 14, 20);
+      
+      doc.setFontSize(10);
+      doc.setTextColor(100);
+      doc.text(`Diekspor pada: ${new Date().toLocaleDateString('id-ID')} ${new Date().toLocaleTimeString('id-ID')}`, 14, 28);
+      
+      const tableData = studentsList.map((student: any, index: number) => [
+        index + 1,
+        student.name,
+        student.nisn || '-',
+        student.className || '-',
+        student.school || '-',
+        student.attendanceStatus === 'CHECKED_IN' ? 'Hadir' : student.attendanceStatus === 'HALF_DAY' ? 'Setengah Hari' : student.attendanceStatus === 'ABSENT' ? 'Absen' : 'Selesai/Belum',
+        student.checkIn ? `${student.checkIn} - ${student.checkOut || '...'}` : '-',
+        `${student.completionPercent || 0}%`
+      ]);
+
+      autoTable(doc, {
+        startY: 35,
+        head: [['No', 'Nama Siswa', 'NISN', 'Kelas', 'Asal Sekolah', 'Status Kehadiran', 'Jam Absen', 'Progress']],
+        body: tableData,
+        theme: 'grid',
+        styles: { fontSize: 8, cellPadding: 3 },
+        headStyles: { fillColor: [41, 128, 185], textColor: 255, fontStyle: 'bold' },
+        alternateRowStyles: { fillColor: [245, 245, 245] },
+      });
+
+      const dateStr = new Date().toISOString().split('T')[0];
+      const safeClassName = activeClassName.replace(/[^a-zA-Z0-9]/g, '_');
+      doc.save(`Daftar_Siswa_${safeClassName}_${dateStr}.pdf`);
+    } catch (error) {
+      console.error('Export PDF error:', error);
+      alert('Terjadi kesalahan saat mengekspor ke PDF.');
+    } finally {
+      setIsExportingPDFList(false);
+    }
+  };
 
   const [isExporting, setIsExporting] = useState(false);
 
@@ -185,35 +289,112 @@ export const GuruPortal: React.FC<GuruPortalProps> = ({ onPantau }) => {
           <p className="text-[11px] text-[#64748B] dark:text-gray-300">{t('guruMonitorDesc')}</p>
         </div>
 
-        <div className="flex items-center gap-3">
-          <button 
-            onClick={handleExportExcel}
-            className="flex items-center gap-2 bg-green-600 hover:bg-green-700 text-white px-3 py-1.5 rounded-xl text-xs font-bold transition shadow-sm"
+        <div className="flex items-center gap-2 flex-wrap w-full md:w-auto justify-end">
+          <button
+            onClick={handleExportMonthly}
+            disabled={isExporting || !selectedClassId}
+            className="flex items-center gap-2 bg-green-600 hover:bg-green-700 text-white px-3 py-1.5 rounded-xl text-xs font-bold transition shadow-sm cursor-pointer disabled:opacity-50"
           >
-            <Download size={14} />
+            {isExporting ? <span className="w-3.5 h-3.5 border-2 border-white border-t-transparent rounded-full animate-spin"></span> : <Download size={14} />}
             Ekspor Harian
           </button>
           
           {currentUser?.classes && currentUser.classes.length > 1 && (
-            <div className="flex items-center gap-2">
-              <span className="text-xs font-semibold text-[#64748B] dark:text-gray-300">{t('selectClass')}</span>
+            <div className="flex items-center gap-1.5 bg-slate-50 dark:bg-gray-800/80 border border-slate-200 dark:border-gray-700 rounded-xl px-2.5 py-1">
+              <span className="text-[11px] font-medium text-slate-500 dark:text-gray-400">{t('selectClass')}</span>
               <select
                 value={selectedClassId || ''}
                 onChange={(e) => setSelectedClassId(e.target.value === '' ? null : e.target.value)}
-                className="bg-white dark:bg-[#243447] border border-[#E2E8F0] dark:border-gray-700 rounded-xl px-3 py-1.5 text-xs text-[#0F172A] dark:text-gray-200 focus:outline-none focus:border-primary"
+                className="bg-transparent text-xs font-semibold text-slate-700 dark:text-gray-200 focus:outline-none cursor-pointer"
               >
-                <option value="">Semua Kelas</option>
+                <option value="" className="dark:bg-[#243447]">Semua Kelas</option>
                 {currentUser.classes.map((c: { id: string; name: string }) => (
-                  <option key={c.id} value={c.id}>{c.name}</option>
+                  <option key={c.id} value={c.id} className="dark:bg-[#243447]">{c.name}</option>
                 ))}
               </select>
             </div>
           )}
+
+          {/* Quick Settings Group */}
+          <div className="flex items-center gap-1.5 pl-2 border-l border-slate-200 dark:border-gray-700">
+            {/* Background Picker */}
+            <BackgroundPicker />
+
+            {/* Dark / Light Toggle */}
+            <button
+              onClick={() => setTheme(isDarkMode ? 'light' : 'dark')}
+              className="p-2 rounded-xl bg-slate-100 dark:bg-gray-800 text-slate-600 dark:text-amber-400 hover:bg-slate-200 dark:hover:bg-gray-700 transition cursor-pointer"
+              title={isDarkMode ? 'Ganti ke Mode Terang' : 'Ganti ke Mode Gelap'}
+            >
+              {isDarkMode ? <Sun size={16} /> : <Moon size={16} />}
+            </button>
+
+            {/* Language Switcher */}
+            <button
+              onClick={() => setLanguage(language === 'id' ? 'en' : 'id')}
+              className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-xl bg-slate-100 dark:bg-gray-800 text-slate-700 dark:text-gray-200 hover:bg-slate-200 dark:hover:bg-gray-700 transition text-xs font-bold cursor-pointer"
+              title="Ganti Bahasa / Switch Language"
+            >
+              <Globe size={14} className="text-primary" />
+              <span>{language === 'id' ? 'ID' : 'EN'}</span>
+            </button>
+          </div>
         </div>
       </div>
 
-      {/* Metrics Grid */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4">
+      {/* Tab Navigation Segmented Control */}
+      <div className="bg-white/90 dark:bg-[#243447]/95 backdrop-blur-md p-1.5 rounded-2xl border border-slate-200/80 dark:border-gray-700/80 shadow-sm flex items-center gap-1.5 w-full sm:w-fit overflow-x-auto hide-scrollbar">
+        <button 
+          onClick={() => setViewMode('overview')}
+          className={`flex items-center gap-2 px-5 py-2.5 rounded-xl text-xs sm:text-sm font-bold transition-all whitespace-nowrap cursor-pointer ${viewMode === 'overview' ? 'bg-primary text-white shadow-md shadow-primary/20 scale-[1.02]' : 'text-slate-600 dark:text-gray-300 hover:bg-slate-100 dark:hover:bg-gray-800'}`}
+        >
+          <BarChart3 size={16} />
+          Ringkasan
+        </button>
+        <button 
+          onClick={() => setViewMode('attendance')}
+          className={`flex items-center gap-2 px-5 py-2.5 rounded-xl text-xs sm:text-sm font-bold transition-all whitespace-nowrap cursor-pointer ${viewMode === 'attendance' ? 'bg-primary text-white shadow-md shadow-primary/20 scale-[1.02]' : 'text-slate-600 dark:text-gray-300 hover:bg-slate-100 dark:hover:bg-gray-800'}`}
+        >
+          <Calendar size={16} />
+          Absensi & Kehadiran
+        </button>
+        <button 
+          onClick={() => setViewMode('progress')}
+          className={`flex items-center gap-2 px-5 py-2.5 rounded-xl text-xs sm:text-sm font-bold transition-all whitespace-nowrap cursor-pointer ${viewMode === 'progress' ? 'bg-primary text-white shadow-md shadow-primary/20 scale-[1.02]' : 'text-slate-600 dark:text-gray-300 hover:bg-slate-100 dark:hover:bg-gray-800'}`}
+        >
+          <KanbanSquare size={16} />
+          Progres Siswa
+        </button>
+
+        <button 
+          onClick={() => setViewMode('analytics')}
+          className={`flex items-center gap-2 px-5 py-2.5 rounded-xl text-xs sm:text-sm font-bold transition-all whitespace-nowrap cursor-pointer ${viewMode === 'analytics' ? 'bg-primary text-white shadow-md shadow-primary/20 scale-[1.02]' : 'text-slate-600 dark:text-gray-300 hover:bg-slate-100 dark:hover:bg-gray-800'}`}
+        >
+          <LineChart size={16} />
+          Analitik
+        </button>
+        <button 
+          onClick={() => setViewMode('students')}
+          className={`flex items-center gap-2 px-5 py-2.5 rounded-xl text-xs sm:text-sm font-bold transition-all whitespace-nowrap cursor-pointer ${viewMode === 'students' ? 'bg-primary text-white shadow-md shadow-primary/20 scale-[1.02]' : 'text-slate-600 dark:text-gray-300 hover:bg-slate-100 dark:hover:bg-gray-800'}`}
+        >
+          <Users size={16} />
+          Daftar Siswa Lengkap
+        </button>
+      </div>
+
+      {viewMode === 'attendance' && (
+        <DailyDashboard 
+          role="INTERNAL_MENTOR" 
+          onPantau={onPantau} 
+          selectedClassId={selectedClassId || undefined} 
+        />
+      )}
+
+      {viewMode === 'overview' && (
+        <>
+          {/* Metrics Grid */}
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4">
+
         {/* Card 1: Total Siswa */}
         <div className="bg-white dark:bg-[#243447] border border-[#E2E8F0] dark:border-gray-700 rounded-2xl p-5 shadow-sm flex items-center gap-3">
           <div className="p-3 bg-primary/10 text-primary rounded-xl">
@@ -279,8 +460,8 @@ export const GuruPortal: React.FC<GuruPortalProps> = ({ onPantau }) => {
         />
       )}
 
-      {/* Activity distribution and student list columns */}
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+      {/* Activity distribution */}
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mt-6">
         
         {/* Left Column: Activity breakdown */}
         <div className="bg-white dark:bg-[#243447] border border-[#E2E8F0] dark:border-gray-700 rounded-2xl p-5 shadow-sm flex flex-col justify-between">
@@ -326,12 +507,122 @@ export const GuruPortal: React.FC<GuruPortalProps> = ({ onPantau }) => {
           </div>
         </div>
 
-        {/* Right 2 Columns: Student Table */}
+        {/* Right Column: Pending Reviews / Quick Approval */}
+        <PendingReviewsList 
+          role="INTERNAL_MENTOR"
+          selectedClassId={selectedClassId || undefined} 
+          onRefreshMetrics={() => {
+            getDashboardMetricsAction(selectedClassId || undefined, undefined).then(m => setMetrics(m as DashboardMetrics));
+          }}
+        />
+      </div>
+      </>
+      )}
+
+      {viewMode === 'progress' && (
+        <div className="bg-white/80 dark:bg-[#243447]/80 backdrop-blur-md rounded-2xl shadow-xl shadow-slate-200/40 dark:shadow-none border border-white/50 dark:border-gray-700/50 overflow-hidden relative z-10 p-5 md:p-6 mb-8 animate-in fade-in slide-in-from-bottom-4 duration-500">
+          <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 mb-6">
+            <h2 className="text-sm md:text-base font-bold text-slate-800 dark:text-white uppercase tracking-wider flex items-center gap-2">
+              <KanbanSquare size={18} className="text-primary" /> 
+              PROGRES KANBAN SISWA
+            </h2>
+          </div>
+
+          {studentsList.length === 0 ? (
+            <div className="flex flex-col items-center justify-center py-12 text-center text-[#64748B] dark:text-gray-300 px-4">
+              <Users size={36} className="mb-3 text-slate-300 dark:text-gray-600" />
+              <p className="text-sm font-bold text-slate-700 dark:text-gray-200 mb-1">Belum Ada Siswa Ditugaskan</p>
+            </div>
+          ) : (
+            <div className="overflow-x-auto -mx-5 md:mx-0 px-5 md:px-0 pb-4">
+              <table className="w-full min-w-[700px] text-sm text-left">
+                <thead className="text-[10px] text-[#64748B] dark:text-gray-400 uppercase bg-[#F8FAFC] dark:bg-gray-800/50 border-y border-[#E2E8F0] dark:border-gray-700 font-bold tracking-wider">
+                  <tr>
+                    <th className="py-2.5 px-2">Nama Siswa</th>
+                    <th className="py-2.5 px-2 text-center">Rencana</th>
+                    <th className="py-2.5 px-2 text-center">Progres</th>
+                    <th className="py-2.5 px-2 text-center">Review</th>
+                    <th className="py-2.5 px-2 text-center">Selesai</th>
+                    <th className="py-2.5 px-2 text-center">Aksi</th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-[#E2E8F0] text-[#0F172A] dark:text-gray-200">
+                  {studentsList.map((student) => (
+                    <tr key={'prog_'+student.id} className="border-b border-[#F1F5F9] dark:border-gray-700/50 hover:bg-[#F8FAFC] dark:hover:bg-gray-800/50 transition duration-150">
+                      <td className="py-3 px-2 font-semibold">
+                        <div>{student.name}</div>
+                        {student.nisn && <div className="text-[10px] text-slate-400 font-normal">NISN: {student.nisn}</div>}
+                      </td>
+                      <td className="py-3 px-2 text-center">
+                        <span className="bg-slate-100 text-slate-700 dark:bg-gray-800 dark:text-gray-300 px-2 py-1 rounded font-bold">{student.boardCounts?.rencana || 0}</span>
+                      </td>
+                      <td className="py-3 px-2 text-center">
+                        <span className="bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400 px-2 py-1 rounded font-bold">{student.boardCounts?.progres || 0}</span>
+                      </td>
+                      <td className="py-3 px-2 text-center">
+                        <span className="bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-400 px-2 py-1 rounded font-bold">{student.boardCounts?.review || 0}</span>
+                      </td>
+                      <td className="py-3 px-2 text-center">
+                        <span className="bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400 px-2 py-1 rounded font-bold">{student.boardCounts?.selesai || 0}</span>
+                      </td>
+                      <td className="py-3 px-2 text-center">
+                        <button
+                          onClick={() => onPantau(student.id, 'board')}
+                          className="px-3 py-1.5 text-xs font-bold text-slate-700 bg-slate-100 hover:bg-slate-200 dark:bg-gray-700 dark:text-white dark:hover:bg-gray-600 rounded-lg transition-colors shadow-sm flex items-center gap-1 mx-auto"
+                        >
+                          <KanbanSquare size={14} /> Detail Board
+                        </button>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          )}
+        </div>
+      )}
+
+      {viewMode === 'analytics' && (
+        <AnalyticsDashboard 
+          selectedClassId={selectedClassId || undefined} 
+        />
+      )}
+
+      {viewMode === 'students' && (
         <div className="lg:col-span-2 bg-white dark:bg-[#243447] border border-[#E2E8F0] dark:border-gray-700 rounded-2xl p-5 shadow-sm relative overflow-hidden">
-          <h3 className="text-xs font-bold text-[#64748B] dark:text-gray-300 uppercase tracking-wider mb-4 flex items-center gap-1.5">
-            <Users size={15} className="text-primary" />
-            {t('studentListClass')} {activeClassName}
-          </h3>
+          <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-4">
+            <h3 className="text-xs font-bold text-[#64748B] dark:text-gray-300 uppercase tracking-wider flex items-center gap-1.5">
+              <Users size={15} className="text-primary" />
+              {t('studentListClass')} {activeClassName}
+            </h3>
+            
+            <div className="flex items-center gap-2">
+              <button
+                onClick={handleExportExcelList}
+                disabled={isExportingExcelList || studentsList.length === 0}
+                className="flex items-center gap-2 px-3 py-1.5 text-xs font-semibold text-green-700 bg-green-50 border border-green-200 rounded-lg hover:bg-green-100 dark:bg-green-900/30 dark:text-green-400 dark:border-green-800 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+              >
+                {isExportingExcelList ? (
+                  <span className="w-3.5 h-3.5 border-2 border-green-700 border-t-transparent rounded-full animate-spin"></span>
+                ) : (
+                  <FileSpreadsheet size={14} />
+                )}
+                Excel
+              </button>
+              <button
+                onClick={handleExportPDFList}
+                disabled={isExportingPDFList || studentsList.length === 0}
+                className="flex items-center gap-2 px-3 py-1.5 text-xs font-semibold text-red-700 bg-red-50 border border-red-200 rounded-lg hover:bg-red-100 dark:bg-red-900/30 dark:text-red-400 dark:border-red-800 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+              >
+                {isExportingPDFList ? (
+                  <span className="w-3.5 h-3.5 border-2 border-red-700 border-t-transparent rounded-full animate-spin"></span>
+                ) : (
+                  <FileText size={14} />
+                )}
+                PDF
+              </button>
+            </div>
+          </div>
 
           {studentsList.length === 0 ? (
             <div className="flex flex-col items-center justify-center py-12 text-center text-[#64748B] dark:text-gray-300">
@@ -346,7 +637,7 @@ export const GuruPortal: React.FC<GuruPortalProps> = ({ onPantau }) => {
                     <th className="py-2.5 px-2">{t('studentNameCol')}</th>
                     <th className="py-2.5 px-2">{t('companyCol')}</th>
                     <th className="py-2.5 px-2 text-center">{t('studentCompletion')}</th>
-                    <th className="py-2.5 px-2 text-center">Kehadiran Hari Ini</th>
+                    <th className="py-2.5 px-2 text-center">{t('todayAttendance') || 'Kehadiran Hari Ini'}</th>
                     <th className="py-2.5 px-2 text-center">{t('studentActions')}</th>
                   </tr>
                 </thead>
@@ -369,13 +660,13 @@ export const GuruPortal: React.FC<GuruPortalProps> = ({ onPantau }) => {
                       <td className="py-3 px-2 text-center">
                         <div className="flex flex-col items-center justify-center gap-1">
                           {student.attendanceStatus === 'CHECKED_IN' ? (
-                            <span className="bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-400 px-2 py-1 rounded-md text-[10px] font-bold">Masuk</span>
+                            <span className="bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-400 px-2 py-1 rounded-md text-[10px] font-bold">{t('statusIn') || 'Masuk'}</span>
                           ) : student.attendanceStatus === 'COMPLETED' ? (
-                            <span className="bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-400 px-2 py-1 rounded-md text-[10px] font-bold">Selesai</span>
+                            <span className="bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-400 px-2 py-1 rounded-md text-[10px] font-bold">{t('statusCompleted') || 'Selesai'}</span>
                           ) : student.attendanceStatus === 'ABSENT' ? (
-                            <span className="bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-400 px-2 py-1 rounded-md text-[10px] font-bold">Alpha</span>
+                            <span className="bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-400 px-2 py-1 rounded-md text-[10px] font-bold">{t('statusAbsent') || 'Alpha'}</span>
                           ) : (
-                            <span className="bg-slate-100 text-slate-800 dark:bg-gray-800 dark:text-gray-400 px-2 py-1 rounded-md text-[10px] font-bold">Belum Absen</span>
+                            <span className="bg-slate-100 text-slate-800 dark:bg-gray-800 dark:text-gray-400 px-2 py-1 rounded-md text-[10px] font-bold">{t('statusNotCheckedIn') || 'Belum Absen'}</span>
                           )}
                           {student.checkIn && (
                             <span className="text-[9px] text-slate-500 dark:text-gray-400">{student.checkIn} {student.checkOut ? `- ${student.checkOut}` : ''}</span>
@@ -384,10 +675,10 @@ export const GuruPortal: React.FC<GuruPortalProps> = ({ onPantau }) => {
                       </td>
                       <td className="py-3 px-2 text-center">
                         <button
-                          onClick={() => onPantau(student.id)}
+                          onClick={() => onPantau(student.id, 'board', true)}
                           className="min-h-[44px] px-3.5 py-2 text-xs md:min-h-0 md:px-2.5 md:py-1 md:text-[10px] bg-primary hover:bg-primary-hover text-white font-bold rounded-lg transition shadow-sm cursor-pointer w-full md:w-auto flex items-center justify-center"
                         >
-                          Pantau
+                          {t('monitorAction') || 'Pantau'}
                         </button>
                       </td>
                     </tr>
@@ -397,8 +688,8 @@ export const GuruPortal: React.FC<GuruPortalProps> = ({ onPantau }) => {
             </div>
           )}
         </div>
-
-      </div>
+      )}
     </div>
   );
 };
+

@@ -6,10 +6,11 @@ import { usePKL } from '../context/PKLContext';
 import { useLanguage } from '../context/LanguageContext';
 import { PARTICIPANT_ROLES } from '../lib/constants';
 import { getDashboardMetricsAction } from '@/app/actions/pkl';
-import { 
-  Building2, Users, FolderKanban, Plus, Edit2, Trash2, CheckSquare, 
-  Square, ShieldAlert, Award, Calendar, FileSpreadsheet, RefreshCw, UserPlus, Search, X
+import {
+  Building2, Users, FolderKanban, Plus, Edit2, Trash2, CheckSquare,
+  Square, ShieldAlert, Award, Calendar, FileSpreadsheet, RefreshCw, UserPlus, Search, X, Wifi
 } from 'lucide-react';
+import { setCompanyIpPrefixAction } from '@/app/actions/pkl';
 
 export const AdminPortal: React.FC = () => {
   const { t } = useLanguage();
@@ -78,7 +79,7 @@ export const AdminPortal: React.FC = () => {
   const [newCompanyName, setNewCompanyName] = useState('');
   const [newCompanyLat, setNewCompanyLat] = useState('');
   const [newCompanyLng, setNewCompanyLng] = useState('');
-  
+
   // Edit states
   const [editingId, setEditingId] = useState<string | null>(null);
   const [editText, setEditText] = useState('');
@@ -89,6 +90,43 @@ export const AdminPortal: React.FC = () => {
   const [overallMetrics, setOverallMetrics] = useState<any>(null);
   const [pendingUsersList, setPendingUsersList] = useState<any[]>([]);
   const [verificationFilter, setVerificationFilter] = useState<string>('ALL');
+
+  const handleSetIp = async (companyId: string) => {
+    try {
+      const confirmSet = confirm('Apakah Anda yakin ingin mengatur IP WiFi untuk kantor ini?');
+      if (!confirmSet) return;
+
+      const resIp = await fetch('https://api.ipify.org?format=json');
+      const data = await resIp.json();
+
+      const company = companiesList.find((c: any) => c.id === companyId);
+      const existingIps = (company as any)?.allowedIpPrefix ? (company as any).allowedIpPrefix : '';
+
+      // Jika existingIps ada dan data.ip sudah ada di dalamnya, tidak usah ditambahkan lagi sebagai default
+      const alreadyHasIp = existingIps.includes(data.ip.split('.').slice(0, 3).join('.'));
+      const defaultPrompt = existingIps
+        ? (alreadyHasIp ? existingIps : `${existingIps}, ${data.ip}`)
+        : data.ip;
+
+      const manualIp = prompt('Konfirmasi atau edit IP Prefix (pisahkan dengan koma jika lebih dari satu):', defaultPrompt);
+      if (!manualIp) return;
+
+      if (manualIp) {
+        const res = await setCompanyIpPrefixAction(companyId, manualIp);
+        if (res.success) {
+          alert(`IP berhasil diatur! IP Prefix: ${res.prefix}`);
+          reloadAll();
+        } else {
+          alert(res.error || 'Gagal mengatur IP.');
+        }
+      } else {
+        alert('Gagal mendapatkan IP publik Anda.');
+      }
+    } catch (e) {
+      alert('Terjadi kesalahan saat menghubungi server IP.');
+      console.error(e);
+    }
+  };
 
 
   const reloadAll = async () => {
@@ -148,7 +186,7 @@ export const AdminPortal: React.FC = () => {
       const lng = parseFloat(editLng) || undefined;
       res = await updateCompany(id, editText, lat, lng);
     }
-    
+
     if (res.success) {
       setEditingId(null);
       setEditText('');
@@ -205,7 +243,7 @@ export const AdminPortal: React.FC = () => {
   };
 
   const handleUserProfileUpdate = async (
-    userId: string, 
+    userId: string,
     updates: { name?: string; nisn?: string; nip?: string; jabatan?: string; employeeId?: string; companyEmail?: string; companyName?: string }
   ) => {
     const user = allUsersList.find((u: any) => u.id === userId);
@@ -218,7 +256,7 @@ export const AdminPortal: React.FC = () => {
     const employeeId = updates.employeeId !== undefined ? updates.employeeId : user?.employeeId;
     const companyEmail = updates.companyEmail !== undefined ? updates.companyEmail : user?.companyEmail;
     const companyName = updates.companyName !== undefined ? updates.companyName : user?.companyName;
-    
+
     const res = await assignSiswa(userId, classId, companyId, name, nisn, nip, jabatan, employeeId, companyEmail, companyName);
     if (!res.success) alert(res.error);
   };
@@ -245,7 +283,7 @@ export const AdminPortal: React.FC = () => {
           </p>
         </div>
         <div className="flex items-center gap-2 w-full sm:w-auto justify-end">
-          <button 
+          <button
             onClick={reloadAll}
             className="p-2 bg-slate-100 dark:bg-gray-800 hover:bg-slate-200 rounded-xl transition cursor-pointer text-slate-600 min-h-[44px] min-w-[44px] flex items-center justify-center"
             title="Refresh Data"
@@ -275,11 +313,10 @@ export const AdminPortal: React.FC = () => {
           <button
             key={tab.key}
             onClick={() => setActiveTab(tab.key as any)}
-            className={`pb-2.5 px-1 text-sm md:text-xs font-bold transition-all border-b-2 cursor-pointer ${
-              activeTab === tab.key
+            className={`pb-2.5 px-1 text-sm md:text-xs font-bold transition-all border-b-2 cursor-pointer ${activeTab === tab.key
                 ? 'border-primary text-primary'
                 : 'border-transparent text-[#64748B] dark:text-gray-300 hover:text-[#0F172A] dark:text-gray-200'
-            }`}
+              }`}
           >
             {tab.label}
           </button>
@@ -451,7 +488,7 @@ export const AdminPortal: React.FC = () => {
                 onChange={(e) => setNewClassName(e.target.value)}
                 className="bg-white dark:bg-[#243447] border border-[#E2E8F0] dark:border-gray-700 rounded-xl px-3 py-2.5 text-sm flex-1 text-[#0F172A] dark:text-gray-200 focus:outline-none focus:border-primary dark:focus:border-blue-500 min-h-[48px] md:min-h-0 md:py-2 md:text-xs"
               />
-              <button 
+              <button
                 type="submit"
                 className="px-4 py-2.5 bg-primary hover:bg-primary-hover text-white font-bold text-sm md:text-xs rounded-xl flex items-center justify-center gap-1 transition cursor-pointer shadow-sm min-h-[48px] md:min-h-0 w-full sm:w-auto"
               >
@@ -555,7 +592,7 @@ export const AdminPortal: React.FC = () => {
                   className="bg-white dark:bg-[#243447] border border-[#E2E8F0] dark:border-gray-700 rounded-xl px-3 py-2.5 text-sm text-[#0F172A] dark:text-gray-200 focus:outline-none focus:border-primary dark:focus:border-blue-500 min-h-[48px] md:min-h-0 md:py-2 md:text-xs"
                 />
               </div>
-              <button 
+              <button
                 type="submit"
                 className="px-4 py-2.5 bg-primary hover:bg-primary-hover text-white font-bold text-sm md:text-xs rounded-xl flex items-center justify-center gap-1 transition cursor-pointer shadow-sm min-h-[48px] md:min-h-0 w-full sm:w-auto"
               >
@@ -634,15 +671,22 @@ export const AdminPortal: React.FC = () => {
                         ) : (
                           <div className="flex gap-2 justify-end text-slate-500 dark:text-gray-300">
                             <button
-                              onClick={() => { 
-                                setEditingId(co.id); 
-                                setEditText(co.name); 
+                              onClick={() => {
+                                setEditingId(co.id);
+                                setEditText(co.name);
                                 setEditLat(co.latitude?.toString() || '');
                                 setEditLng(co.longitude?.toString() || '');
                               }}
                               className="p-2.5 hover:text-primary hover:bg-primary/10 rounded transition cursor-pointer min-h-[40px] min-w-[40px] flex items-center justify-center"
                             >
                               <Edit2 size={14} />
+                            </button>
+                            <button
+                              onClick={() => handleSetIp(co.id)}
+                              title="Set IP Kantor Saat Ini"
+                              className="p-2.5 hover:text-blue-500 hover:bg-blue-50 rounded transition cursor-pointer min-h-[40px] min-w-[40px] flex items-center justify-center"
+                            >
+                              <Wifi size={14} />
                             </button>
                             <button
                               onClick={() => handleDelete('company', co.id)}
@@ -664,7 +708,7 @@ export const AdminPortal: React.FC = () => {
         {activeTab === 'users' && (
           <div className="flex flex-col gap-6 text-xs">
             <h3 className="text-xs font-bold text-slate-500 dark:text-gray-300 uppercase tracking-wider mb-2">{t('assignmentsTitle')}</h3>
-            
+
             <div className="flex flex-col gap-6">
               {/* Guru Section */}
               <div className="border border-[#E2E8F0] dark:border-gray-700 rounded-xl p-4 bg-slate-50 dark:bg-gray-800/40">
@@ -709,11 +753,10 @@ export const AdminPortal: React.FC = () => {
                               <button
                                 key={c.id}
                                 onClick={() => handleGuruClassToggle(guru.id, currentClassIds, c.id)}
-                                className={`flex items-center gap-1.5 px-3 py-2 md:px-2.5 md:py-1 rounded-xl md:rounded-lg transition cursor-pointer font-semibold min-h-[44px] md:min-h-0 text-xs md:text-[11px] ${
-                                  isAssigned 
-                                    ? 'bg-primary/10 border border-blue-200 text-primary' 
+                                className={`flex items-center gap-1.5 px-3 py-2 md:px-2.5 md:py-1 rounded-xl md:rounded-lg transition cursor-pointer font-semibold min-h-[44px] md:min-h-0 text-xs md:text-[11px] ${isAssigned
+                                    ? 'bg-primary/10 border border-blue-200 text-primary'
                                     : 'bg-white dark:bg-[#243447] border border-slate-200 dark:border-gray-700 text-slate-500 dark:text-gray-300'
-                                }`}
+                                  }`}
                               >
                                 {isAssigned ? <CheckSquare size={12} /> : <Square size={12} />}
                                 {c.name}
@@ -804,11 +847,10 @@ export const AdminPortal: React.FC = () => {
                               <button
                                 key={co.id}
                                 onClick={() => handleMentorCompanyToggle(mentor.id, currentCompIds, co.id)}
-                                className={`flex items-center gap-1.5 px-3 py-2 md:px-2.5 md:py-1 rounded-xl md:rounded-lg transition cursor-pointer font-semibold min-h-[44px] md:min-h-0 text-xs md:text-[11px] ${
-                                  isAssigned 
-                                    ? 'bg-emerald-50 border border-emerald-200 text-emerald-600' 
+                                className={`flex items-center gap-1.5 px-3 py-2 md:px-2.5 md:py-1 rounded-xl md:rounded-lg transition cursor-pointer font-semibold min-h-[44px] md:min-h-0 text-xs md:text-[11px] ${isAssigned
+                                    ? 'bg-emerald-50 border border-emerald-200 text-emerald-600'
                                     : 'bg-white dark:bg-[#243447] border border-slate-200 dark:border-gray-700 text-slate-500 dark:text-gray-300'
-                                }`}
+                                  }`}
                               >
                                 {isAssigned ? <CheckSquare size={12} /> : <Square size={12} />}
                                 {co.name}
@@ -855,7 +897,7 @@ export const AdminPortal: React.FC = () => {
                               />
                             </div>
                           </div>
-                          
+
                           <div className="flex flex-col sm:flex-row gap-3 w-full lg:w-auto">
                             <div className="flex flex-col gap-1 min-w-[120px] flex-1">
                               <label className="text-[9px] uppercase tracking-wider text-slate-400 font-bold">{t('studentClass')}</label>
@@ -951,9 +993,8 @@ export const AdminPortal: React.FC = () => {
               </div>
 
               {mentorLinkMessage && (
-                <div className={`p-3 rounded-xl text-xs font-semibold flex items-center gap-2 ${
-                  mentorLinkMessage.type === 'success' ? 'bg-emerald-50 text-emerald-700 border border-emerald-200' : 'bg-red-50 text-red-700 border border-red-200'
-                }`}>
+                <div className={`p-3 rounded-xl text-xs font-semibold flex items-center gap-2 ${mentorLinkMessage.type === 'success' ? 'bg-emerald-50 text-emerald-700 border border-emerald-200' : 'bg-red-50 text-red-700 border border-red-200'
+                  }`}>
                   {mentorLinkMessage.text}
                 </div>
               )}

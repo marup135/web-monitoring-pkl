@@ -508,6 +508,17 @@ export function AttendancePage() {
         return;
       }
 
+      let currentIp = undefined;
+      if (!isOffline) {
+        try {
+          const ipRes = await fetch('https://api.ipify.org?format=json');
+          const ipData = await ipRes.json();
+          if (ipData.ip) currentIp = ipData.ip;
+        } catch (e) {
+          console.warn('Gagal mendapatkan IP', e);
+        }
+      }
+
       if (editingAttendanceId) {
         const updateData = cameraMode === 'in' 
           ? { checkInPhoto: photoCaptured } 
@@ -526,14 +537,14 @@ export function AttendancePage() {
       }
 
       if (cameraMode === 'in') {
-        res = await checkInAction(currentUser.id, location.lat, location.lng, photoCaptured);
+        res = await checkInAction(currentUser.id, location.lat, location.lng, photoCaptured, undefined, false, currentIp);
       } else {
         if (!activityNotes.trim()) {
            setModalError('Catatan kegiatan wajib diisi untuk absen keluar.');
            setActionLoading(false);
            return;
         }
-        res = await checkOutAction(currentUser.id, location.lat, location.lng, photoCaptured, activityNotes, undefined, activityPhotoPayload || undefined);
+        res = await checkOutAction(currentUser.id, location.lat, location.lng, photoCaptured, activityNotes, undefined, activityPhotoPayload || undefined, currentIp);
       }
 
       if (res.success) {
@@ -698,7 +709,7 @@ export function AttendancePage() {
 
       {/* Toast Alert */}
       {(errorMsg || successMsg) && (
-        <div className="fixed top-4 right-4 z-[9999] animate-in slide-in-from-top-3 fade-in duration-300">
+        <div className="fixed top-4 right-4 z-[99999] animate-in slide-in-from-top-3 fade-in duration-300">
           <div className={`flex items-center gap-3 pl-4 pr-5 py-3 rounded-2xl shadow-xl border ${
             errorMsg 
               ? 'bg-white dark:bg-[#243447] border-red-200 text-[#0F172A] dark:text-gray-200 shadow-red-100/60' 

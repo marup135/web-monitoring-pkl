@@ -40,7 +40,7 @@ interface AuthPageProps {
 
 export const AuthPage: React.FC<AuthPageProps> = ({ initialView = 'login' }) => {
   const { login, register, currentUser } = usePKL();
-  const { language } = useLanguage();
+  const { language, t } = useLanguage();
 
   const ROLES = [
     { value: 'siswa', label: language === 'id' ? 'Peserta / Siswa / Mahasiswa' : 'Participant / Student / University Student' },
@@ -118,6 +118,13 @@ export const AuthPage: React.FC<AuthPageProps> = ({ initialView = 'login' }) => 
 
   const setError = (message: string, type: AlertType = 'field', field?: 'username' | 'password' | 'confirmPassword' | 'institutionCode') => {
     setErrorState({ message, type, field });
+  };
+
+    const translateServerError = (msg: string) => {
+    if (msg === 'Akun Anda sedang menunggu verifikasi Admin. Silakan tunggu hingga akun disetujui.') {
+      return t('errPendingVerification') || msg;
+    }
+    return msg;
   };
 
   const clearError = () => {
@@ -430,9 +437,9 @@ export const AuthPage: React.FC<AuthPageProps> = ({ initialView = 'login' }) => 
               <div className="w-16 h-16 rounded-full bg-green-100 flex items-center justify-center text-green-500 mb-2">
                 <ShieldCheck size={32} />
               </div>
-              <h2 className="text-xl font-bold text-[#0F172A] dark:text-white">Pendaftaran Berhasil</h2>
+              <h2 className="text-xl font-bold text-[#0F172A] dark:text-white">{t('regSuccessTitle') || 'Pendaftaran Berhasil'}</h2>
               <p className="text-sm text-[#64748B] dark:text-gray-300">
-                Akun Anda sedang menunggu verifikasi Admin. Silakan tunggu hingga akun disetujui sebelum melakukan login.
+                {t('regPendingMsg') || 'Akun Anda sedang menunggu verifikasi Admin. Silakan tunggu hingga akun disetujui sebelum melakukan login.'}
               </p>
               <button
                 type="button"
@@ -1027,11 +1034,9 @@ export const AuthPage: React.FC<AuthPageProps> = ({ initialView = 'login' }) => 
                       <div className="flex-1 min-w-0">
                         {errorState.type === 'server' ? (
                           <>
-                            <p className="font-bold text-orange-800 dark:text-orange-400">
-                              Kesalahan Server
-                            </p>
+                            <p className="font-bold text-orange-800 dark:text-orange-400">{t('serverError') || 'Kesalahan Server'}</p>
                             <p className="mt-1 text-orange-700 dark:text-orange-500">
-                              {errorState.message}
+                              {translateServerError(errorState.message)}
                             </p>
                           </>
                         ) : (

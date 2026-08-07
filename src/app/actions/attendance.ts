@@ -151,7 +151,7 @@ export async function getAttendanceHistoryAction(userId: string) {
   }
 }
 
-export async function checkInAction(userId: string, lat?: number, lng?: number, photo?: string, offlineData?: { timestamp: number, dateString: string, timeString: string }, isWfh: boolean = false) {
+export async function checkInAction(userId: string, lat?: number, lng?: number, photo?: string, offlineData?: { timestamp: number, dateString: string, timeString: string }, isWfh: boolean = false, clientIp?: string) {
   try {
     const serverTime = await getServerTimeAction();
     const useTime = offlineData || serverTime;
@@ -186,19 +186,33 @@ export async function checkInAction(userId: string, lat?: number, lng?: number, 
 
     // Distance checking logic
     let locStatus = 'VALID';
-    if (!isWfh && lat && lng) {
+    if (!isWfh) {
       const student = await prisma.user.findUnique({
         where: { id: userId },
         include: { perusahaan: true }
       });
       
-      if (student?.perusahaan?.latitude != null && student?.perusahaan?.longitude != null) {
-        const distance = calculateDistance(lat, lng, student.perusahaan.latitude, student.perusahaan.longitude);
-        if (distance > 100) {
-          return { success: false, error: 'OUT_OF_RANGE', distance: Math.round(distance) };
+      // IP Whitelist Check
+      if (student?.perusahaan?.allowedIpPrefix && clientIp) {
+        const allowedPrefixes = student.perusahaan.allowedIpPrefix.split(',').map(p => p.trim()).filter(p => p.length > 0);
+        const isAllowed = allowedPrefixes.length === 0 || allowedPrefixes.some(prefix => clientIp.startsWith(prefix));
+        
+        if (!isAllowed) {
+          return { success: false, error: 'Anda harus terhubung ke WiFi kantor untuk absen masuk.' };
         }
-      } else {
-        return { success: false, error: 'Koordinat perusahaan belum diatur. Minta Admin untuk mengisinya di portal Admin.' };
+      } else if (student?.perusahaan?.allowedIpPrefix && !clientIp) {
+        return { success: false, error: 'Gagal mendeteksi koneksi jaringan. Harap pastikan perangkat online.' };
+      }
+
+      if (lat && lng) {
+        if (student?.perusahaan?.latitude != null && student?.perusahaan?.longitude != null) {
+          const distance = calculateDistance(lat, lng, student.perusahaan.latitude, student.perusahaan.longitude);
+          if (distance > 100) {
+            return { success: false, error: 'OUT_OF_RANGE', distance: Math.round(distance) };
+          }
+        } else {
+          return { success: false, error: 'Koordinat perusahaan belum diatur. Minta Admin untuk mengisinya di portal Admin.' };
+        }
       }
     } else if (isWfh) {
       locStatus = 'PENDING'; // WFH requires approval
@@ -241,7 +255,7 @@ export async function checkInAction(userId: string, lat?: number, lng?: number, 
   }
 }
 
-export async function checkOutAction(userId: string, lat?: number, lng?: number, photo?: string, notes?: string, offlineData?: { timestamp: number, dateString: string, timeString: string }, activityPhoto?: string) {
+export async function checkOutAction(userId: string, lat?: number, lng?: number, photo?: string, notes?: string, offlineData?: { timestamp: number, dateString: string, timeString: string }, activityPhoto?: string, clientIp?: string) {
   try {
     const serverTime = await getServerTimeAction();
     const useTime = offlineData || serverTime;
@@ -280,19 +294,33 @@ export async function checkOutAction(userId: string, lat?: number, lng?: number,
 
     // Distance checking logic for checkout
     // Only check if they are NOT WFH (i.e. their locStatus from checkIn was VALID)
-    if (lat && lng && existing.locationStatus === 'VALID') {
+    if (existing.locationStatus === 'VALID') {
       const student = await prisma.user.findUnique({
         where: { id: userId },
         include: { perusahaan: true }
       });
       
-      if (student?.perusahaan?.latitude != null && student?.perusahaan?.longitude != null) {
-        const distance = calculateDistance(lat, lng, student.perusahaan.latitude, student.perusahaan.longitude);
-        if (distance > 100) {
-          return { success: false, error: 'OUT_OF_RANGE_CHECKOUT', distance: Math.round(distance) };
+      // IP Whitelist Check
+      if (student?.perusahaan?.allowedIpPrefix && clientIp) {
+        const allowedPrefixes = student.perusahaan.allowedIpPrefix.split(',').map(p => p.trim()).filter(p => p.length > 0);
+        const isAllowed = allowedPrefixes.length === 0 || allowedPrefixes.some(prefix => clientIp.startsWith(prefix));
+        
+        if (!isAllowed) {
+          return { success: false, error: 'Anda harus terhubung ke WiFi kantor untuk absen pulang.' };
         }
-      } else {
-        return { success: false, error: 'Koordinat perusahaan belum diatur. Minta Admin untuk mengisinya di portal Admin.' };
+      } else if (student?.perusahaan?.allowedIpPrefix && !clientIp) {
+        return { success: false, error: 'Gagal mendeteksi koneksi jaringan. Harap pastikan perangkat online.' };
+      }
+
+      if (lat && lng) {
+        if (student?.perusahaan?.latitude != null && student?.perusahaan?.longitude != null) {
+          const distance = calculateDistance(lat, lng, student.perusahaan.latitude, student.perusahaan.longitude);
+          if (distance > 100) {
+            return { success: false, error: 'OUT_OF_RANGE_CHECKOUT', distance: Math.round(distance) };
+          }
+        } else {
+          return { success: false, error: 'Koordinat perusahaan belum diatur. Minta Admin untuk mengisinya di portal Admin.' };
+        }
       }
     }
 

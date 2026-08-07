@@ -36,6 +36,11 @@ export function useCameraLocation() {
       stream.getTracks().forEach(track => track.stop());
       setStream(null);
     }
+    if (videoRef.current && videoRef.current.srcObject) {
+      const srcStream = videoRef.current.srcObject as MediaStream;
+      srcStream.getTracks().forEach(track => track.stop());
+      videoRef.current.srcObject = null;
+    }
   }, [stream]);
 
   const fetchLocation = () => {
