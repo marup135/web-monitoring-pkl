@@ -4,7 +4,7 @@
   <p align="center">
     <strong>Platform Eko-Sistem Monitoring & Presensi Digital Terpadu untuk PKL, Magang, Kerja Praktek (KP) & OJT</strong>
     <br />
-    <em>Solusi Cerdas, Modern, Terintegrasi AI Biometrik, dan Real-Time Analytics.</em>
+    <em>Solusi Cerdas, Modern, Terintegrasi AI Biometrik, Geofencing, dan Real-Time Analytics.</em>
   </p>
 
   <p align="center">
@@ -19,9 +19,11 @@
 
   <p align="center">
     <a href="#-tentang-nebotrack">Tentang</a> •
-    <a href="#-kecanggihan--fitur-unggulan">Kecanggihan & Fitur</a> •
+    <a href="#-manfaat--solusi-utama">Manfaat</a> •
+    <a href="#-kecanggihan--fitur-unggulan">Fitur Unggulan</a> •
+    <a href="#-alur-kerja-sistem">Alur Kerja</a> •
     <a href="#-ekosistem-teknologi">Teknologi</a> •
-    <a href="#-peran--hak-akses-pengguna">Roles & Hak Akses</a> •
+    <a href="#-matriks-akses-role">Role Access</a> •
     <a href="#-tampilan-aplikasi">Tampilan UI</a>
   </p>
 </div>
@@ -30,9 +32,30 @@
 
 ## 📖 Tentang NeboTrack
 
-**NeboTrack** adalah platform web monitoring dan manajemen **Praktek Kerja Lapangan (PKL), Magang (Internship), Kerja Praktek (KP), dan On-the-Job Training (OJT)** terpadu yang dirancang untuk memfasilitasi kebutuhan berbagai sekolah (SMK/SMA), perguruan tinggi (Universitas/Politeknik), serta lembaga pelatihan kerja. NeboTrack menggantikan metode pencatatan manual/jurnal kertas dengan ekosistem digital berbasis **Web, AI, dan PWA**.
+**NeboTrack** adalah platform web monitoring dan manajemen **Praktek Kerja Lapangan (PKL), Magang (Internship), Kerja Praktek (KP), dan On-the-Job Training (OJT)** terpadu yang dirancang untuk memfasilitasi kebutuhan berbagai sekolah (SMK/SMA), perguruan tinggi (Universitas/Politeknik), serta lembaga pelatihan kerja. 
 
-Platform ini mengintegrasikan seluruh proses kegiatan program secara seamless antara 4 pihak: **Admin/SuperAdmin**, **Siswa / Mahasiswa / Peserta Magang**, **Guru / Dosen Pembimbing (Internal)**, dan **Mentor Industri (Eksternal)**.
+NeboTrack merubah metode pencatatan manual/jurnal kertas menjadi ekosistem digital berbasis **Web, AI, dan PWA** yang transparan, terstruktur, dan dapat diakses dari mana saja secara real-time.
+
+---
+
+## 🌟 Manfaat & Solusi Utama
+
+NeboTrack hadir menyelesaikan berbagai tantangan tradisional dalam pengelolaan kegiatan program magang/PKL:
+
+### 🎓 1. Bagi Institusi Pendidikan (Sekolah / Kampus)
+* **Monitoring Real-Time**: Memantau kedisiplinan, absensi, serta aktivitas harian peserta di lokasi industri tanpa kendala jarak.
+* **Rekapitulasi Otomatis**: Menghilangkan kerepotan rekap manual dengan fitur cetak laporan PDF/Excel instan.
+* **Akurasi Data Terjamin**: Bebas dari manipulasi data kehadiran berkat proteksi kombinasi AI Wajah & Geofencing GPS.
+
+### 🏢 2. Bagi Perusahaan & Mentor Industri
+* **Persetujuan Cepat (Instant Approval)**: Evaluasi jurnal harian dan pengajuan izin/WFH cukup dengan satu klik.
+* **Objektivitas Penilaian**: Memberikan penilaian kinerja teknis dan catatan evaluasi berkala secara terstruktur.
+* **Efisiensi Efektif**: Pengelolaan peserta magang menjadi terorganisir tanpa mengganggu operasional harian perusahaan.
+
+### 👨‍💻 3. Bagi Peserta (Siswa / Mahasiswa)
+* **Manajemen Tugas Profesional**: Mengelola target pekerjaan harian menggunakan interface *Kanban Board* modern.
+* **Akses Mudah di HP (PWA)**: Pengisian presensi selfie & jurnal harian yang cepat, fleksibel, dan responsif.
+* **Portofolio Digital**: Memiliki riwayat aktivitas kerja dan penilaian yang tersimpan rapi sebagai catatan pengalaman.
 
 ---
 
@@ -73,6 +96,23 @@ NeboTrack dibekali berbagai teknologi mutakhir untuk memberikan pengalaman prese
 
 ---
 
+## 🔄 Alur Kerja Sistem (System Workflow)
+
+```
+┌─────────────────┐       ┌───────────────────────┐       ┌────────────────────────┐
+│  Pendaftaran &  │ ─────►│ Presensi Selfie (AI)  │ ─────►│ Logbook & Tugas Harian │
+│  Plotting User  │       │   + GPS Geofencing    │       │     (Kanban Board)     │
+└─────────────────┘       └───────────────────────┘       └────────────────────────┘
+                                                                       │
+                                                                       ▼
+┌─────────────────┐       ┌───────────────────────┐       ┌────────────────────────┐
+│ Ekspor Laporan  │ ◄─────│ Assessment & Feedback │ ◄─────│  Review & Verification │
+│   (PDF / Excel) │       │   Pembimbing Internal │       │    Mentor Eksternal    │
+└─────────────────┘       └───────────────────────┘       └────────────────────────┘
+```
+
+---
+
 ## 🛠 Ekosistem Teknologi
 
 | Layer / Fitur | Teknologi & Library | Deskripsi |
@@ -90,16 +130,31 @@ NeboTrack dibekali berbagai teknologi mutakhir untuk memberikan pengalaman prese
 
 ---
 
-## 🎭 Peran & Hak Akses Pengguna (Roles)
+## 🎭 Matriks Akses Role (RBAC)
 
-NeboTrack menerapkan **Role-Based Access Control (RBAC)** yang aman untuk 4 peran pengguna:
+NeboTrack menerapkan **Role-Based Access Control (RBAC)** yang ketat dan terstruktur:
 
-| Role | Akses Utama & Fitur |
-| :--- | :--- |
-| **SuperAdmin / Admin** | Full akses manajemen user master, institusi (Sekolah/Kampus), jurusan/prodi, penempatan perusahaan/industri, serta broadcast pengumuman sistem. |
-| **Pembimbing Internal** | Monitoring peserta bimbingan (Siswa/Mahasiswa), approval permohonan Izin/WFH, verifikasi logbook harian, pemberian catatan pembimbing, dan cetak rekapitulasi nilai. |
-| **Mentor Eksternal** | Review dan validasi kartu jurnal harian peserta, evaluasi kinerja industri, umpan balik (*feedback*), serta persetujuan presensi. |
-| **Siswa / Mahasiswa / Peserta** | Mengisi presensi selfie (AI + GPS), membuat & mengelola tugas Kanban, mencatat logbook harian, mengajukan Izin/WFH, serta mengunduh rekap aktivitas. |
+| Fitur / Modul | Admin | Pembimbing Internal | Mentor Eksternal | Peserta (Siswa/Mahasiswa) |
+| :--- | :---: | :---: | :---: | :---: |
+| **Manajemen User & Plotting** | 🟩 Full | 🟥 Tidak | 🟥 Tidak | 🟥 Tidak |
+| **Presensi Selfie AI + GPS** | 🟦 View | 🟦 View | 🟦 View | 🟩 Presensi |
+| **Kelola Task Kanban Board** | 🟦 View | 🟦 View | 🟦 View | 🟩 Kelola |
+| **Review & Validasi Logbook**| 🟦 View | 🟦 View | 🟩 Validasi | 🟨 Pengisian |
+| **Approval Izin & WFH** | 🟦 View | 🟩 Approval | 🟩 Approval | 🟨 Pengajuan |
+| **Penilaian Kinerja Industri** | 🟦 View | 🟦 View | 🟩 Penilaian | 🟥 Tidak |
+| **Rekapitulasi & Cetak PDF** | 🟩 Cetak | 🟩 Cetak | 🟦 View | 🟩 Download |
+| **Private Notepad** | 🟥 Tidak | 🟥 Tidak | 🟥 Tidak | 🟩 Akses |
+
+*Keterangan: 🟩 Full/Akses Aktif | 🟨 Pengajuan/Pengisian | 🟦 View/Monitoring | 🟥 Tanpa Akses*
+
+---
+
+## 🛡 Proteksi & Keamanan Data
+
+- 🔐 **End-to-End Type Safety**: Pemanfaatan TypeScript & Prisma ORM menjamin konsistensi data dari server hingga UI.
+- 🛡 **Anti-Cheat Attendance**: Dual verifikasi otomatis (Wajah AI + GPS Geofencing Radius) mencegah lokasi palsu (*fake GPS*) dan penggantian foto orang lain.
+- 🤖 **Bot Guard Authentication**: Integrasi Google reCAPTCHA melindungi pintu masuk login & registrasi dari serangan brute-force.
+- 📑 **Secure Relational Architecture**: Pengelolaan data institusi, perusahaan, dan aktivitas peserta yang terisolasi dengan baik.
 
 ---
 
