@@ -163,6 +163,7 @@ model Perusahaan {
   mentors       User[]       @relation("MentorCompanies")
   latitude      Float?
   longitude     Float?
+  allowedIpPrefix String?
   announcements Announcement[] @relation("CompanyAnnouncements")
 
   @@unique([name, institutionId])
