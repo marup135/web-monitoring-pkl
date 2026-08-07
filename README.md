@@ -2,7 +2,7 @@
   <img src="public/nebo.png" alt="NEBO Logo" width="160" style="border-radius: 20px; margin-bottom: 20px;" />
   <h1>🚀 NeboTrack (Web Monitoring PKL)</h1>
   <p align="center">
-    <strong>Platform Eko-Sistem Monitoring & Presensi PKL Digital Generasi Baru SMKN 1 Bojong</strong>
+    <strong>Platform Eko-Sistem Monitoring & Presensi PKL Digital Generasi Baru Multi-Sekolah</strong>
     <br />
     <em>Solusi Cerdas, Modern, Terintegrasi AI Biometrik, dan Real-Time Analytics.</em>
   </p>
@@ -30,7 +30,7 @@
 
 ## 📖 Tentang NeboTrack
 
-**NeboTrack** adalah platform web monitoring dan manajemen **Praktek Kerja Lapangan (PKL)** terpadu yang dirancang khusus untuk memfasilitasi kebutuhan **SMKN 1 Bojong**. NeboTrack menggantikan metode pencatatan manual/jurnal kertas dengan ekosistem digital berbasis **Web, AI, dan PWA**.
+**NeboTrack** adalah platform web monitoring dan manajemen **Praktek Kerja Lapangan (PKL)** terpadu yang dirancang untuk memfasilitasi kebutuhan **berbagai sekolah & institusi pendidikan**. NeboTrack menggantikan metode pencatatan manual/jurnal kertas dengan ekosistem digital berbasis **Web, AI, dan PWA**.
 
 Platform ini mengintegrasikan seluruh proses PKL secara seamless antara 4 pihak: **Admin/SuperAdmin**, **Siswa**, **Guru Pembimbing (Internal)**, dan **Mentor Industri (Eksternal)**.
 
@@ -121,7 +121,7 @@ NeboTrack menerapkan **Role-Based Access Control (RBAC)** yang aman untuk 4 pera
 ---
 
 <div align="center">
-  <p>Dibuat oleh <b>Ma'rup & Team (ChatGPT, Gemini, Cloude)</b></p>
+  <p>Dibuat dengan ❤️ untuk <b>Dunia Pendidikan & Vokasi Indonesia</b></p>
   <p>
     <img src="https://img.shields.io/badge/Status-Production_Ready-brightgreen" alt="Status Active" />
     <img src="https://img.shields.io/badge/License-MIT-blue" alt="License MIT" />
