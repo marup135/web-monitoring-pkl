@@ -53,6 +53,8 @@ model User {
   institutionId         String?        @db.VarChar(255)
   faceDescriptor        String?
   privateNote           String?
+  finalGrade            Float?
+  gradeDetails          Json?
   writtenNotes          AdvisorNote[]  @relation("AdvisorNotes")
   advisorNotes          AdvisorNote[]  @relation("StudentNotes")
   secretNotesReceived   SecretNote[]   @relation("StudentSecretNotes")
