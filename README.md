@@ -121,7 +121,7 @@ NeboTrack menerapkan **Role-Based Access Control (RBAC)** yang aman untuk 4 pera
 ---
 
 <div align="center">
-  <p>Dibuat dengan ❤️ oleh <b>Tim Pengembang SMKN 1 Bojong</b></p>
+  <p>Dibuat oleh <b>Ma'rup & Team (ChatGPT, Gemini, Cloude)</b></p>
   <p>
     <img src="https://img.shields.io/badge/Status-Production_Ready-brightgreen" alt="Status Active" />
     <img src="https://img.shields.io/badge/License-MIT-blue" alt="License MIT" />
