@@ -290,14 +290,7 @@ export const GuruPortal: React.FC<GuruPortalProps> = ({ onPantau }) => {
         </div>
 
         <div className="flex items-center gap-2 flex-wrap w-full md:w-auto justify-end">
-          <button
-            onClick={handleExportMonthly}
-            disabled={isExporting || !selectedClassId}
-            className="flex items-center gap-2 bg-green-600 hover:bg-green-700 text-white px-3 py-1.5 rounded-xl text-xs font-bold transition shadow-sm cursor-pointer disabled:opacity-50"
-          >
-            {isExporting ? <span className="w-3.5 h-3.5 border-2 border-white border-t-transparent rounded-full animate-spin"></span> : <Download size={14} />}
-            Ekspor Harian
-          </button>
+
           
           {currentUser?.classes && currentUser.classes.length > 1 && (
             <div className="flex items-center gap-1.5 bg-slate-50 dark:bg-gray-800/80 border border-slate-200 dark:border-gray-700 rounded-xl px-2.5 py-1">

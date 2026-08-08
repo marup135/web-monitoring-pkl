@@ -210,7 +210,7 @@ export const DailyDashboard: React.FC<DailyDashboardProps> = ({
     }
   };
 
-  const getStatusBadge = (status: string, isVerified?: boolean) => {
+  const getStatusBadge = (status: string, isVerified?: boolean, record?: AttendanceRecord) => {
     if (['WFH', 'SAKIT', 'IZIN'].includes(status)) {
       if (isVerified) {
         return (
@@ -220,7 +220,11 @@ export const DailyDashboard: React.FC<DailyDashboardProps> = ({
         );
       }
       return (
-        <span className="inline-flex items-center gap-1.5 text-xs font-semibold px-2.5 py-1 rounded-full bg-amber-50 text-amber-700 dark:bg-amber-950/60 dark:text-amber-300 border border-amber-200 dark:border-amber-800/60 shadow-xs">
+        <span 
+          onClick={() => record && setSelectedPreview(record)}
+          className={`inline-flex items-center gap-1.5 text-xs font-semibold px-2.5 py-1 rounded-full bg-amber-50 text-amber-700 dark:bg-amber-950/60 dark:text-amber-300 border border-amber-200 dark:border-amber-800/60 shadow-xs ${record ? 'cursor-pointer hover:bg-amber-100 dark:hover:bg-amber-900/40 transition-colors' : ''}`}
+          title={record ? "Klik untuk menyetujui/menolak" : ""}
+        >
           <Clock size={12} /> {status} (Pending)
         </span>
       );
@@ -359,7 +363,7 @@ export const DailyDashboard: React.FC<DailyDashboardProps> = ({
                       <div className="text-xs text-slate-400 font-medium mt-0.5">{role === 'EXTERNAL_MENTOR' ? record.school || '-' : record.company || '-'}</div>
                     </td>
                     <td className="px-5 py-4 align-middle text-center whitespace-nowrap">
-                      {getStatusBadge(record.status, record.isVerified)}
+                      {getStatusBadge(record.status, record.isVerified, record)}
                     </td>
                     <td className="px-4 py-4 align-middle text-center font-mono text-xs">
                       {record.checkIn ? (
@@ -415,7 +419,7 @@ export const DailyDashboard: React.FC<DailyDashboardProps> = ({
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm" onClick={() => setSelectedPreview(null)}>
           <div className="bg-white dark:bg-[#1E293B] rounded-2xl w-full max-w-lg overflow-hidden shadow-2xl flex flex-col" onClick={e => e.stopPropagation()}>
             <div className="flex justify-between items-center p-4 border-b border-slate-200 dark:border-gray-700">
-              <h3 className="font-bold text-lg text-slate-800 dark:text-white">Jurnal: {selectedPreview.name}</h3>
+              <h3 className="font-bold text-lg text-slate-800 dark:text-white">Detail Kehadiran: {selectedPreview.name}</h3>
               <button onClick={() => setSelectedPreview(null)} className="p-1 rounded-lg text-slate-400 hover:text-red-500 hover:bg-slate-100 dark:hover:bg-slate-800 transition">
                 <XCircle size={24} />
               </button>
@@ -486,7 +490,7 @@ export const DailyDashboard: React.FC<DailyDashboardProps> = ({
                       disabled={isApproving === selectedPreview.userId}
                       className="px-4 py-2 rounded-xl text-sm font-semibold text-red-600 bg-red-50 border border-red-200 hover:bg-red-100 dark:bg-red-900/30 dark:text-red-400 dark:border-red-800/50 transition-colors disabled:opacity-50 cursor-pointer"
                     >
-                      Tolak Jurnal
+                      Tolak Absen
                     </button>
                     <button
                       onClick={() => {
@@ -496,7 +500,7 @@ export const DailyDashboard: React.FC<DailyDashboardProps> = ({
                       disabled={isApproving === selectedPreview.userId}
                       className="px-4 py-2 rounded-xl text-sm font-semibold text-emerald-600 bg-emerald-50 border border-emerald-200 hover:bg-emerald-100 dark:bg-emerald-900/30 dark:text-emerald-400 dark:border-emerald-800/50 transition-colors disabled:opacity-50 cursor-pointer"
                     >
-                      {isApproving === selectedPreview.userId ? 'Memproses...' : 'Setujui Jurnal'}
+                      {isApproving === selectedPreview.userId ? 'Memproses...' : 'Setujui Absen'}
                     </button>
                   </>
                 ) : (

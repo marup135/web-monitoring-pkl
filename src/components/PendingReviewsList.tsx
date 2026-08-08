@@ -213,6 +213,62 @@ export const PendingReviewsList: React.FC<PendingReviewsListProps> = ({
                     <p className="italic text-slate-400">Tidak ada deskripsi tambahan.</p>
                   )}
                 </div>
+
+                {/* Status Nilai Pembimbing Lain */}
+                <div className="mt-6 border-t border-slate-100 dark:border-gray-700 pt-5">
+                  <p className="font-semibold mb-3 text-xs text-slate-500 dark:text-gray-400 uppercase tracking-widest">
+                    Status Penilaian Pembimbing
+                  </p>
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                    {/* Nilai Mentor (Perusahaan) */}
+                    <div className="p-3.5 rounded-xl border border-purple-100 dark:border-purple-900/40 bg-purple-50/50 dark:bg-purple-950/20">
+                      <div className="flex items-center justify-between mb-1.5">
+                        <span className="text-xs font-bold text-purple-700 dark:text-purple-300">Pembimbing Eksternal (Mentor)</span>
+                        {previewCard.scoreMentor !== null && previewCard.scoreMentor !== undefined ? (
+                          <span className="px-2 py-0.5 text-[10px] font-extrabold rounded-full bg-purple-100 dark:bg-purple-900/60 text-purple-700 dark:text-purple-300 border border-purple-200 dark:border-purple-800">
+                            {previewCard.scoreMentor}/100
+                          </span>
+                        ) : (
+                          <span className="text-[10px] italic text-slate-400">Belum Menilai</span>
+                        )}
+                      </div>
+                      {previewCard.scoreMentor !== null && previewCard.scoreMentor !== undefined && (
+                        <div className="text-[11px] text-slate-600 dark:text-gray-300 space-y-0.5 mt-2 pt-2 border-t border-purple-100 dark:border-purple-900/30">
+                          <div>Kedisiplinan: <b>{previewCard.scoreMentorDiscipline ?? '-'}</b></div>
+                          <div>Keahlian: <b>{previewCard.scoreMentorSkill ?? '-'}</b></div>
+                          <div>Sikap & Etika: <b>{previewCard.scoreMentorAttitude ?? '-'}</b></div>
+                          {previewCard.feedbackMentor && (
+                            <div className="italic text-[10px] text-slate-500 mt-1">&ldquo;{previewCard.feedbackMentor}&rdquo;</div>
+                          )}
+                        </div>
+                      )}
+                    </div>
+
+                    {/* Nilai Advisor (Guru Sekolah) */}
+                    <div className="p-3.5 rounded-xl border border-amber-100 dark:border-amber-900/40 bg-amber-50/50 dark:bg-amber-950/20">
+                      <div className="flex items-center justify-between mb-1.5">
+                        <span className="text-xs font-bold text-amber-700 dark:text-amber-300">Pembimbing Internal (Guru)</span>
+                        {previewCard.scoreAdvisor !== null && previewCard.scoreAdvisor !== undefined ? (
+                          <span className="px-2 py-0.5 text-[10px] font-extrabold rounded-full bg-amber-100 dark:bg-amber-900/60 text-amber-700 dark:text-amber-300 border border-amber-200 dark:border-amber-800">
+                            {previewCard.scoreAdvisor}/100
+                          </span>
+                        ) : (
+                          <span className="text-[10px] italic text-slate-400">Belum Menilai</span>
+                        )}
+                      </div>
+                      {previewCard.scoreAdvisor !== null && previewCard.scoreAdvisor !== undefined && (
+                        <div className="text-[11px] text-slate-600 dark:text-gray-300 space-y-0.5 mt-2 pt-2 border-t border-amber-100 dark:border-amber-900/30">
+                          <div>Kedisiplinan: <b>{previewCard.scoreAdvisorDiscipline ?? '-'}</b></div>
+                          <div>Laporan: <b>{previewCard.scoreAdvisorReport ?? '-'}</b></div>
+                          <div>Komunikasi: <b>{previewCard.scoreAdvisorCommunication ?? '-'}</b></div>
+                          {previewCard.feedbackAdvisor && (
+                            <div className="italic text-[10px] text-slate-500 mt-1">&ldquo;{previewCard.feedbackAdvisor}&rdquo;</div>
+                          )}
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                </div>
               </div>
 
               {/* Right Side: Grading Panel */}

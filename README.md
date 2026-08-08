@@ -176,9 +176,13 @@ NeboTrack menerapkan **Role-Based Access Control (RBAC)** yang ketat dan terstru
 ---
 
 <div align="center">
+<<<<<<< HEAD
   <p>Dibuat Oleh <b>Ma'rup & Team (ChatGPT, Gemini, dan Cloude)</b></p>
   <p>
     <img src="https://img.shields.io/badge/Status-Production_Ready-brightgreen" alt="Status Active" />
+=======
+  <p>Dibuat Oleh <b>Ma'rup & Team (CharGPT, Gemini, Cloude)rightgreen" alt="Status Active" />
+>>>>>>> 3de6a18 (bisa)
     <img src="https://img.shields.io/badge/Access-Proprietary_System-red" alt="Proprietary System" />
   </p>
 </div>

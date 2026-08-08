@@ -2822,12 +2822,36 @@ export async function approveAttendanceAction(id: string, isApproved: boolean) {
     if (!currentUser || !['EXTERNAL_MENTOR', 'INTERNAL_MENTOR', 'SUPER_ADMIN'].includes(currentUser.role)) {
       return { success: false, error: 'Unauthorized' };
     }
-    await prisma.attendance.updateMany({
-      where: { userId: id, date: new Date().toLocaleDateString('en-CA', { timeZone: 'Asia/Jakarta' }) },
-      data: { isVerified: isApproved }
+
+    const todayDateStr = new Date().toLocaleDateString('en-CA', { timeZone: 'Asia/Jakarta' });
+    const attendance = await prisma.attendance.findFirst({
+      where: { userId: id, date: todayDateStr }
     });
+
+    if (!attendance) {
+      return { success: false, error: 'Data absensi tidak ditemukan' };
+    }
+
+    const updateData: any = { isVerified: isApproved };
+
+    if (attendance.status === 'PENDING_SICK') {
+      updateData.status = isApproved ? 'SICK' : 'ABSENT';
+    } else if (attendance.status === 'PENDING_EXCUSED') {
+      updateData.status = isApproved ? 'EXCUSED' : 'ABSENT';
+    }
+
+    if (attendance.locationStatus === 'PENDING') {
+      updateData.locationStatus = isApproved ? 'APPROVED' : 'REJECTED';
+    }
+
+    await prisma.attendance.update({
+      where: { id: attendance.id },
+      data: updateData
+    });
+
     return { success: true, error: '' };
   } catch (error) {
+    console.error('Error approving attendance:', error);
     return { success: false, error: 'Error approving attendance' };
   }
 }
@@ -2863,18 +2887,32 @@ export async function getPendingReviewCardsAction(classId?: string, companyId?: 
 
     const studentIds = students.map(s => s.id);
 
+    const cardWhereClause: any = {
+      studentId: { in: studentIds }
+    };
+
+    if (currentUser.role === 'EXTERNAL_MENTOR') {
+      cardWhereClause.scoreMentor = null;
+      cardWhereClause.columnId = { in: ['review', 'selesai'] };
+    } else if (currentUser.role === 'INTERNAL_MENTOR') {
+      cardWhereClause.scoreAdvisor = null;
+      cardWhereClause.columnId = { in: ['review', 'selesai'] };
+    } else {
+      cardWhereClause.columnId = 'review';
+    }
+
     const cards = await prisma.card.findMany({
-      where: {
-        studentId: { in: studentIds },
-        columnId: 'review'
-      },
+      where: cardWhereClause,
       include: {
         student: { select: { name: true, school: true, company: true } }
       },
       orderBy: { createdAt: 'desc' }
     });
 
-    return cards;
+    return cards.map(c => ({
+      ...c,
+      studentName: c.student?.name || 'Siswa'
+    }));
   } catch (error) {
     return [];
   }
@@ -2894,29 +2932,53 @@ export async function batchApproveCardsAction(
       return { success: false, error: 'Unauthorized' };
     }
 
-    const data: any = { columnId: 'selesai' };
+    for (const cardId of cardIds) {
+      const existingCard = await prisma.card.findUnique({ where: { id: cardId } });
+      if (!existingCard) continue;
 
-    if (scores && currentUser.role === 'EXTERNAL_MENTOR') {
-      const avg = Math.round(((scores.discipline || 0) + (scores.skillOrReport || 0) + (scores.attitudeOrCommunication || 0)) / 3);
-      data.scoreMentor = avg;
-      data.scoreMentorDiscipline = scores.discipline;
-      data.scoreMentorSkill = scores.skillOrReport;
-      data.scoreMentorAttitude = scores.attitudeOrCommunication;
-    } else if (scores && currentUser.role === 'INTERNAL_MENTOR') {
-      const avg = Math.round(((scores.discipline || 0) + (scores.skillOrReport || 0) + (scores.attitudeOrCommunication || 0)) / 3);
-      data.scoreAdvisor = avg;
-      data.scoreAdvisorDiscipline = scores.discipline;
-      data.scoreAdvisorReport = scores.skillOrReport;
-      data.scoreAdvisorCommunication = scores.attitudeOrCommunication;
+      const updateData: any = {};
+
+      if (currentUser.role === 'EXTERNAL_MENTOR') {
+        const disc = scores?.discipline ?? 85;
+        const skill = scores?.skillOrReport ?? 85;
+        const att = scores?.attitudeOrCommunication ?? 85;
+        const avg = Math.round((disc + skill + att) / 3);
+
+        updateData.scoreMentor = avg;
+        updateData.scoreMentorDiscipline = disc;
+        updateData.scoreMentorSkill = skill;
+        updateData.scoreMentorAttitude = att;
+
+        if (existingCard.scoreAdvisor !== null && existingCard.scoreAdvisor !== undefined) {
+          updateData.columnId = 'selesai';
+        }
+      } else if (currentUser.role === 'INTERNAL_MENTOR') {
+        const rep = scores?.skillOrReport ?? 85;
+        const disc = scores?.discipline ?? 85;
+        const comm = scores?.attitudeOrCommunication ?? 85;
+        const avg = Math.round((disc + rep + comm) / 3);
+
+        updateData.scoreAdvisor = avg;
+        updateData.scoreAdvisorDiscipline = disc;
+        updateData.scoreAdvisorReport = rep;
+        updateData.scoreAdvisorCommunication = comm;
+
+        if (existingCard.scoreMentor !== null && existingCard.scoreMentor !== undefined) {
+          updateData.columnId = 'selesai';
+        }
+      } else {
+        updateData.columnId = 'selesai';
+      }
+
+      await prisma.card.update({
+        where: { id: cardId },
+        data: updateData
+      });
     }
-
-    await prisma.card.updateMany({
-      where: { id: { in: cardIds } },
-      data
-    });
 
     return { success: true, error: '' };
   } catch (error) {
+    console.error('Error approving cards:', error);
     return { success: false, error: 'Error approving cards' };
   }
 }
