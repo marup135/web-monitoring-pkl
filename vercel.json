@@ -2,11 +2,11 @@
   "crons": [
     {
       "path": "/api/cron/reminder-pagi",
-      "schedule": "15 02 * * 1-5"
+      "schedule": "0 1 * * 1-5"
     },
     {
       "path": "/api/cron/reminder-sore",
-      "schedule": "30 10 * * 1-5"
+      "schedule": "0 10 * * 1-5"
     },
     {
       "path": "/api/cron/close-attendance",
