@@ -7,6 +7,7 @@ export function useCameraLocation() {
   const [isCameraModalOpen, setIsCameraModalOpen] = useState(false);
   const [cameraMode, setCameraMode] = useState<'in' | 'out'>('in');
   const [location, setLocation] = useState<{lat: number, lng: number} | null>(null);
+  const [locationName, setLocationName] = useState<string | null>(null);
   const [locError, setLocError] = useState('');
   
   const videoRef = useRef<HTMLVideoElement>(null);
@@ -43,11 +44,32 @@ export function useCameraLocation() {
       return;
     }
     navigator.geolocation.getCurrentPosition(
-      (position) => {
-        setLocation({
-          lat: position.coords.latitude,
-          lng: position.coords.longitude
-        });
+      async (position) => {
+        const lat = position.coords.latitude;
+        const lng = position.coords.longitude;
+        setLocation({ lat, lng });
+
+        try {
+          const res = await fetch(`https://nominatim.openstreetmap.org/reverse?format=json&lat=${lat}&lon=${lng}&zoom=18&addressdetails=1`);
+          if (res.ok) {
+            const data = await res.json();
+            const address = data.address;
+            let shortName = address 
+              ? (address.amenity || address.building || address.road || address.village || data.name || data.display_name?.split(',')[0]) 
+              : (data.name || data.display_name?.split(',')[0]);
+            
+            // Perbaikan khusus untuk area Telkom yang berdekatan
+            if (shortName && typeof shortName === 'string' && shortName.toLowerCase().includes('telkom corporate university')) {
+              shortName = 'Telkom Test House';
+            }
+            
+            if (shortName) {
+              setLocationName(shortName);
+            }
+          }
+        } catch (e) {
+          console.error("Reverse geocoding failed", e);
+        }
       },
       (error) => {
         console.error("Location error:", error);
@@ -92,7 +114,8 @@ export function useCameraLocation() {
           type: overrideType || (cameraMode === 'in' ? 'Absen Masuk' : 'Absen Pulang'),
           userName: currentUser?.name || 'User',
           lat: location?.lat,
-          lng: location?.lng
+          lng: location?.lng,
+          locationName: locationName || undefined
         });
         
         const dataUrl = canvas.toDataURL('image/jpeg', 0.6);
@@ -139,7 +162,8 @@ export function useCameraLocation() {
               type: overrideType || (cameraMode === 'in' ? 'Absen Masuk' : 'Bukti Kegiatan'),
               userName: currentUser?.name || 'User',
               lat: location?.lat,
-              lng: location?.lng
+              lng: location?.lng,
+              locationName: locationName || undefined
             });
             
             const dataUrl = canvas.toDataURL('image/jpeg', 0.6);
@@ -160,6 +184,7 @@ export function useCameraLocation() {
     setCameraMode(mode);
     setPhotoCaptured(null);
     setLocation(null);
+    setLocationName(null);
     setLocError('');
     setIsCameraModalOpen(true);
     fetchLocation();
@@ -175,6 +200,7 @@ export function useCameraLocation() {
     isCameraModalOpen,
     cameraMode,
     location,
+    locationName,
     locError,
     videoRef,
     canvasRef,

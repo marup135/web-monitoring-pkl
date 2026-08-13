@@ -115,6 +115,7 @@ export function AttendancePage() {
     isCameraModalOpen,
     cameraMode,
     location,
+    locationName,
     locError,
     videoRef,
     canvasRef,
@@ -232,7 +233,8 @@ export function AttendancePage() {
               type: 'Bukti Kegiatan',
               userName: currentUser?.name || 'User',
               lat: location?.lat,
-              lng: location?.lng
+              lng: location?.lng,
+              locationName: locationName || undefined
             });
             resolve(canvas.toDataURL('image/jpeg', 0.6));
           } else {
@@ -752,9 +754,11 @@ export function AttendancePage() {
                 <div>
                   <p className="font-semibold">{location ? 'Lokasi Ditemukan' : 'Mencari Lokasi...'}</p>
                   <p className="text-xs opacity-80">
-                    {location 
-                      ? `${location.lat.toFixed(6)}, ${location.lng.toFixed(6)}` 
-                      : locError || 'Pastikan GPS Anda aktif dan berikan izin lokasi.'}
+                    {locationName 
+                      ? locationName
+                      : location 
+                        ? `${location.lat.toFixed(6)}, ${location.lng.toFixed(6)}` 
+                        : locError || 'Pastikan GPS Anda aktif dan berikan izin lokasi.'}
                   </p>
                 </div>
               </div>

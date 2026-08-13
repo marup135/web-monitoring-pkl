@@ -4,6 +4,7 @@ export interface WatermarkOptions {
   timestamp?: Date | string;
   lat?: number | null;
   lng?: number | null;
+  locationName?: string;
 }
 
 export function applyWatermark(
@@ -30,9 +31,11 @@ export function applyWatermark(
 
   const typeTag = options.type ? `[${options.type.toUpperCase()}]` : '[ABSENSI]';
   const nameStr = options.userName || 'User';
-  const locStr = (options.lat != null && options.lng != null)
-    ? `📍 Lat: ${options.lat.toFixed(5)}, Lng: ${options.lng.toFixed(5)}`
-    : '📍 Lokasi: Tidak tersedia';
+  const locStr = options.locationName 
+    ? `📍 ${options.locationName}` 
+    : (options.lat != null && options.lng != null)
+      ? `📍 Lat: ${options.lat.toFixed(5)}, Lng: ${options.lng.toFixed(5)}`
+      : '📍 Lokasi: Tidak tersedia';
 
   // Responsive scale factor based on image width
   const baseScale = Math.max(width / 800, 0.6);
@@ -43,12 +46,46 @@ export function applyWatermark(
 
   ctx.save();
 
-  const lines = [
-    { text: `NEBOTRACK ${typeTag}`, font: `bold ${fontSizeHeader}px sans-serif`, color: '#60A5FA' },
-    { text: `👤 ${nameStr}`, font: `${fontSizeBody}px sans-serif`, color: '#FFFFFF' },
-    { text: `📅 ${dateStr} - ${timeStr}`, font: `${fontSizeBody}px sans-serif`, color: '#F3F4F6' },
-    { text: locStr, font: `${fontSizeBody}px sans-serif`, color: '#9CA3AF' }
-  ];
+  const isCheckOut = options.type?.toUpperCase().includes('PULANG') || options.type?.toUpperCase().includes('KELUAR');
+  const isActivity = options.type?.toUpperCase().includes('KEGIATAN');
+
+  const lines = [];
+
+  if (isActivity) {
+    // Custom format for Activity Photos (No Nebotrack header, just coordinates & location name)
+    lines.push({ text: `📅 ${dateStr} - ${timeStr}`, font: `${fontSizeBody}px sans-serif`, color: '#F3F4F6' });
+    
+    if (options.lat != null && options.lng != null) {
+      lines.push({ text: `📍 Lat: ${options.lat.toFixed(5)}, Lng: ${options.lng.toFixed(5)}`, font: `${fontSizeBody}px sans-serif`, color: '#9CA3AF' });
+    }
+    if (options.locationName) {
+      lines.push({ text: `🏢 ${options.locationName}`, font: `bold ${fontSizeBody}px sans-serif`, color: '#60A5FA' });
+    }
+    
+    if (options.lat == null && options.lng == null && !options.locationName) {
+      lines.push({ text: '📍 Lokasi: Tidak tersedia', font: `${fontSizeBody}px sans-serif`, color: '#9CA3AF' });
+    }
+  } else {
+    // Normal Check-in / Check-out watermark
+    lines.push({ text: `NEBOTRACK ${typeTag}`, font: `bold ${fontSizeHeader}px sans-serif`, color: '#60A5FA' });
+    
+    if (!isCheckOut) {
+      lines.push({ text: `👤 ${nameStr}`, font: `${fontSizeBody}px sans-serif`, color: '#FFFFFF' });
+    }
+    
+    lines.push({ text: `📅 ${dateStr} - ${timeStr}`, font: `${fontSizeBody}px sans-serif`, color: '#F3F4F6' });
+    
+    if (options.lat != null && options.lng != null) {
+      lines.push({ text: `📍 Lat: ${options.lat.toFixed(5)}, Lng: ${options.lng.toFixed(5)}`, font: `${fontSizeBody}px sans-serif`, color: '#9CA3AF' });
+    }
+    if (options.locationName) {
+      lines.push({ text: `🏢 ${options.locationName}`, font: `bold ${fontSizeBody}px sans-serif`, color: '#60A5FA' });
+    }
+    
+    if (options.lat == null && options.lng == null && !options.locationName) {
+      lines.push({ text: '📍 Lokasi: Tidak tersedia', font: `${fontSizeBody}px sans-serif`, color: '#9CA3AF' });
+    }
+  }
 
   let maxLineWidth = 0;
   lines.forEach(l => {
